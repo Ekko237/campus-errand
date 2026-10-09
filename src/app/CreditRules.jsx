@@ -48,11 +48,11 @@ export default function CreditRules() {
       </div>
 
       <section>
-        <h2 className="mb-3 text-lg font-bold">另外三道保护</h2>
+        <h2 className="mb-3 text-lg font-bold">另外四道保护</h2>
         <div className="space-y-2">
-          {[[ShieldCheck, '赏金托管', '发布即冻结，确认送达才放款；2 小时不确认自动放款。'], [LockKey, '隐私分级', '取件码、宿舍号、电话接单后才可见，结束自动隐藏；电话走虚拟号。'], [Camera, '送达凭证', '当面核验送达码，或拍照留证，纠纷时作为依据。'], [Scales, '申诉', '申诉期间赏金继续冻结，平台判定责任方，责任方信用 -8。']].map(([I, t, d]) => (
+          {[['escrow', '护着硬币的盾牌', '赏金托管', '发布即冻结，确认送达才放款；2 小时不确认自动放款。'], ['privacy', '挂锁和钥匙', '隐私分级', '取件码、宿舍号、电话接单后才可见，结束自动隐藏；电话走虚拟号。'], ['proof', '拍下包裹的相机', '送达凭证', '当面核验送达码，或拍照留证，纠纷时作为依据。'], ['dispute', '天平', '申诉', '申诉期间赏金继续冻结，平台判定责任方，责任方信用 -8。']].map(([k, alt, t, d]) => (
             <Panel key={t} className="flex gap-3 p-4">
-              <I size={24} className="mt-0.5 shrink-0 text-accent" />
+              <img src={`${import.meta.env.BASE_URL}icons/trust-${k}-v1.webp`} width={40} height={40} alt={alt} className="size-10 shrink-0 object-contain" />
               <div><p className="text-[15px] font-semibold">{t}</p><p className="text-[15px] text-muted">{d}</p></div>
             </Panel>
           ))}

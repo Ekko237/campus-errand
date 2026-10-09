@@ -89,7 +89,7 @@ function Escrow({ t }) {
   }[t.status]
   return (
     <div className="flex items-center gap-3 rounded-2xl bg-accent-soft p-4">
-      <ShieldCheck size={30} weight="fill" className="shrink-0 text-accent" />
+      <img src={`${import.meta.env.BASE_URL}icons/trust-escrow-v1.webp`} width={40} height={40} alt="护着硬币的盾牌" className="size-10 shrink-0 object-contain" />
       <div className="flex-1">
         <p className="text-[15px] font-semibold">赏金托管 · {map[0]}</p>
         <p className="text-sm text-muted">{map[1]}</p>

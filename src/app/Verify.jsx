@@ -24,7 +24,7 @@ export default function Verify() {
   if (me.verified) {
     return (
       <Panel className="p-6 text-center">
-        <SealCheck size={48} weight="fill" className="mx-auto text-accent" />
+        <img src={`${import.meta.env.BASE_URL}icons/trust-verify-v1.webp`} width={64} height={64} alt="带对勾的学生证" className="mx-auto size-16 object-contain" />
         <p className="mt-3 text-xl font-bold">{me.name} 已完成校园认证</p>
         <p className="mt-1 text-muted">认证方式：{me.verifyMethod}</p>
         <div className="mt-2"><VerifiedBadge /></div>
