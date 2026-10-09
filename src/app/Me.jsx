@@ -1,0 +1,138 @@
+import { useEffect } from 'react'
+import { Link, useNavigate } from 'react-router-dom'
+import { motion, animate, useMotionValue, useTransform, useReducedMotion } from 'motion/react'
+import { SealCheck, Medal, ThumbsUp, Trophy, Lightning, Wallet, ArrowRight, ArrowCounterClockwise, ShieldWarning, ListBullets } from '@phosphor-icons/react'
+import { useStore, useMe } from '../store'
+import { levelOf, nextLevel } from '../data'
+import { Avatar, VerifiedBadge, Panel, Btn, Empty, ago } from '../ui'
+
+function CountUp({ value }) {
+  const reduce = useReducedMotion()
+  const mv = useMotionValue(value)
+  const out = useTransform(mv, (v) => Math.round(v))
+  useEffect(() => {
+    if (reduce) { mv.set(value); return }
+    const c = animate(mv, value, { duration: 0.9, ease: [0.16, 1, 0.3, 1] })
+    return () => c.stop()
+  }, [value, reduce, mv])
+  return <motion.span>{out}</motion.span>
+}
+
+export default function Me() {
+  const { state, act } = useStore()
+  const me = useMe()
+  const nav = useNavigate()
+  const good = me.ratings.filter((r) => r >= 4).length
+  const rate = me.ratings.length ? Math.round((good / me.ratings.length) * 100) + '%' : '暂无'
+  const lv = me.credit != null ? levelOf(me.credit) : null
+  const nx = me.credit != null ? nextLevel(me.credit) : null
+  const badges = [
+    { Icon: SealCheck, name: '校园认证', on: me.verified },
+    { Icon: Medal, name: '首单完成', on: me.done >= 1 },
+    { Icon: ThumbsUp, name: '好评 3 次', on: good >= 3 },
+    { Icon: Lightning, name: '可靠跑腿', on: (me.credit ?? 0) >= 72 },
+    { Icon: Trophy, name: '金牌信用', on: (me.credit ?? 0) >= 85 },
+  ]
+  return (
+    <div className="space-y-5">
+      <div className="flex items-center gap-4">
+        <Avatar seed={me.avatar} size={64} />
+        <div className="min-w-0">
+          <p className="text-sm text-muted">{me.role}账号（示例）</p>
+          <p className="text-2xl font-bold">{me.name}</p>
+          <div className="mt-1">{me.verified ? <VerifiedBadge /> : <span className="rounded-full bg-sunken px-2.5 py-1 text-sm font-medium text-muted">未认证，只能浏览</span>}</div>
+        </div>
+      </div>
+
+      {me.verified ? (
+        <Link to="/app/credit" className="block rounded-2xl bg-accent-soft p-5">
+          <div className="flex items-end justify-between">
+            <div>
+              <p className="text-[15px] font-semibold">信用分</p>
+              <p className="tnum text-6xl font-bold leading-none tracking-tight text-accent"><CountUp value={me.credit} /></p>
+            </div>
+            <div className="text-right">
+              <p className="text-xl font-bold">「{lv.name}」</p>
+              <p className="text-sm text-muted">{lv.desc}</p>
+            </div>
+          </div>
+          <p className="mt-4 flex items-center justify-between text-[15px]">
+            <span>{nx ? `再 +${nx.min - me.credit} 分升到「${nx.name}」，${nx.desc}` : '已是最高等级'}</span>
+            <ArrowRight size={18} className="shrink-0 text-accent" />
+          </p>
+        </Link>
+      ) : (
+        <Panel className="p-5">
+          <p className="text-lg font-semibold">完成校园认证，开始接单</p>
+          <p className="mt-1 text-[15px] text-muted">认证后获得初始信用 70 分和认证徽章。</p>
+          <Btn className="mt-4" onClick={() => nav('/app/verify')}>去认证</Btn>
+        </Panel>
+      )}
+
+      <dl className="grid grid-cols-3 divide-x divide-line rounded-2xl bg-surface py-4 ring-1 ring-line">
+        {[['完成单数', me.done], ['好评率', rate], [me.role === '跑腿人' ? '累计收入' : '托管中', me.role === '跑腿人' ? `¥${me.ledger.filter((l) => l.amount > 0).reduce((a, l) => a + l.amount, 0)}` : `¥${me.frozen}`]].map(([k, v]) => (
+          <div key={k} className="text-center">
+            <dd className="tnum text-2xl font-bold">{v}</dd>
+            <dt className="mt-0.5 text-sm text-muted">{k}</dt>
+          </div>
+        ))}
+      </dl>
+
+      <section>
+        <h2 className="mb-3 text-lg font-bold">徽章</h2>
+        <div className="no-scrollbar -mx-4 flex gap-3 overflow-x-auto px-4">
+          {badges.map((b) => (
+            <div key={b.name} className={`flex w-24 shrink-0 flex-col items-center gap-2 rounded-2xl p-3 text-center ${b.on ? 'bg-accent-soft' : 'bg-sunken opacity-60'}`}>
+              <b.Icon size={32} weight={b.on ? 'fill' : 'regular'} className={b.on ? 'text-accent' : 'text-muted'} />
+              <span className="text-sm font-semibold">{b.name}</span>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <section>
+        <div className="mb-3 flex items-center justify-between">
+          <h2 className="text-lg font-bold">{me.role === '跑腿人' ? '收入流水' : '钱包流水'}</h2>
+          <span className="flex items-center gap-1 text-sm text-muted"><Wallet size={16} />可用 ¥{me.balance}{me.frozen ? ` · 冻结 ¥${me.frozen}` : ''}</span>
+        </div>
+        {me.ledger.length === 0 ? (
+          <Panel><Empty Icon={Wallet} title="还没有流水" hint="完成第一单后，赏金会从托管放到这里。" /></Panel>
+        ) : (
+          <Panel className="divide-y divide-line">
+            {me.ledger.slice(0, 8).map((l, i) => (
+              <div key={i} className="flex items-center gap-3 p-4">
+                <div className="min-w-0 flex-1"><p className="truncate text-[15px] font-medium">{l.label}</p><p className="text-sm text-muted">{ago(l.at)}</p></div>
+                <span className={`tnum text-lg font-bold ${l.amount > 0 ? 'text-accent' : ''}`}>{l.amount > 0 ? '+' : ''}{l.amount}</span>
+              </div>
+            ))}
+          </Panel>
+        )}
+      </section>
+
+      <section>
+        <div className="mb-3 flex items-center justify-between">
+          <h2 className="text-lg font-bold">信用记录</h2>
+          <Link to="/app/credit" className="text-sm font-semibold text-accent">规则说明</Link>
+        </div>
+        {me.creditLog.length === 0 ? (
+          <Panel><Empty Icon={ListBullets} title="还没有信用记录" hint="认证后会有初始 70 分，之后每一单都会记在这里。" /></Panel>
+        ) : (
+          <Panel className="divide-y divide-line">
+            {me.creditLog.slice(0, 8).map((l, i) => (
+              <div key={i} className="flex items-center gap-3 p-4">
+                <div className="min-w-0 flex-1"><p className="truncate text-[15px] font-medium">{l.label}</p><p className="text-sm text-muted">{ago(l.at)}</p></div>
+                {l.delta !== 0 && <span className={`tnum text-lg font-bold ${l.delta > 0 ? 'text-accent' : 'text-danger'}`}>{l.delta > 0 ? '+' : ''}{l.delta}</span>}
+              </div>
+            ))}
+          </Panel>
+        )}
+      </section>
+
+      <Panel className="flex items-center gap-3 p-4">
+        <ShieldWarning size={24} className="shrink-0 text-muted" />
+        <p className="flex-1 text-[15px] text-muted">演示数据存在本机浏览器，可随时恢复初始状态。</p>
+        <Btn size="sm" variant="ghost" onClick={() => { act('reset'); nav('/app') }}><ArrowCounterClockwise size={16} weight="bold" />重置</Btn>
+      </Panel>
+    </div>
+  )
+}

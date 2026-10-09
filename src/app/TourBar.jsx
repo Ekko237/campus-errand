@@ -1,0 +1,61 @@
+import { useNavigate, useLocation } from 'react-router-dom'
+import { motion, AnimatePresence, useReducedMotion } from 'motion/react'
+import { X, ArrowRight, Confetti } from '@phosphor-icons/react'
+import { useStore } from '../store'
+import { spring } from '../ui'
+
+const TOTAL = 6
+
+// 根据演示任务的真实状态推出「下一步该谁做什么」
+export function tourStep(state) {
+  const { tour, accounts } = state
+  if (!tour.active) return null
+  const t = state.tasks.find((x) => x.id === tour.taskId)
+  if (!t) return { n: 1, who: 'poster', text: '用发单人身份发布一个任务', to: '/app/publish?tour=1', cta: '去发布' }
+  if (t.status === 'open') {
+    if (!accounts.runner.verified) return { n: 2, who: 'runner', text: '切到跑腿人：先做校园认证，才能接单', to: `/app/verify?back=/app/task/${t.id}`, cta: '去认证' }
+    return { n: 2, who: 'runner', text: '切到跑腿人，接下刚发布的这一单', to: `/app/task/${t.id}`, cta: '去接单' }
+  }
+  if (t.status === 'ongoing' && !t.picked) return { n: 3, who: 'runner', text: '跑腿人：取件码已解锁，去取件', to: `/app/task/${t.id}`, cta: '去取件' }
+  if (t.status === 'ongoing') return { n: 4, who: 'runner', text: '跑腿人：输入送达码或拍照，提交凭证', to: `/app/task/${t.id}`, cta: '去送达' }
+  if (t.status === 'delivered') return { n: 5, who: 'poster', text: '切回发单人：确认送达，托管赏金放款', to: `/app/task/${t.id}`, cta: '去确认' }
+  if (t.status === 'completed' && !t.ratingByPoster) return { n: 6, who: 'poster', text: '发单人：给跑腿人打分，信用分会跟着变', to: `/app/task/${t.id}`, cta: '去评价' }
+  if (t.status === 'completed') return { n: 7, who: 'runner', text: '闭环走完了。去跑腿人「我的」看信用和收入', to: '/app/me', cta: '去看看', final: true }
+  return { n: 7, who: null, text: '这单走了申诉或取消分支，演示结束', to: '/app/orders', cta: '看订单', final: true }
+}
+
+export default function TourBar() {
+  const { state, act } = useStore()
+  const nav = useNavigate()
+  const reduce = useReducedMotion()
+  const loc = useLocation()
+  const step = tourStep(state)
+  const here = step && loc.pathname === step.to.split('?')[0] && (!step.who || step.who === state.role) && !step.final
+  const go = () => {
+    if (step.who) act('role', { role: step.who })
+    if (step.final) act('tour', { tour: { active: false, done: true } })
+    nav(step.to)
+  }
+  return (
+    <AnimatePresence>
+      {step && (
+        <motion.div initial={reduce ? false : { y: 40, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: 40, opacity: 0 }} transition={spring}
+          className="fixed inset-x-0 bottom-[calc(4rem+env(safe-area-inset-bottom))] z-20 px-3 pb-2">
+          <div className="mx-auto flex max-w-xl items-center gap-3 rounded-2xl bg-ink p-3 pl-4 text-bg shadow-xl shadow-ink/20">
+            <div className="min-w-0 flex-1">
+              <p className="text-[13px] font-semibold opacity-70">
+                {step.final ? <span className="inline-flex items-center gap-1"><Confetti size={14} weight="fill" />完整流程</span> : `完整流程 ${Math.min(step.n, TOTAL)}/${TOTAL}`}
+              </p>
+              <p className="text-[15px] font-semibold leading-snug">{step.text}</p>
+              {here && <p className="text-[13px] opacity-70">操作按钮就在这一页</p>}
+            </div>
+            {!here && <button onClick={go} className="inline-flex h-11 shrink-0 items-center gap-1 whitespace-nowrap rounded-full bg-accent px-4 text-[15px] font-semibold text-on-accent active:scale-[0.98]">
+              {step.cta}<ArrowRight size={16} weight="bold" />
+            </button>}
+            <button onClick={() => act('tour', { tour: { active: false } })} aria-label="退出演示" className="grid size-9 shrink-0 place-items-center rounded-full opacity-70 hover:opacity-100"><X size={18} weight="bold" /></button>
+          </div>
+        </motion.div>
+      )}
+    </AnimatePresence>
+  )
+}

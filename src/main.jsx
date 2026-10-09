@@ -1,13 +1,19 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
-import { HashRouter } from 'react-router-dom'
+import { HashRouter, Routes, Route } from 'react-router-dom'
+import '@fontsource-variable/geist'
 import './index.css'
-import App from './App.jsx'
+import Landing from './landing/Landing.jsx'
+import AppRoot from './app/AppRoot.jsx'
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <HashRouter>
-      <App />
+      <Routes>
+        <Route path="/" element={<Landing />} />
+        <Route path="/app/*" element={<AppRoot />} />
+        <Route path="*" element={<Landing />} />
+      </Routes>
     </HashRouter>
   </StrictMode>,
 )

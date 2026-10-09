@@ -1,0 +1,63 @@
+import { useNavigate } from 'react-router-dom'
+import { ArrowLeft, TrendUp, TrendDown, ShieldCheck, LockKey, Camera, Scales } from '@phosphor-icons/react'
+import { useMe } from '../store'
+import { LEVELS, RULES_PLUS, RULES_MINUS, CREDIT_INIT } from '../data'
+import { Panel } from '../ui'
+
+export default function CreditRules() {
+  const nav = useNavigate()
+  const me = useMe()
+  return (
+    <div className="space-y-5">
+      <div className="flex items-center gap-2">
+        <button onClick={() => nav(-1)} aria-label="返回" className="grid size-10 place-items-center rounded-full bg-surface ring-1 ring-line"><ArrowLeft size={20} weight="bold" /></button>
+        <h1 className="text-2xl font-bold tracking-tight">信用分怎么算</h1>
+      </div>
+      <p className="text-[15px] leading-relaxed text-muted">满分 100，校园认证后初始 {CREDIT_INIT} 分。分数只由履约和评价决定，不能花钱买。等级决定你能接多大金额的单。</p>
+
+      <section>
+        <h2 className="mb-3 text-lg font-bold">等级与接单权限</h2>
+        <div className="grid grid-cols-2 gap-2">
+          {[...LEVELS].reverse().map((l) => {
+            const cur = me.credit != null && me.credit >= l.min && (LEVELS[LEVELS.indexOf(l) + 1]?.min ?? 101) > me.credit
+            return (
+              <div key={l.name} className={`rounded-2xl p-4 ${cur ? 'bg-accent text-on-accent' : 'bg-surface ring-1 ring-line'}`}>
+                <p className="text-lg font-bold">{l.name}{cur && '（你）'}</p>
+                <p className="tnum text-sm font-semibold opacity-80">{l.min === 0 ? '低于 60 分' : `${l.min} 分以上`}</p>
+                <p className="mt-1 text-[15px]">{l.desc}</p>
+              </div>
+            )
+          })}
+        </div>
+      </section>
+
+      <div className="grid gap-4 sm:grid-cols-2">
+        {[[TrendUp, '加分', RULES_PLUS, 'text-accent'], [TrendDown, '减分', RULES_MINUS, 'text-danger']].map(([I, h, rules, c]) => (
+          <section key={h}>
+            <h2 className="mb-3 flex items-center gap-2 text-lg font-bold"><I size={22} className={c} />{h}</h2>
+            <Panel className="divide-y divide-line">
+              {rules.map((r) => (
+                <div key={r.label} className="flex items-center gap-3 p-4">
+                  <div className="flex-1"><p className="text-[15px] font-semibold">{r.label}</p><p className="text-sm text-muted">{r.note}</p></div>
+                  <span className={`tnum text-xl font-bold ${c}`}>{r.delta > 0 ? '+' : ''}{r.delta}</span>
+                </div>
+              ))}
+            </Panel>
+          </section>
+        ))}
+      </div>
+
+      <section>
+        <h2 className="mb-3 text-lg font-bold">另外三道保护</h2>
+        <div className="space-y-2">
+          {[[ShieldCheck, '赏金托管', '发布即冻结，确认送达才放款；2 小时不确认自动放款。'], [LockKey, '隐私分级', '取件码、宿舍号、电话接单后才可见，结束自动隐藏；电话走虚拟号。'], [Camera, '送达凭证', '当面核验送达码，或拍照留证，纠纷时作为依据。'], [Scales, '申诉', '申诉期间赏金继续冻结，平台判定责任方，责任方信用 -8。']].map(([I, t, d]) => (
+            <Panel key={t} className="flex gap-3 p-4">
+              <I size={24} className="mt-0.5 shrink-0 text-accent" />
+              <div><p className="text-[15px] font-semibold">{t}</p><p className="text-[15px] text-muted">{d}</p></div>
+            </Panel>
+          ))}
+        </div>
+      </section>
+    </div>
+  )
+}
