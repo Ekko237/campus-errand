@@ -130,7 +130,9 @@ function reducer(s, a) {
       }
       if (task.posterId === 'poster') poster = { ...poster, frozen: poster.frozen - task.reward }
       runner = money({ ...runner, done: runner.done + 1 }, task.reward, `「${task.title}」申诉驳回，赏金到账`)
-      return toast({ ...upd(a.id, (t) => log({ ...t, status: 'completed', completedAt: now() }, '平台判定申诉不成立：凭证有效，赏金放给跑腿人')), accounts: { ...s.accounts, poster, runner } }, '申诉驳回：凭证有效，赏金放给跑腿人')
+      // 申诉驳回等同正常确认：按时 +2，超时 -3
+      runner = task.late ? credit(runner, -3, `超时送达「${task.title}」`) : credit(runner, +2, `按时完成「${task.title}」`)
+      return toast({ ...upd(a.id, (t) => log({ ...t, status: 'completed', completedAt: now() }, `平台判定申诉不成立：凭证有效，赏金放给跑腿人，跑腿人信用 ${task.late ? '-3（超时）' : '+2'}`)), accounts: { ...s.accounts, poster, runner } }, `申诉驳回：赏金放给跑腿人，跑腿人信用 ${task.late ? '-3（超时）' : '+2'}`)
     }
     default:
       return s
