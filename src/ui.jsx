@@ -99,7 +99,7 @@ export function Field({ label, error, hint, children }) {
     <div className="flex flex-col gap-2">
       <span className="text-[15px] font-semibold">{label}</span>
       {children}
-      {hint && !error && <span className="text-sm text-muted">{hint}</span>}
+      {hint && <span className="text-sm text-muted">{hint}</span>}
       {error && <span role="alert" className="text-sm font-medium text-danger">{error}</span>}
     </div>
   )
