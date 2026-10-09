@@ -47,7 +47,11 @@ export function VerifiedBadge({ small }) {
   )
 }
 
-export function Avatar({ name = '', size = 44 }) {
+// 头像：生成图（发单人小满、跑腿人阿远），其他人回退为文字头像
+export function Avatar({ who, name = '', size = 44 }) {
+  if (who === 'poster' || who === 'runner') {
+    return <img src={`${import.meta.env.BASE_URL}icons/avatar-${who}-v1.webp`} width={size} height={size} alt={`${name}的头像`} className="shrink-0 rounded-full object-cover" style={{ width: size, height: size }} />
+  }
   return (
     <span aria-hidden="true" className="grid shrink-0 place-items-center rounded-full bg-accent-soft font-bold text-accent" style={{ width: size, height: size, fontSize: size * 0.42 }}>
       {name.slice(-1)}

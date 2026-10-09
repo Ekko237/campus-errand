@@ -38,7 +38,7 @@ export default function Me() {
   return (
     <div className="space-y-5">
       <div className="flex items-center gap-4">
-        <Avatar name={me.name} size={64} />
+        <Avatar who={me.id} name={me.name} size={64} />
         <div className="min-w-0">
           <p className="text-sm text-muted">{me.role}账号（示例）</p>
           <p className="text-2xl font-bold">{me.name}</p>

@@ -46,7 +46,7 @@ export default function DemoPanel() {
       {accounts.map(([k, a, sub]) => (
         <button key={k} onClick={() => act('role', { role: k })} aria-pressed={state.role === k}
           className={`flex w-full items-center gap-3 rounded-2xl p-3.5 text-left ring-1 transition ${state.role === k ? 'bg-accent-soft ring-accent' : 'bg-surface ring-line hover:bg-sunken'}`}>
-          <Avatar name={a.name} size={40} />
+          <Avatar who={k} name={a.name} size={40} />
           <div className="min-w-0 flex-1">
             <p className="flex items-center gap-1.5 text-[15px] font-semibold">{a.name}<span className="text-sm font-normal text-muted">{a.role}</span></p>
             <p className="truncate text-sm text-muted">{sub}</p>
