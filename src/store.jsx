@@ -112,7 +112,8 @@ function reducer(s, a) {
         if (delta) poster = credit(poster, delta, a.stars >= 4 ? `收到 ${a.stars} 星好评` : `收到 ${a.stars} 星差评`)
       }
       const field = a.by === 'poster' ? 'ratingByPoster' : 'ratingByRunner'
-      let ns = { ...upd(a.id, (t) => log({ ...t, [field]: { stars: a.stars, tags: a.tags } }, `${a.by === 'poster' ? '发单人' : '跑腿人'}评价 ${a.stars} 星`)), accounts: { ...s.accounts, poster, runner } }
+      const pc = a.by === 'runner' && task.posterId !== 'poster' ? Math.max(0, Math.min(100, task.posterCredit + delta)) : task.posterCredit
+      let ns = { ...upd(a.id, (t) => log({ ...t, posterCredit: pc, [field]: { stars: a.stars, tags: a.tags } }, `${a.by === 'poster' ? '发单人' : '跑腿人'}评价 ${a.stars} 星`)), accounts: { ...s.accounts, poster, runner } }
       const who = a.by === 'poster' ? '跑腿人' : '发单人'
       ns = toast(ns, delta ? `评价已提交，${who}信用 ${delta > 0 ? '+' : ''}${delta}` : '评价已提交（3 星不影响信用）', delta < 0 ? 'bad' : 'ok')
       const lm = a.by === 'poster' ? levelMsg(before, runner.credit) : null
