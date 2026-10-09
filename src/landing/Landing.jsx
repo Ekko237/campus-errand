@@ -8,7 +8,7 @@ import {
 import { RULES_PLUS, RULES_MINUS, LEVELS } from '../data'
 
 const ease = [0.16, 1, 0.3, 1]
-const img = (name) => `${import.meta.env.BASE_URL}img/${name}.webp`
+const img = (name) => `${import.meta.env.BASE_URL}images/${name}.webp`
 
 function Reveal({ children, className = '', delay = 0, as = 'div' }) {
   const reduce = useReducedMotion()
@@ -77,7 +77,7 @@ function Hero() {
         </motion.div>
       </div>
       <motion.div className="md:col-span-6" initial={reduce ? false : { opacity: 0, scale: 0.97 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.9, ease }}>
-        <img src={img('hero')} width={1400} height={1050} alt="傍晚的校园小路上，学生抱着快递、拎着外卖快步走" fetchPriority="high"
+        <img src={img('hero-v1')} width={1400} height={1050} alt="校园林荫道上，学生抱着快递、拎着外卖快步走" fetchPriority="high"
           className="aspect-[4/3] w-full rounded-2xl bg-sunken object-cover md:aspect-[4/3]" />
       </motion.div>
     </section>
@@ -86,22 +86,22 @@ function Hero() {
 
 const SCENES = [
   {
-    key: 'express', tab: '堆在驿站的快递', seed: 'express',
+    key: 'express', tab: '排长队的快递驿站', img: 'scene-express-v1', alt: '校园快递驿站里排着长队，货架上堆满包裹',
     who: '大三，课排满的小禾',
-    pain: '驿站 18:00 关门，她 17:50 才下课。三个快递放了三天，找室友要欠人情，找陌生人又怕取件码被乱用。',
+    pain: '驿站傍晚要排二十分钟，她 17:50 才下课，18:00 就关门。三个快递放了三天，找室友要欠人情，找陌生人又怕取件码被乱用。',
     fix: '发一单 ¥5。取件码只在有人接单后才给对方看，送到后当面核验送达码，钱才放出去。',
   },
   {
-    key: 'seat', tab: '早八前的图书馆座位', seed: 'seat',
+    key: 'seat', tab: '早八前的图书馆座位', img: 'scene-seat-v1', alt: '清晨图书馆靠窗的空位上放着一本书',
     who: '考研，住得远的周砚',
     pain: '宿舍离图书馆一公里，每天 7:40 靠窗位就没了。住在旁边的同学顺手就能占，但不知道谁靠谱。',
     fix: '接单人的信用分公开可见。接了不去算爽约，直接扣 5 分，下次能接的单就变少。',
   },
   {
-    key: 'food', tab: '晚自习的一份饭', seed: 'food',
-    who: '一教自习的于小渔',
-    pain: '不想下楼排队二十分钟，而正好在食堂吃完饭的同学，根本不知道楼上有人需要。',
-    fix: '大厅按距离排序，顺路的人最先看到。加急单标出来，超时送达扣 3 分。',
+    key: 'handoff', tab: '宿舍楼下的交接', img: 'scene-handoff-v1', alt: '宿舍楼门口，两名学生交接一袋外卖',
+    who: '赶作业下不了楼的于小渔',
+    pain: '外卖放在北门取餐点，走回 6 楼要十分钟。正好回宿舍的同学顺手就能捎上来，可彼此不认识，也不想把宿舍号给陌生人。',
+    fix: '大厅按距离排序，顺路回宿舍的人最先看到；宿舍号接单后才显示，订单结束自动隐藏。',
   },
 ]
 
@@ -126,7 +126,7 @@ function Scenes() {
       <AnimatePresence mode="wait">
         <motion.div key={s.key} role="tabpanel" initial={reduce ? false : { opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={reduce ? { opacity: 0 } : { opacity: 0, y: -8 }} transition={{ duration: 0.35, ease }}
           className="mt-6 grid gap-6 md:grid-cols-5 md:gap-10">
-          <img src={img(s.seed)} width={1100} height={825} alt="" loading="lazy" className="aspect-[4/3] w-full rounded-2xl bg-sunken object-cover md:col-span-2 md:aspect-[4/5]" />
+          <img src={img(s.img)} width={1100} height={825} alt={s.alt} loading="lazy" className="aspect-[4/3] w-full rounded-2xl bg-sunken object-cover md:col-span-2 md:aspect-[4/5]" />
           <div className="flex flex-col justify-center md:col-span-3">
             <p className="text-[15px] font-semibold text-muted">{s.who}</p>
             <p className="mt-3 text-xl leading-relaxed md:text-2xl">{s.pain}</p>
@@ -190,6 +190,9 @@ function Trust() {
           <Reveal><H2>凭什么把取件码交给一个陌生同学</H2></Reveal>
           <Reveal delay={0.05}>
             <p className="mt-4 max-w-[34ch] text-lg leading-relaxed text-muted">校园跑腿最大的成本不是钱，是对陌生人的不放心。所以信任被拆成五道关，每一道只解决一种具体的怕。</p>
+          </Reveal>
+          <Reveal delay={0.1}>
+            <img src={img('trust-v1')} width={1100} height={825} alt="两只手在校园里交接一个小包裹" loading="lazy" className="mt-8 aspect-[4/3] w-full rounded-2xl bg-sunken object-cover" />
           </Reveal>
         </div>
       </div>
@@ -256,7 +259,7 @@ function Safety() {
   return (
     <section className="mx-auto max-w-6xl px-4 py-16 md:px-8 md:py-24">
       <Reveal className="relative overflow-hidden rounded-2xl">
-        <img src={img('safety')} width={1400} height={788} alt="" loading="lazy" className="absolute inset-0 size-full object-cover" />
+        <img src={img('safety-v1')} width={1400} height={788} alt="空荡的考场，课桌上放着答题纸" loading="lazy" className="absolute inset-0 size-full object-cover" />
         <div className="absolute inset-0 bg-[#0e1110]/78" />
         <div className="relative px-6 py-14 text-[#eceeed] md:px-14 md:py-20">
           <Prohibit size={40} weight="bold" className="text-[#3cc48f]" />
@@ -291,7 +294,7 @@ function Metrics() {
             <p className="mt-3 text-[15px] leading-relaxed text-muted">24 小时内被接的单 ÷ 发布的单。低了说明供给不够或定价偏低。示例目标。</p>
           </Reveal>
           <Reveal delay={0.1} className="relative overflow-hidden rounded-2xl p-6 text-[#eceeed]">
-            <img src={img('metrics')} width={1100} height={825} alt="" loading="lazy" className="absolute inset-0 size-full object-cover" />
+            <img src={img('metrics-v1')} width={1100} height={825} alt="傍晚的校园路口，学生步行和骑车经过" loading="lazy" className="absolute inset-0 size-full object-cover" />
             <div className="absolute inset-0 bg-[#0e1110]/72" />
             <div className="relative">
               <p className="text-lg font-semibold">平均接单时长</p>
@@ -340,7 +343,12 @@ function Roadmap() {
 function Final() {
   return (
     <section className="border-t border-line">
-      <div className="mx-auto max-w-6xl px-4 py-20 text-center md:px-8 md:py-28">
+      <div className="mx-auto max-w-6xl px-4 pt-16 md:px-8 md:pt-24">
+        <Reveal>
+          <img src={img('closing-v1')} width={1600} height={900} alt="绿树成荫的校园主干道，远处三三两两的学生" loading="lazy" className="aspect-[16/9] w-full rounded-2xl bg-sunken object-cover md:aspect-[21/9]" />
+        </Reveal>
+      </div>
+      <div className="mx-auto max-w-6xl px-4 py-16 text-center md:px-8 md:py-20">
         <Reveal><h2 className="text-3xl font-bold tracking-tight md:text-5xl">自己走一遍，大约两分钟</h2></Reveal>
         <Reveal delay={0.05}><p className="mx-auto mt-4 max-w-[32ch] text-lg text-muted">顶部一键切换发单人和跑腿人，一个人就能把一单从发布走到信用变化。</p></Reveal>
         <Reveal delay={0.1} className="mt-8"><Cta /></Reveal>

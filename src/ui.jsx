@@ -47,8 +47,12 @@ export function VerifiedBadge({ small }) {
   )
 }
 
-export function Avatar({ seed, size = 44 }) {
-  return <img src={`https://picsum.photos/seed/${seed}/${size * 2}/${size * 2}`} width={size} height={size} alt="" className="shrink-0 rounded-full bg-sunken object-cover" style={{ width: size, height: size }} />
+export function Avatar({ name = '', size = 44 }) {
+  return (
+    <span aria-hidden="true" className="grid shrink-0 place-items-center rounded-full bg-accent-soft font-bold text-accent" style={{ width: size, height: size, fontSize: size * 0.42 }}>
+      {name.slice(-1)}
+    </span>
+  )
 }
 
 export function Sheet({ open, onClose, title, children }) {
