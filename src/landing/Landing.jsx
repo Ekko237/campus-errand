@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { motion, AnimatePresence, useReducedMotion } from 'motion/react'
 import {
@@ -109,6 +109,11 @@ function Scenes() {
   const [k, setK] = useState('express')
   const reduce = useReducedMotion()
   const s = SCENES.find((x) => x.key === k)
+  // 预载另外两张场景图，切换标签时不出现空白
+  useEffect(() => {
+    const t = setTimeout(() => SCENES.forEach((x) => { const i = new Image(); i.src = img(x.img) }), 1500)
+    return () => clearTimeout(t)
+  }, [])
   return (
     <section id="thinking" className="mx-auto max-w-6xl scroll-mt-16 px-4 py-16 md:px-8 md:py-24">
       <div id="scenes" className="scroll-mt-20">
@@ -126,7 +131,7 @@ function Scenes() {
       <AnimatePresence mode="wait">
         <motion.div key={s.key} role="tabpanel" initial={reduce ? false : { opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={reduce ? { opacity: 0 } : { opacity: 0, y: -8 }} transition={{ duration: 0.35, ease }}
           className="mt-6 grid gap-6 md:grid-cols-5 md:gap-10">
-          <img src={img(s.img)} width={1100} height={825} alt={s.alt} loading="lazy" className="aspect-[4/3] w-full rounded-2xl bg-sunken object-cover md:col-span-2 md:aspect-[4/5]" />
+          <img src={img(s.img)} width={1100} height={825} alt={s.alt} className="aspect-[4/3] w-full rounded-2xl bg-sunken object-cover md:col-span-2 md:aspect-[4/5]" />
           <div className="flex flex-col justify-center md:col-span-3">
             <p className="text-[15px] font-semibold text-muted">{s.who}</p>
             <p className="mt-3 text-xl leading-relaxed md:text-2xl">{s.pain}</p>
