@@ -12,6 +12,7 @@ import Me from './Me'
 import Verify from './Verify'
 import CreditRules from './CreditRules'
 import TourBar from './TourBar'
+import DemoPanel from './DemoPanel'
 
 export default function AppRoot() {
   return (
@@ -134,6 +135,7 @@ function Shell() {
           <Route path="*" element={<Hall />} />
         </Routes>
       </main>
+      <DemoPanel />
       <TourBar />
       <nav className="fixed inset-x-0 bottom-0 z-30 border-t border-line bg-surface/95 backdrop-blur" aria-label="主导航">
         <div className="mx-auto grid max-w-xl grid-cols-4 pb-[env(safe-area-inset-bottom)]">
