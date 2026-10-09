@@ -29,7 +29,8 @@ export default function DemoPanel() {
   const { state, act } = useStore()
   const nav = useNavigate()
   const { poster, runner } = state.accounts
-  const t = state.tasks.find((x) => x.id === state.tour.taskId) || state.tasks.find((x) => x.posterId === 'poster')
+  // 引导进行中跟踪引导那一单，否则显示发单人最新发布的一单（tasks 按发布时间倒序）
+  const t = (state.tour.active && state.tasks.find((x) => x.id === state.tour.taskId)) || state.tasks.find((x) => x.posterId === 'poster')
   const n = progress(t)
   const start = () => {
     act('tour', { tour: { active: true, taskId: null, done: false } })
