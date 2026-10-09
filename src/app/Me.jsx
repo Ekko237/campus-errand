@@ -1,9 +1,9 @@
 import { useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { motion, animate, useMotionValue, useTransform, useReducedMotion } from 'motion/react'
-import { SealCheck, Medal, ThumbsUp, Trophy, Lightning, Wallet, ArrowRight, ArrowCounterClockwise, ShieldWarning, ListBullets } from '@phosphor-icons/react'
+import { Wallet, ArrowRight, ArrowCounterClockwise, ShieldWarning, ListBullets } from '@phosphor-icons/react'
 import { useStore, useMe } from '../store'
-import { levelOf, nextLevel } from '../data'
+import { levelOf, nextLevel, iconUrl } from '../data'
 import { Avatar, VerifiedBadge, Panel, Btn, Empty, ago } from '../ui'
 
 function CountUp({ value }) {
@@ -29,11 +29,11 @@ export default function Me() {
   const lv = me.credit != null ? levelOf(me.credit) : null
   const nx = me.credit != null ? nextLevel(me.credit) : null
   const badges = [
-    { Icon: SealCheck, name: '校园认证', on: me.verified },
-    { Icon: Medal, name: '首单完成', on: isPoster ? state.tasks.some((t) => t.posterId === 'poster' && t.status === 'completed') : me.done >= 1 },
-    { Icon: ThumbsUp, name: '好评 3 次', on: good >= 3 },
-    { Icon: Lightning, name: '信用可靠', on: (me.credit ?? 0) >= 72 },
-    { Icon: Trophy, name: '金牌信用', on: (me.credit ?? 0) >= 85 },
+    { img: 'trust-verify', alt: '带对勾的学生证', name: '校园认证', on: me.verified },
+    { img: 'badge-first', alt: '插在包裹旁的小旗', name: '首单完成', on: isPoster ? state.tasks.some((t) => t.posterId === 'poster' && t.status === 'completed') : me.done >= 1 },
+    { img: 'badge-praise', alt: '带星星的点赞徽章', name: '好评 3 次', on: good >= 3 },
+    { img: 'level-reliable', alt: '带对勾的绿色盾牌', name: '信用可靠', on: (me.credit ?? 0) >= 72 },
+    { img: 'level-gold', alt: '带皇冠的金牌', name: '金牌信用', on: (me.credit ?? 0) >= 85 },
   ]
   return (
     <div className="space-y-5">
@@ -53,7 +53,8 @@ export default function Me() {
               <p className="text-[15px] font-semibold">信用分</p>
               <p className="tnum text-6xl font-bold leading-none tracking-tight text-accent"><CountUp value={me.credit} /></p>
             </div>
-            <div className="text-right">
+            <div className="flex flex-col items-end text-right">
+              <img src={iconUrl(lv.badge)} width={48} height={48} alt={lv.alt} className="mb-1 size-12 object-contain" />
               <p className="text-xl font-bold">「{lv.name}」</p>
               <p className="text-sm text-muted">{lv.desc}</p>
             </div>
@@ -85,7 +86,7 @@ export default function Me() {
         <div className="no-scrollbar -mx-4 flex gap-3 overflow-x-auto px-4">
           {badges.map((b) => (
             <div key={b.name} className={`flex w-24 shrink-0 flex-col items-center gap-2 rounded-2xl p-3 text-center ${b.on ? 'bg-accent-soft' : 'bg-sunken opacity-60'}`}>
-              <b.Icon size={32} weight={b.on ? 'fill' : 'regular'} className={b.on ? 'text-accent' : 'text-muted'} />
+              <img src={iconUrl(b.img)} width={44} height={44} alt={b.alt} className={`size-11 object-contain ${b.on ? '' : 'grayscale'}`} />
               <span className="text-sm font-semibold">{b.name}</span>
             </div>
           ))}

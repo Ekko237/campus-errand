@@ -1,7 +1,7 @@
 import { useNavigate } from 'react-router-dom'
 import { ArrowLeft, TrendUp, TrendDown, ShieldCheck, LockKey, Camera, Scales } from '@phosphor-icons/react'
 import { useMe } from '../store'
-import { LEVELS, RULES_PLUS, RULES_MINUS, CREDIT_INIT } from '../data'
+import { LEVELS, RULES_PLUS, RULES_MINUS, CREDIT_INIT, iconUrl } from '../data'
 import { Panel } from '../ui'
 
 export default function CreditRules() {
@@ -22,6 +22,7 @@ export default function CreditRules() {
             const cur = me.credit != null && me.credit >= l.min && (LEVELS[LEVELS.indexOf(l) + 1]?.min ?? 101) > me.credit
             return (
               <div key={l.name} className={`rounded-2xl p-4 ${cur ? 'bg-accent text-on-accent' : 'bg-surface ring-1 ring-line'}`}>
+                <img src={iconUrl(l.badge)} width={48} height={48} alt={l.alt} className="mb-2 size-12 object-contain" />
                 <p className="text-lg font-bold">{l.name}{cur && '（你）'}</p>
                 <p className="tnum text-sm font-semibold opacity-80">{l.min === 0 ? '低于 60 分' : `${l.min} 分以上`}</p>
                 <p className="mt-1 text-[15px]">{l.desc}</p>

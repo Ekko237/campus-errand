@@ -247,6 +247,7 @@ function Credit() {
             {ladder.map((l, i) => (
               <motion.div key={l.name} initial={reduce ? false : { opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.5, delay: i * 0.1, ease }}
                 className={`rounded-2xl p-3 md:p-5 ${i === 2 ? 'bg-accent text-on-accent' : i === 1 ? 'bg-accent-soft' : 'bg-sunken'}`} style={{ minHeight: `${8 + i * 3}rem` }}>
+                <img src={icon(l.badge + '-v1')} width={56} height={56} alt={l.alt} loading="lazy" className="mb-2 size-10 object-contain md:size-14" />
                 <p className="text-lg font-bold md:text-2xl">{l.name}</p>
                 <p className="tnum text-sm font-semibold opacity-80">{l.min} 分以上</p>
                 <p className="mt-2 text-sm leading-snug md:text-[15px]">{l.desc}</p>
