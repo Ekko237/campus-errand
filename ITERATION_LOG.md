@@ -204,3 +204,4 @@
 落地规则：透明 PNG 转 WebP，小图标按 2x 导出、尽量小；写宽高和中文 alt；文件名带 -v1，不覆盖旧文件；深色模式也要看得清。每批单独上线。
 - 第 4 轮 · 换图第 1 批：logo。用 codex 生成 3 个候选，选了「S 形路线收成箭头，末端一个包裹」那张，寓意顺路送达。原图自带透明底，去掉零散杂点后放进浅薄荷色（#dcefe6）圆角底板，浅色和深色背景下都看得清，16px 也认得出。导出 brand/logo-v1.png（96px，导航按 32px 显示，即 3x）、favicon-v1.png（64px）、apple-touch-icon-v1.png（180px），替换了两处顶栏和 favicon，并新增 apple-touch-icon
 - 第 4 轮 · 验证：Actions 绿；三个文件线上都返回 200；桌面顶栏截图里 logo 清楚；375px 下导航 logo 显示 32px、已加载，favicon 指向 favicon-v1.png；scrollWidth=375；控制台 0 报错；em-dash 0 · Pass
+- 第 5 轮 · logo 换成 v2：按反馈改用今食喵同款的 3D 黏土画风，主角是背书包、夹着包裹奔跑的圆胖小人，底板用 #0b7a55，以今食喵 app 图标为风格参考，codex 出了 3 个候选，选了奔跑动作最清楚的那张。圆角外的白边改成透明，导出 brand/logo-v2.png（96px，顶栏按 36px 显示）、favicon-v2.png（64px）、apple-touch-icon-v2.png（180px，满版，iOS 自己切圆角）；v1 保留不覆盖。浅色和深色背景下预览，16px 仍认得出脸和跑的动作。之前那批扁平风任务图标作废，后续各批统一用这套黏土画风

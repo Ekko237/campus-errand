@@ -117,7 +117,7 @@ function Shell() {
       <header className="sticky top-0 z-30 border-b border-line bg-bg/95 backdrop-blur">
         <div className="mx-auto flex h-16 max-w-xl items-center justify-between gap-3 px-4">
           <Link to="/" className="flex shrink-0 items-center gap-2 text-lg font-bold tracking-tight">
-            <img src={`${import.meta.env.BASE_URL}brand/logo-v1.png`} width={32} height={32} alt="顺路侠标志" className="size-8 rounded-lg" />
+            <img src={`${import.meta.env.BASE_URL}brand/logo-v2.png`} width={36} height={36} alt="顺路侠标志：背着书包、夹着包裹奔跑的小人" className="size-9" />
             <span className="max-[359px]:hidden">顺路侠</span>
           </Link>
           <RoleSwitch />
