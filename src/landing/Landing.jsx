@@ -1,9 +1,9 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { motion, AnimatePresence, useReducedMotion } from 'motion/react'
 import {
   PersonSimpleRun, ArrowRight, ArrowDown, Megaphone, ShieldCheck, LockKeyOpen, Camera, Handshake, Star,
-  IdentificationBadge, ChartLineUp, LockKey, Scales, Prohibit, TrendUp, TrendDown,
+  IdentificationBadge, ChartLineUp, LockKey, Scales, Prohibit, TrendUp, TrendDown, CaretLeft, CaretRight,
 } from '@phosphor-icons/react'
 import { RULES_PLUS, RULES_MINUS, LEVELS } from '../data'
 
@@ -216,7 +216,7 @@ function Credit() {
     <section className="border-y border-line bg-surface">
       <div className="mx-auto max-w-6xl px-4 py-16 md:px-8 md:py-24">
         <Reveal><H2>信用分只能靠跑出来</H2></Reveal>
-        <Reveal delay={0.05}><p className="mt-3 max-w-[44ch] text-lg text-muted">满分 100，认证后从 70 起步。不能充值，不能刷，只看履约和评价。</p></Reveal>
+        <Reveal delay={0.05}><p className="mt-3 max-w-[52ch] text-lg text-muted">满分 100，认证后从 70 起步。不能充值，不能刷，只看履约和评价。</p></Reveal>
         <div className="mt-10 grid gap-10 md:grid-cols-2">
           {[[TrendUp, '加分', RULES_PLUS, 'text-accent'], [TrendDown, '减分', RULES_MINUS, 'text-danger']].map(([I, h, rules, c]) => (
             <Reveal key={h}>
@@ -313,12 +313,20 @@ const ROADMAP = [
 ]
 
 function Roadmap() {
+  const track = useRef(null)
+  const by = (dir) => track.current?.scrollBy({ left: dir * track.current.clientWidth * 0.6, behavior: 'smooth' })
   return (
     <section id="roadmap" className="mx-auto max-w-6xl scroll-mt-16 px-4 py-16 md:px-8 md:py-24">
-      <Reveal><H2>接下来做什么</H2></Reveal>
-      <div className="no-scrollbar -mx-4 mt-8 flex snap-x snap-mandatory gap-3 overflow-x-auto px-4 pb-2 md:mx-0 md:px-0">
+      <div className="flex items-end justify-between gap-4">
+        <Reveal><H2>接下来做什么</H2></Reveal>
+        <div className="hidden gap-2 md:flex">
+          <button onClick={() => by(-1)} aria-label="上一张" className="grid size-11 place-items-center rounded-full ring-1 ring-line transition hover:bg-surface active:scale-95"><CaretLeft size={20} weight="bold" /></button>
+          <button onClick={() => by(1)} aria-label="下一张" className="grid size-11 place-items-center rounded-full ring-1 ring-line transition hover:bg-surface active:scale-95"><CaretRight size={20} weight="bold" /></button>
+        </div>
+      </div>
+      <div ref={track} className="no-scrollbar -mx-4 mt-8 flex snap-x snap-mandatory gap-3 overflow-x-auto px-4 pb-2 md:mx-0 md:px-0">
         {ROADMAP.map((r, i) => (
-          <Reveal key={r.t} delay={i * 0.05} className={`w-[78%] shrink-0 snap-start rounded-2xl p-6 sm:w-[46%] md:w-[31%] ${i === 0 ? 'bg-accent-soft' : 'bg-surface ring-1 ring-line'}`}>
+          <Reveal key={r.t} delay={i * 0.05} className={`w-[78%] shrink-0 snap-start rounded-2xl p-6 sm:w-[46%] md:w-[36%] ${i === 0 ? 'bg-accent-soft' : 'bg-surface ring-1 ring-line'}`}>
             <p className={`text-[15px] font-semibold ${i === 0 ? 'text-accent' : 'text-muted'}`}>{r.when}</p>
             <p className="mt-2 text-2xl font-bold">{r.t}</p>
             <p className="mt-3 text-base leading-relaxed text-muted">{r.d}</p>

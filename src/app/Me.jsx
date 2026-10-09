@@ -22,15 +22,17 @@ export default function Me() {
   const { state, act } = useStore()
   const me = useMe()
   const nav = useNavigate()
+  const isPoster = me.id === 'poster'
+  const posted = state.tasks.filter((t) => t.posterId === 'poster').length
   const good = me.ratings.filter((r) => r >= 4).length
   const rate = me.ratings.length ? Math.round((good / me.ratings.length) * 100) + '%' : '暂无'
   const lv = me.credit != null ? levelOf(me.credit) : null
   const nx = me.credit != null ? nextLevel(me.credit) : null
   const badges = [
     { Icon: SealCheck, name: '校园认证', on: me.verified },
-    { Icon: Medal, name: '首单完成', on: me.done >= 1 },
+    { Icon: Medal, name: '首单完成', on: isPoster ? state.tasks.some((t) => t.posterId === 'poster' && t.status === 'completed') : me.done >= 1 },
     { Icon: ThumbsUp, name: '好评 3 次', on: good >= 3 },
-    { Icon: Lightning, name: '可靠跑腿', on: (me.credit ?? 0) >= 72 },
+    { Icon: Lightning, name: '信用可靠', on: (me.credit ?? 0) >= 72 },
     { Icon: Trophy, name: '金牌信用', on: (me.credit ?? 0) >= 85 },
   ]
   return (
@@ -70,7 +72,7 @@ export default function Me() {
       )}
 
       <dl className="grid grid-cols-3 divide-x divide-line rounded-2xl bg-surface py-4 ring-1 ring-line">
-        {[['完成单数', me.done], ['好评率', rate], [me.role === '跑腿人' ? '累计收入' : '托管中', me.role === '跑腿人' ? `¥${me.ledger.filter((l) => l.amount > 0).reduce((a, l) => a + l.amount, 0)}` : `¥${me.frozen}`]].map(([k, v]) => (
+        {[[isPoster ? '发布单数' : '完成单数', isPoster ? posted : me.done], ['好评率', rate], [me.role === '跑腿人' ? '累计收入' : '托管中', me.role === '跑腿人' ? `¥${me.ledger.filter((l) => l.amount > 0).reduce((a, l) => a + l.amount, 0)}` : `¥${me.frozen}`]].map(([k, v]) => (
           <div key={k} className="text-center">
             <dd className="tnum text-2xl font-bold">{v}</dd>
             <dt className="mt-0.5 text-sm text-muted">{k}</dt>
