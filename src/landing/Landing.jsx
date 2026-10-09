@@ -148,12 +148,12 @@ function Scenes() {
 }
 
 const LOOP = [
-  { Icon: Megaphone, t: '发布', d: '选模板和楼栋，赏金冻结托管' },
-  { Icon: IdentificationBadge, t: '接单', d: '认证且信用够的人才能接' },
-  { Icon: LockKeyOpen, t: '进行中', d: '取件码、宿舍号此时才解锁' },
-  { Icon: Camera, t: '送达', d: '核验送达码或拍照留证' },
-  { Icon: Handshake, t: '确认', d: '发单人确认，托管放款' },
-  { Icon: Star, t: '互评', d: '双方打分，信用实时变化' },
+  { icon: 'step-publish', alt: '带硬币的喇叭', t: '发布', d: '选模板和楼栋，赏金冻结托管' },
+  { icon: 'step-accept', alt: '接过包裹的手', t: '接单', d: '认证且信用够的人才能接' },
+  { icon: 'step-ongoing', alt: '打开的锁和包裹', t: '进行中', d: '取件码、宿舍号此时才解锁' },
+  { icon: 'step-deliver', alt: '放在门口拍照的包裹', t: '送达', d: '核验送达码或拍照留证' },
+  { icon: 'step-confirm', alt: '两只手传递硬币', t: '确认', d: '发单人确认，托管放款' },
+  { icon: 'step-rate', alt: '带星星的对话气泡', t: '互评', d: '双方打分，信用实时变化' },
 ]
 
 function Loop() {
@@ -163,11 +163,11 @@ function Loop() {
       <div className="mx-auto max-w-6xl px-4 py-16 md:px-8 md:py-20">
         <Reveal><H2>一单从发布到信用变化，六步走完</H2></Reveal>
         <ol className="relative mt-10 grid gap-6 md:grid-cols-6 md:gap-4">
-          <span aria-hidden="true" className="absolute left-5 top-5 h-[calc(100%-2.5rem)] w-px bg-line md:left-5 md:right-5 md:h-px md:w-auto" />
+          <span aria-hidden="true" className="absolute left-7 top-7 h-[calc(100%-3.5rem)] w-px bg-line md:left-7 md:right-7 md:h-px md:w-auto" />
           {LOOP.map((s, i) => (
             <motion.li key={s.t} className="relative flex gap-4 md:flex-col md:gap-3"
               initial={reduce ? false : { opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, amount: 0.4 }} transition={{ duration: 0.5, delay: i * 0.07, ease }}>
-              <span className="relative grid size-10 shrink-0 place-items-center rounded-full bg-accent text-on-accent"><s.Icon size={20} weight="bold" /></span>
+              <span className="relative grid size-14 shrink-0 place-items-center rounded-full bg-surface ring-1 ring-line"><img src={icon(s.icon + '-v1')} width={44} height={44} alt={s.alt} loading="lazy" className="size-11 object-contain" /></span>
               <div>
                 <p className="text-lg font-bold">{s.t}</p>
                 <p className="mt-0.5 text-[15px] leading-relaxed text-muted">{s.d}</p>

@@ -71,9 +71,9 @@ function Onboarding() {
   const { state, act } = useStore()
   const nav = useNavigate()
   const steps = [
-    { Icon: PersonSimpleRun, t: '顶部一键切换身份', d: '一个人就能分别扮演发单人和跑腿人，把一单从头走到尾。' },
-    { Icon: Megaphone, t: '发单先托管，接单先认证', d: '赏金发布时就冻结；没做校园认证的人只能看，不能接。' },
-    { Icon: SealCheck, t: '送达确认才放款，互评改信用', d: '凭送达码或照片交付，确认后放款，双方互评，信用分实时变化。' },
+    { src: 'brand/logo-v2.png', alt: '奔跑的顺路侠小人', t: '顶部一键切换身份', d: '一个人就能分别扮演发单人和跑腿人，把一单从头走到尾。' },
+    { src: 'icons/step-publish-v1.webp', alt: '带硬币的喇叭', t: '发单先托管，接单先认证', d: '赏金发布时就冻结；没做校园认证的人只能看，不能接。' },
+    { src: 'icons/step-confirm-v1.webp', alt: '两只手传递硬币', t: '送达确认才放款，互评改信用', d: '凭送达码或照片交付，确认后放款，双方互评，信用分实时变化。' },
   ]
   const start = () => {
     act('tour', { tour: { active: true, taskId: null, done: false } })
@@ -85,7 +85,7 @@ function Onboarding() {
       <ol className="space-y-4">
         {steps.map((s, i) => (
           <li key={s.t} className="flex gap-3">
-            <span className="grid size-11 shrink-0 place-items-center rounded-full bg-accent-soft text-accent"><s.Icon size={22} weight="bold" /></span>
+            <img src={`${import.meta.env.BASE_URL}${s.src}`} width={48} height={48} alt={s.alt} className="size-12 shrink-0 rounded-xl object-contain" />
             <div>
               <p className="text-[17px] font-semibold">{i + 1}. {s.t}</p>
               <p className="mt-0.5 text-[15px] leading-relaxed text-muted">{s.d}</p>
