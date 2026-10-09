@@ -300,7 +300,7 @@ export default function TaskDetail() {
   const nav = useNavigate()
   const t = state.tasks.find((x) => x.id === id)
   if (!t) {
-    return <Empty Icon={FileX} title="找不到这个任务" hint="可能已被取消，或演示数据被重置了。" action={<Btn variant="ghost" onClick={() => nav('/app')}>回到任务大厅</Btn>} />
+    return <Empty img="empty-search" alt="空纸箱和放大镜" title="找不到这个任务" hint="可能已被取消，或演示数据被重置了。" action={<Btn variant="ghost" onClick={() => nav('/app')}>回到任务大厅</Btn>} />
   }
   const own = t.posterId === 'poster'
   return (

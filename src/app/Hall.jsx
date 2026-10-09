@@ -152,7 +152,7 @@ export default function Hall() {
       </div>
 
       {loading ? <Skeleton /> : list.length === 0 ? (
-        <Empty Icon={MagnifyingGlass} title="这个分类暂时没人发单" hint="换个分类看看，或者自己发一单，附近顺路的同学会看到。"
+        <Empty img="empty-search" alt="空纸箱和放大镜" title="这个分类暂时没人发单" hint="换个分类看看，或者自己发一单，附近顺路的同学会看到。"
           action={<Btn variant="ghost" onClick={() => { setType('all'); setUrgentOnly(false) }}>看全部任务</Btn>} />
       ) : (
         <motion.div layout={!reduce} className="space-y-3">

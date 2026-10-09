@@ -25,7 +25,7 @@ export default function Orders() {
         ))}
       </div>
       {list.length === 0 ? (
-        <Empty Icon={Receipt} title={tab === 'active' ? '没有进行中的订单' : '还没有结束的订单'}
+        <Empty img="empty-orders" alt="空的写字板" title={tab === 'active' ? '没有进行中的订单' : '还没有结束的订单'}
           hint={poster ? '发一单试试，赏金会先托管，送达确认后才放款。' : '去大厅接一单，完成后信用分和收入都会记在这里。'}
           action={<Btn as={Link} to={poster ? '/app/publish' : '/app'} variant="ghost">{poster ? '去发布' : '去大厅'}</Btn>} />
       ) : (

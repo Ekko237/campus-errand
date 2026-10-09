@@ -269,7 +269,7 @@ function Safety() {
         <img src={img('safety-v1')} width={1400} height={788} alt="空荡的考场，课桌上放着答题纸" loading="lazy" className="absolute inset-0 size-full object-cover" />
         <div className="absolute inset-0 bg-[#0e1110]/78" />
         <div className="relative px-6 py-14 text-[#eceeed] md:px-14 md:py-20">
-          <Prohibit size={40} weight="bold" className="text-[#3cc48f]" />
+          <img src={icon('blocked-v1')} width={80} height={80} alt="盖住试卷的禁止手势" loading="lazy" className="size-20 object-contain" />
           <h2 className="mt-4 text-3xl font-bold leading-tight tracking-tight md:text-5xl">这些单，发不出去</h2>
           <p className="mt-4 max-w-[36ch] text-lg leading-relaxed opacity-90">互助不等于帮人作弊。发布时自动识别关键词并拦截，被举报核实的账号直接封禁。</p>
           <ul className="mt-8 flex flex-wrap gap-2">

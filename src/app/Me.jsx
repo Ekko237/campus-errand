@@ -99,7 +99,7 @@ export default function Me() {
           <span className="flex items-center gap-1 text-sm text-muted"><Wallet size={16} />可用 ¥{me.balance}{me.frozen ? ` · 冻结 ¥${me.frozen}` : ''}</span>
         </div>
         {me.ledger.length === 0 ? (
-          <Panel><Empty Icon={Wallet} title="还没有流水" hint="完成第一单后，赏金会从托管放到这里。" /></Panel>
+          <Panel><Empty img="empty-wallet" alt="只有一枚硬币的钱包" title="还没有流水" hint="完成第一单后，赏金会从托管放到这里。" /></Panel>
         ) : (
           <Panel className="divide-y divide-line">
             {me.ledger.slice(0, 8).map((l, i) => (
@@ -118,7 +118,7 @@ export default function Me() {
           <Link to="/app/credit" className="text-sm font-semibold text-accent">规则说明</Link>
         </div>
         {me.creditLog.length === 0 ? (
-          <Panel><Empty Icon={ListBullets} title="还没有信用记录" hint="认证后会有初始 70 分，之后每一单都会记在这里。" /></Panel>
+          <Panel><Empty img="empty-orders" alt="空的写字板" title="还没有信用记录" hint="认证后会有初始 70 分，之后每一单都会记在这里。" /></Panel>
         ) : (
           <Panel className="divide-y divide-line">
             {me.creditLog.slice(0, 8).map((l, i) => (
