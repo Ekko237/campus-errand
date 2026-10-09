@@ -43,7 +43,7 @@ function Nav() {
     <header className="sticky top-0 z-30 border-b border-line bg-bg/90 backdrop-blur">
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-4 px-4 md:px-8">
         <Anchor to="top" className="flex items-center gap-2 text-lg font-bold tracking-tight">
-          <span className="grid size-8 place-items-center rounded-lg bg-accent text-on-accent"><PersonSimpleRun size={20} weight="bold" /></span>顺路侠
+          <img src={`${import.meta.env.BASE_URL}brand/logo-v1.png`} width={32} height={32} alt="顺路侠标志" className="size-8 rounded-lg" />顺路侠
         </Anchor>
         <nav className="hidden items-center gap-7 text-[15px] font-medium text-muted md:flex" aria-label="页面导航">
           <Anchor to="scenes" className="hover:text-ink">场景</Anchor>
