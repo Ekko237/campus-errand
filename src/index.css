@@ -1,6 +1,6 @@
 @import "tailwindcss";
 
-/* 主题令牌：一套 CSS 变量，亮/暗两组。全站唯一强调色 = accent（翠绿）。
+/* 主题令牌：一套 CSS 变量，只做浅色（按用户要求去掉深色模式）。全站唯一强调色 = accent（翠绿）。
    圆角规则：可点的按钮/筛选片 = 全圆角；卡片/面板 = 16px（rounded-2xl）；输入框 = 12px（rounded-xl）。
    red 仅用于「错误/违规拦截」语义，不当装饰色。 */
 :root {
@@ -16,22 +16,6 @@
   --danger: #b42318;
   --danger-soft: #fbe9e7;
   color-scheme: light;
-}
-@media (prefers-color-scheme: dark) {
-  :root {
-    --bg: #0e1110;
-    --surface: #161a19;
-    --sunken: #1f2422;
-    --ink: #eceeed;
-    --muted: #a3aaa7;
-    --line: #2b312f;
-    --accent: #3cc48f;
-    --accent-soft: #163a2c;
-    --on-accent: #06221a;
-    --danger: #f07a6c;
-    --danger-soft: #3a1c19;
-    color-scheme: dark;
-  }
 }
 
 @theme inline {
