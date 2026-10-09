@@ -317,7 +317,7 @@ export default function TaskDetail() {
         <div className="flex flex-wrap items-center gap-2"><TypeTag type={t.type} />{t.urgent && <UrgentTag />}</div>
         <h1 className="mt-3 text-2xl font-bold leading-snug tracking-tight">{t.title}</h1>
         <div className="mt-3 space-y-1.5 text-[15px] text-muted">
-          <p className="flex items-start gap-1.5"><MapPin size={18} className="mt-0.5 shrink-0" />{B[t.from]?.name}{t.from !== t.to && <> 到 {B[t.to]?.name}</>}<span className="tnum">（距跑腿人 {fmtDist(dist(RUNNER_HOME, t.from))}）</span></p>
+          <p className="flex items-start gap-1.5"><MapPin size={18} className="mt-0.5 shrink-0" /><span>{B[t.from]?.name}{t.from !== t.to && <> 到 {B[t.to]?.name}</>}<span className="tnum block text-sm">取件点距跑腿人 {fmtDist(dist(RUNNER_HOME, t.from))}</span></span></p>
           <p className="flex items-center gap-1.5"><Clock size={18} />截止：{left(t.deadline)}</p>
         </div>
         {t.note && <p className="mt-3 rounded-xl bg-sunken p-3 text-[15px]">备注：{t.note}</p>}

@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
-import { SealCheck, IdentificationCard, EnvelopeSimple } from '@phosphor-icons/react'
+import { SealCheck, IdentificationCard, EnvelopeSimple, CaretDown } from '@phosphor-icons/react'
 import { useStore } from '../store'
 import { Btn, Panel, Field, VerifiedBadge, inputCls } from '../ui'
 import { CREDIT_INIT, code4 } from '../data'
@@ -70,10 +70,13 @@ export default function Verify() {
             <input inputMode="numeric" className={inputCls} value={sid} onChange={(e) => setSid(e.target.value.replace(/\D/g, ''))} maxLength={12} placeholder="输入学号" />
           </Field>
           <Field label="学院" error={err.college}>
-            <select className={`${inputCls} appearance-none`} value={college} onChange={(e) => setCollege(e.target.value)}>
+            <div className="relative">
+            <select className={`${inputCls} appearance-none pr-10`} value={college} onChange={(e) => setCollege(e.target.value)}>
               <option value="">请选择</option>
               {['计算机学院', '经济管理学院', '外国语学院', '机械工程学院', '新闻传播学院'].map((c) => <option key={c}>{c}</option>)}
             </select>
+            <CaretDown size={18} weight="bold" className="pointer-events-none absolute right-3.5 top-1/2 -translate-y-1/2 text-muted" />
+            </div>
           </Field>
           <Btn size="lg" className="w-full" onClick={submitId} disabled={busy}>{busy ? '核验中…' : '提交认证'}</Btn>
         </div>

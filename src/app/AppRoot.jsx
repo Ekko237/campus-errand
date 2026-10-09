@@ -37,25 +37,30 @@ function RoleSwitch() {
   )
 }
 
-function Toasts() {
-  const { state, act } = useStore()
+function Toast({ t }) {
+  const { act } = useStore()
   const reduce = useReducedMotion()
   useEffect(() => {
-    if (!state.toasts.length) return
-    const t = setTimeout(() => act('dismissToast', { tid: state.toasts[0].id }), 3400)
-    return () => clearTimeout(t)
-  }, [state.toasts, act])
+    const id = setTimeout(() => act('dismissToast', { tid: t.id }), 2600)
+    return () => clearTimeout(id)
+  }, [t.id, act])
+  return (
+    <motion.div layout initial={reduce ? false : { y: -16, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ opacity: 0, transition: { duration: 0.15 } }} transition={spring}
+      className={`pointer-events-auto flex w-full max-w-md items-start gap-2 rounded-2xl px-4 py-3 text-[15px] font-medium shadow-lg shadow-ink/10 ring-1 ${t.tone === 'bad' ? 'bg-danger-soft text-danger ring-danger/30' : 'bg-surface text-ink ring-line'}`}
+      onClick={() => act('dismissToast', { tid: t.id })}>
+      {t.tone === 'bad' ? <WarningCircle size={20} weight="fill" className="mt-0.5 shrink-0" /> : <CheckCircle size={20} weight="fill" className="mt-0.5 shrink-0 text-accent" />}
+      <span>{t.text}</span>
+    </motion.div>
+  )
+}
+
+// 每条提示独立计时；同时最多露出最新的 2 条，旧的直接收起，不挡页面
+function Toasts() {
+  const { state } = useStore()
   return (
     <div className="pointer-events-none fixed inset-x-0 top-3 z-50 flex flex-col items-center gap-2 px-4" aria-live="polite">
-      <AnimatePresence>
-        {state.toasts.slice(0, 3).map((t) => (
-          <motion.div key={t.id} layout initial={reduce ? false : { y: -16, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ opacity: 0 }} transition={spring}
-            className={`pointer-events-auto flex w-full max-w-md items-start gap-2 rounded-2xl px-4 py-3 text-[15px] font-medium shadow-lg shadow-ink/10 ring-1 ${t.tone === 'bad' ? 'bg-danger-soft text-danger ring-danger/30' : 'bg-surface text-ink ring-line'}`}
-            onClick={() => act('dismissToast', { tid: t.id })}>
-            {t.tone === 'bad' ? <WarningCircle size={20} weight="fill" className="mt-0.5 shrink-0" /> : <CheckCircle size={20} weight="fill" className="mt-0.5 shrink-0 text-accent" />}
-            <span>{t.text}</span>
-          </motion.div>
-        ))}
+      <AnimatePresence initial={false}>
+        {state.toasts.slice(-2).map((t) => <Toast key={t.id} t={t} />)}
       </AnimatePresence>
     </div>
   )

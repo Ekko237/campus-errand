@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
-import { Minus, Plus, Timer, LockKey, ProhibitInset, Lightning, Wallet } from '@phosphor-icons/react'
+import { Minus, Plus, Timer, LockKey, ProhibitInset, Lightning, Wallet, CaretDown } from '@phosphor-icons/react'
 import { useStore } from '../store'
 import { TYPES, TYPE_KEYS, BUILDINGS, B, WINDOWS, SIZES, suggestPrice, estimateMinutes, findBanned, nextId, code4 } from '../data'
 import { Btn, Panel, Field, Sheet, inputCls } from '../ui'
@@ -8,13 +8,16 @@ import { Btn, Panel, Field, Sheet, inputCls } from '../ui'
 const groups = [...new Set(BUILDINGS.map((b) => b.group))]
 function BuildingSelect({ value, onChange, id }) {
   return (
-    <select id={id} value={value} onChange={(e) => onChange(e.target.value)} className={`${inputCls} appearance-none`}>
+    <div className="relative">
+    <select id={id} value={value} onChange={(e) => onChange(e.target.value)} className={`${inputCls} appearance-none pr-10`}>
       {groups.map((g) => (
         <optgroup key={g} label={g}>
           {BUILDINGS.filter((b) => b.group === g).map((b) => <option key={b.id} value={b.id}>{b.name}</option>)}
         </optgroup>
       ))}
     </select>
+    <CaretDown size={18} weight="bold" className="pointer-events-none absolute right-3.5 top-1/2 -translate-y-1/2 text-muted" />
+    </div>
   )
 }
 

@@ -32,7 +32,7 @@ function money(acc, amount, label, field = 'balance') {
   return { ...acc, [field]: +(acc[field] + amount).toFixed(2), ledger: field === 'balance' || amount < 0 ? [{ at: now(), amount, label }, ...acc.ledger] : acc.ledger }
 }
 function toast(s, text, tone = 'ok') {
-  return { ...s, toasts: [...s.toasts, { id: Math.random().toString(36).slice(2), text, tone }] }
+  return { ...s, toasts: [...s.toasts, { id: Math.random().toString(36).slice(2), text, tone }].slice(-4) }
 }
 function levelMsg(before, after) {
   if (before == null || after == null) return null
