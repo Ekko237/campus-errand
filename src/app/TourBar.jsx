@@ -4,7 +4,7 @@ import { X, ArrowRight, Confetti } from '@phosphor-icons/react'
 import { useStore } from '../store'
 import { spring } from '../ui'
 
-const TOTAL = 6
+const TOTAL = 7
 
 // 根据演示任务的真实状态推出「下一步该谁做什么」
 export function tourStep(state) {
@@ -20,8 +20,9 @@ export function tourStep(state) {
   if (t.status === 'ongoing') return { n: 4, who: 'runner', text: '跑腿人：输入送达码或拍照，提交凭证', to: `/app/task/${t.id}`, cta: '去送达' }
   if (t.status === 'delivered') return { n: 5, who: 'poster', text: '切回发单人：确认送达，托管赏金放款', to: `/app/task/${t.id}`, cta: '去确认' }
   if (t.status === 'completed' && !t.ratingByPoster) return { n: 6, who: 'poster', text: '发单人：给跑腿人打分，信用分会跟着变', to: `/app/task/${t.id}`, cta: '去评价' }
-  if (t.status === 'completed') return { n: 7, who: 'runner', text: '闭环走完了。去跑腿人「我的」看信用和收入', to: '/app/me', cta: '去看看', final: true }
-  return { n: 7, who: null, text: '这单走了申诉或取消分支，演示结束', to: '/app/orders', cta: '看订单', final: true }
+  if (t.status === 'completed' && !t.ratingByRunner) return { n: 7, who: 'runner', text: '切到跑腿人：也给发单人打分，完成双向互评', to: `/app/task/${t.id}`, cta: '去互评' }
+  if (t.status === 'completed') return { n: 8, who: 'runner', text: '闭环走完了。去跑腿人「我的」看信用和收入', to: '/app/me', cta: '去看看', final: true }
+  return { n: 8, who: null, text: '这单走了申诉或取消分支，演示结束', to: '/app/orders', cta: '看订单', final: true }
 }
 
 export default function TourBar() {

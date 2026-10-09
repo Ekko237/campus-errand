@@ -5,13 +5,13 @@ import { useStore } from '../store'
 import { levelOf, posterTierOf } from '../data'
 import { Avatar } from '../ui'
 
-const STEPS = ['发布托管', '认证接单', '取件送达', '提交凭证', '确认放款', '互评改信用']
+const STEPS = ['发布托管', '认证接单', '取件送达', '提交凭证', '确认放款', '发单人评价', '跑腿人回评']
 function progress(t) {
   if (!t) return 0
   if (t.status === 'open') return 1
   if (t.status === 'ongoing') return t.picked ? 3 : 2
   if (t.status === 'delivered' || t.status === 'disputed') return 4
-  if (t.status === 'completed') return t.ratingByPoster ? 6 : 5
+  if (t.status === 'completed') return 5 + (t.ratingByPoster ? 1 : 0) + (t.ratingByRunner ? 1 : 0)
   return 1
 }
 
