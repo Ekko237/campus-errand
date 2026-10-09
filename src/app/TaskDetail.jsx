@@ -337,7 +337,7 @@ export default function TaskDetail() {
   }
   const own = t.posterId === 'poster'
   return (
-    <div className="space-y-4">
+    <div className="space-y-5">
       <div className="flex items-center gap-2">
         <button onClick={() => nav(-1)} aria-label="返回" className="grid size-10 place-items-center rounded-full bg-surface ring-1 ring-line"><ArrowLeft size={20} weight="bold" /></button>
         <span className="text-[15px] font-semibold text-muted">订单详情</span>

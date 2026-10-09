@@ -87,7 +87,7 @@ export default function Publish() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-5">
       <div>
         <h1 className="text-2xl font-bold tracking-tight">发布跑腿任务</h1>
         <p className="mt-1 text-[15px] text-muted">选模板、选楼栋，赏金先冻结托管，送达确认后才放款。</p>
@@ -140,7 +140,7 @@ export default function Publish() {
       </Panel>
 
       {errors.banned && (
-        <div role="alert" className="flex items-center gap-3 rounded-2xl bg-danger-soft p-3 ring-1 ring-danger/30">
+        <div role="alert" className="flex items-center gap-3 rounded-2xl bg-danger-soft p-4 ring-1 ring-danger/30">
           <img src={`${import.meta.env.BASE_URL}icons/blocked-v1.webp`} width={64} height={64} alt="盖住试卷的禁止手势" className="size-16 shrink-0 object-contain" />
           <p className="text-[15px] font-semibold text-danger">这类任务发不出去。顺路侠是互助，不帮人作弊。</p>
         </div>

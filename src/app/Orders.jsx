@@ -15,7 +15,7 @@ export default function Orders() {
   const mine = state.tasks.filter((t) => (poster ? t.posterId === 'poster' : t.runnerId === 'runner'))
   const list = mine.filter((t) => (tab === 'active' ? ACTIVE.includes(t.status) : !ACTIVE.includes(t.status)))
   return (
-    <div className="space-y-4">
+    <div className="space-y-5">
       <h1 className="text-2xl font-bold tracking-tight">{poster ? '我发布的' : '我接的单'}</h1>
       <div className="grid grid-cols-2 rounded-full bg-sunken p-1">
         {[['active', '进行中'], ['done', '已结束']].map(([k, l]) => (

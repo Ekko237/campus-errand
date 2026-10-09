@@ -64,7 +64,7 @@ function RoleBanner() {
   const nav = useNavigate()
   if (state.role === 'poster') {
     return (
-      <Panel className="flex items-center gap-3 p-3.5">
+      <Panel className="flex items-center gap-3 p-4">
         <p className="flex-1 text-[15px] leading-snug text-muted">你在<b className="text-ink">发单人</b>视角，可以浏览和发布。想接单请切到跑腿人。</p>
         <Btn size="sm" variant="ghost" onClick={() => act('role', { role: 'runner' })}>切换</Btn>
       </Panel>
@@ -72,7 +72,7 @@ function RoleBanner() {
   }
   if (!me.verified) {
     return (
-      <Panel className="flex items-center gap-3 p-3.5">
+      <Panel className="flex items-center gap-3 p-4">
         <ShieldCheck size={28} className="shrink-0 text-accent" />
         <p className="flex-1 text-[15px] leading-snug">未认证只能浏览。用学号或校园邮箱认证后才能接单。</p>
         <Btn size="sm" onClick={() => nav('/app/verify')}>去认证</Btn>
@@ -81,7 +81,7 @@ function RoleBanner() {
   }
   const lv = levelOf(me.credit)
   return (
-    <Link to="/app/credit" className="flex items-center gap-3 rounded-2xl bg-accent-soft p-3.5">
+    <Link to="/app/credit" className="flex items-center gap-3 rounded-2xl bg-accent-soft p-4">
       <span className="tnum text-3xl font-bold text-accent">{me.credit}</span>
       <p className="flex-1 text-[15px] leading-snug">信用等级<b>「{lv.name}」</b>：{lv.desc}</p>
       <ArrowRight size={18} className="text-accent" />
@@ -115,9 +115,9 @@ export default function Hall() {
   }, [state.tasks, type, sort, urgentOnly, goodPoster])
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-5">
       {loadError && !errDismissed && (
-        <div role="alert" className="flex items-start gap-3 rounded-2xl bg-danger-soft p-3.5 text-danger ring-1 ring-danger/30">
+        <div role="alert" className="flex items-start gap-3 rounded-2xl bg-danger-soft p-4 text-danger ring-1 ring-danger/30">
           <WarningOctagon size={24} weight="fill" className="shrink-0" />
           <div className="flex-1 text-[15px]">
             <p className="font-semibold">{loadError}</p>

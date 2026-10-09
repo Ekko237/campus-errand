@@ -64,7 +64,7 @@ function Hero() {
   return (
     <section id="top" className="mx-auto grid max-w-6xl items-center gap-10 px-4 pb-16 pt-10 md:grid-cols-12 md:px-8 md:pt-16 lg:pb-24">
       <div className="md:col-span-6">
-        <motion.h1 {...item(0)} className="text-[40px] font-bold leading-[1.1] tracking-tight md:text-6xl">
+        <motion.h1 {...item(0)} className="text-[40px] font-bold leading-[1.1] tracking-tight md:text-5xl lg:text-6xl">
           校园跑腿，<br />先认人再接单
         </motion.h1>
         <motion.p {...item(1)} className="mt-5 max-w-[30ch] text-lg leading-relaxed text-muted md:text-xl">
@@ -121,7 +121,7 @@ function Scenes() {
         <Reveal><H2>三个每天都在发生的跑腿时刻</H2></Reveal>
         <Reveal delay={0.05}><p className="mt-3 max-w-[40ch] text-lg text-muted">目标用户：时间被课表切碎、又在意隐私的在校生。需求小、频次高、怕被坑。</p></Reveal>
       </div>
-      <div className="no-scrollbar -mx-4 mt-8 flex gap-2 overflow-x-auto px-4" role="tablist" aria-label="用户场景">
+      <div className="no-scrollbar -mx-4 mt-10 flex gap-2 overflow-x-auto px-4" role="tablist" aria-label="用户场景">
         {SCENES.map((x) => (
           <button key={x.key} role="tab" aria-selected={k === x.key} onClick={() => setK(x.key)}
             className={`h-11 shrink-0 whitespace-nowrap rounded-full px-5 text-[15px] font-semibold transition ${k === x.key ? 'bg-ink text-bg' : 'bg-surface ring-1 ring-line hover:bg-sunken'}`}>
@@ -160,10 +160,10 @@ function Loop() {
   const reduce = useReducedMotion()
   return (
     <section className="border-y border-line bg-surface">
-      <div className="mx-auto max-w-6xl px-4 py-16 md:px-8 md:py-20">
+      <div className="mx-auto max-w-6xl px-4 py-16 md:px-8 md:py-24">
         <Reveal><H2>一单从发布到信用变化，六步走完</H2></Reveal>
-        <ol className="relative mt-10 grid gap-6 md:grid-cols-6 md:gap-4">
-          <span aria-hidden="true" className="absolute left-7 top-7 h-[calc(100%-3.5rem)] w-px bg-line md:left-7 md:right-7 md:h-px md:w-auto" />
+        <ol className="relative mt-10 grid gap-6 md:grid-cols-3 md:gap-x-6 md:gap-y-8 lg:grid-cols-6 lg:gap-4">
+          <span aria-hidden="true" className="absolute left-7 top-7 h-[calc(100%-3.5rem)] w-px bg-line md:hidden lg:right-7 lg:block lg:h-px lg:w-auto" />
           {LOOP.map((s, i) => (
             <motion.li key={s.t} className="relative flex gap-4 md:flex-col md:gap-3"
               initial={reduce ? false : { opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, amount: 0.4 }} transition={{ duration: 0.5, delay: i * 0.07, ease }}>
@@ -190,21 +190,21 @@ const TRUST = [
 
 function Trust() {
   return (
-    <section id="trust" className="mx-auto grid max-w-6xl scroll-mt-16 gap-10 px-4 py-16 md:grid-cols-12 md:px-8 md:py-24">
-      <div className="md:col-span-5">
-        <div className="md:sticky md:top-28">
+    <section id="trust" className="mx-auto grid max-w-6xl scroll-mt-16 gap-10 px-4 py-16 md:px-8 md:py-24 lg:grid-cols-12">
+      <div className="lg:col-span-5">
+        <div className="lg:sticky lg:top-28">
           <Reveal><H2>凭什么把取件码交给一个陌生同学</H2></Reveal>
           <Reveal delay={0.05}>
             <p className="mt-4 max-w-[34ch] text-lg leading-relaxed text-muted">校园跑腿最大的成本不是钱，是对陌生人的不放心。所以信任被拆成五道关，每一道只解决一种具体的怕。</p>
           </Reveal>
           <Reveal delay={0.1}>
-            <img src={img('trust-v1')} width={1100} height={825} alt="两只手在校园里交接一个小包裹" loading="lazy" className="mt-8 aspect-[4/3] w-full rounded-2xl bg-sunken object-cover" />
+            <img src={img('trust-v1')} width={1100} height={825} alt="两只手在校园里交接一个小包裹" loading="lazy" className="mt-8 aspect-[4/3] w-full rounded-2xl bg-sunken object-cover md:max-w-md lg:max-w-none" />
           </Reveal>
         </div>
       </div>
-      <ul className="space-y-3 md:col-span-7">
+      <ul className="space-y-3 lg:col-span-7">
         {TRUST.map((x, i) => (
-          <Reveal as="li" key={x.t} delay={i * 0.04} className="flex gap-4 rounded-2xl bg-surface p-5 ring-1 ring-line">
+          <Reveal as="li" key={x.t} delay={i * 0.04} className="flex gap-4 rounded-2xl bg-surface p-5 ring-1 ring-line md:p-6">
             <img src={icon(x.icon)} width={56} height={56} alt={x.alt} loading="lazy" className="size-14 shrink-0 object-contain" />
             <div>
               <p className="text-lg font-bold">{x.t}</p>
@@ -241,12 +241,12 @@ function Credit() {
             </Reveal>
           ))}
         </div>
-        <div className="mt-14">
+        <div className="mt-16">
           <p className="text-lg font-bold">跑腿人：等级决定能接多大的单</p>
           <div className="mt-5 grid grid-cols-3 items-end gap-2 md:gap-4">
             {ladder.map((l, i) => (
               <motion.div key={l.name} initial={reduce ? false : { opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.5, delay: i * 0.1, ease }}
-                className={`rounded-2xl p-3 md:p-5 ${i === 2 ? 'bg-accent text-on-accent' : i === 1 ? 'bg-accent-soft' : 'bg-sunken'}`} style={{ minHeight: `${8 + i * 3}rem` }}>
+                className={`rounded-2xl p-4 md:p-6 ${i === 2 ? 'bg-accent text-on-accent' : i === 1 ? 'bg-accent-soft' : 'bg-sunken'}`} style={{ minHeight: `${8 + i * 3}rem` }}>
                 <img src={icon(l.badge + '-v1')} width={56} height={56} alt={l.alt} loading="lazy" className="mb-2 size-10 object-contain md:size-14" />
                 <p className="text-lg font-bold md:text-2xl">{l.name}</p>
                 <p className="tnum text-sm font-semibold opacity-80">{l.min} 分以上</p>
@@ -286,8 +286,8 @@ function Metrics() {
     <section id="metrics" className="scroll-mt-16 border-y border-line bg-surface">
       <div className="mx-auto max-w-6xl px-4 py-16 md:px-8 md:py-24">
         <Reveal><H2>看三个数，就知道平台健不健康</H2></Reveal>
-        <div className="mt-10 grid gap-3 md:grid-cols-3 md:grid-rows-2">
-          <Reveal className="flex flex-col justify-between rounded-2xl bg-accent p-6 text-on-accent md:col-span-2 md:row-span-2 md:p-10">
+        <div className="mt-10 grid gap-3 md:grid-cols-2 lg:grid-cols-3 lg:grid-rows-2">
+          <Reveal className="flex flex-col justify-between rounded-2xl bg-accent p-5 text-on-accent md:col-span-2 md:p-10 lg:row-span-2">
             <div>
               <p className="text-lg font-semibold opacity-90">北极星指标：履约率</p>
               <p className="tnum mt-2 text-6xl font-bold tracking-tight md:text-8xl">≥ 97%</p>
@@ -295,12 +295,12 @@ function Metrics() {
             </div>
             <p className="mt-8 max-w-[44ch] text-lg leading-relaxed">按时送达且无申诉的单 ÷ 被接的单。信任平台的核心就是「接了就送到」，这个数掉了，其他都没意义。</p>
           </Reveal>
-          <Reveal delay={0.05} className="rounded-2xl bg-bg p-6 ring-1 ring-line">
+          <Reveal delay={0.05} className="rounded-2xl bg-bg p-5 ring-1 ring-line md:p-6">
             <p className="text-lg font-semibold">接单率</p>
             <p className="tnum mt-1 text-4xl font-bold">≥ 85%</p>
             <p className="mt-3 text-[15px] leading-relaxed text-muted">24 小时内被接的单 ÷ 发布的单。低了说明供给不够或定价偏低。示例目标。</p>
           </Reveal>
-          <Reveal delay={0.1} className="relative overflow-hidden rounded-2xl p-6 text-[#eceeed]">
+          <Reveal delay={0.1} className="relative overflow-hidden rounded-2xl p-5 text-[#eceeed] md:p-6">
             <img src={img('metrics-v1')} width={1100} height={825} alt="傍晚的校园路口，学生步行和骑车经过" loading="lazy" className="absolute inset-0 size-full object-cover" />
             <div className="absolute inset-0 bg-[#0e1110]/72" />
             <div className="relative">
@@ -334,9 +334,9 @@ function Roadmap() {
           <button onClick={() => by(1)} aria-label="下一张" className="grid size-11 place-items-center rounded-full ring-1 ring-line transition hover:bg-surface active:scale-95"><CaretRight size={20} weight="bold" /></button>
         </div>
       </div>
-      <div ref={track} className="no-scrollbar -mx-4 mt-8 flex snap-x snap-mandatory gap-3 overflow-x-auto px-4 pb-2 md:mx-0 md:px-0">
+      <div ref={track} className="no-scrollbar -mx-4 mt-10 flex snap-x snap-mandatory gap-3 overflow-x-auto px-4 pb-2 md:mx-0 md:px-0">
         {ROADMAP.map((r, i) => (
-          <Reveal key={r.t} delay={i * 0.05} className={`w-[78%] shrink-0 snap-start rounded-2xl p-6 sm:w-[46%] md:w-[36%] ${i === 0 ? 'bg-accent-soft' : 'bg-surface ring-1 ring-line'}`}>
+          <Reveal key={r.t} delay={i * 0.05} className={`w-[78%] shrink-0 snap-start rounded-2xl p-5 md:p-6 sm:w-[46%] md:w-[36%] ${i === 0 ? 'bg-accent-soft' : 'bg-surface ring-1 ring-line'}`}>
             <p className={`text-[15px] font-semibold ${i === 0 ? 'text-accent' : 'text-muted'}`}>{r.when}</p>
             <p className="mt-2 text-2xl font-bold">{r.t}</p>
             <p className="mt-3 text-base leading-relaxed text-muted">{r.d}</p>
@@ -355,7 +355,7 @@ function Final() {
           <img src={img('closing-v1')} width={1600} height={900} alt="绿树成荫的校园主干道，远处三三两两的学生" loading="lazy" className="aspect-[16/9] w-full rounded-2xl bg-sunken object-cover md:aspect-[21/9]" />
         </Reveal>
       </div>
-      <div className="mx-auto max-w-6xl px-4 py-16 text-center md:px-8 md:py-20">
+      <div className="mx-auto max-w-6xl px-4 py-16 text-center md:px-8 md:py-24">
         <Reveal><h2 className="text-3xl font-bold tracking-tight md:text-5xl">自己走一遍，大约两分钟</h2></Reveal>
         <Reveal delay={0.05}><p className="mx-auto mt-4 max-w-[32ch] text-lg text-muted">顶部一键切换发单人和跑腿人，一个人就能把一单从发布走到信用变化。</p></Reveal>
         <Reveal delay={0.1} className="mt-8"><Cta /></Reveal>
