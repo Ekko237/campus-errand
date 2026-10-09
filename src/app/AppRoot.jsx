@@ -103,10 +103,10 @@ function Onboarding() {
 }
 
 const tabs = [
-  ['/app', '大厅', ListMagnifyingGlass, true],
-  ['/app/publish', '发布', PlusCircle],
-  ['/app/orders', '订单', Receipt],
-  ['/app/me', '我的', UserCircle],
+  ['/app', '大厅', 'nav-hall', true],
+  ['/app/publish', '发布', 'nav-publish'],
+  ['/app/orders', '订单', 'nav-orders'],
+  ['/app/me', '我的', 'nav-me'],
 ]
 
 function Shell() {
@@ -139,9 +139,9 @@ function Shell() {
       <TourBar />
       <nav className="fixed inset-x-0 bottom-0 z-30 border-t border-line bg-surface/95 backdrop-blur" aria-label="主导航">
         <div className="mx-auto grid max-w-xl grid-cols-4 pb-[env(safe-area-inset-bottom)]">
-          {tabs.map(([to, label, Icon, end]) => (
+          {tabs.map(([to, label, img, end]) => (
             <NavLink key={to} to={to} end={end} className={({ isActive }) => `flex h-16 flex-col items-center justify-center gap-0.5 text-[13px] font-semibold ${isActive ? 'text-accent' : 'text-muted'}`}>
-              {({ isActive }) => (<><Icon size={26} weight={isActive ? 'fill' : 'regular'} />{label}</>)}
+              {({ isActive }) => (<><img src={`${import.meta.env.BASE_URL}icons/${img}-v1.webp`} width={28} height={28} alt="" aria-hidden="true" className={`size-7 object-contain transition ${isActive ? 'scale-110' : 'opacity-55 grayscale'}`} />{label}</>)}
             </NavLink>
           ))}
         </div>
