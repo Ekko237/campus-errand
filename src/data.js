@@ -1,12 +1,22 @@
 // 全部是演示用的示例数据，不代表真实统计。
-import { Package, ShoppingBag, Armchair, BowlFood, DotsThreeCircle } from '@phosphor-icons/react'
+import { createElement } from 'react'
+
+// 任务类型图标：生成图（public/icons/type-*-v1.webp），按 2x 导出
+const typeIcon = (key, alt) => {
+  const C = ({ size = 20 }) => createElement('img', {
+    src: `${import.meta.env.BASE_URL}icons/type-${key}-v1.webp`, width: size, height: size, alt, 'aria-hidden': true,
+    className: 'shrink-0 object-contain', style: { width: size * 1.25, height: size * 1.25, margin: -size * 0.125 },
+  })
+  C.displayName = `TypeIcon_${key}`
+  return C
+}
 
 export const TYPES = {
-  express: { label: '快递', Icon: Package, base: 3 },
-  buy: { label: '代买', Icon: ShoppingBag, base: 4 },
-  seat: { label: '占座', Icon: Armchair, base: 4 },
-  food: { label: '外卖', Icon: BowlFood, base: 2 },
-  other: { label: '其他', Icon: DotsThreeCircle, base: 3 },
+  express: { label: '快递', Icon: typeIcon('express', '快递纸箱'), base: 3 },
+  buy: { label: '代买', Icon: typeIcon('buy', '购物袋'), base: 4 },
+  seat: { label: '占座', Icon: typeIcon('seat', '放着书的椅子'), base: 4 },
+  food: { label: '外卖', Icon: typeIcon('food', '外卖餐盒'), base: 2 },
+  other: { label: '其他', Icon: typeIcon('other', '递出雨伞的手'), base: 3 },
 }
 export const TYPE_KEYS = Object.keys(TYPES)
 
