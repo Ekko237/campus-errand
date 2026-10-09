@@ -2,7 +2,7 @@ import { useNavigate } from 'react-router-dom'
 import { motion, useReducedMotion } from 'motion/react'
 import { Check, Path, ArrowCounterClockwise } from '@phosphor-icons/react'
 import { useStore } from '../store'
-import { levelOf } from '../data'
+import { levelOf, posterTierOf } from '../data'
 import { Avatar } from '../ui'
 
 const STEPS = ['发布托管', '认证接单', '取件送达', '提交凭证', '确认放款', '互评改信用']
@@ -55,7 +55,7 @@ export default function DemoPanel() {
             {a.verified ? (
               <>
                 <p className="text-xl font-bold text-accent"><Num v={a.credit} /></p>
-                <p className="text-xs text-muted">{levelOf(a.credit).name}</p>
+                <p className="text-xs text-muted">{(k === 'poster' ? posterTierOf : levelOf)(a.credit).name}</p>
               </>
             ) : <p className="text-xs text-muted">未认证</p>}
           </div>

@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { motion, animate, useMotionValue, useTransform, useReducedMotion } from 'motion/react'
 import { Wallet, ArrowRight, ArrowCounterClockwise, ShieldWarning, ListBullets } from '@phosphor-icons/react'
 import { useStore, useMe } from '../store'
-import { levelOf, nextLevel, iconUrl } from '../data'
+import { levelOf, nextLevel, iconUrl, posterTierOf, posterNextTier } from '../data'
 import { Avatar, VerifiedBadge, Panel, Btn, Empty, ago } from '../ui'
 
 function CountUp({ value }) {
@@ -26,8 +26,8 @@ export default function Me() {
   const posted = state.tasks.filter((t) => t.posterId === 'poster').length
   const good = me.ratings.filter((r) => r >= 4).length
   const rate = me.ratings.length ? Math.round((good / me.ratings.length) * 100) + '%' : '暂无'
-  const lv = me.credit != null ? levelOf(me.credit) : null
-  const nx = me.credit != null ? nextLevel(me.credit) : null
+  const lv = me.credit != null ? (me.id === 'poster' ? posterTierOf(me.credit) : levelOf(me.credit)) : null
+  const nx = me.credit != null ? (me.id === 'poster' ? posterNextTier(me.credit) : nextLevel(me.credit)) : null
   const badges = [
     { img: 'trust-verify', alt: '带对勾的学生证', name: '校园认证', on: me.verified },
     { img: 'badge-first', alt: '插在包裹旁的小旗', name: '首单完成', on: isPoster ? state.tasks.some((t) => t.posterId === 'poster' && t.status === 'completed') : me.done >= 1 },
@@ -50,7 +50,7 @@ export default function Me() {
         <Link to="/app/credit" className="block rounded-2xl bg-accent-soft p-5">
           <div className="flex items-end justify-between">
             <div>
-              <p className="text-[15px] font-semibold">信用分</p>
+              <p className="text-[15px] font-semibold">{me.id === 'poster' ? '发单人信用' : '跑腿人信用'}</p>
               <p className="tnum text-6xl font-bold leading-none tracking-tight text-accent"><CountUp value={me.credit} /></p>
             </div>
             <div className="flex flex-col items-end text-right">

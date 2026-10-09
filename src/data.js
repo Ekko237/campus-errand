@@ -118,6 +118,15 @@ export const POSTER_RULES_MINUS = [
 export const POSTER_LIMIT = { min: 70, cap: 10 }
 export const POSTER_WARN = 75
 export const COMPENSATE = 0.3
+// 发单人的信用档位：说的是信用对「发单」意味着什么
+export const POSTER_TIERS = [
+  { name: '受限', min: 0, desc: '单笔赏金上限 ¥10', badge: 'level-restricted', alt: '带锁的灰色盾牌' },
+  { name: '需留意', min: 70, desc: '跑腿人会看到「信用偏低」提醒', badge: 'level-newbie', alt: '冒芽的徽章' },
+  { name: '良好', min: 75, desc: '正常发单，不受限制', badge: 'level-reliable', alt: '带对勾的绿色盾牌' },
+  { name: '优质', min: 85, desc: '进入跑腿人的「信用 ≥ 85」筛选，接单更快', badge: 'level-gold', alt: '带皇冠的金牌' },
+]
+export const posterTierOf = (c) => [...POSTER_TIERS].reverse().find((l) => c >= l.min)
+export const posterNextTier = (c) => POSTER_TIERS.find((l) => l.min > c)
 
 export const RULES_MINUS = [
   { delta: -3, label: '超时送达', note: '晚于截止时间才送到' },
