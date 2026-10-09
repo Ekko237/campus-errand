@@ -26,6 +26,8 @@ function AppLoading() {
   )
 }
 
+try { sessionStorage.removeItem('stale-reload') } catch {}
+
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <HashRouter>
