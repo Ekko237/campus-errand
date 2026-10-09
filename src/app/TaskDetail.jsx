@@ -134,7 +134,7 @@ function DeliverSheet({ t, open, onClose }) {
       ) : (
         <div className="mt-5">
           {photo ? (
-            <img src={`https://picsum.photos/seed/courier-desk-0/640/400`} width={640} height={400} alt="送达照片（模拟）" className="aspect-[16/10] w-full rounded-2xl bg-sunken object-cover" />
+            <img src={`${import.meta.env.BASE_URL}img/proof.webp`} width={640} height={400} alt="送达照片（模拟）" className="aspect-[16/10] w-full rounded-2xl bg-sunken object-cover" />
           ) : (
             <button onClick={shoot} className="grid aspect-[16/10] w-full place-items-center rounded-2xl bg-sunken text-muted ring-1 ring-line">
               {shooting ? <span className="animate-pulse text-[15px] font-semibold">正在拍照…</span> : <span className="flex flex-col items-center gap-2 text-[15px] font-semibold"><Camera size={36} />点击拍照（模拟）</span>}
@@ -350,7 +350,7 @@ export default function TaskDetail() {
         <Panel className="p-4">
           <p className="text-[15px] font-semibold">送达凭证</p>
           {t.proof.kind === 'code' ? <p className="mt-1 flex items-center gap-1.5 text-[15px] text-muted"><Check size={18} className="text-accent" weight="bold" />送达码当面核验通过</p>
-            : <img src={`https://picsum.photos/seed/${t.proof.seed}/640/400`} width={640} height={400} alt="送达照片（模拟）" className="mt-2 aspect-[16/10] w-full rounded-xl bg-sunken object-cover" />}
+            : <img src={`${import.meta.env.BASE_URL}img/proof.webp`} width={640} height={400} alt="送达照片（模拟）" className="mt-2 aspect-[16/10] w-full rounded-xl bg-sunken object-cover" />}
           {t.late && <p className="mt-2 flex items-center gap-1.5 text-sm font-medium text-danger"><Warning size={16} weight="fill" />超时送达（演示）</p>}
         </Panel>
       )}
