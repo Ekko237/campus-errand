@@ -85,7 +85,7 @@ function Escrow({ t }) {
     disputed: ['冻结中', '申诉处理中，暂不放款'],
     completed: ['已放款', '赏金已转给跑腿人'],
     refunded: ['已退回', '申诉成立，赏金退回发单人'],
-    cancelled: ['已退回', '任务取消，赏金退回发单人'],
+    cancelled: ['已退回', '任务取消，赏金退回发单人；接单后取消会先扣 30% 补偿跑腿人'],
   }[t.status]
   return (
     <div className="flex items-center gap-3 rounded-2xl bg-accent-soft p-4">
@@ -184,6 +184,8 @@ function Actions({ t }) {
   const [abandon, setAbandon] = useState(false)
   const [disputeOpen, setDisputeOpen] = useState(false)
   const [reason, setReason] = useState('没收到东西')
+  const [pCancel, setPCancel] = useState(false)
+  const [mismatch, setMismatch] = useState(false)
   const role = state.role
   const runner = state.accounts.runner
   const own = t.posterId === 'poster'
@@ -220,7 +222,15 @@ function Actions({ t }) {
         <div className="grid gap-2">
           {!t.picked ? <Btn size="lg" className="w-full" onClick={() => act('pick', { id: t.id })}>我已取到，出发送达</Btn>
             : <Btn size="lg" className="w-full" onClick={() => setDeliver(true)}>提交送达凭证</Btn>}
-          <Btn variant="plain" size="sm" onClick={() => setAbandon(true)}>放弃这单（信用 -5）</Btn>
+          <div className="flex flex-wrap justify-center gap-x-4">
+            <Btn variant="plain" size="sm" onClick={() => setAbandon(true)}>放弃这单（信用 -5）</Btn>
+            <Btn variant="plain" size="sm" onClick={() => setMismatch(true)}>与描述不符，申诉</Btn>
+          </div>
+          <Sheet open={mismatch} onClose={() => setMismatch(false)} title="任务与描述不符">
+            <p className="text-[15px] leading-relaxed text-muted">比如说好是小件，到了才发现是大件重物。申诉成立时不扣你的信用，发单人信用 -5，赏金的 30% 作为跑空补偿给你。</p>
+            <p className="mt-3 rounded-xl bg-sunken p-3 text-sm text-muted">演示里平台会直接判定申诉成立。</p>
+            <Btn size="lg" className="mt-5 w-full" onClick={() => { act('mismatch', { id: t.id }); setMismatch(false) }}>提交申诉</Btn>
+          </Sheet>
           <DeliverSheet t={t} open={deliver} onClose={() => setDeliver(false)} />
           <Sheet open={abandon} onClose={() => setAbandon(false)} title="确定放弃？">
             <p className="text-[15px] leading-relaxed text-muted">接单后放弃算爽约，信用 -5，任务会重新开放给其他同学。</p>
@@ -232,7 +242,23 @@ function Actions({ t }) {
         </div>
       )
     }
-    return <p className="text-center text-[15px] text-muted">{t.picked ? '跑腿人已取到，正在送达' : '跑腿人已接单，正在去取件'}。{own && '送达时把送达码告诉对方。'}</p>
+    return (
+      <div className="grid gap-1 text-center">
+        <p className="text-[15px] text-muted">{t.picked ? '跑腿人已取到，正在送达' : '跑腿人已接单，正在去取件'}。{own && '送达时把送达码告诉对方。'}</p>
+        {own && role === 'poster' && (
+          <>
+            <Btn variant="plain" size="sm" onClick={() => setPCancel(true)}>取消订单（信用 -5）</Btn>
+            <Sheet open={pCancel} onClose={() => setPCancel(false)} title="确定取消？">
+              <p className="text-[15px] leading-relaxed text-muted">对方已经接单出发了。现在取消算发单人违约：你的信用 -5，赏金的 30%（¥{Math.max(1, Math.round(t.reward * 0.3))}）补偿给跑腿人，其余退回钱包。</p>
+              <div className="mt-5 grid grid-cols-2 gap-2">
+                <Btn variant="ghost" onClick={() => setPCancel(false)}>再想想</Btn>
+                <Btn variant="danger" onClick={() => { act('posterCancel', { id: t.id }); setPCancel(false) }}>确定取消</Btn>
+              </div>
+            </Sheet>
+          </>
+        )}
+      </div>
+    )
   }
 
   if (t.status === 'delivered') {
@@ -242,7 +268,7 @@ function Actions({ t }) {
           <Btn size="lg" className="w-full" onClick={() => act('confirm', { id: t.id })}>确认送达，放款 ¥{t.reward}</Btn>
           <Btn variant="plain" size="sm" onClick={() => setDisputeOpen(true)}>有问题，申诉</Btn>
           <Sheet open={disputeOpen} onClose={() => setDisputeOpen(false)} title="发起申诉">
-            <p className="text-[15px] text-muted">申诉期间赏金继续冻结，平台会核对送达凭证。</p>
+            <p className="text-[15px] text-muted">申诉期间赏金继续冻结，平台会核对送达凭证。凭证有效、申诉被驳回时，你的信用 -5。</p>
             <div className="mt-4 grid gap-2">
               {['没收到东西', '物品损坏', '与描述不符'].map((r) => (
                 <button key={r} onClick={() => setReason(r)} aria-pressed={reason === r} className={`h-12 rounded-xl px-4 text-left text-[15px] font-semibold ring-1 ${reason === r ? 'bg-accent-soft text-ink ring-accent' : 'bg-surface ring-line'}`}>{r}</button>
@@ -258,10 +284,17 @@ function Actions({ t }) {
         <div className="grid gap-2 text-center">
           <p className="text-[15px] text-muted">等待发单人 {t.posterName} 确认，2 小时内不确认将自动放款。</p>
           <Btn variant="ghost" onClick={() => act('confirm', { id: t.id, simulated: true })}>演示：模拟对方确认</Btn>
+          <Btn variant="plain" size="sm" onClick={() => act('confirm', { id: t.id, auto: true })}>演示：对方 2 小时未确认（发单人 -2）</Btn>
         </div>
       )
     }
-    return <div className="grid gap-2 text-center"><p className="text-[15px] text-muted">已提交凭证，等发单人确认放款。</p><Btn variant="ghost" onClick={() => act('role', { role: 'poster' })}>切回发单人去确认</Btn></div>
+    return (
+      <div className="grid gap-2 text-center">
+        <p className="text-[15px] text-muted">已提交凭证，等发单人确认放款。2 小时不确认系统自动放款，发单人信用 -2。</p>
+        <Btn variant="ghost" onClick={() => act('role', { role: 'poster' })}>切回发单人去确认</Btn>
+        <Btn variant="plain" size="sm" onClick={() => act('confirm', { id: t.id, auto: true })}>演示：发单人 2 小时未确认</Btn>
+      </div>
+    )
   }
 
   if (t.status === 'disputed') {

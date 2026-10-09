@@ -3,9 +3,9 @@ import { Link } from 'react-router-dom'
 import { motion, AnimatePresence, useReducedMotion } from 'motion/react'
 import {
   PersonSimpleRun, ArrowRight, ArrowDown, Megaphone, ShieldCheck, LockKeyOpen, Camera, Handshake, Star,
-  IdentificationBadge, ChartLineUp, LockKey, Scales, Prohibit, TrendUp, TrendDown, CaretLeft, CaretRight,
+  IdentificationBadge, ChartLineUp, LockKey, Scales, Prohibit, CaretLeft, CaretRight,
 } from '@phosphor-icons/react'
-import { RULES_PLUS, RULES_MINUS, LEVELS } from '../data'
+import { RULES_PLUS, RULES_MINUS, POSTER_RULES_PLUS, POSTER_RULES_MINUS, LEVELS } from '../data'
 
 const ease = [0.16, 1, 0.3, 1]
 const img = (name) => `${import.meta.env.BASE_URL}images/${name}.webp`
@@ -182,7 +182,7 @@ function Loop() {
 
 const TRUST = [
   { icon: 'trust-verify-v1', alt: '带对勾的学生证', t: '校园身份认证', fear: '怕对方是校外的人', fix: '学号或 .edu.cn 邮箱认证，带徽章；没认证只能浏览，不能接单。' },
-  { icon: 'trust-credit-v1', alt: '带上升箭头的奖牌', t: '信用分分级', fear: '怕新手接了大单搞砸', fix: '初始 70 分，按时 +2、爽约 -5；赏金越高，要求的信用越高。' },
+  { icon: 'trust-credit-v1', alt: '带上升箭头的奖牌', t: '双向信用分', fear: '怕碰上不靠谱的人，跑腿的和发单的都怕', fix: '跑腿人按时 +2、爽约 -5；发单人接单后取消、恶意申诉都 -5。赏金越高，要求的信用越高。' },
   { icon: 'trust-escrow-v1', alt: '护着硬币的盾牌', t: '赏金托管', fear: '怕付了钱没人管，也怕跑完拿不到钱', fix: '发布即冻结，确认送达才放款；2 小时不确认自动放款。' },
   { icon: 'trust-privacy-v1', alt: '挂锁和钥匙', t: '隐私分级', fear: '怕取件码、宿舍号被乱传', fix: '接单后才可见，订单结束自动隐藏；电话一律走虚拟号。' },
   { icon: 'trust-dispute-v1', alt: '天平', t: '送达凭证与申诉', fear: '怕出了问题说不清', fix: '送达码当面核验或拍照留证；申诉期间钱继续冻结，平台判责。' },
@@ -224,16 +224,16 @@ function Credit() {
   return (
     <section className="border-y border-line bg-surface">
       <div className="mx-auto max-w-6xl px-4 py-16 md:px-8 md:py-24">
-        <Reveal><H2>信用分只能靠跑出来</H2></Reveal>
-        <Reveal delay={0.05}><p className="mt-3 max-w-[52ch] text-lg text-muted">满分 100，认证后从 70 起步。不能充值，不能刷，只看履约和评价。</p></Reveal>
+        <Reveal><H2>双向信用：谁不守约谁扣分</H2></Reveal>
+        <Reveal delay={0.05}><p className="mt-3 max-w-[52ch] text-lg text-muted">满分 100，认证后从 70 起步。跑腿人看履约，发单人看确认和描述是否属实。不能充值，不能刷。</p></Reveal>
         <div className="mt-10 grid gap-10 md:grid-cols-2">
-          {[[TrendUp, '加分', RULES_PLUS, 'text-accent'], [TrendDown, '减分', RULES_MINUS, 'text-danger']].map(([I, h, rules, c]) => (
+          {[['跑腿人', [...RULES_PLUS, ...RULES_MINUS]], ['发单人', [...POSTER_RULES_PLUS, ...POSTER_RULES_MINUS]]].map(([h, rules]) => (
             <Reveal key={h}>
-              <p className="flex items-center gap-2 text-lg font-bold"><I size={22} weight="bold" className={c} />{h}</p>
+              <p className="text-lg font-bold">{h}</p>
               <ul className="mt-4 space-y-4">
                 {rules.map((r) => (
                   <li key={r.label} className="flex items-baseline gap-4">
-                    <span className={`tnum w-10 shrink-0 text-2xl font-bold ${c}`}>{r.delta > 0 ? '+' : ''}{r.delta}</span>
+                    <span className={`tnum w-10 shrink-0 text-2xl font-bold ${r.delta > 0 ? 'text-accent' : 'text-danger'}`}>{r.delta > 0 ? '+' : ''}{r.delta}</span>
                     <span><span className="text-lg font-semibold">{r.label}</span><span className="block text-[15px] text-muted">{r.note}</span></span>
                   </li>
                 ))}
@@ -242,7 +242,7 @@ function Credit() {
           ))}
         </div>
         <div className="mt-14">
-          <p className="text-lg font-bold">等级决定能接多大的单</p>
+          <p className="text-lg font-bold">跑腿人：等级决定能接多大的单</p>
           <div className="mt-5 grid grid-cols-3 items-end gap-2 md:gap-4">
             {ladder.map((l, i) => (
               <motion.div key={l.name} initial={reduce ? false : { opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.5, delay: i * 0.1, ease }}
@@ -254,7 +254,7 @@ function Credit() {
               </motion.div>
             ))}
           </div>
-          <p className="mt-3 text-[15px] text-muted">低于 60 分暂停接单，只能浏览。</p>
+          <p className="mt-3 text-[15px] text-muted">跑腿人低于 60 分暂停接单。发单人低于 70 分，单笔赏金上限 ¥10；低于 75 分，大厅会提醒跑腿人。</p>
         </div>
       </div>
     </section>

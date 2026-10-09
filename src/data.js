@@ -102,6 +102,23 @@ export const RULES_PLUS = [
   { delta: +1, label: '收到好评', note: '对方打 4 到 5 星' },
   { delta: +1, label: '发单人按时确认', note: '送达后 2 小时内确认收货' },
 ]
+// 发单人规则（双向信用）
+export const POSTER_RULES_PLUS = [
+  { delta: +1, label: '按时确认收货', note: '送达后 2 小时内确认' },
+  { delta: +1, label: '收到好评', note: '跑腿人打 4 到 5 星' },
+]
+export const POSTER_RULES_MINUS = [
+  { delta: -5, label: '接单后取消', note: '赏金的 30% 补偿给跑腿人' },
+  { delta: -2, label: '超时不确认', note: '2 小时不确认，系统自动放款' },
+  { delta: -5, label: '恶意申诉被驳回', note: '凭证有效，申诉不成立' },
+  { delta: -5, label: '描述与实际不符', note: '跑腿人申诉成立' },
+  { delta: -4, label: '收到差评', note: '跑腿人打 1 到 2 星' },
+]
+// 发单人信用低于 70：单笔赏金上限 ¥10；低于 75：大厅给跑腿人显示「发单人信用偏低」
+export const POSTER_LIMIT = { min: 70, cap: 10 }
+export const POSTER_WARN = 75
+export const COMPENSATE = 0.3
+
 export const RULES_MINUS = [
   { delta: -3, label: '超时送达', note: '晚于截止时间才送到' },
   { delta: -5, label: '接单后爽约', note: '接单后主动放弃或失联' },
@@ -136,7 +153,7 @@ export function seedTasks() {
     mk({ id: 's3', type: 'buy', title: '教育超市带一瓶生抽和两包抽纸', from: 'market', to: 'zhu3', reward: 6, windowMin: 240, urgent: false, size: 's', note: '生抽要海天的，钱到了一起转', room: '竹园 3 号楼 215', posterName: '温晴', posterCredit: 95, ago: 22 }),
     mk({ id: 's4', type: 'seat', title: '图书馆三楼占一个靠窗座位', from: 'lib', to: 'lib', reward: 4, windowMin: 600, urgent: false, size: 's', note: '明早 7:40 前，放本书就行', room: '图书馆 3F 自习区', posterName: '周砚', posterCredit: 88, ago: 40 }),
     mk({ id: 's5', type: 'express', title: '顺丰大件显示器，需要力气', from: 'sf', to: 'yan', reward: 15, windowMin: 180, urgent: false, size: 'l', note: '箱子大约 8 斤，有提手', room: '研究生公寓 B 栋 1103', posterName: '程立', posterCredit: 97, ago: 15 }),
-    mk({ id: 's6', type: 'buy', title: '二食堂带一份黄焖鸡米饭', from: 'canteen2', to: 'jiao1', reward: 4, windowMin: 35, urgent: true, size: 's', note: '微辣，不要香菜', room: '一教 204 教室后排', posterName: '于小渔', posterCredit: 79, ago: 4 }),
+    mk({ id: 's6', type: 'buy', title: '二食堂带一份黄焖鸡米饭', from: 'canteen2', to: 'jiao1', reward: 4, windowMin: 35, urgent: true, size: 's', note: '微辣，不要香菜', room: '一教 204 教室后排', posterName: '于小渔', posterCredit: 68, ago: 4 }),
     mk({ id: 's7', type: 'other', title: '把雨伞送到体育馆门口', from: 'lan1', to: 'gym', reward: 5, windowMin: 45, urgent: false, size: 's', note: '伞在宿管阿姨那里，报我名字', room: '兰园 1 号楼宿管室', posterName: '乐知行', posterCredit: 86, ago: 9 }),
     mk({ id: 's8', type: 'seat', title: '周五讲座帮占前排两个位', from: 'hall', to: 'hall', reward: 12, windowMin: 1440, urgent: false, size: 's', note: '13:30 开始，13:00 前到', room: '学术报告厅前三排', posterName: '社团 王一凡', posterCredit: 90, ago: 55 }),
   ]

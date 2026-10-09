@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence, useReducedMotion } from 'motion/react'
 import { MapPin, Clock, LockSimple, MagnifyingGlass, WarningOctagon, ShieldCheck, ArrowRight, Lightning } from '@phosphor-icons/react'
 import { useStore } from '../store'
-import { TYPES, TYPE_KEYS, B, dist, fmtDist, RUNNER_HOME, levelOf, minCreditFor } from '../data'
+import { TYPES, TYPE_KEYS, B, dist, fmtDist, RUNNER_HOME, levelOf, minCreditFor, POSTER_WARN } from '../data'
 import { TypeTag, UrgentTag, Panel, Empty, Btn, left, spring } from '../ui'
 
 const SORTS = [['dist', '距离最近'], ['reward', '赏金最高'], ['deadline', '截止最早']]
@@ -30,6 +30,11 @@ export function TaskCard({ t, me, role }) {
         <span className="tnum">距你 {fmtDist(d)}</span>
         <span>{t.posterId === 'poster' ? '我发布的' : `${t.posterName} · 信用 ${t.posterCredit}`}</span>
       </div>
+      {t.posterId !== 'poster' && t.posterCredit < POSTER_WARN && (
+        <p className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-danger-soft px-3 py-1.5 text-sm font-medium text-danger">
+          <WarningOctagon size={16} weight="fill" />发单人信用偏低（{t.posterCredit}）
+        </p>
+      )}
       {locked && (
         <p className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-sunken px-3 py-1.5 text-sm font-medium text-muted">
           <LockSimple size={16} weight="bold" />需信用 ≥ {need} 才能接（你 {me.credit}）
@@ -90,6 +95,7 @@ export default function Hall() {
   const [type, setType] = useState('all')
   const [sort, setSort] = useState('dist')
   const [urgentOnly, setUrgentOnly] = useState(false)
+  const [goodPoster, setGoodPoster] = useState(false)
   const [loading, setLoading] = useState(!loadedOnce)
   const [errDismissed, setErrDismissed] = useState(false)
   useEffect(() => {
@@ -103,9 +109,10 @@ export default function Hall() {
     let l = state.tasks.filter((t) => t.status === 'open')
     if (type !== 'all') l = l.filter((t) => t.type === type)
     if (urgentOnly) l = l.filter((t) => t.urgent)
+    if (goodPoster) l = l.filter((t) => t.posterId === 'poster' || t.posterCredit >= 85)
     const key = { dist: (t) => dist(RUNNER_HOME, t.from), reward: (t) => -t.reward, deadline: (t) => t.deadline }[sort]
     return [...l].sort((a, b) => key(a) - key(b))
-  }, [state.tasks, type, sort, urgentOnly])
+  }, [state.tasks, type, sort, urgentOnly, goodPoster])
 
   return (
     <div className="space-y-4">
@@ -138,8 +145,8 @@ export default function Hall() {
         })}
       </div>
 
-      <div className="flex items-center gap-2">
-        <div className="grid flex-1 grid-cols-3 rounded-full bg-sunken p-1" role="group" aria-label="排序">
+      <div className="flex flex-wrap items-center gap-2">
+        <div className="grid min-w-0 flex-1 basis-full grid-cols-3 rounded-full bg-sunken p-1 sm:basis-0" role="group" aria-label="排序">
           {SORTS.map(([k, label]) => (
             <button key={k} onClick={() => setSort(k)} aria-pressed={sort === k}
               className={`h-9 whitespace-nowrap rounded-full text-sm font-semibold transition ${sort === k ? 'bg-surface text-ink shadow-sm' : 'text-muted'}`}>{label}</button>
@@ -149,11 +156,15 @@ export default function Hall() {
           className={`inline-flex h-11 shrink-0 items-center gap-1 rounded-full px-3.5 text-sm font-semibold transition ${urgentOnly ? 'bg-ink text-bg' : 'bg-surface text-ink ring-1 ring-line'}`}>
           <Lightning size={16} weight="fill" />加急
         </button>
+        <button onClick={() => setGoodPoster((v) => !v)} aria-pressed={goodPoster}
+          className={`inline-flex h-11 shrink-0 items-center gap-1 rounded-full px-3.5 text-sm font-semibold transition ${goodPoster ? 'bg-ink text-bg' : 'bg-surface text-ink ring-1 ring-line'}`}>
+          <ShieldCheck size={16} weight="fill" />发单人信用 ≥ 85
+        </button>
       </div>
 
       {loading ? <Skeleton /> : list.length === 0 ? (
         <Empty img="empty-search" alt="空纸箱和放大镜" title="这个分类暂时没人发单" hint="换个分类看看，或者自己发一单，附近顺路的同学会看到。"
-          action={<Btn variant="ghost" onClick={() => { setType('all'); setUrgentOnly(false) }}>看全部任务</Btn>} />
+          action={<Btn variant="ghost" onClick={() => { setType('all'); setUrgentOnly(false); setGoodPoster(false) }}>看全部任务</Btn>} />
       ) : (
         <motion.div layout={!reduce} className="space-y-3">
           <AnimatePresence initial={false}>

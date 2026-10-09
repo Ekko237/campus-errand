@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { Minus, Plus, Timer, LockKey, ProhibitInset, Lightning, Wallet, CaretDown } from '@phosphor-icons/react'
 import { useStore } from '../store'
-import { TYPES, TYPE_KEYS, BUILDINGS, B, WINDOWS, SIZES, suggestPrice, estimateMinutes, findBanned, nextId, code4 } from '../data'
+import { TYPES, TYPE_KEYS, BUILDINGS, B, WINDOWS, SIZES, suggestPrice, estimateMinutes, findBanned, nextId, code4, POSTER_LIMIT } from '../data'
 import { Btn, Panel, Field, Sheet, inputCls } from '../ui'
 
 const groups = [...new Set(BUILDINGS.map((b) => b.group))]
@@ -56,7 +56,7 @@ export default function Publish() {
     room: !f.room.trim() ? '请填写送达的宿舍号或具体位置，接单后才对跑腿人可见' : null,
     code: f.type === 'express' && !f.code.trim() ? '代取快递需要填写取件码，接单后才对跑腿人可见' : null,
     same: f.type !== 'seat' && f.from === f.to ? '取件地点和送达地点不能是同一栋楼' : null,
-    money: reward > poster.balance ? `钱包余额 ¥${poster.balance} 不够托管 ¥${reward}` : null,
+    money: reward > poster.balance ? `钱包余额 ¥${poster.balance} 不够托管 ¥${reward}` : poster.credit < POSTER_LIMIT.min && reward > POSTER_LIMIT.cap ? `你的信用 ${poster.credit} 低于 ${POSTER_LIMIT.min}，单笔赏金上限 ¥${POSTER_LIMIT.cap}` : null,
     banned: banned.length ? `检测到违规内容「${banned.join('、')}」。平台禁止代考、代签到、代写作业等学术不端任务` : null,
   }
   const blocking = Object.values(errors).some(Boolean)

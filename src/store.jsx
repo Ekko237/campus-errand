@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useReducer, useCallback, useState } from 'react'
-import { seedTasks, seedAccounts, CREDIT_INIT, levelOf } from './data'
+import { seedTasks, seedAccounts, CREDIT_INIT, levelOf, COMPENSATE } from './data'
 
 const KEY = 'shunluxia:v2'
 const Ctx = createContext(null)
@@ -78,6 +78,21 @@ function reducer(s, a) {
       const poster = money({ ...p, frozen: p.frozen - task.reward }, task.reward, `取消「${task.title}」托管退回`)
       return toast({ ...upd(a.id, (t) => log({ ...t, status: 'cancelled' }, '发单人取消，托管赏金原路退回')), accounts: { ...s.accounts, poster } }, '已取消，赏金退回钱包')
     }
+    case 'posterCancel':
+    case 'mismatch': {
+      // 接单后发单人取消，或跑腿人申诉「描述不符」成立：发单人 -5，赏金 30% 补偿跑腿人，其余退回
+      let { poster, runner } = s.accounts
+      const comp = Math.max(1, Math.round(task.reward * COMPENSATE))
+      const why = a.type === 'posterCancel' ? '接单后取消' : '任务描述与实际不符'
+      if (task.posterId === 'poster') {
+        poster = money({ ...poster, frozen: poster.frozen - task.reward }, task.reward - comp, `「${task.title}」${why}，扣除补偿后退回`)
+        poster = credit(poster, -5, `${why}「${task.title}」`)
+      }
+      runner = money(runner, comp, `「${task.title}」${why}，跑空补偿`)
+      const posterCredit = task.posterId === 'poster' ? task.posterCredit : Math.max(0, task.posterCredit - 5)
+      const text = a.type === 'posterCancel' ? `发单人在接单后取消：发单人信用 -5，跑腿人获得 ¥${comp} 跑空补偿` : `跑腿人申诉「描述与实际不符」成立：发单人信用 -5，跑腿人获得 ¥${comp} 补偿，不扣跑腿人信用`
+      return toast({ ...upd(a.id, (t) => log({ ...t, status: 'cancelled', posterCredit }, text)), accounts: { ...s.accounts, poster, runner } }, text, 'bad')
+    }
     case 'accept':
       return toast(upd(a.id, (t) => log({ ...t, status: 'ongoing', runnerId: 'runner', acceptedAt: now() }, `${s.accounts.runner.name} 接单，联系方式与取件码已对其可见`)), '接单成功，取件码、电话、宿舍号已解锁')
     case 'pick':
@@ -92,12 +107,12 @@ function reducer(s, a) {
     case 'confirm': {
       let { poster, runner } = s.accounts
       const before = runner.credit
-      if (task.posterId === 'poster') poster = credit({ ...poster, frozen: poster.frozen - task.reward }, +1, '按时确认收货')
+      if (task.posterId === 'poster') poster = a.auto ? credit({ ...poster, frozen: poster.frozen - task.reward }, -2, `超时未确认「${task.title}」，系统自动放款`) : credit({ ...poster, frozen: poster.frozen - task.reward }, +1, '按时确认收货')
       runner = money({ ...runner, done: runner.done + 1 }, task.reward, `「${task.title}」赏金到账`)
       runner = task.late ? credit(runner, -3, `超时送达「${task.title}」`) : credit(runner, +2, `按时完成「${task.title}」`)
       const lm = levelMsg(before, runner.credit)
-      let ns = { ...upd(a.id, (t) => log({ ...t, status: 'completed', completedAt: now() }, `${a.simulated ? '发单人（模拟）' : '发单人'}确认送达，托管赏金已放给跑腿人`)), accounts: { ...s.accounts, poster, runner } }
-      ns = toast(ns, `已确认送达，¥${task.reward} 放款给${runner.name}；跑腿人信用 ${task.late ? '-3' : '+2'}`, task.late ? 'bad' : 'ok')
+      let ns = { ...upd(a.id, (t) => log({ ...t, status: 'completed', completedAt: now(), posterCredit: a.auto && t.posterId !== 'poster' ? Math.max(0, t.posterCredit - 2) : t.posterCredit }, a.auto ? '发单人 2 小时未确认，系统自动放款，发单人信用 -2' : `${a.simulated ? '发单人（模拟）' : '发单人'}确认送达，托管赏金已放给跑腿人`)), accounts: { ...s.accounts, poster, runner } }
+      ns = toast(ns, a.auto ? `超时未确认，系统自动放款；发单人信用 -2，跑腿人 ${task.late ? '-3' : '+2'}` : `已确认送达，¥${task.reward} 放款给${runner.name}；跑腿人信用 ${task.late ? '-3' : '+2'}`, task.late || a.auto ? 'bad' : 'ok')
       return lm ? toast(ns, lm) : ns
     }
     case 'rate': {
@@ -128,11 +143,11 @@ function reducer(s, a) {
         runner = credit(runner, -8, `申诉被判责任方「${task.title}」`)
         return toast({ ...upd(a.id, (t) => log({ ...t, status: 'refunded' }, '平台判定申诉成立：赏金退回发单人，跑腿人信用 -8')), accounts: { ...s.accounts, poster, runner } }, '申诉成立：赏金退回，跑腿人信用 -8', 'bad')
       }
-      if (task.posterId === 'poster') poster = { ...poster, frozen: poster.frozen - task.reward }
+      if (task.posterId === 'poster') poster = credit({ ...poster, frozen: poster.frozen - task.reward }, -5, `恶意申诉被驳回「${task.title}」`)
       runner = money({ ...runner, done: runner.done + 1 }, task.reward, `「${task.title}」申诉驳回，赏金到账`)
       // 申诉驳回等同正常确认：按时 +2，超时 -3
       runner = task.late ? credit(runner, -3, `超时送达「${task.title}」`) : credit(runner, +2, `按时完成「${task.title}」`)
-      return toast({ ...upd(a.id, (t) => log({ ...t, status: 'completed', completedAt: now() }, `平台判定申诉不成立：凭证有效，赏金放给跑腿人，跑腿人信用 ${task.late ? '-3（超时）' : '+2'}`)), accounts: { ...s.accounts, poster, runner } }, `申诉驳回：赏金放给跑腿人，跑腿人信用 ${task.late ? '-3（超时）' : '+2'}`)
+      return toast({ ...upd(a.id, (t) => log({ ...t, status: 'completed', completedAt: now() }, `平台判定申诉不成立：赏金放给跑腿人，跑腿人信用 ${task.late ? '-3（超时）' : '+2'}，发单人信用 -5`)), accounts: { ...s.accounts, poster, runner } }, `申诉驳回：发单人信用 -5，跑腿人 ${task.late ? '-3（超时）' : '+2'}`)
     }
     default:
       return s
