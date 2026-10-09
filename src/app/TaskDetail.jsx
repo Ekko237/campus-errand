@@ -323,6 +323,8 @@ export default function TaskDetail() {
         {t.note && <p className="mt-3 rounded-xl bg-sunken p-3 text-[15px]">备注：{t.note}</p>}
       </div>
 
+      <div><Actions t={t} /></div>
+
       <Escrow t={t} />
 
       <Panel className="flex items-center gap-3 p-4">
@@ -354,8 +356,6 @@ export default function TaskDetail() {
           {t.late && <p className="mt-2 flex items-center gap-1.5 text-sm font-medium text-danger"><Warning size={16} weight="fill" />超时送达（演示）</p>}
         </Panel>
       )}
-
-      <div className="pt-1"><Actions t={t} /></div>
 
       <section>
         <h2 className="mb-2 text-[17px] font-semibold">订单记录</h2>
