@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { motion, animate, useMotionValue, useTransform, useReducedMotion } from 'motion/react'
-import { Wallet, CaretRight, ArrowRight, ArrowCounterClockwise, ShieldWarning, ListBullets } from '@phosphor-icons/react'
+import { Path, Wallet, CaretRight, ArrowRight, ArrowCounterClockwise, ShieldWarning, ListBullets } from '@phosphor-icons/react'
 import { useStore, useMe } from '../store'
-import { levelOf, nextLevel, iconUrl, posterTierOf, posterNextTier } from '../data'
+import { levelOf, nextLevel, iconUrl, posterTierOf, posterNextTier, B, detourMin } from '../data'
 import { Avatar, VerifiedBadge, Panel, Btn, Empty, ago } from '../ui'
 
 function CountUp({ value, from = value }) {
@@ -91,6 +91,27 @@ export default function Me() {
           <Btn className="mt-4" onClick={() => nav('/app/verify')}>去认证</Btn>
         </Panel>
       )}
+
+      {!isPoster && me.verified && (() => {
+        let route = { from: 'jiao1', to: 'mei5' }
+        try { const r = JSON.parse(localStorage.getItem('shunluxia:myroute')); if (B[r?.from] && B[r?.to]) route = r } catch { /* 用默认路线 */ }
+        const open = state.tasks.filter((t) => t.status === 'open' && t.posterId !== 'poster' && t.deadline > Date.now())
+        const hits = open.map((t) => detourMin(route.from, route.to, t)).filter((m) => m <= 5)
+        return (
+          <Link to="/app" className="flex items-center gap-3 rounded-2xl bg-surface p-4 ring-1 ring-line transition active:scale-[0.99]">
+            <span className="grid size-11 shrink-0 place-items-center rounded-full bg-accent-soft text-accent"><Path size={22} weight="bold" /></span>
+            <span className="min-w-0 flex-1">
+              <span className="block text-sm text-muted">我常走的路</span>
+              <span className="block text-[15px] font-semibold leading-snug">{B[route.from].name.replace(/（.*?）/, '')} → {B[route.to].name.replace(/（.*?）/, '')}</span>
+            </span>
+            <span className="shrink-0 text-right">
+              <span className="tnum block text-xl font-bold text-accent">{hits.length} 单</span>
+              <span className="block text-xs text-muted">此刻顺路</span>
+            </span>
+            <CaretRight size={16} weight="bold" className="shrink-0 text-muted" />
+          </Link>
+        )
+      })()}
 
       <dl className="grid grid-cols-3 divide-x divide-line rounded-2xl bg-surface py-4 ring-1 ring-line">
         {[[isPoster ? '发布单数' : '完成单数', isPoster ? posted : me.done], ['好评率', rate], [me.role === '跑腿人' ? '累计收入' : '托管中', me.role === '跑腿人' ? `¥${me.ledger.filter((l) => l.amount > 0).reduce((a, l) => a + l.amount, 0)}` : `¥${me.frozen}`]].map(([k, v]) => (
