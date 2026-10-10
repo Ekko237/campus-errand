@@ -136,7 +136,7 @@ export default function Hall() {
   const [errDismissed, setErrDismissed] = useState(false)
   useEffect(() => {
     if (!loading) return
-    const t = setTimeout(() => { loadedOnce = true; setLoading(false) }, 650)
+    const t = setTimeout(() => { loadedOnce = true; setLoading(false) }, 350)
     return () => clearTimeout(t)
   }, [loading])
 

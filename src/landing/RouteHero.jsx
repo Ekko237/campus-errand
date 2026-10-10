@@ -16,7 +16,7 @@ function Node({ x, y, children, className = '' }) {
   return <div className={`absolute -translate-x-1/2 -translate-y-1/2 ${className}`} style={pct(x, y)}>{children}</div>
 }
 function Tag({ children, strong }) {
-  return <span className={`block whitespace-nowrap rounded-full px-2 py-0.5 text-[11px] font-semibold shadow-sm ring-1 md:px-2.5 md:py-1 md:text-[13px] ${strong ? 'bg-ink text-bg ring-ink' : 'bg-surface text-ink ring-line'}`}>{children}</span>
+  return <span className={`block whitespace-nowrap rounded-full px-2 py-0.5 text-[12px] font-semibold shadow-sm ring-1 md:px-2.5 md:py-1 md:text-[13px] ${strong ? 'bg-ink text-bg ring-ink' : 'bg-surface text-ink ring-line'}`}>{children}</span>
 }
 
 // 首屏记忆点：两条路线在驿站交汇，交汇点亮起，订单成立
@@ -48,7 +48,7 @@ export function RouteMap() {
 
   const lit = phase >= 1
   return (
-    <div ref={box} className="relative aspect-[600/450] w-full overflow-hidden rounded-[28px] bg-surface ring-1 ring-line"
+    <div ref={box} className="relative -mx-4 aspect-[600/450] w-[calc(100%+2rem)] overflow-hidden bg-surface sm:mx-0 sm:w-full sm:rounded-[28px] sm:ring-1 sm:ring-line"
       role="img" aria-label="示意地图：你的快递在菜鸟驿站，学弟从一教走回梅园正好经过驿站，顺手捎上，只多走 1 分钟">
       <img src={`${import.meta.env.BASE_URL}images/campus-hero-v1.webp`} width={1200} height={900} alt="" aria-hidden="true" fetchPriority="high" className="absolute inset-0 size-full object-cover" />
       <svg viewBox={`0 0 ${W} ${H}`} className="absolute inset-0 size-full" aria-hidden="true">
@@ -95,7 +95,7 @@ export function RouteMap() {
       <AnimatePresence>
         {phase === 0 && !reduce && (
           <motion.div key="a" className="absolute left-[32%] top-[3%] md:top-[4%]" initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.3 }}>
-            <p className="rounded-xl bg-surface px-2.5 py-1.5 text-[11px] leading-snug shadow-[0_8px_24px_-12px_rgba(17,40,30,0.4)] ring-1 ring-line md:px-3 md:py-2 md:text-sm">学弟在一教 17:50 下课<br />本来就要走回梅园</p>
+            <p className="rounded-xl bg-surface px-2.5 py-1.5 text-[12px] leading-snug shadow-[0_8px_24px_-12px_rgba(17,40,30,0.4)] ring-1 ring-line md:px-3 md:py-2 md:text-sm">学弟在一教 17:50 下课<br />本来就要走回梅园</p>
           </motion.div>
         )}
         {(phase === 1 || phase === 2) && (
@@ -246,18 +246,9 @@ function SubwayLine({ R, hits, reduce }) {
 }
 
 // 桌面：镜头缩放到「你的路 + 顺路的单」；底图是和首屏一样的街区，路线沿街走直角；一个小人沿你的路走，经过取件点时那一单弹出来
-// 校园底图：每栋楼按真实位置画成不同形状，宿舍是长条、图书馆最大、体育馆是跑道，再加一片湖和草坪
-const LANDMARKS = [
-  ...BUILDINGS.map((b) => ({
-    k: b.id, x: b.x, y: b.y, name: SHORT[b.id],
-    kind: b.id === 'gym' ? 'track' : 'block',
-    w: b.id === 'gym' ? 300 : b.id === 'lib' ? 230 : b.group === '宿舍区' ? 190 : b.group === '教学区' ? 200 : b.group === '取件点' ? 120 : 150,
-    h: b.id === 'gym' ? 170 : b.id === 'lib' ? 150 : b.group === '宿舍区' ? 80 : b.group === '教学区' ? 120 : b.group === '取件点' ? 80 : 100,
-  })),
-  { k: 'lake', x: -470, y: -60, w: 280, h: 170, kind: 'lake', name: '镜湖' },
-  { k: 'lawn', x: 380, y: 380, w: 260, h: 120, kind: 'green', name: '中心草坪' },
-  { k: 'lawn2', x: -120, y: 380, w: 200, h: 110, kind: 'green' },
-]
+// 校园底图（生成图）在数据坐标里的位置：中心和宽高，跟着镜头一起缩放、旋转
+const CAMPUS_IMG = { cx: 260, cy: 260, w: 3300, h: 1856 }
+
 export function RouteZoom({ R, hits, reduce, ratio = 2.2, pills = true, vertical = false }) {
   const uid = useId().replace(/:/g, '')
   // 坐标：你的路是一条直线 A→B；竖版（手机）把整张图转到 A 在上、B 在下
@@ -294,6 +285,7 @@ export function RouteZoom({ R, hits, reduce, ratio = 2.2, pills = true, vertical
     return () => c.stop()
   }, [R.label, reduce])
   const sp = { type: 'spring', stiffness: 150, damping: 26 }
+  const imgC = rot({ x: CAMPUS_IMG.cx, y: CAMPUS_IMG.cy })
   const me = { x: a.x + vx * p, y: a.y + vy * p }
   // 标签放在离你的路更远的一侧；太挤就换边，两边都挤只留圆点
   const sideOf = (q) => (((q.x - a.x) * vy - (q.y - a.y) * vx) >= 0 ? 1 : -1)
@@ -339,23 +331,11 @@ export function RouteZoom({ R, hits, reduce, ratio = 2.2, pills = true, vertical
   return (
     <div className="relative max-h-[560px] w-full overflow-hidden rounded-[24px] bg-surface ring-1 ring-line md:rounded-[28px]" style={{ aspectRatio: ratio }}
       role="img" aria-label={`示意地图：沿「${R.label}」这条路，${hits.length} 个示例单顺路`}>
-      <svg className="absolute inset-0 size-full opacity-20" aria-hidden="true">
-        <defs>
-          <pattern id={`blk${uid}`} width="120" height="96" patternUnits="userSpaceOnUse">
-            <rect x="10" y="10" width="100" height="76" rx="12" fill="var(--sunken)" />
-          </pattern>
-        </defs>
-        <rect width="100%" height="100%" fill={`url(#blk${uid})`} />
-      </svg>
+      <motion.img src={`${import.meta.env.BASE_URL}images/campus-wide-v1.webp`} width={1600} height={900} alt="" aria-hidden="true" loading="lazy"
+        className="pointer-events-none absolute max-w-none select-none" style={{ x: '-50%', y: '-50%' }} initial={false}
+        animate={{ left: `${X(imgC.x)}%`, top: `${Y(imgC.y)}%`, width: `${(CAMPUS_IMG.w / (x1 - x0)) * 100}%`, height: `${(CAMPUS_IMG.h / (y1 - y0)) * 100}%`, rotate: (ang * 180) / Math.PI }} transition={sp} />
+      <span aria-hidden="true" className="pointer-events-none absolute inset-0 bg-surface/25" />
       <svg viewBox="0 0 100 100" preserveAspectRatio="none" className="absolute inset-0 size-full" aria-hidden="true">
-        {LANDMARKS.map((m) => {
-          const c = rot(m)
-          const w2 = (m.w / (x1 - x0)) * 100, h2 = (m.h / (y1 - y0)) * 100
-          const cx = X(c.x), cy = Y(c.y)
-          if (m.kind === 'lake') return <ellipse key={m.k} cx={cx} cy={cy} rx={w2 / 2} ry={h2 / 2} fill="#d9e6e1" />
-          if (m.kind === 'track') return <rect key={m.k} x={cx - w2 / 2} y={cy - h2 / 2} width={w2} height={h2} rx={w2 / 2} ry={h2 / 2} fill="var(--accent-soft)" />
-          return <rect key={m.k} x={cx - w2 / 2} y={cy - h2 / 2} width={w2} height={h2} rx="1.2" ry={1.2 * (x1 - x0) / (y1 - y0)} fill={m.kind === 'green' ? 'var(--accent-soft)' : '#dfe3df'} stroke="var(--surface)" strokeWidth="3" vectorEffect="non-scaling-stroke" />
-        })}
         {/* 你的路：一条直线 */}
         <motion.line initial={false} animate={{ x1: X(a.x), y1: Y(a.y), x2: X(b.x), y2: Y(b.y) }} transition={sp}
           stroke="var(--ink)" strokeOpacity="0.85" strokeWidth="5" vectorEffect="non-scaling-stroke" strokeLinecap="round" />
@@ -373,10 +353,6 @@ export function RouteZoom({ R, hits, reduce, ratio = 2.2, pills = true, vertical
           )
         })}
       </svg>
-      {!vertical && LANDMARKS.filter((m) => m.name && !key.has(m.k) && X(rot(m).x) > 6 && X(rot(m).x) < 94 && Y(rot(m).y) > 7 && Y(rot(m).y) < 93).map((m) => (
-        <motion.span key={m.k} initial={false} animate={{ left: `${X(rot(m).x)}%`, top: `${Y(rot(m).y)}%` }} transition={sp}
-          className="pointer-events-none absolute -translate-x-1/2 -translate-y-1/2 whitespace-nowrap text-[10px] font-semibold text-muted/70 md:text-xs">{m.name}</motion.span>
-      ))}
       {hits.filter((t) => t.from === t.to).map((t) => (
         <motion.span key={t.id} aria-hidden="true" initial={false} animate={{ left: `${P(t.from)[0]}%`, top: `${P(t.from)[1]}%`, opacity: p >= along(t.from) ? 1 : 0.3 }} transition={sp}
           className="absolute size-9 -translate-x-1/2 -translate-y-1/2 rounded-full bg-accent-soft/60 ring-4 ring-accent md:size-12 md:ring-[5px]" />

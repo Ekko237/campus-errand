@@ -23,9 +23,9 @@ function BuildingSelect({ value, onChange, id }) {
 }
 
 const defaultTitle = (f) => ({
-  express: `${B[f.from]?.name} 取${SIZES.find((s) => s.id === f.size)?.label}快递`,
-  buy: `${B[f.from]?.name} 帮忙带东西`,
-  seat: `${B[f.from]?.name} 帮占一个座位`,
+  express: `${B[f.from]?.name}取${SIZES.find((s) => s.id === f.size)?.label}快递`,
+  buy: `${B[f.from]?.name}帮忙带东西`,
+  seat: `${B[f.from]?.name}帮占一个座位`,
   food: `外卖帮忙送到${B[f.to]?.name}`,
   other: '顺路帮个小忙',
 }[f.type])

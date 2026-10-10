@@ -53,7 +53,7 @@ function PrivateInfo({ t, role }) {
   const mode = privacyMode(t, role)
   const rows = [
     t.private?.code && [Package, '取件码', t.private.code, t.private.code.replace(/\d/g, '*')],
-    [House, '宿舍号', t.private?.room, (t.private?.room || '').replace(/\d+/g, '***')],
+    [House, '宿舍号', t.private?.room, (t.private?.room || '').replace(/\s*\d+\s*$/, ' ***')],
     [Phone, '联系电话', `${t.private?.phone}（虚拟号）`, '170 **** ****'],
   ].filter(Boolean)
   const [HIcon, htext] = {
