@@ -5,7 +5,7 @@ import { ArrowLeft, Check, ArrowClockwise } from '@phosphor-icons/react'
 import { useStore } from '../store'
 import CampusMap, { along } from '../landing/CampusMap'
 import { PLACES, routePath } from '../campusMap'
-import { B, dist, fmtDist, RUNNER_HOME, minCreditFor, levelOf, detourMin, detourMeters, myRoute, onMyWay } from '../data'
+import { B, dist, fmtDist, RUNNER_HOME, minCreditFor, levelOf, nextLevel, detourMin, detourMeters, myRoute, onMyWay } from '../data'
 import { Btn, Panel, TypeTag, UrgentTag, VerifiedBadge, Sheet, Stars, Empty, Field, inputCls, left, clock, ago, spring, gi } from '../ui'
 const MapPin = gi('pin')
 const Clock = gi('clock')
@@ -611,6 +611,10 @@ function WrapUp({ t }) {
           </div>
         ))}
       </dl>
+      {/* 下一个台阶还差多少：一单按时完成 +2、好评 +1，换算成「再顺几单」，比干巴巴的分差好懂 */}
+      {t.runnerId === 'runner' && nextLevel(runner.credit) && (() => { const nx = nextLevel(runner.credit); const gap = nx.min - runner.credit; return (
+        <p className="tnum mt-3 text-sm opacity-85">阿远离「{nx.name}」还差 {gap} 分，大约再顺路 {Math.ceil(gap / 3)} 单</p>
+      ) })()}
       <div className="mt-4 grid grid-cols-2 gap-2">
         {state.role === 'poster' && t.posterId === 'poster'
           ? <button onClick={() => nav(`/app/publish?again=${t.id}`)} className="h-11 rounded-full bg-on-accent text-[15px] font-semibold text-accent-deep active:scale-[0.98]">再顺一单</button>
