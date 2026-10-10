@@ -49,8 +49,8 @@ export const CH = [
     note: ['赏金托管', '确认送达才放款；发单人 2 小时不确认，系统自动放款，跑腿的人也不怕白跑。'],
   },
   {
-    k: 'match', icon: 'trust-verify-v1', alt: '带对勾的学生证', kicker: '顺路的人', fear: '怕对方是校外的人',
-    t: '一教下课的阿远，正好顺路',
+    k: 'match', icon: 'trust-verify-v1', alt: '带对勾的学生证', kicker: '顺路', fear: '怕对方是校外的人',
+    t: '阿远一教下课，正好顺路',
     d: '阿远 17:50 在一教下课，本来就要走回梅园，路过驿站只多走 1 分钟。大厅把顺他路的单排在最前面。',
     note: ['认证和门槛', '学号或 .edu.cn 邮箱认证后才能接单；信用 72 分以上，才能接 ¥15 以内的单。'],
   },
@@ -143,12 +143,15 @@ function StoryMap({ i, pos, aspect, small = false }) {
   const carryO = useTransform(carry, (c) => (c > 0.001 ? 1 : 0))
   const hasPkg = useTransform(pos, (p) => (walkAt(p).f >= F - 0.002 && walkAt(p).o > 0.5 ? 1 : 0))
   const pkgAtStation = useTransform(hasPkg, (h) => 1 - h)
+  // 开场先是驿站的照片：这件事在现实里长什么样；往下滚到第 1 步，照片淡出、地图接上
+  const photo = useTransform(pos, (p) => 1 - sm(clamp((p - 0.45) / 0.45)))
+  const photoScale = useTransform(pos, (p) => 1 + 0.06 * clamp(p / 0.9))
   const sw = small ? 1.4 : 1
   const tag = (txt, p) => (
     <span className={`absolute z-20 -translate-x-1/2 whitespace-nowrap rounded-full bg-surface px-2 py-0.5 font-semibold text-ink shadow-sm ring-1 ring-line ${small ? 'text-[11px]' : 'text-[13px]'}`} style={pp(p)}>{txt}</span>
   )
   return (
-    <div className={`relative overflow-hidden bg-sunken ring-1 ring-line ${small ? 'rounded-xl' : 'rounded-[28px]'}`} style={{ aspectRatio: aspect }} aria-hidden="true">
+    <div className={`relative isolate overflow-hidden bg-sunken ring-1 ring-line ${small ? 'rounded-xl' : 'rounded-[28px]'}`} style={{ aspectRatio: aspect }} aria-hidden="true">
       <motion.div className="absolute" style={{ left, top, width, height }}>
         <svg viewBox={`0 0 ${MW} ${MH}`} className="absolute inset-0 size-full">
           <image href={img('campus-map-v2')} x="0" y="0" width={MW} height={MH} />
@@ -186,11 +189,15 @@ function StoryMap({ i, pos, aspect, small = false }) {
 
         {/* 每一段在地图上冒一句 */}
         <AnimatePresence>
-          {i === 2 && <Bubble key="b2" p={pp([ICHI[0] - 330, ICHI[1] - 95])} small={small} dark>阿远 17:50 下课，本来就走这条路</Bubble>}
-          {i === 3 && <Bubble key="b3" p={pp([STATION[0] - 250, STATION[1] + 110])} small={small} dark>报 6-2-3108 取件</Bubble>}
+          {i === 2 && <Bubble key="b2" p={pp([ICHI[0] - 260, ICHI[1] - 95])} small={small} dark>17:50 下课，本来就走这条路</Bubble>}
+          {i === 3 && <Bubble key="b3" p={pp([STATION[0] - 170, STATION[1] + 110])} small={small} dark>报 6-2-3108 取件</Bubble>}
           {i === 5 && <Bubble key="b5" p={pp([XM[0] + 280, XM[1] - 250])} small={small} green>+¥5 到阿远</Bubble>}
           {i === 6 && <Bubble key="b6" p={pp([XM[0] + 330, XM[1] - 250])} small={small} green>阿远 +3 · 小满 +2</Bubble>}
         </AnimatePresence>
+      </motion.div>
+      <motion.div className="pointer-events-none absolute inset-0 z-50" style={{ opacity: photo }}>
+        <motion.img src={img('scene-express-v3')} width={1200} height={800} alt="" className="size-full object-cover" style={{ scale: photoScale }} />
+        <span className={`absolute rounded-full bg-surface/95 font-semibold text-ink shadow-sm ${small ? 'bottom-2 left-2 px-2 py-0.5 text-[11px]' : 'bottom-16 left-5 px-3 py-1 text-sm'}`}>傍晚 17:40 的菜鸟驿站，门口要排二十分钟</span>
       </motion.div>
     </div>
   )
@@ -238,7 +245,7 @@ function OrderCard({ i, go, small = false }) {
     </div>
   )
   return (
-    <div className="relative z-10 mx-5 -mt-14 rounded-2xl bg-surface p-4 text-ink shadow-[0_24px_50px_-28px_rgba(17,40,30,0.55)] ring-1 ring-line">
+    <div className="relative z-10 mt-2 rounded-2xl bg-surface p-4 text-ink lg:mx-5 lg:-mt-14 shadow-[0_24px_50px_-28px_rgba(17,40,30,0.55)] ring-1 ring-line">
       <div className="flex items-center gap-2">
         <img src={icon('type-express-v1')} width={28} height={28} alt="" aria-hidden="true" className="size-7" />
         <p className="min-w-0 flex-1 truncate text-[15px] font-semibold">{i === 0 ? '小满的快递，还在驿站' : '菜鸟驿站取 3 个小件快递 · 送梅园'}</p>
@@ -248,7 +255,7 @@ function OrderCard({ i, go, small = false }) {
         {CH.slice(1).map((c, k) => (
           <button key={c.k} onClick={() => go(k + 1)} aria-label={`跳到「${c.kicker}」这一步`} className="group grid gap-1 pt-1 text-center">
             <span className={`h-1.5 rounded-full transition-colors duration-300 ${k < i ? 'bg-accent' : 'bg-sunken group-hover:bg-line'}`} />
-            <span className={`text-xs font-semibold ${k + 1 === i ? 'text-accent' : 'text-muted'}`}>{c.kicker}</span>
+            <span className={`whitespace-nowrap text-xs font-semibold ${k + 1 === i ? 'text-accent' : 'text-muted'}`}>{c.kicker}</span>
           </button>
         ))}
       </div>
@@ -265,15 +272,15 @@ function OrderCard({ i, go, small = false }) {
 function Chapter({ c, k, now, dark, flat, children }) {
   const reduce = useReducedMotion()
   return (
-    <article data-ch={k} className={`flex flex-col transition-opacity duration-500 ${flat ? 'py-2' : 'pb-10 pt-8 max-lg:min-h-[78svh] lg:min-h-[92svh] lg:justify-center lg:py-0'} ${now ? '' : 'lg:opacity-25'}`}>
+    <article data-ch={k} className={`flex flex-col transition-opacity duration-500 ${flat ? 'py-2' : 'pb-10 pt-8 max-lg:min-h-[64svh] lg:min-h-[92svh] lg:justify-center lg:py-0'} ${now ? '' : 'lg:opacity-25'}`}>
       <div className="flex items-end gap-4">
-        {k > 0 && <span className={`tnum font-display text-[56px] leading-none md:text-[72px] ${dark ? 'text-on-accent/35' : 'text-accent/30'}`}>0{k}</span>}
+        {k > 0 && <span className={`tnum font-display text-[56px] leading-none md:text-[72px] ${dark ? 'text-on-accent/60' : 'text-accent/30'}`}>0{k}</span>}
         <p className={`flex items-center gap-2 pb-1 text-sm font-semibold ${dark ? 'text-on-accent' : 'text-accent'}`}>
           <img src={icon(c.icon)} width={32} height={32} alt={c.alt} loading="lazy" className="size-8 object-contain" />{c.kicker}
         </p>
       </div>
       {c.fear && (
-        <p className="relative mt-4 inline-block self-start text-[15px] font-semibold opacity-60">
+        <p className={`relative mt-4 inline-block self-start text-[15px] font-semibold ${dark ? 'opacity-80' : 'opacity-60'}`}>
           {c.fear}
           <motion.span aria-hidden="true" className={`absolute inset-x-0 top-1/2 h-0.5 origin-left rounded-full ${dark ? 'bg-on-accent' : 'bg-accent'}`}
             initial={false} animate={{ scaleX: now || reduce ? 1 : 0 }} transition={{ duration: reduce ? 0 : 0.45, delay: reduce ? 0 : 0.25, ease }} />
@@ -320,7 +327,12 @@ export default function Story() {
   const [i, setI] = useState(0)
   const pos = useMotionValue(0)
   const list = useRef(null)
-  const line = () => (window.innerWidth < 1024 ? (document.querySelector('[data-story-mini]')?.getBoundingClientRect().bottom ?? 260) + 60 : window.innerHeight * 0.5)
+  // 换步那条线：桌面在视口 60% 处；手机在吸顶条下面那块可读区域的中间。以每段标题过线为准，文字读到哪、地图就到哪
+  const line = () => {
+    if (window.innerWidth >= 1024) return window.innerHeight * 0.6
+    const b = document.querySelector('[data-story-mini]')?.getBoundingClientRect().bottom ?? 260
+    return b + (window.innerHeight - b) * 0.5
+  }
   // 正对着哪一段、这一段滚过了多少：用原生滚动事件算，后台标签页也准
   useEffect(() => {
     if (reduce) return
@@ -330,8 +342,8 @@ export default function Story() {
       const L = line()
       let k = 0, t = 0
       items.forEach((el, n) => {
-        const r = el.getBoundingClientRect()
-        if (r.top < L) { k = n; t = clamp((L - r.top) / r.height) }
+        const h = el.querySelector('h2, h3')?.getBoundingClientRect().top ?? el.getBoundingClientRect().top
+        if (h < L) { k = n; t = clamp((L - h) / el.getBoundingClientRect().height) }
       })
       setI(k)
       pos.set(k === items.length - 1 ? k : k + t)
@@ -341,7 +353,7 @@ export default function Story() {
   }, [reduce, pos])
   // 点订单卡上的进度格：滚到那一段的开头
   const go = (k) => {
-    const el = list.current?.querySelectorAll('[data-ch]')[k]
+    const el = list.current?.querySelectorAll('[data-ch]')[k]?.querySelector('h2, h3')
     if (el) window.scrollBy({ top: el.getBoundingClientRect().top - line() + 2, behavior: reduce ? 'auto' : 'smooth' })
   }
   // 放款和互评两段换成品牌深绿：一单走到最后，整段的颜色也到了高潮
@@ -367,13 +379,13 @@ export default function Story() {
     <section id="story" className="scroll-mt-16 px-2 md:px-4">
       <div className={`rounded-[32px] transition-colors duration-700 md:rounded-[48px] ${dark ? 'bg-accent-deep text-on-accent' : 'bg-bg text-ink'}`}>
         <div className="mx-auto max-w-7xl px-2 pb-10 md:px-4 lg:grid lg:grid-cols-12 lg:gap-12 lg:pb-[12svh]">
-          {/* 手机：吸在最顶上（盖住顶栏）的地图 + 一行订单，下面一段段文字滚过去 */}
-          <div data-story-mini className={`sticky top-0 z-40 -mx-2 px-3 pb-1 pt-2 transition-colors duration-700 lg:hidden ${dark ? 'bg-accent-deep' : 'bg-bg'}`}>
+          {/* 手机：吸在顶栏下面的地图 + 一行订单，下面一段段文字滚过去；顶栏的「体验原型」和「目录」一直在 */}
+          <div data-story-mini className={`sticky top-16 z-20 -mx-2 px-3 pb-1 pt-2 transition-colors duration-700 lg:hidden ${dark ? 'bg-accent-deep' : 'bg-bg'}`}>
             <div className="grid gap-1.5"><StoryMap i={i} pos={pos} aspect={2.05} small /><OrderCard i={i} go={go} small /></div>
             <div aria-hidden="true" className={`pointer-events-none absolute inset-x-0 top-full h-10 bg-gradient-to-b ${dark ? 'from-accent-deep' : 'from-bg'} to-transparent`} />
           </div>
           <div ref={list} className="px-2 lg:col-span-5">
-            {CH.map((c, k) => <Chapter key={c.k} c={c} k={k} now={k === i} dark={dark}>{k === 0 && <SceneShot />}</Chapter>)}
+            {CH.map((c, k) => <Chapter key={c.k} c={c} k={k} now={k === i} dark={dark} />)}
           </div>
           {/* 桌面：右边的舞台吸住，一直在场 */}
           <div className="hidden lg:col-span-7 lg:block">

@@ -1232,7 +1232,7 @@ function ThinkTeaser() {
           <p className="text-sm font-semibold text-accent">产品思考</p>
           <p className="mt-1 font-display text-[28px] leading-tight md:text-[34px]">为什么是「顺路」，看哪三个数，接下来做什么</p>
         </div>
-        <span className="inline-flex h-12 shrink-0 items-center gap-2 self-start rounded-full bg-ink px-5 text-[15px] font-semibold text-bg md:self-auto">读产品思考<ArrowRight size={16} weight="bold" className="transition-transform group-hover:translate-x-0.5" /></span>
+        <span className="inline-flex h-12 shrink-0 items-center gap-2 self-start rounded-full bg-accent px-5 text-[15px] font-semibold text-on-accent md:self-auto">读产品思考<ArrowRight size={16} weight="bold" className="transition-transform group-hover:translate-x-0.5" /></span>
       </Link>
     </section>
   )
@@ -1259,8 +1259,8 @@ export default function Landing({ page }) {
         <main>
           <RouteHero Cta={Cta} Anchor={Anchor} />
           <Story />
-          <MoreScenes />
           <Routes />
+          <MoreScenes />
           <Credit />
           <Safety />
           <ThinkTeaser />
