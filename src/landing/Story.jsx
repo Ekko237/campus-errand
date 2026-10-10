@@ -225,9 +225,9 @@ function OrderCard({ i, go, small = false }) {
     // 手机：一行，只放状态和这一步在变的那一格
     const hot = i >= 5 ? ['信用', <>阿远 <Roll v={RUNNER[i]} /> · 小满 <Roll v={POSTER[i]} /></>] : i === 3 || i === 4 ? ['取件码', CODE[i]] : ['托管', ESCROW[i]]
     return (
-      <div className="flex items-center gap-2 rounded-xl bg-surface px-2.5 py-2 text-ink ring-1 ring-line">
+      <div className="flex items-center gap-2 rounded-xl bg-surface/95 px-2.5 py-1.5 text-ink shadow-[0_8px_20px_-10px_rgba(17,40,30,0.5)] ring-1 ring-line backdrop-blur">
         {status('text-[13px]')}
-        <span className="shrink-0 text-[12px] text-muted">{hot[0]}</span>
+        <span className="shrink-0 text-[12px] font-semibold text-ink/70">{hot[0]}</span>
         <span className="tnum min-w-0 truncate text-[14px] font-bold">{hot[1]}</span>
         <span className="ml-auto flex shrink-0 gap-0.5" aria-hidden="true">{CH.slice(1).map((c, k) => <span key={c.k} className={`h-1.5 w-2.5 rounded-full ${k < i ? 'bg-accent' : 'bg-sunken'}`} />)}</span>
       </div>
@@ -271,7 +271,7 @@ function OrderCard({ i, go, small = false }) {
 function Chapter({ c, k, now, dark, flat, children }) {
   const reduce = useReducedMotion()
   return (
-    <article data-ch={k} className={`flex flex-col transition-opacity duration-500 ${flat ? 'py-2' : 'pb-10 pt-8 max-lg:min-h-[64svh] lg:min-h-[74svh] lg:justify-center lg:py-0'} ${now ? '' : 'lg:opacity-60'}`}>
+    <article data-ch={k} data-now={now ? '' : undefined} className={`group/ch flex flex-col ${flat ? 'py-2' : 'pb-10 pt-8 max-lg:min-h-[52svh] lg:min-h-[74svh] lg:justify-center lg:py-0'} `}>
       <div className="flex items-end gap-4">
         {k > 0 && <span className={`tnum font-display text-[56px] leading-none transition-colors duration-500 md:text-[72px] ${dark ? (now ? 'text-on-accent' : 'text-on-accent/50') : now ? 'text-accent' : 'text-accent/30'}`}>0{k}</span>}
         <p className={`flex items-center gap-2 pb-1 text-sm font-semibold ${dark ? 'text-on-accent' : 'text-accent'}`}>
@@ -291,23 +291,13 @@ function Chapter({ c, k, now, dark, flat, children }) {
           {parts.map((x, n) => <span key={n} className="inline-block whitespace-nowrap">{x}{n < parts.length - 1 ? '，' : ''}</span>)}
         </T>
       ) })()}
-      <p className="mt-4 max-w-[32ch] text-lg leading-relaxed opacity-85 md:text-xl">{c.d}</p>
-      <div className={`mt-6 max-w-[40ch] border-l-[3px] pl-4 ${dark ? 'border-on-accent' : 'border-accent'}`}>
+      <p className={`mt-4 max-w-[32ch] text-lg leading-relaxed transition-opacity duration-500 md:text-xl ${now ? 'opacity-85' : 'opacity-85 lg:opacity-45'}`}>{c.d}</p>
+      <div className={`mt-6 max-w-[40ch] border-l-[3px] pl-4 transition-opacity duration-500 ${dark ? 'border-on-accent' : 'border-accent'} ${now ? '' : 'lg:opacity-45'}`}>
         <p className="text-[15px] font-bold">{c.note[0]}</p>
         <p className="mt-1 text-[15px] leading-relaxed opacity-70">{c.note[1]}</p>
       </div>
       {children}
     </article>
-  )
-}
-
-// 开场那张驿站照片：先让人看到这件事在现实里长什么样，再跟着地图走
-function SceneShot() {
-  return (
-    <figure className="mt-6 max-w-[420px] overflow-hidden rounded-2xl ring-1 ring-line">
-      <img src={img('scene-express-v3')} width={840} height={560} alt="傍晚的校园快递驿站，货架上堆满包裹，门口排着长队" loading="lazy" className="aspect-[3/2] w-full object-cover" />
-      <figcaption className="bg-surface px-3 py-2 text-sm text-muted">傍晚 17:40 的驿站，门口要排二十分钟</figcaption>
-    </figure>
   )
 }
 
@@ -318,8 +308,8 @@ function Finale({ on }) {
       {[['阿远 · 跑腿', 70, 73], ['小满 · 发单', 88, 90]].map(([who, a, b]) => (
         <div key={who} className="rounded-2xl bg-on-accent/10 p-4 ring-1 ring-on-accent/20">
           <p className="text-sm font-semibold opacity-80">{who}</p>
-          <p className="tnum mt-1 font-display text-[64px] leading-none md:text-[80px]"><Roll v={on ? b : a} /></p>
-          <p className="tnum mt-2 text-sm font-bold">+{b - a} · 从 {a} 起</p>
+          <p className="tnum mt-1 font-display text-[64px] leading-none md:text-[80px]">+<Roll v={on ? b - a : 0} /></p>
+          <p className="tnum mt-2 text-sm font-bold">{a} → {b}</p>
         </div>
       ))}
     </div>
@@ -381,7 +371,7 @@ export default function Story() {
         <div className="divide-y divide-line">
           {CH.map((c, k) => (
             <div key={c.k} className="grid gap-6 py-6 lg:grid-cols-12 lg:items-center lg:gap-12">
-              <div className="lg:col-span-5"><Chapter c={c} k={k} now flat>{k === 0 && <SceneShot />}</Chapter></div>
+              <div className="lg:col-span-5"><Chapter c={c} k={k} now flat /></div>
               <div className="lg:col-span-7"><StaticStage k={k} /></div>
             </div>
           ))}
@@ -396,7 +386,7 @@ export default function Story() {
         <div className="mx-auto max-w-7xl px-2 pb-10 md:px-4 lg:grid lg:grid-cols-12 lg:gap-12 lg:px-4 lg:pb-[12svh] xl:max-w-[calc(80rem-32px)] xl:px-0">
           {/* 手机：吸在顶栏下面的地图 + 一行订单，下面一段段文字滚过去；顶栏的「体验原型」和「目录」一直在 */}
           <div data-story-mini className={`sticky top-16 z-20 -mx-2 px-3 pb-1 pt-2 transition-colors duration-700 lg:hidden ${dark ? 'bg-accent-deep' : 'bg-bg'}`}>
-            <div className="grid gap-1.5"><StoryMap i={i} pos={pos} aspect={1.7} small /><OrderCard i={i} go={go} small /></div>
+            <div className="relative"><StoryMap i={i} pos={pos} aspect={1.75} small /><div className="absolute inset-x-1.5 bottom-1.5 z-10"><OrderCard i={i} go={go} small /></div></div>
             <div aria-hidden="true" className={`pointer-events-none absolute inset-x-0 top-full h-10 bg-gradient-to-b ${dark ? 'from-accent-deep' : 'from-bg'} to-transparent`} />
           </div>
           <div ref={list} className="px-2 lg:col-span-5">
