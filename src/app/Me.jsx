@@ -51,7 +51,7 @@ function RemindToggle() {
       <AnimatePresence initial={false}>
         {on && (
           <motion.div initial={reduce ? false : { opacity: 0, y: -8, height: 0 }} animate={{ opacity: 1, y: 0, height: 'auto' }} exit={{ opacity: 0, height: 0 }} transition={{ duration: 0.25 }} className="overflow-hidden px-4">
-            <p className="flex items-center justify-between text-xs font-semibold text-muted">下课时你会收到<button onClick={() => setRing(true)} className="h-8 rounded-full bg-accent-soft px-3 text-[13px] font-semibold text-accent active:scale-[0.97]">模拟下课，推给我</button></p>
+            <p className="flex items-center justify-between text-xs font-semibold text-muted">下课时你会收到<button onClick={() => setRing(true)} className="h-8 rounded-full bg-accent-soft px-3 text-[13px] font-semibold text-accent active:scale-[0.97]">预览 17:45 的提醒</button></p>
             <div className="mb-4 mt-1.5 flex gap-3 rounded-2xl bg-bg p-3 shadow-[0_10px_24px_-16px_rgba(17,40,30,0.5)] ring-1 ring-line">
               <img src={`${import.meta.env.BASE_URL}brand/logo-v2.png`} width={36} height={36} alt="" className="size-9 shrink-0 rounded-lg" />
               <div className="min-w-0 text-sm">

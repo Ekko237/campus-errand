@@ -54,7 +54,10 @@ export default function TourBar() {
       if (!el || !(loc.pathname.startsWith('/app/task/') || loc.pathname.startsWith('/app/publish'))) return
       const head = document.querySelector('header')?.getBoundingClientRect().bottom ?? 64
       const navTop = document.querySelector('nav[aria-label="主导航"]')?.getBoundingClientRect().top ?? innerHeight
-      const r = el.getBoundingClientRect()
+      const r0 = el.getBoundingClientRect()
+      // 按钮下面紧跟的一行小字（「2 小时内确认，信用 +1」）也一起露出来
+      const nx = el.nextElementSibling?.tagName === 'P' ? el.nextElementSibling.getBoundingClientRect() : null
+      const r = nx && nx.top - r0.bottom < 24 ? { top: r0.top, bottom: nx.bottom, height: nx.bottom - r0.top } : r0
       const top = head + 16, bottom = (navTop > innerHeight / 2 ? navTop : innerHeight) - 96
       // 贴底常驻的按钮（发布页）本来就看得见，不滚，让人从表单顶上看起
       if (touched) return
@@ -88,7 +91,10 @@ export default function TourBar() {
       if (moment) {
         const head = document.querySelector('header')?.getBoundingClientRect().bottom ?? 64
         const mr = moment.getBoundingClientRect()
-        if (!touched && (mr.top < head + 16 || mr.bottom > innerHeight - 80)) window.scrollBy({ top: mr.top - head - 16, behavior: reduce ? 'auto' : 'smooth' })
+        // 订单标题和这张卡能一起放下，就从标题开始露，免得标题正好藏在顶栏下面、看不出是哪一单
+        const tr = document.querySelector('main h1')?.getBoundingClientRect()
+        const from = tr && mr.bottom - tr.top <= innerHeight - head - 96 ? tr.top : mr.top
+        if (!touched && (mr.top < head + 16 || mr.bottom > innerHeight - 80)) window.scrollBy({ top: from - head - 16, behavior: reduce ? 'auto' : 'smooth' })
         // 放款那条「¥5 从小满流到阿远」要播约 2.3 秒，取件码揭晓短一些
         wait = step.n === 7 ? 2600 : step.n === 5 ? 1200 : 1600
         late = true

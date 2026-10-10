@@ -278,7 +278,7 @@ function DeliverSheet({ t, open, onClose }) {
                   </span>
                 ))}
               </div>
-              <input inputMode="numeric" maxLength={4} value={code} onChange={(e) => { setCode(e.target.value.replace(/\D/g, '').slice(0, 4)); setErr(null) }} className="absolute inset-0 size-full cursor-text opacity-0" aria-label="4 位送达码" aria-invalid={!!err} />
+              <input autoFocus inputMode="numeric" maxLength={4} value={code} onChange={(e) => { setCode(e.target.value.replace(/\D/g, '').slice(0, 4)); setErr(null) }} className="absolute inset-0 size-full cursor-text opacity-0" aria-label="4 位送达码" aria-invalid={!!err} />
             </div>
           </Field>
         </div>

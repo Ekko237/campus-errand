@@ -778,6 +778,8 @@ function Credit() {
               </div>
               <ul className="mt-4 h-8 space-y-1.5 overflow-hidden text-[15px] lg:mt-6 lg:h-[6.5rem]" aria-live="polite">
                 {hist.length === 0 && <li className="truncate opacity-75"><span className="lg:hidden">点下面的规则，这里记一笔</span><span className="hidden lg:inline">点右边任意一条规则，分数会在这里记一笔。</span></li>}
+                {/* 还没记账时先画两行虚线账本，看得出这块是留给记录的，不是空着 */}
+                {hist.length === 0 && [0, 1].map((k) => <li key={k} aria-hidden="true" className="hidden h-7 border-b border-dashed border-on-accent/25 lg:block" />)}
                 <AnimatePresence initial={false}>
                   {hist.map((h) => (
                     <motion.li key={h.id} layout initial={reduce ? false : { opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.25 }}
@@ -788,7 +790,7 @@ function Credit() {
                   ))}
                 </AnimatePresence>
               </ul>
-              <div className="mt-auto flex items-center gap-3 pt-6">
+              <div className="flex items-center gap-3 pt-6 lg:pt-8">
                 <img src={icon(tier.badge + '-v1')} width={56} height={56} alt={tier.alt} className="size-14 rounded-2xl bg-on-accent/90 object-contain p-1" />
                 <div>
                   <p className="text-xl font-bold">「{tier.name}」</p>
