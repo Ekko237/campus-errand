@@ -56,8 +56,12 @@ export default function TourBar() {
       const top = head + 16, bottom = (navTop > innerHeight / 2 ? navTop : innerHeight) - 24
       // 贴底常驻的按钮（发布页）本来就看得见，不滚，让人从表单顶上看起
       if (touched) return
-      if ((r.top >= top && r.bottom <= bottom) || (el.closest('.sticky') && r.bottom <= innerHeight)) return
-      // 先试着把按钮所在的整块（卡片、段落）顶到导览条下面：块的标题不被切，按钮也在屏幕里
+      const hard = (navTop > innerHeight / 2 ? navTop : innerHeight) - 4
+      // 按钮已经完整看得见（哪怕离底部导航只差几像素）就不动：用户可能正伸手去点
+      if ((r.top >= head && r.bottom <= hard) || (el.closest('.sticky') && r.bottom <= innerHeight)) return
+      // 露了一部分：只挪刚好够的那一点，不大幅跳
+      if (r.bottom > head && r.top < hard) { window.scrollBy({ top: r.bottom > bottom ? r.bottom - bottom : r.top - top, behavior: reduce ? 'auto' : 'smooth' }); return }
+      // 完全在屏幕外：把按钮所在的整块（卡片、段落）顶到导览条下面，块的标题不被切
       let dy = null
       for (let a = el.parentElement; a && a.tagName !== 'MAIN'; a = a.parentElement) {
         const ar = a.getBoundingClientRect()

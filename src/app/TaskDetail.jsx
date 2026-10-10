@@ -147,7 +147,7 @@ function PickupCard({ t }) {
           )}
           </div>
           <div className="mt-1 flex items-center justify-between gap-3">
-            <p className="tnum text-4xl font-bold tracking-wide">{sealed || t.picked ? <span className="opacity-40">{t.private.code.replace(/\d/g, '•').replace(/-/g, ' ')}</span> : <CodeReveal code={t.private.code} play={fresh} />}</p>
+            <p className="tnum text-4xl font-bold tracking-wide">{sealed || t.picked ? <span className="opacity-40">{t.private.code.replace(/\d/g, '•')}</span> : <CodeReveal code={t.private.code} play={fresh} />}</p>
             {!sealed && !t.picked && <button onClick={copy} className="h-10 shrink-0 whitespace-nowrap rounded-full bg-bg/15 px-4 text-sm font-semibold transition active:scale-95">{copied ? '已复制' : '复制'}</button>}
           </div>
         </>

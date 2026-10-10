@@ -159,7 +159,7 @@ function Nav({ page }) {
         </nav>
         <div className="flex items-center gap-2">
           <div className={`transition-opacity duration-300 ${(scrolled || !home) && !open ? '' : 'max-md:pointer-events-none max-md:opacity-0'}`}><Cta size="sm" /></div>
-          {!home && <Link to="/" aria-label="回首页" className="inline-flex h-10 items-center gap-1.5 rounded-full bg-sunken px-3 text-[15px] font-semibold active:scale-[0.97] md:px-4"><ArrowLeft size={16} weight="bold" /><span className="max-md:hidden">回</span>首页</Link>}
+          {!home && <Link to="/" aria-label="回首页" className="inline-flex h-10 items-center gap-1.5 rounded-full bg-sunken px-3 text-[15px] font-semibold active:scale-[0.97] md:px-4"><ArrowLeft size={16} weight="bold" /><span><span className="max-md:hidden">回</span>首页</span></Link>}
           {home && (
             <button onClick={() => { setCur(scrollY + innerHeight >= document.documentElement.scrollHeight - 4 ? SECTIONS[SECTIONS.length - 1][0] : [...SECTIONS].reverse().find(([id]) => (document.getElementById(id)?.getBoundingClientRect().top ?? 1e9) < 140)?.[0]); setOpen((v) => !v) }} aria-expanded={open} aria-controls="mnav" className="grid h-10 place-items-center rounded-full bg-sunken px-4 text-[15px] font-semibold active:scale-[0.97] lg:hidden">{open ? '收起' : '目录'}</button>
           )}
@@ -224,7 +224,7 @@ const SCENES = [
     key: 'handoff', tab: '宿舍楼下的交接', short: '楼下交接', route: ['北门', '桃园 2 号楼', '从北门进校回桃园的同学，多走 3 分钟'], img: 'scene-handoff-v3', alt: '傍晚的宿舍楼门口，一名学生把外卖袋递给另一名学生',
     who: '赶作业下不了楼的于小渔',
     pain: '外卖放在北门取餐点，走回 6 楼要十分钟。正好回宿舍的同学顺手就能捎上来，可彼此不认识，也不想把宿舍号给陌生人。',
-    fix: '大厅按距离排序，顺路回宿舍的人最先看到；宿舍号接单后才显示，订单结束自动隐藏。',
+    fix: '大厅优先显示顺你路的单，顺路回宿舍的人最先看到；宿舍号接单后才显示，订单结束自动隐藏。',
   },
 ]
 
@@ -383,7 +383,7 @@ function StageMap({ i, tall = false }) {
     </div>
     <p className="mt-1.5 grid min-h-[2.5rem] grid-cols-2 content-start gap-x-3 gap-y-0.5 text-[12px] text-ink/80 sm:flex sm:flex-wrap">
       {/* 图例四项常驻，只换透明度：切步骤时行数不变，下面的按钮不跳 */}
-      <span className="inline-flex items-center gap-1"><img src={icon('avatar-runner-v1')} width={16} height={16} alt="" className="size-4 rounded-full ring-2 ring-ink" />跑腿的阿远</span>
+      <span className={`inline-flex items-center gap-1 transition-opacity ${i === 0 ? 'opacity-40' : ''}`}><img src={icon('avatar-runner-v1')} width={16} height={16} alt="" className="size-4 rounded-full ring-2 ring-ink" />跑腿的阿远{i === 0 ? '（接单后出现）' : ''}</span>
       <span className="inline-flex items-center gap-1"><i className="h-1 w-4 rounded-full bg-ink/80" />走过的路</span>
       <span className="inline-flex items-center gap-1"><i className="w-4 border-t-2 border-dotted border-ink/50" />还没走的</span>
       <span className={`inline-flex items-center gap-1 transition-opacity ${i >= 3 ? '' : 'opacity-40'}`}><i className="h-1.5 w-4 rounded-full bg-accent" />捎着你快递的那段</span>
@@ -868,7 +868,7 @@ function BanDemo() {
         <input value={typed} onFocus={() => setOwn((v) => v ?? '')} onChange={(e) => setOwn(e.target.value)} maxLength={40} aria-label="备注（选填），可以自己打字试试"
           placeholder="比如：帮我代签到" aria-invalid={!!hit}
           className={`h-12 w-full rounded-xl px-3.5 text-base text-ink ring-1 transition-colors placeholder:text-muted focus:outline-none ${hit ? 'bg-danger-soft ring-2 ring-danger focus:ring-danger' : 'bg-bg ring-line focus:ring-2 focus:ring-accent'}`} />
-        {own === null && <span aria-hidden="true" className="pointer-events-none absolute top-1/2 h-5 w-0.5 -translate-y-1/2 animate-pulse bg-ink" style={{ left: `calc(14px + ${typed.length}em)` }} />}
+        {own === null && <span aria-hidden="true" className="pointer-events-none absolute top-1/2 h-5 w-0.5 -translate-y-1/2 animate-pulse bg-ink" style={{ left: `calc(16px + ${typed.length}em)` }} />}
       </div>
       {/* 提示区固定高度：拦截卡只淡入淡出，下面的按钮不跟着跳 */}
       <div className="relative mt-3 h-[96px] md:h-[80px]">
@@ -888,10 +888,10 @@ function BanDemo() {
       {/* 真按钮：合规时带着这句备注去原型的发布页；被拦时变灰不能点 */}
       <button type="button" disabled={!!hit} onClick={() => { try { sessionStorage.setItem('shunluxia:draft-note', typed) } catch { /* 存不了就空着进 */ } nav('/app/publish?as=poster') }}
         className={`mt-3 grid h-12 w-full place-items-center rounded-full text-[15px] font-semibold active:scale-[0.98] disabled:cursor-not-allowed ${hit ? 'bg-sunken text-muted' : 'bg-accent text-on-accent'}`}>{hit ? '不能发布' : '带着这句去原型里发布 →'}</button>
-      <p className="mt-4 text-xs font-semibold text-muted">会被拦下的词</p>
+      <p className="mt-4 text-xs font-semibold text-muted">会被拦下的词（点一个试试）</p>
       <ul className="mt-2 flex flex-wrap gap-1.5">
         {['代考', '替考', '代签到', '代点名', '代写作业', '代刷网课'].map((w) => (
-          <li key={w} className={`rounded-full px-2.5 py-1 text-xs font-semibold transition-colors ${hit && hit[0] === w ? 'bg-danger text-on-accent' : 'bg-sunken text-ink/75'}`}>{w}</li>
+          <li key={w}><button type="button" onClick={() => setOwn(`帮我${w}一下`)} className={`h-8 rounded-full px-2.5 text-xs font-semibold transition-colors active:scale-[0.96] ${hit && hit[0] === w ? 'bg-danger text-on-accent' : 'bg-sunken text-ink/75 hover:bg-line'}`}>{w}</button></li>
         ))}
       </ul>
     </div>
@@ -1030,7 +1030,8 @@ function Routes() {
 // 结尾：选你下课常走的路，当场算出此刻有几单顺路；带着这条路进原型（大厅按它排序）
 function Final({ page }) {
   const nav = useNavigate()
-  const [ri, setRi] = useState(0)
+  // 结尾不再放路线按钮（和「顺路地图」那节重复），就讲最常见的一教下课回梅园
+  const ri = 0
   const R = ROUTES[ri]
   const reduce = useReducedMotion()
   const hits = routeHits(R)
@@ -1053,14 +1054,6 @@ function Final({ page }) {
       <div className="mx-auto grid max-w-7xl gap-10 px-4 py-20 md:px-8 md:py-28 lg:grid-cols-12 lg:items-center lg:gap-12 lg:py-32">
         <div className="lg:col-span-5">
           <Reveal><h2 className="font-display text-balance text-[40px] font-bold leading-[1.08] tracking-[-0.035em] md:text-7xl">你下课<br />常走哪条路？</h2></Reveal>
-          <Reveal delay={0.05}>
-            <div className="mt-8 flex flex-wrap gap-1.5 md:gap-2" role="group" aria-label="选你常走的路">
-              {ROUTES.map((x, i) => (
-                <button key={x.label} onClick={() => setRi(i)} aria-pressed={i === ri}
-                  className={`h-11 whitespace-nowrap rounded-full px-3 text-[14px] font-semibold transition-colors active:scale-[0.97] md:px-4 md:text-[15px] ${i === ri ? 'bg-ink text-bg' : 'bg-surface text-ink ring-1 ring-line'}`}><span className="md:hidden">{x.short}</span><span className="max-md:hidden">{x.label}</span></button>
-              ))}
-            </div>
-          </Reveal>
           <Reveal delay={0.1}>
             <p className="mt-8 text-lg text-muted md:text-xl" aria-live="polite">此刻路上有 <AnimatePresence mode="wait" initial={false}><motion.b key={n} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.18 }} className="tnum inline-block text-3xl text-accent md:text-4xl">{n}</motion.b></AnimatePresence> 单顺路，<span className="whitespace-nowrap">捎上都不超过 5 分钟</span></p>
             <p className="mt-3 max-w-[34ch] text-[15px] text-muted">在原型「我的」里打开下课提醒，下课前 5 分钟把这条路上的单推给你。</p>
