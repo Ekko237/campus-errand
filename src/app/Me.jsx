@@ -18,6 +18,23 @@ function CountUp({ value, from = value }) {
   return <motion.span>{out}</motion.span>
 }
 
+// 留存钩子：下课前提醒路上的单（原型只记住开关，不真的发通知）
+function RemindToggle() {
+  const [on, setOn] = useState(() => { try { return localStorage.getItem('shunluxia:remind') === '1' } catch { return false } })
+  const flip = () => setOn((v) => { const n = !v; try { localStorage.setItem('shunluxia:remind', n ? '1' : '0') } catch { /* 存不了不影响 */ } return n })
+  return (
+    <button onClick={flip} role="switch" aria-checked={on} className="flex w-full items-center gap-3 border-t border-line px-4 py-3 text-left">
+      <span className="min-w-0 flex-1">
+        <span className="block text-[15px] font-semibold">下课前 5 分钟提醒我路上的单</span>
+        <span className="block text-sm text-muted">{on ? '已开启：每天 17:45 推送这条路上的单（示例，原型不会真的发通知）' : '按课表在你要走这条路之前提醒，不用自己翻大厅'}</span>
+      </span>
+      <span className={`relative h-7 w-12 shrink-0 rounded-full transition-colors ${on ? 'bg-accent' : 'bg-sunken ring-1 ring-line'}`}>
+        <motion.span layout transition={{ type: 'spring', stiffness: 500, damping: 32 }} className={`absolute top-1 size-5 rounded-full bg-surface shadow ${on ? 'right-1' : 'left-1'}`} />
+      </span>
+    </button>
+  )
+}
+
 export default function Me() {
   const { state, act } = useStore()
   const me = useMe()
@@ -98,7 +115,8 @@ export default function Me() {
         const open = state.tasks.filter((t) => t.status === 'open' && t.posterId !== 'poster' && t.deadline > Date.now())
         const hits = open.map((t) => detourMin(route.from, route.to, t)).filter((m) => m <= 5)
         return (
-          <Link to="/app" className="flex items-center gap-3 rounded-2xl bg-surface p-4 ring-1 ring-line transition active:scale-[0.99]">
+          <div className="rounded-2xl bg-surface ring-1 ring-line">
+          <Link to="/app" className="flex items-center gap-3 p-4 transition active:scale-[0.99]">
             <span className="grid size-11 shrink-0 place-items-center rounded-full bg-accent-soft text-accent"><Path size={22} weight="bold" /></span>
             <span className="min-w-0 flex-1">
               <span className="block text-sm text-muted">我常走的路</span>
@@ -110,6 +128,8 @@ export default function Me() {
             </span>
             <CaretRight size={16} weight="bold" className="shrink-0 text-muted" />
           </Link>
+          <RemindToggle />
+          </div>
         )
       })()}
 
