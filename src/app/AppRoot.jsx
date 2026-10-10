@@ -52,10 +52,10 @@ function Toasts() {
   }, [last?.id]) // eslint-disable-line react-hooks/exhaustive-deps
   const bad = list.some((t) => t.tone === 'bad')
   return (
-    <div className="pointer-events-none fixed inset-x-0 top-[72px] z-50 flex justify-center px-4" aria-live="polite">
+    <div className={`pointer-events-none fixed inset-x-0 z-50 flex justify-center px-4 ${state.tour.active ? 'bottom-[calc(10.5rem+env(safe-area-inset-bottom))]' : 'bottom-[calc(4.75rem+env(safe-area-inset-bottom))]'}`} aria-live="polite">
       <AnimatePresence initial={false}>
         {last && (
-          <motion.div key="toast" layout initial={reduce ? false : { y: -12, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ opacity: 0, transition: { duration: 0.15 } }} transition={spring}
+          <motion.div key="toast" layout initial={reduce ? false : { y: 12, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ opacity: 0, transition: { duration: 0.15 } }} transition={spring}
             className={`pointer-events-auto w-full max-w-md space-y-1 rounded-2xl px-4 py-3 text-[15px] font-medium shadow-lg shadow-ink/10 ring-1 ${bad ? 'bg-danger-soft text-danger ring-danger/30' : 'bg-surface text-ink ring-line'}`}
             onClick={() => list.forEach((t) => act('dismissToast', { tid: t.id }))}>
             {list.map((t) => (

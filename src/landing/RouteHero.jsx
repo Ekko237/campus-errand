@@ -214,7 +214,7 @@ export function CampusRoutes() {
       <p className="mt-4 max-w-[40ch] text-lg leading-relaxed text-muted md:text-xl" aria-live="polite">
         此刻 {tasks.length} 个示例单里，有 <b className="text-accent">{hits.length} 个</b>顺路，捎上多走 {!hits.length ? 0 : hits[0].m === hits[hits.length - 1].m ? hits[0].m : `${hits[0].m} 到 ${hits[hits.length - 1].m}`} 分钟。
       </p>
-      <div ref={box} className="relative mt-6 aspect-[3/4] w-full overflow-hidden rounded-[24px] bg-surface ring-1 ring-line sm:aspect-[4/3] md:rounded-[28px] lg:aspect-[2/1]"
+      <div ref={box} className="relative mt-6 hidden w-full overflow-hidden rounded-[28px] bg-surface ring-1 ring-line md:block md:aspect-[4/3] lg:aspect-[2/1]"
         style={{ backgroundImage: 'linear-gradient(var(--bg) 2px, transparent 2px), linear-gradient(90deg, var(--bg) 2px, transparent 2px)', backgroundSize: '56px 56px' }}
         role="img" aria-label={`示意地图：沿「${R.label}」这条路，${hits.length} 个示例单顺路`}>
         <svg viewBox="0 0 100 100" preserveAspectRatio="none" className="absolute inset-0 size-full" aria-hidden="true">
@@ -248,20 +248,45 @@ export function CampusRoutes() {
           ))}
         </AnimatePresence>
       </div>
-      <ul className="mt-4 space-y-2 md:hidden">
-        {hits.map((t) => (
-          <li key={R.label + t.id} className="flex items-center gap-3 rounded-2xl bg-surface p-3 ring-1 ring-line">
-            <span className="tnum shrink-0 rounded-full bg-accent px-2.5 py-1 text-sm font-bold text-on-accent">多走 {t.m} 分钟</span>
-            <span className="min-w-0 truncate text-[15px] font-medium">{t.title}</span>
-            <span className="tnum ml-auto shrink-0 font-bold">¥{t.reward}</span>
-          </li>
-        ))}
-      </ul>
-      <div className="mt-3 flex flex-wrap gap-x-5 gap-y-1 text-sm text-muted">
+      <SubwayLine R={R} hits={hits} reduce={reduce} />
+      <div className="mt-3 hidden flex-wrap gap-x-5 md:flex gap-y-1 text-sm text-muted">
         <span className="inline-flex items-center gap-1.5"><i className="h-1 w-5 rounded-full bg-ink/80" />你正要走的路</span>
         <span className="inline-flex items-center gap-1.5"><i className="h-1.5 w-5 rounded-full bg-accent" />顺路的单</span>
         <span className="inline-flex items-center gap-1.5"><i className="h-0.5 w-5 rounded-full bg-line" />不顺路</span>
       </div>
+    </div>
+  )
+}
+
+// 手机上的顺路：把你的路画成一根竖着的地铁线，顺路的单按在路上的先后挂成站点
+function SubwayLine({ R, hits, reduce }) {
+  const a = B[R.from], b = B[R.to]
+  const vx = b.x - a.x, vy = b.y - a.y, len2 = vx * vx + vy * vy || 1
+  const along = (id) => Math.max(0, Math.min(1, ((B[id].x - a.x) * vx + (B[id].y - a.y) * vy) / len2))
+  const stops = [...hits].sort((p, q) => along(p.from) - along(q.from))
+  const end = (name, sub) => (
+    <li className="relative flex items-center gap-3 py-1">
+      <span className="z-10 grid size-6 shrink-0 place-items-center rounded-full bg-ink ring-4 ring-bg"><span className="size-2 rounded-full bg-bg" /></span>
+      <span className="text-[15px] font-bold">{name}</span><span className="text-sm text-muted">{sub}</span>
+    </li>
+  )
+  return (
+    <div className="mt-6 rounded-[24px] bg-surface p-4 ring-1 ring-line md:hidden">
+      <ol key={R.label} className="relative space-y-3">
+        <span aria-hidden="true" className="absolute bottom-4 left-[11px] top-4 w-[3px] rounded-full bg-ink/80" />
+        {end(SHORT[R.from], '出发')}
+        {stops.map((t, i) => (
+          <motion.li key={t.id} initial={reduce ? false : { opacity: 0, x: -8 }} animate={{ opacity: 1, x: 0 }} transition={{ type: 'spring', stiffness: 420, damping: 30, delay: 0.15 + i * 0.12 }}
+            className="relative flex items-center gap-3">
+            <span className="z-10 ml-[3px] size-[18px] shrink-0 rounded-full bg-accent ring-4 ring-bg" />
+            <span className="min-w-0 flex-1 rounded-2xl bg-accent-soft px-3 py-2">
+              <span className="block text-[15px] font-semibold leading-snug">{t.title}</span>
+              <span className="tnum mt-0.5 block text-sm text-accent">在{SHORT[t.from]}顺手{{ express: '取', buy: '买', seat: '占', food: '拿', other: '带' }[t.type] || '带'} · 多走 {t.m} 分钟 · ¥{t.reward}</span>
+            </span>
+          </motion.li>
+        ))}
+        {end(SHORT[R.to], '到达')}
+      </ol>
     </div>
   )
 }

@@ -455,15 +455,15 @@ export default function TaskDetail() {
       <div className="flex items-center gap-2">
         <button onClick={() => nav(-1)} aria-label="返回" className="grid size-10 place-items-center rounded-full bg-surface ring-1 ring-line"><ArrowLeft size={20} weight="bold" /></button>
         <span className="text-[15px] font-semibold text-muted">订单详情</span>
-        <span className={`ml-auto rounded-full px-3 py-1 text-sm font-semibold ${['refunded', 'cancelled', 'disputed'].includes(t.status) ? 'bg-sunken text-ink' : 'bg-accent-soft text-accent'}`}>{STATUS_TEXT[t.status]}</span>
+        <span className={`ml-auto rounded-full px-3 py-1 text-sm font-semibold ${['refunded', 'cancelled', 'disputed'].includes(t.status) ? 'bg-sunken text-ink' : 'bg-accent-soft text-accent'}`}>{t.status === 'ongoing' ? (t.picked ? '送达中' : '待取件') : STATUS_TEXT[t.status]}</span>
       </div>
 
       {pmode === 'open' && <><PickupCard t={t} /><div><Actions t={t} /></div></>}
 
       {own && state.role === 'poster' && ['ongoing', 'delivered'].includes(t.status) && (
         <div className="flex items-center gap-3 rounded-2xl bg-ink p-4 text-bg">
-          <Numpad size={26} className="shrink-0" />
-          <p className="flex-1 text-[15px]">送达码，见面后告诉跑腿人</p>
+          {t.status === 'delivered' && t.proof?.kind === 'code' ? <Check size={26} weight="bold" className="shrink-0 text-accent" /> : <Numpad size={26} className="shrink-0" />}
+          <p className="flex-1 text-[15px]">{t.status === 'delivered' ? (t.proof?.kind === 'code' ? '跑腿人已当面核验送达码' : '跑腿人已拍照留证') : '送达码，见面后告诉跑腿人'}</p>
           <span className="tnum text-3xl font-bold tracking-[0.2em]">{t.deliverCode}</span>
         </div>
       )}
@@ -474,7 +474,7 @@ export default function TaskDetail() {
         <div className="flex flex-wrap items-center gap-2"><TypeTag type={t.type} />{t.urgent && <UrgentTag />}</div>
         <h1 className="mt-3 text-2xl font-bold leading-snug tracking-tight">{t.title}</h1>
         <div className="mt-3 space-y-1.5 text-[15px] text-muted">
-          <p className="flex items-start gap-1.5"><MapPin size={18} className="mt-0.5 shrink-0" /><span>{B[t.from]?.name}{t.from !== t.to && <> 到 {B[t.to]?.name}</>}<span className="tnum block text-sm">取件点距跑腿人 {fmtDist(dist(RUNNER_HOME, t.from))}</span></span></p>
+          <p className="flex items-start gap-1.5"><MapPin size={18} className="mt-0.5 shrink-0" /><span>{B[t.from]?.name}{t.from !== t.to && <> 到 {B[t.to]?.name}</>}{state.role === 'runner' && <span className="tnum block text-sm">取件点距你 {fmtDist(dist(RUNNER_HOME, t.from))}</span>}</span></p>
           <p className="flex items-center gap-1.5"><Clock size={18} />{['open', 'ongoing'].includes(t.status) ? `截止：${left(t.deadline)}` : t.status === 'delivered' || t.status === 'disputed' ? '已送达，等确认' : t.completedAt ? `完成于 ${clock(t.completedAt)}` : STATUS_TEXT[t.status]}</p>
         </div>
         {t.note && <p className="mt-3 rounded-xl bg-sunken p-3 text-[15px]">备注：{t.note}</p>}

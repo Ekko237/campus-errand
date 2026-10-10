@@ -511,14 +511,14 @@ function Metrics() {
           <Reveal className="flex flex-col justify-between rounded-2xl bg-accent-deep p-6 text-on-accent md:col-span-2 md:p-10 lg:row-span-2">
             <div>
               <p className="text-lg font-semibold opacity-80">北极星指标：履约率</p>
-              <p className="mt-3 text-7xl font-bold tracking-[-0.04em] md:text-[132px] md:leading-none"><CountUp to={97} prefix="≥ " suffix="%" /></p>
+              <p className="mt-3 text-7xl font-bold tracking-[-0.04em] md:text-[132px] md:leading-none"><span className="mr-3 align-middle text-xl font-semibold tracking-normal opacity-80 md:text-2xl">至少</span><CountUp to={97} suffix="%" /></p>
               <p className="mt-2 text-[15px] font-medium opacity-60">示例目标值</p>
             </div>
             <p className="mt-10 max-w-[44ch] text-lg leading-relaxed opacity-90">按时送达且无申诉的单 ÷ 被接的单。信任平台的核心就是「接了就送到」，这个数掉了，其他都没意义。</p>
           </Reveal>
           <Reveal delay={0.05} className="rounded-2xl bg-bg p-6 ring-1 ring-line">
             <p className="text-lg font-semibold">接单率</p>
-            <p className="mt-1 text-5xl font-bold tracking-tight text-accent"><CountUp to={85} prefix="≥ " suffix="%" /></p>
+            <p className="mt-1 text-5xl font-bold tracking-tight text-accent"><span className="mr-2 align-middle text-base font-semibold tracking-normal opacity-80">至少</span><CountUp to={85} suffix="%" /></p>
             <p className="mt-4 text-[15px] leading-relaxed text-muted">24 小时内被接的单 ÷ 发布的单。低了说明供给不够或定价偏低。示例目标。</p>
           </Reveal>
           <Reveal delay={0.1} className="relative overflow-hidden rounded-2xl p-6 text-[#eceeed]">
@@ -526,7 +526,7 @@ function Metrics() {
             <div className="absolute inset-0 bg-[#0e1110]/82" />
             <div className="relative">
               <p className="text-lg font-semibold">平均接单时长</p>
-              <p className="mt-1 text-5xl font-bold tracking-tight"><CountUp to={10} prefix="≤ " suffix=" 分钟" /></p>
+              <p className="mt-1 text-5xl font-bold tracking-tight"><span className="mr-2 align-middle text-base font-semibold tracking-normal opacity-80">不超过</span><CountUp to={10} suffix=" 分钟" /></p>
               <p className="mt-4 text-[15px] leading-relaxed opacity-90">发布到被接的中位时间。跑腿要的是快，超过 10 分钟用户就会自己去。示例目标。</p>
             </div>
           </Reveal>
