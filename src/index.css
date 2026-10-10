@@ -12,6 +12,7 @@
   --line: #dcdfdc;
   --accent: #0b7a55;
   --accent-soft: #dcefe6;
+  --accent-deep: #0a4f39;
   --on-accent: #f6fbf8;
   --danger: #b42318;
   --danger-soft: #fbe9e7;
@@ -27,6 +28,7 @@
   --color-line: var(--line);
   --color-accent: var(--accent);
   --color-accent-soft: var(--accent-soft);
+  --color-accent-deep: var(--accent-deep);
   --color-on-accent: var(--on-accent);
   --color-danger: var(--danger);
   --color-danger-soft: var(--danger-soft);

@@ -142,6 +142,56 @@ function LiveOrder({ className = '' }) {
   )
 }
 
+// 首屏填空句：谁、顺路帮你做什么，胶囊里的词轮换（借鉴 Linearity 的填空句）
+const PAIRS = [
+  { who: '住梅园的同学', what: '取快递', ic: 'type-express' },
+  { who: '早起的学姐', what: '占个靠窗座位', ic: 'type-seat' },
+  { who: '刚下课的学弟', what: '带一份黄焖鸡', ic: 'type-food' },
+  { who: '去超市的室友', what: '捎两包纸巾', ic: 'type-buy' },
+]
+function Chip({ children, icon: ic }) {
+  const reduce = useReducedMotion()
+  return (
+    <motion.span layout={!reduce} transition={{ type: 'spring', stiffness: 260, damping: 26 }} className="mx-1 inline-flex translate-y-[-2px] items-center gap-1.5 whitespace-nowrap rounded-full bg-surface px-3 py-1 align-middle text-ink ring-1 ring-line">
+      {ic && <img src={icon(ic + '-v1')} width={22} height={22} alt="" aria-hidden="true" className="size-[22px]" />}
+      <AnimatePresence mode="popLayout" initial={false}>
+        <motion.span key={children} initial={reduce ? false : { y: '100%', opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: '-100%', opacity: 0 }} transition={{ duration: 0.35, ease }} className="inline-block font-semibold">{children}</motion.span>
+      </AnimatePresence>
+    </motion.span>
+  )
+}
+function ChipSentence() {
+  const reduce = useReducedMotion()
+  const [i, setI] = useState(0)
+  useEffect(() => {
+    if (reduce) return
+    const t = setInterval(() => setI((v) => (v + 1) % PAIRS.length), 2800)
+    return () => clearInterval(t)
+  }, [reduce])
+  const p = PAIRS[i]
+  return (
+    <p className="text-lg leading-[2.2] text-muted md:text-xl md:leading-[2.2]" aria-live="off">
+      <span className="block">让<Chip>{p.who}</Chip></span>
+      <span className="block">顺路帮你<Chip icon={p.ic}>{p.what}</Chip></span>
+      <span className="mt-1 block leading-relaxed">校内实名认证，赏金先托管。</span>
+    </p>
+  )
+}
+
+// 「认人」下面一笔手绘下划线，入场时自己画出来（借鉴 Linearity）
+function Underlined({ children }) {
+  const reduce = useReducedMotion()
+  return (
+    <span className="relative inline-block text-accent">
+      {children}
+      <svg aria-hidden="true" viewBox="0 0 200 20" preserveAspectRatio="none" className="absolute -bottom-[0.2em] left-0 h-[0.18em] w-full overflow-visible">
+        <motion.path d="M3 13 C 45 4, 95 4, 120 9 S 175 17, 197 7" fill="none" stroke="currentColor" strokeWidth="5" strokeLinecap="round"
+          initial={reduce ? false : { pathLength: 0 }} animate={{ pathLength: 1 }} transition={{ duration: 0.9, delay: 0.9, ease }} />
+      </svg>
+    </span>
+  )
+}
+
 function Hero() {
   const reduce = useReducedMotion()
   const ref = useRef(null)
@@ -154,11 +204,11 @@ function Hero() {
     <section id="top" ref={ref} className="mx-auto max-w-7xl px-4 pb-20 pt-10 md:px-8 md:pb-28 md:pt-14">
       <h1 className="text-[46px] font-bold leading-[1.05] tracking-[-0.035em] md:text-[clamp(64px,8vw,112px)]">
         <span className="block overflow-hidden pb-1"><motion.span className="block" {...line(0)}>校园跑腿，</motion.span></span>
-        <span className="block overflow-hidden pb-1"><motion.span className="block" {...line(1)}>先<span className="text-accent">认人</span>再接单</motion.span></span>
+        <span className="block overflow-hidden pb-[0.28em]"><motion.span className="block" {...line(1)}>先<Underlined>认人</Underlined>再接单</motion.span></span>
       </h1>
       <div className="mt-10 grid items-start gap-10 md:mt-12 lg:grid-cols-12">
         <div className="lg:col-span-4">
-          <motion.p {...fade(0.35)} className="max-w-[24ch] text-lg leading-relaxed text-muted md:text-xl">校内实名认证的跑腿互助平台。赏金先托管，信用越高，能接的单越好。</motion.p>
+          <motion.div {...fade(0.35)}><ChipSentence /></motion.div>
           <motion.div {...fade(0.45)} className="mt-8 flex flex-wrap items-center gap-3">
             <Cta />
             <Anchor to="scenes" className="group inline-flex h-14 items-center gap-2 whitespace-nowrap rounded-full px-5 text-[17px] font-semibold text-ink transition hover:bg-sunken">
@@ -297,7 +347,7 @@ function OrderStage({ i }) {
   const s = LOOP[i]
   const code = s.code === 'open' ? '6-2-3108' : s.code === 'hidden' ? '订单结束，已隐藏' : '接单后可见'
   return (
-    <div className="rounded-2xl bg-bg p-6 ring-1 ring-line">
+    <div className="rounded-2xl bg-bg p-6 text-ink shadow-[0_30px_60px_-30px_rgba(0,0,0,0.5)]">
       <div className="flex items-center gap-2">
         <img src={icon('type-express-v1')} width={36} height={36} alt="" aria-hidden="true" className="size-9" />
         <p className="text-lg font-semibold">菜鸟驿站取 2 个小件快递</p>
@@ -327,12 +377,12 @@ function LoopStep({ s, i, onActive }) {
   useEffect(() => { if (inView) onActive(i) }, [inView, i, onActive])
   return (
     <li ref={ref} className="flex gap-5 lg:min-h-[min(42vh,420px)] lg:items-center">
-      <span className="grid size-16 shrink-0 place-items-center rounded-2xl bg-bg ring-1 ring-line">
+      <span className="grid size-16 shrink-0 place-items-center rounded-2xl bg-bg">
         <img src={icon(s.icon + '-v1')} width={48} height={48} alt={s.alt} loading="lazy" className="size-12 object-contain" />
       </span>
       <div>
         <p className="text-2xl font-bold md:text-3xl">{s.t}</p>
-        <p className="mt-2 max-w-[30ch] text-lg leading-relaxed text-muted">{s.d}</p>
+        <p className="mt-2 max-w-[30ch] text-lg leading-relaxed opacity-75">{s.d}</p>
       </div>
     </li>
   )
@@ -341,11 +391,12 @@ function LoopStep({ s, i, onActive }) {
 function Loop() {
   const [active, setActive] = useState(0)
   return (
-    <section id="loop" className="scroll-mt-16 border-y border-line bg-surface">
+    <section id="loop" className="scroll-mt-16 px-2 md:px-4">
+      <div className="rounded-[32px] bg-accent-deep text-on-accent md:rounded-[48px]">
       <div className={`mx-auto max-w-7xl ${SECTION}`}>
         <div className="max-w-4xl">
           <Reveal><H2>一单从发布到信用变化，<Br />六步走完</H2></Reveal>
-          <Reveal delay={0.05}><Lead>往下滚，左边这张订单会跟着走完一遍。钱什么时候冻结、取件码什么时候出现、信用什么时候变，一眼看清。</Lead></Reveal>
+          <Reveal delay={0.05}><p className="mt-5 max-w-[38ch] text-lg leading-relaxed opacity-80 md:text-xl">往下滚，左边这张订单会跟着走完一遍。钱什么时候冻结、取件码什么时候出现、信用什么时候变，一眼看清。</p></Reveal>
         </div>
         <div className="mt-14 grid gap-12 lg:grid-cols-12">
           <div className="hidden lg:col-span-5 lg:block">
@@ -355,6 +406,7 @@ function Loop() {
             {LOOP.map((s, i) => <LoopStep key={s.t} s={s} i={i} onActive={setActive} />)}
           </ol>
         </div>
+      </div>
       </div>
     </section>
   )
