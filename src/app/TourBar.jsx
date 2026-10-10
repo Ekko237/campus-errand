@@ -66,6 +66,8 @@ export default function TourBar() {
       if ((r.top >= head && r.bottom <= hard) || (el.closest('.sticky') && r.bottom <= innerHeight)) return
       // 露了一部分：只挪刚好够的那一点，不大幅跳
       if (r.bottom > head && r.top < hard) { window.scrollBy({ top: r.bottom > bottom ? r.bottom - bottom : r.top - top, behavior: reduce || late ? 'auto' : 'smooth' }); return }
+      // 刚停过「奖励时刻」、按钮在下面：只往下挪到刚好露出按钮，取件码那张卡尽量留在眼前，不整段跳过
+      if (late && r.top >= hard) { window.scrollBy({ top: r.bottom - bottom, behavior: 'auto' }); return }
       // 完全在屏幕外：把按钮所在的整块（卡片、段落）顶到导览条下面，块的标题不被切
       let dy = null
       for (let a = el.parentElement; a && a.tagName !== 'MAIN'; a = a.parentElement) {
@@ -93,7 +95,7 @@ export default function TourBar() {
         const mr = moment.getBoundingClientRect()
         // 订单标题和这张卡能一起放下，就从标题开始露，免得标题正好藏在顶栏下面、看不出是哪一单
         const tr = document.querySelector('main h1')?.getBoundingClientRect()
-        const from = tr && mr.bottom - tr.top <= innerHeight - head - 96 ? tr.top : mr.top
+        const from = tr && tr.top < mr.top && mr.bottom - tr.top <= innerHeight - head - 96 ? tr.top : mr.top
         if (!touched && (mr.top < head + 16 || mr.bottom > innerHeight - 80)) window.scrollBy({ top: from - head - 16, behavior: reduce ? 'auto' : 'smooth' })
         // 放款那条「¥5 从小满流到阿远」要播约 2.3 秒，取件码揭晓短一些
         wait = step.n === 7 ? 2600 : step.n === 5 ? 1200 : 1600
@@ -109,7 +111,14 @@ export default function TourBar() {
     }, 350)
     return () => { clearTimeout(id); timers.forEach(clearTimeout); evs.forEach((e) => window.removeEventListener(e, hands, { capture: true })); el?.classList.remove('tour-focus') }
   }, [here, step?.n, loc.pathname, reduce, state.role])
-  useEffect(() => { if (!arrived) return; const id = setTimeout(() => act('tour', { tour: { active: false, done: true } }), 3000); return () => clearTimeout(id) }, [arrived, act])
+  // 走完后导览条要收起：等用户自己滑动页面时再收，不在他伸手点东西的时候突然抽走一行、让页面往上跳
+  useEffect(() => {
+    if (!arrived) return
+    const end = () => act('tour', { tour: { active: false, done: true } })
+    const evs = ['wheel', 'touchmove', 'keydown']
+    evs.forEach((e) => window.addEventListener(e, end, { passive: true, once: true }))
+    return () => evs.forEach((e) => window.removeEventListener(e, end))
+  }, [arrived, act])
   const go = () => {
     if (step.who) act('role', { role: step.who })
     if (step.final) act('tour', { tour: { active: false, done: true } })

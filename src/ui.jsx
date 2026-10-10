@@ -127,7 +127,7 @@ export function Stars({ value, onChange, size = 30 }) {
     <div className="flex gap-1" role="radiogroup" aria-label="评分">
       {[1, 2, 3, 4, 5].map((n) => (
         <button key={n} type="button" role="radio" aria-checked={value === n} aria-label={`${n} 星`} onClick={() => onChange(n)}
-          className={`grid size-11 place-items-center rounded-full transition active:scale-90 ${n <= value ? 'text-[#e3a008]' : 'text-muted'}`}>
+          className={`grid size-11 place-items-center rounded-full transition active:scale-90 ${n <= value ? 'text-accent' : 'text-muted'}`}>
           <Star size={size} weight={n <= value ? 'fill' : 'regular'} />
         </button>
       ))}

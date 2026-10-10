@@ -909,7 +909,7 @@ function BanDemo() {
 function Safety() {
   const reduce = useReducedMotion()
   return (
-    <section id="safety" className="mx-auto max-w-7xl scroll-mt-16 px-4 pb-20 pt-10 md:px-8 md:pb-28 md:pt-14 lg:pb-32">
+    <section id="safety" className="mx-auto max-w-7xl scroll-mt-16 px-4 pb-16 pt-10 md:px-8 md:pb-20 md:pt-14">
       <Reveal className="relative overflow-hidden rounded-[32px] bg-ink md:rounded-[40px]">
         <div className="relative grid gap-10 px-6 py-14 text-bg md:px-14 md:py-20 lg:grid-cols-12 lg:items-center">
           <div className="lg:col-span-6">
@@ -1079,7 +1079,7 @@ function Final({ page }) {
           </Reveal>
         </div>
         {/* 收尾是一块手机锁屏：17:45 下课，顺路提醒弹进来；选哪条路，推送就跟着换。点推送就进原型 */}
-        <Reveal delay={0.1} className="flex justify-center lg:col-span-7 lg:justify-end">
+        <Reveal delay={0.1} className="flex justify-center lg:col-span-7">
           <div className="relative aspect-[9/15] w-full max-w-[300px] overflow-hidden rounded-[44px] bg-ink p-2.5 shadow-[0_40px_80px_-40px_rgba(17,40,30,0.6)] md:max-w-[340px]">
             <div className="relative size-full overflow-hidden rounded-[36px]">
               <img src={`${import.meta.env.BASE_URL}images/campus-map-v2.webp`} width={1600} height={900} alt="" aria-hidden="true" loading="lazy" className="absolute inset-0 size-full scale-110 object-cover blur-[3px] brightness-[0.55]" />
