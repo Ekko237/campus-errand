@@ -213,7 +213,7 @@ export default function Hall() {
 
       {sortBy === 'route' && (
         <div className="rounded-2xl bg-accent-soft p-2 pb-3">
-          <CampusMap R={route} reduce={reduce} pills={false} walker={false} endsOnly legend
+          <CampusMap R={route} reduce={reduce} pills={false} walker={false} legend
             hits={state.tasks.filter((t) => t.status === 'open' && t.deadline > Date.now() && detourMin(route.from, route.to, t) <= 5).map((t) => ({ ...t, dm: detourMeters(route.from, route.to, t) }))} />
           <div className="px-2 pt-3">
           <div className="flex items-center gap-3">

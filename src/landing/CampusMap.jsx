@@ -58,9 +58,10 @@ export default function CampusMap({ R, hits, reduce, pills = true, walker = true
   const me = pointAt(mine, p)
   const ends = [R.from, R.to]
   return (
+    <div>
     <div className="relative aspect-[16/9] w-full overflow-hidden rounded-[20px] bg-surface ring-1 ring-line md:rounded-[28px]"
       role="img" aria-label={`示意地图：从${SHORT[R.from]}到${SHORT[R.to]}，沿路有 ${hits.length} 个顺路的单`}>
-      <img src={`${import.meta.env.BASE_URL}images/campus-map-v1.webp`} width={1600} height={900} alt="" aria-hidden="true" loading="lazy" className="absolute inset-0 size-full object-cover" />
+      <img src={`${import.meta.env.BASE_URL}images/campus-map-v2.webp`} width={1600} height={900} alt="" aria-hidden="true" loading="lazy" className="absolute inset-0 size-full object-cover" />
       <svg viewBox={`0 0 ${MAP_W} ${MAP_H}`} className="absolute inset-0 size-full" aria-hidden="true">
         {/* 你的路：整条先淡淡画着，小人走过的部分描深 */}
         <path d={toD(mine)} fill="none" stroke="var(--ink)" strokeOpacity="0.3" strokeWidth="10" strokeDasharray="4 18" strokeLinecap="round" strokeLinejoin="round" />
@@ -78,12 +79,12 @@ export default function CampusMap({ R, hits, reduce, pills = true, walker = true
       {ends.map((id) => (
         <span key={id} className="absolute z-20" style={pct(PLACES[id].door)}>
           <span className="absolute left-0 top-0 block size-3 -translate-x-1/2 -translate-y-1/2 rounded-full bg-ink ring-[3px] ring-surface md:size-4" />
-          <span className={`absolute left-0 -translate-x-1/2 whitespace-nowrap rounded-full bg-ink px-2 py-0.5 text-[11px] font-semibold text-bg shadow-sm md:px-2.5 md:text-[13px] ${outward(id) === 'up' ? 'bottom-2.5' : 'top-2.5'}`}>{SHORT[id]}</span>
+          <span className={`absolute left-0 -translate-x-1/2 whitespace-nowrap rounded-full bg-ink px-2 py-0.5 text-[10px] font-semibold text-bg shadow-sm md:px-2.5 md:text-[13px] ${outward(id) === 'up' ? 'bottom-2.5' : 'top-2.5'}`}>{SHORT[id]} {id === R.from ? '出发' : '到达'}</span>
         </span>
       ))}
       {!endsOnly && marks.filter(({ t }) => !ends.includes(t.from)).map(({ t }) => (
-        <span key={`l${t.id}`} className="absolute z-10 hidden md:block" style={pct(markAt(t.from))}>
-          <span className={`absolute left-0 -translate-x-1/2 whitespace-nowrap rounded-full bg-surface px-2.5 py-0.5 text-[13px] font-semibold text-ink shadow-sm ring-1 ring-line ${outward(t.from) === 'up' ? 'bottom-2.5' : 'top-2.5'}`}>{SHORT[t.from]}</span>
+        <span key={`l${t.id}`} className="absolute z-10" style={pct(markAt(t.from))}>
+          <span className={`absolute left-0 -translate-x-1/2 whitespace-nowrap rounded-full bg-surface px-1.5 py-0.5 text-[10px] font-semibold md:px-2.5 md:text-[13px] text-ink shadow-sm ring-1 ring-line ${outward(t.from) === 'up' ? 'bottom-2.5' : 'top-2.5'}`}>{SHORT[t.from]}</span>
         </span>
       ))}
       <AnimatePresence>
@@ -101,11 +102,13 @@ export default function CampusMap({ R, hits, reduce, pills = true, walker = true
           <img src={icon('avatar-runner-v1')} width={32} height={32} alt="" className="size-5 rounded-full md:size-8" />
         </span>
       )}
-      {legend && (
-        <span className="absolute bottom-2 left-2 z-30 rounded-full bg-surface/95 px-2.5 py-1 text-[11px] font-semibold text-ink shadow-sm">
-          <i className="mr-1 inline-block size-2 rounded-full bg-accent align-middle" />绿点：你路上能顺手捎的 {hits.length} 单
-        </span>
-      )}
+    </div>
+    {legend && (
+      <p className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted md:text-sm">
+        <span className="inline-flex items-center gap-1.5"><i className="h-1 w-5 rounded-full bg-ink/80" />你正要走的路</span>
+        <span className="inline-flex items-center gap-1.5"><i className="size-2.5 rounded-full bg-accent" />路上能顺手捎的 {hits.length} 单（绿线是这单要送的那段）</span>
+      </p>
+    )}
     </div>
   )
 }

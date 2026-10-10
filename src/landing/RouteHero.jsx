@@ -87,7 +87,7 @@ export function RouteMap() {
           {phase === 3 && <motion.img src={icon('type-express-v1')} width={28} height={28} alt="" initial={reduce ? false : { scale: 0 }} animate={{ scale: 1 }} transition={{ type: 'spring', stiffness: 500, damping: 18 }} className="absolute -left-3 -top-3 size-6 md:size-7" />}
         </div>
       </Node>
-      <div className="absolute right-2 -translate-y-1/2" style={{ top: `${(426 / H) * 100}%` }}><Tag>梅园 5 号楼 · 你</Tag></div>
+      <div className="absolute right-2 -translate-y-1/2" style={{ top: `${(414 / H) * 100}%` }}><Tag>梅园 5 号楼 · 你</Tag></div>
       <motion.div className="absolute z-10 -translate-x-1/2 -translate-y-1/2" style={{ left: rl, top: rt }} animate={{ opacity: phase === 3 ? 0 : 1 }} transition={{ duration: 0.25 }}>
         <div className={`relative size-9 rounded-full bg-surface p-0.5 ring-[3px] shadow-[0_6px_16px_-6px_rgba(17,40,30,0.5)] transition-colors md:size-11 ${phase >= 1 ? 'ring-accent' : 'ring-ink'}`}>
           <img src={icon('avatar-runner-v1')} width={44} height={44} alt="" className="size-full rounded-full object-cover" />
@@ -210,10 +210,6 @@ export function CampusRoutes() {
       </p>
       <div ref={box} className="mt-6"><CampusMap R={R} hits={hits} reduce={reduce} legend /></div>
       <SubwayLine R={R} hits={hits} reduce={reduce} />
-      <div className="mt-3 hidden flex-wrap gap-x-5 md:flex gap-y-1 text-sm text-muted">
-        <span className="inline-flex items-center gap-1.5"><i className="h-1 w-5 rounded-full bg-ink/80" />你正要走的路</span>
-        <span className="inline-flex items-center gap-1.5"><i className="h-1.5 w-5 rounded-full bg-accent" />顺路的单</span>
-      </div>
     </div>
   )
 }

@@ -15,7 +15,7 @@ export const PLACES = {
   mei5: { door: [260, 342], road: ['h', 324], box: [150, 342, 370, 513], kind: 'dorm' },
   lib: { door: [580, 342], road: ['h', 324], box: [460, 342, 700, 522], kind: 'library' },
   hall: { door: [900, 342], road: ['h', 324], box: [790, 342, 1010, 504], kind: 'hall' },
-  cainiao: { door: [1150, 342], road: ['h', 324], box: [1110, 342, 1190, 387], kind: 'kiosk' },
+  cainiao: { door: [1150, 342], road: ['h', 324], box: [1100, 342, 1300, 486], kind: 'station' },
   tao2: { door: [260, 576], road: ['h', 558], box: [150, 576, 370, 747], kind: 'dorm' },
   lan1: { door: [580, 576], road: ['h', 558], box: [470, 576, 690, 747], kind: 'dorm' },
   canteen2: { door: [900, 576], road: ['h', 558], box: [790, 576, 1010, 738], kind: 'canteen' },
