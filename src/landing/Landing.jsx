@@ -340,16 +340,19 @@ function StageMap({ i, tall = false }) {
   const mei = [PLACES.mei5.door[0], PLACES.mei5.door[1] + 60]
   const tag = (txt, at, strong, z = '') => <span className={`absolute ${z} -translate-x-1/2 whitespace-nowrap rounded-full px-1.5 py-0.5 text-[11px] font-semibold shadow-sm ${strong ? 'bg-ink text-bg' : 'bg-surface text-ink ring-1 ring-line'}`} style={spct(at)}>{txt}</span>
   return (
-    <div className={`relative mt-5 overflow-hidden rounded-xl ring-1 ring-line ${tall ? 'aspect-[1290/600]' : 'aspect-[1290/460]'}`} aria-hidden="true">
+    <div className="mt-5">
+    <div className={`relative overflow-hidden rounded-xl ring-1 ring-line ${tall ? 'aspect-[1290/600]' : 'aspect-[1290/460]'}`} aria-hidden="true">
       <svg viewBox={`${SX0} ${Y0} ${SVW} ${VH}`} preserveAspectRatio="xMidYMid slice" className="absolute inset-0 size-full">
         <image href={`${import.meta.env.BASE_URL}images/campus-map-v2.webp`} x="0" y="0" width="1600" height="900" />
         <path d={D} fill="none" stroke="var(--ink)" strokeOpacity="0.35" strokeWidth="12" strokeDasharray="4 22" strokeLinecap="round" strokeLinejoin="round" />
         <motion.path d={D} fill="none" stroke="var(--ink)" strokeOpacity="0.9" strokeWidth="14" strokeLinecap="round" strokeLinejoin="round" initial={false} animate={{ pathLength: STAGE_P[i] }} transition={sp} />
+        {/* 路边拐进驿站的一小段：线和驿站连起来 */}
+        <path d={`M${PLACES.cainiao.door[0]} ${STAGE_PTS[1][1]} L${station[0]} ${station[1]}`} fill="none" stroke="var(--ink)" strokeOpacity="0.55" strokeWidth="10" strokeDasharray="2 14" strokeLinecap="round" />
         {/* 捎上包裹以后的那段变绿 */}
         <motion.path d={NEED_D} fill="none" stroke="var(--accent)" strokeWidth="14" strokeLinecap="round" strokeLinejoin="round" initial={false}
           animate={{ pathLength: Math.max(0, (STAGE_P[i] - STAGE_F) / (1 - STAGE_F)), opacity: i >= 3 ? 1 : 0 }} transition={sp} />
       </svg>
-      {tag('一教', [STAGE_PTS[0][0] - 10, STAGE_PTS[0][1] - 110], false, 'z-20')}
+      {tag('一教', [STAGE_PTS[0][0] - 50, STAGE_PTS[0][1] - 110], false, 'z-20')}
       {tag('菜鸟驿站', [station[0], station[1] + 70], i === 2)}
       {tag('梅园', [mei[0], mei[1] + 70], i >= 4)}
       {/* 包裹：先在驿站等着（发布时一闪），第 3 步起跟着阿远走，送到后落在梅园 */}
@@ -361,11 +364,14 @@ function StageMap({ i, tall = false }) {
         initial={false} animate={{ ...spct(me), opacity: i === 0 ? 0 : 1 }} transition={sp}>
         <img src={icon('avatar-runner-v1')} width={28} height={28} alt="" className="size-6 rounded-full md:size-7" />
         {i === 3 && <img src={icon('type-express-v1')} width={20} height={20} alt="" className="absolute -right-2 -top-2 size-5" />}
+        <span className="absolute left-1/2 top-full mt-0.5 -translate-x-1/2 whitespace-nowrap rounded-full bg-ink px-1.5 text-[10px] font-semibold leading-4 text-bg">阿远</span>
       </motion.span>
       {i >= 4 && (
         <motion.span key={`pay${i}`} className="tnum absolute z-20 -translate-x-1/2 rounded-full bg-accent px-2 py-0.5 text-xs font-bold text-on-accent" style={spct([mei[0] + 10, mei[1] - 262])}
-          initial={reduce ? false : { opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={sp}>{i === 4 ? '+¥5' : '信用 +3'}</motion.span>
+          initial={reduce ? false : { opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={sp}>{i === 4 ? '+¥5 给阿远' : '阿远信用 +3'}</motion.span>
       )}
+    </div>
+    <p className="mt-1.5 flex flex-wrap gap-x-3 text-[11px] text-ink/70"><span className="inline-flex items-center gap-1"><i className="h-1 w-4 rounded-full bg-ink/80" />阿远本来要走的路</span><span className="inline-flex items-center gap-1"><i className="h-1 w-4 rounded-full bg-accent" />捎着你的快递</span></p>
     </div>
   )
 }
