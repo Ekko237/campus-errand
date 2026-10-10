@@ -5,7 +5,7 @@ import { ROUTES } from '../landing/RouteHero'
 import CampusMap, { along } from '../landing/CampusMap'
 import { routePath, PLACES } from '../campusMap'
 import { CaretDown, MagnifyingGlass, ArrowRight } from '@phosphor-icons/react'
-import { useStore, LOCK } from '../store'
+import { useStore } from '../store'
 import { TYPES, TYPE_KEYS, B, BUILDINGS, dist, fmtDist, detourMin, detourMeters, RUNNER_HOME, levelOf, minCreditFor, POSTER_WARN } from '../data'
 import { TypeTag, UrgentTag, Panel, Empty, Btn, left, spring, gi } from '../ui'
 const MapPin = gi('pin')
@@ -83,9 +83,8 @@ function RoleBanner() {
   const nav = useNavigate()
   // 没走过导览的，两种身份都在大厅顶上给一个入口（手机上没有侧栏，点了「先自己逛逛」也找得回来）
   if (!state.tour.active && !state.tour.done) {
-    // 双手机演示里，「跟着走一遍」只在中间面板放一个入口
-    if (!state.onboarded || LOCK) return null
-    const start = () => { act('tour', { tour: { active: true, taskId: null, done: false } }); act('role', { role: 'poster' }); if (!LOCK || LOCK === 'poster') nav('/app/publish?tour=1') }
+    if (!state.onboarded) return null
+    const start = () => { act('tour', { tour: { active: true, taskId: null, done: false } }); act('role', { role: 'poster' }); nav('/app/publish?tour=1') }
     return (
       <Panel className="flex items-center gap-3 p-4">
         <p className="flex-1 text-[15px] leading-snug text-muted"><b className="text-ink">第一次来？</b>一个人切换两种身份，约两分钟走完一单。</p>

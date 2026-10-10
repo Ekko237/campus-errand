@@ -1,0 +1,97 @@
+import { createContext, useContext, useEffect, useRef, useState } from 'react'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
+import { DeviceMobile, Desktop, ArrowLeft } from '@phosphor-icons/react'
+
+// 同一个 App、同一份数据，两种界面：手机版、电脑版。顶部一个切换，任何设备上都能切。
+// 合适的那种直接铺满屏幕；不合适的那种放进一个框里（电脑上看手机版：居中的手机外框；手机上看电脑版：缩小的整页），
+// 框里是同一个原型（iframe，地址带 ?embed=），切换时带上正在看的那一页，数据都在同一份本地存储里，不会丢。
+const BASE = import.meta.env.BASE_URL
+export const EMBED = (() => { try { const v = new URLSearchParams(window.location.search).get('embed'); return v === 'phone' || v === 'desk' ? v : null } catch { return null } })()
+const Ctx = createContext({ view: null, pick: () => {} })
+export const useView = () => useContext(Ctx)
+
+const wideNow = (q) => typeof window !== 'undefined' && window.matchMedia(q).matches
+function useMedia(q) {
+  const [m, setM] = useState(() => wideNow(q))
+  useEffect(() => { const mm = window.matchMedia(q); const f = () => setM(mm.matches); mm.addEventListener('change', f); return () => mm.removeEventListener('change', f) }, [q])
+  return m
+}
+
+// 顶栏里的「手机版 / 电脑版」：两个小图标按钮
+export function ViewToggle() {
+  const { view, pick } = useView()
+  const cur = EMBED || view
+  const opts = [['phone', '手机版', DeviceMobile], ['desk', '电脑版', Desktop]]
+  return (
+    <div className="flex shrink-0 rounded-full bg-sunken p-1" role="group" aria-label="切换界面">
+      {opts.map(([k, label, I]) => (
+        <button key={k} onClick={() => (EMBED ? embedPick(k) : pick(k))} aria-pressed={cur === k} title={label} aria-label={label}
+          className={`grid h-8 w-9 place-items-center rounded-full transition-colors sm:w-auto sm:gap-1 sm:px-2.5 sm:[grid-auto-flow:column] ${cur === k ? 'bg-surface text-ink shadow-sm' : 'text-muted hover:text-ink'}`}>
+          <I size={17} weight={cur === k ? 'fill' : 'regular'} /><span className="hidden text-[13px] font-semibold sm:inline">{label}</span>
+        </button>
+      ))}
+    </div>
+  )
+}
+
+// 最外层：决定这一次是直接铺开，还是放进框里
+export function ViewHost({ children }) {
+  const wide = useMedia('(min-width: 1280px)')
+  const roomy = useMedia('(min-width: 768px)')
+  const [view, setView] = useState(() => { try { const v = sessionStorage.getItem('shunluxia:view'); if (v === 'phone' || v === 'desk') return v } catch { /* 无痕模式 */ } return wideNow('(min-width: 1024px)') ? 'desk' : 'phone' })
+  const nav = useNavigate()
+  const loc = useLocation()
+  const frame = useRef(null)
+  const pick = (v, path) => {
+    try { sessionStorage.setItem('shunluxia:view', v) } catch { /* 存不了不影响 */ }
+    if (path) nav(path, { replace: true })
+    setView(v)
+  }
+  // 框里的原型点了切换：带着它正在看的那一页回来
+  useEffect(() => {
+    const f = (e) => { if (e.origin === window.location.origin && e.data?.type === 'shunluxia:view') pick(e.data.view, e.data.path) }
+    window.addEventListener('message', f)
+    return () => window.removeEventListener('message', f)
+  }) // eslint-disable-line react-hooks/exhaustive-deps
+  const direct = (view === 'phone' && !roomy) || (view === 'desk' && wide)
+  if (direct) return <Ctx.Provider value={{ view, pick: (v) => pick(v) }}>{children}</Ctx.Provider>
+  const src = `${BASE}?embed=${view}#${loc.pathname}${loc.search}`
+  return <Framed view={view} src={src} frame={frame} />
+}
+
+// 在框里时：顶栏的切换不能自己换，告诉外面那层，并带上当前页面
+export function embedPick(v) {
+  try { window.parent.postMessage({ type: 'shunluxia:view', view: v, path: window.location.hash.slice(1) || '/app' }, window.location.origin) } catch { /* 拿不到外层就算了 */ }
+}
+
+function Framed({ view, src, frame }) {
+  const [box, setBox] = useState({ w: window.innerWidth, h: window.innerHeight })
+  useEffect(() => { const f = () => setBox({ w: window.innerWidth, h: window.innerHeight }); window.addEventListener('resize', f); return () => window.removeEventListener('resize', f) }, [])
+  const phone = view === 'phone'
+  const W = phone ? 390 : 1280, H = phone ? 844 : 820
+  const s = phone ? Math.min(1, (box.h - 112) / (H + 24)) : Math.min(1, (box.w - 24) / W)
+  // 只在挂上的那一刻定地址：之后在框里点来点去，不让外层重新载入
+  const [first] = useState(src)
+  return (
+    <div className="min-h-[100dvh] bg-sunken text-ink">
+      <header className="flex h-14 items-center justify-between gap-3 px-4">
+        <Link to="/" className="inline-flex items-center gap-1.5 text-[15px] font-semibold text-muted hover:text-ink"><ArrowLeft size={16} weight="bold" />回首页</Link>
+        {!phone && <p className="truncate text-[13px] text-muted">电脑版在电脑上看效果更好</p>}
+        <Ctx.Provider value={{ view, pick: (v) => { try { const h = frame.current.contentWindow.location.hash.slice(1) || '/app'; window.postMessage({ type: 'shunluxia:view', view: v, path: h }, window.location.origin) } catch { window.postMessage({ type: 'shunluxia:view', view: v }, window.location.origin) } } }}><ViewToggle /></Ctx.Provider>
+      </header>
+      <div className="flex justify-center pb-6">
+        {phone ? (
+          <div className="rounded-[52px] bg-ink p-3 shadow-[0_40px_80px_-40px_rgba(17,40,30,0.6)]" style={{ width: W * s + 24, height: H * s + 24 }}>
+            <div className="relative overflow-hidden rounded-[40px] bg-bg" style={{ width: W * s, height: H * s }}>
+              <iframe ref={frame} title="顺路侠手机版" src={first} className="absolute left-0 top-0 origin-top-left border-0" style={{ width: W, height: H, transform: `scale(${s})` }} />
+            </div>
+          </div>
+        ) : (
+          <div className="relative overflow-hidden rounded-xl bg-bg shadow-[0_24px_60px_-30px_rgba(17,40,30,0.5)] ring-1 ring-line" style={{ width: W * s, height: H * s }}>
+            <iframe ref={frame} title="顺路侠电脑版" src={first} className="absolute left-0 top-0 origin-top-left border-0" style={{ width: W, height: H, transform: `scale(${s})` }} />
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}

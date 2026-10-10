@@ -2,9 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
 import { motion, useReducedMotion, useMotionValue, useTransform, animate } from 'motion/react'
 import { ArrowLeft, Check, ArrowClockwise } from '@phosphor-icons/react'
-import { useStore, LOCK } from '../store'
-// 双手机演示：对方就在旁边那台手机上，不放「切身份」按钮，只指个方向
-const Look = ({ children }) => <p className="rounded-full bg-sunken px-4 py-3 text-center text-[15px] font-semibold text-muted">{children}</p>
+import { useStore } from '../store'
 import CampusMap, { along } from '../landing/CampusMap'
 import { PLACES, routePath } from '../campusMap'
 import { B, dist, fmtDist, RUNNER_HOME, minCreditFor, levelOf, nextLevel, detourMin, detourMeters, myRoute, onMyWay } from '../data'
@@ -365,15 +363,13 @@ function Actions({ t }) {
     if (role === 'poster') {
       return own ? (
         <div className="grid gap-2">
-          <p className="text-balance text-center text-[15px] text-muted">{LOCK ? '等待同学接单：右边阿远的大厅里已经能看到这一单。' : '等待同学接单。也可以切到跑腿人，自己接下这单。'}</p>
-          {LOCK ? <Btn variant="ghost" onClick={() => act('cancel', { id: t.id })}>取消并退款</Btn> : (
+          <p className="text-balance text-center text-[15px] text-muted">等待同学接单。也可以切到跑腿人，自己接下这单。</p>
           <div className="grid grid-cols-2 gap-3">
             <Btn variant="ghost" onClick={() => act('cancel', { id: t.id })}>取消并退款</Btn>
             <Btn onClick={() => act('role', { role: 'runner' })}>切到跑腿人</Btn>
           </div>
-          )}
         </div>
-      ) : LOCK ? <Look>在右边阿远的手机上接这单 →</Look> : <Btn className="w-full" onClick={() => act('role', { role: 'runner' })}>切到跑腿人来接这单</Btn>
+      ) : <Btn className="w-full" onClick={() => act('role', { role: 'runner' })}>切到跑腿人来接这单</Btn>
     }
     if (!runner.verified) return <Btn size="lg" className="w-full" onClick={() => nav(`/app/verify?back=/app/task/${t.id}`)}><ShieldCheck size={20} weight="bold" />认证后才能接单</Btn>
     const need = minCreditFor(t.reward)
@@ -464,7 +460,7 @@ function Actions({ t }) {
     return (
       <div className="grid gap-2 text-center">
         <p className="text-[15px] text-muted">已提交凭证，等发单人确认放款。2 小时不确认系统自动放款，发单人信用 -2。</p>
-        {LOCK ? <Look>← 等左边小满确认放款</Look> : <Btn onClick={() => act('role', { role: 'poster' })}>切回发单人去确认</Btn>}
+        <Btn onClick={() => act('role', { role: 'poster' })}>切回发单人去确认</Btn>
         <Btn variant="plain" size="sm" onClick={() => act('confirm', { id: t.id, auto: true })}>试一下：发单人 2 小时没确认</Btn>
       </div>
     )
@@ -493,7 +489,7 @@ function Actions({ t }) {
     return (
       <div className="grid gap-2 text-center">
         <p className="text-[15px] text-muted">订单已完成{t.ratingByPoster ? `，发单人评价 ${t.ratingByPoster.stars} 星` : ''}{t.ratingByRunner ? `，跑腿人评价 ${t.ratingByRunner.stars} 星` : ''}。</p>
-        {otherPending && (LOCK ? <Look>{role === 'poster' ? '等右边阿远也给你打分 →' : '← 等左边小满也给你打分'}</Look> : <Btn onClick={() => act('role', { role: role === 'poster' ? 'runner' : 'poster' })}>切换身份去互评</Btn>)}
+        {otherPending && <Btn onClick={() => act('role', { role: role === 'poster' ? 'runner' : 'poster' })}>切换身份去互评</Btn>}
         {mine && <Btn variant="plain" onClick={() => { act('role', { role: 'runner' }); nav('/app/me') }}>{role === 'runner' ? '看我的信用变化' : '看跑腿人信用变化'}</Btn>}
         {own && role === 'poster' && <Btn variant={otherPending ? 'plain' : undefined} onClick={() => nav(`/app/publish?again=${t.id}`)}><ArrowClockwise size={18} weight="bold" />同样的再来一单</Btn>}
       </div>

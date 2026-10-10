@@ -1,9 +1,9 @@
-import { useEffect, useLayoutEffect, useRef, useState } from 'react'
+import { useEffect, useLayoutEffect, useRef } from 'react'
 import { Routes, Route, NavLink, Link, useNavigate, useLocation } from 'react-router-dom'
 import { motion, AnimatePresence, useReducedMotion } from 'motion/react'
 import { ListMagnifyingGlass, PlusCircle, UserCircle } from '@phosphor-icons/react'
-import { StoreProvider, useStore, LOCK } from '../store'
-import DualStage from './DualStage'
+import { StoreProvider, useStore } from '../store'
+import { ViewHost, ViewToggle, EMBED } from './ViewMode'
 import { Sheet, Btn, spring, gi } from '../ui'
 import Hall from './Hall'
 import Publish from './Publish'
@@ -22,36 +22,18 @@ const Megaphone = gi('megaphone')
 const PersonSimpleRun = gi('runner')
 const SealCheck = gi('seal')
 
-// 电脑宽屏（≥1280）且不在手机框里：#/app 换成「双手机并排」演示台；手机、平板照常是一个 App
-function useDual() {
-  const q = '(min-width: 1280px)'
-  const ok = () => !LOCK && typeof window !== 'undefined' && window.self === window.top && window.matchMedia(q).matches
-  const [dual, setDual] = useState(ok)
-  useEffect(() => { const m = window.matchMedia(q); const f = () => setDual(ok()); m.addEventListener('change', f); return () => m.removeEventListener('change', f) }, []) // eslint-disable-line react-hooks/exhaustive-deps
-  return dual
-}
-
 export default function AppRoot() {
-  const dual = useDual()
-  return (
-    <StoreProvider key={dual ? 'dual' : 'one'} observer={dual}>
-      {dual ? <DualStage /> : <Shell />}
-    </StoreProvider>
-  )
+  // 框里的原型（?embed=）直接是 App；最外层先由 ViewHost 决定铺开还是放进框里
+  const app = <StoreProvider><Shell /></StoreProvider>
+  return EMBED ? app : <ViewHost>{app}</ViewHost>
 }
 
 function RoleSwitch() {
   const { state, act } = useStore()
-  // 双手机演示里每台手机身份固定：不放切换，只写明这台是谁
-  if (LOCK) return (
-    <span className="inline-flex h-10 items-center gap-2 rounded-full bg-accent-soft px-3 text-[15px] font-semibold text-accent">
-      <img src={`${import.meta.env.BASE_URL}icons/avatar-${LOCK}-v1.webp`} width={24} height={24} alt="" className="size-6 rounded-full" />{LOCK === 'poster' ? '发单人 · 小满' : '跑腿人 · 阿远'}
-    </span>
-  )
   const { pathname } = useLocation()
   // 订单页切身份：页面换成另一方能做的事，回到顶上，免得主按钮躲在吸顶栏后面
   const pick = (k) => { act('role', { role: k }); if (pathname.startsWith('/app/task/')) window.scrollTo({ top: 0, behavior: 'smooth' }) }
-  const opts = [['poster', '我是发单人'], ['runner', '我是跑腿人']]
+  const opts = [['poster', '发单人'], ['runner', '跑腿人']]
   return (
     <div className="relative grid grid-cols-2 rounded-full bg-sunken p-1" role="tablist" aria-label="切换角色">
       {/* 滑块用 CSS 位移，不跟页面布局联动：换页、滚动时不会从别处飞过来 */}
@@ -59,7 +41,7 @@ function RoleSwitch() {
       {opts.map(([k, label]) => (
         <button key={k} role="tab" aria-selected={state.role === k} onClick={() => pick(k)}
           className={`relative z-10 h-10 whitespace-nowrap rounded-full px-3 text-[15px] font-semibold transition-colors ${state.role === k ? 'text-on-accent' : 'text-muted'}`}>
-          {label}
+          <span className="max-[440px]:hidden">我是</span>{label}
         </button>
       ))}
     </div>
@@ -120,7 +102,7 @@ function Onboarding() {
     nav('/app/publish?tour=1')
   }
   return (
-    <Sheet open={!state.onboarded && !LOCK} onClose={() => act('onboarded')} title="顺路侠怎么用">
+    <Sheet open={!state.onboarded} onClose={() => act('onboarded')} title="顺路侠怎么用">
       <ol className="space-y-4">
         {steps.map((s, i) => (
           <li key={s.t} className="flex gap-3">
@@ -185,7 +167,7 @@ function Shell() {
             <img src={`${import.meta.env.BASE_URL}brand/logo-v2.png`} width={36} height={36} alt="顺路侠标志：背着书包、夹着包裹奔跑的小人" className="size-9" />
             <span className="max-[359px]:hidden">顺路侠</span>
           </Link>
-          <RoleSwitch />
+          <div className="flex items-center gap-2"><RoleSwitch /><ViewToggle /></div>
         </div>
         <TourBar />
       </header>
