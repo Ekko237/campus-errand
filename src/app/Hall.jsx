@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence, useReducedMotion } from 'motion/react'
-import { RouteZoom } from '../landing/RouteHero'
+import { RouteZoom, ROUTES } from '../landing/RouteHero'
 import { CaretDown, MapPin, Clock, LockSimple, MagnifyingGlass, WarningOctagon, ShieldCheck, ArrowRight, Lightning } from '@phosphor-icons/react'
 import { useStore } from '../store'
 import { TYPES, TYPE_KEYS, B, BUILDINGS, dist, fmtDist, detourMin, detourMeters, RUNNER_HOME, levelOf, minCreditFor, POSTER_WARN } from '../data'
@@ -83,10 +83,17 @@ function RoleBanner() {
     )
   }
   if (state.role === 'poster') {
+    // 发单人也看得到顺路：常从哪寄到哪，路过的同学有几条
+    const mine = state.tasks.filter((t) => t.posterId === 'poster')
+    const from = mine[0]?.from || 'cainiao', to = mine[0]?.to || 'mei5'
+    const passing = ROUTES.filter((r) => detourMin(r.from, r.to, { from, to }) <= 5)
     return (
       <Panel className="flex items-center gap-3 p-4">
-        <p className="flex-1 text-[15px] leading-snug text-muted">你在<b className="text-ink">发单人</b>视角，可以浏览和发布。想接单请切到跑腿人。</p>
-        <Btn size="sm" variant="ghost" onClick={() => act('role', { role: 'runner' })}>切换</Btn>
+        <span className="flex shrink-0 -space-x-2" aria-hidden="true">
+          {(passing.length ? passing : [0]).slice(0, 3).map((_, k) => <img key={k} src={`${import.meta.env.BASE_URL}icons/avatar-runner-v1.webp`} width={30} height={30} alt="" className={`size-[30px] rounded-full bg-surface ring-2 ring-surface ${passing.length ? '' : 'opacity-40 grayscale'}`} />)}
+        </span>
+        <p className="flex-1 text-[15px] leading-snug text-muted">示例：从<b className="whitespace-nowrap text-ink">{B[from].name.replace(/（.*?）/, '')}</b>到<b className="whitespace-nowrap text-ink">{B[to].name}</b>，有 <b className="text-accent">{passing.length} 条</b>同学常走的路正好经过</p>
+        <Btn size="sm" onClick={() => nav('/app/publish')}>发一单</Btn>
       </Panel>
     )
   }
