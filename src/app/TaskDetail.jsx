@@ -352,7 +352,7 @@ function Actions({ t }) {
     if (role === 'poster') {
       return own ? (
         <div className="grid gap-2">
-          <p className="text-balance text-center text-[15px] text-muted">等待同学接单。<span className="whitespace-nowrap">切到跑腿人</span>可以自己接下这单<span className="whitespace-nowrap">试试。</span></p>
+          <p className="text-balance text-center text-[15px] text-muted">等待同学接单。也可以切到跑腿人，自己接下这单。</p>
           <div className="grid grid-cols-2 gap-3">
             <Btn variant="ghost" onClick={() => act('cancel', { id: t.id })}>取消并退款</Btn>
             <Btn onClick={() => act('role', { role: 'runner' })}>切到跑腿人</Btn>

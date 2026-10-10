@@ -161,7 +161,8 @@ export default function CampusMap({ R, hits, reduce, pills = true, walker = true
           </span>
         ))}
       </AnimatePresence>
-      {((walker && !reduce) || at != null) && p > 0 && (
+      {/* 落地页的小人只在路中间走：出发和到达那一下藏起来，不和起终点名牌叠 */}
+      {((walker && !reduce && p > 0.06 && p < 0.97) || (at != null && p > 0)) && (
         <span aria-hidden="true" className="absolute z-[5] grid size-7 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full bg-surface shadow-[0_6px_16px_-6px_rgba(17,40,30,0.5)] ring-[3px] ring-ink md:size-10" style={pct(me)}>
           <img src={icon('avatar-runner-v1')} width={32} height={32} alt="" className="size-5 rounded-full md:size-8" />
         </span>

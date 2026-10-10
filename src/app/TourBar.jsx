@@ -101,7 +101,7 @@ export default function TourBar() {
         <motion.div key="bar" initial={reduce ? false : { opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.2 }}
           className="border-t border-line bg-ink text-bg">
           <div data-tour-bar className="mx-auto flex min-h-12 max-w-xl items-center gap-3 px-4 py-1.5 xl:max-w-[66rem]">
-            <span className="inline-flex shrink-0 items-center gap-1 text-xs font-bold opacity-60">{step.final ? <><Confetti size={12} weight="fill" />走完了</> : '下一步：'}</span>
+            <span className="inline-flex shrink-0 items-center gap-1 text-xs font-bold opacity-60">{step.final ? <><Confetti size={18} weight="fill" className="text-accent" />走完了</> : '下一步：'}</span>
             {/* 文字和订单状态同一帧换，不等旧文字淡出 */}
             <motion.p key={text} initial={reduce ? false : { opacity: 0.4 }} animate={{ opacity: 1 }} transition={{ duration: 0.15 }}
               className="min-w-0 flex-1 text-[14px] font-semibold leading-snug md:text-[15px]">{text}</motion.p>

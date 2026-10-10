@@ -95,7 +95,9 @@ export function estimateMinutes({ reward, suggested, urgent, windowMin }) {
 
 // 违规任务关键词拦截
 export const BANNED = ['代考', '替考', '枪手', '代签到', '代打卡', '代点名', '代上课', '代课', '代写作业', '代写论文', '代写报告', '代做作业', '刷课', '代刷网课', '答案', '作弊']
-export const findBanned = (text) => BANNED.filter((w) => text.includes(w))
+// 除了原词，也认换个说法的：「帮我签个到」「替我上课」「帮考」这类「帮 / 替 / 代 + 签到 / 考 / 课 / 点名 / 打卡」
+const BANNED_LOOSE = /(?:帮|替|代)(?:我|人|他|她)?(?:签个?到|考试?|上个?课|上节课|课|点个?名|打个?卡|写个?作业)/g
+export const findBanned = (text) => [...new Set([...BANNED.filter((w) => text.includes(w)), ...(text.match(BANNED_LOOSE) || [])])]
 
 // 信用规则
 export const CREDIT_INIT = 70

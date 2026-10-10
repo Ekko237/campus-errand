@@ -5,7 +5,7 @@ import {
   motion, AnimatePresence, useReducedMotion, useScroll, useTransform, useSpring, useMotionValue, useInView, animate, useMotionValueEvent,
 } from 'motion/react'
 import { ArrowRight, ArrowLeft, ArrowDown, CaretLeft, CaretRight, Plus, ArrowCounterClockwise } from '@phosphor-icons/react'
-import { RULES_PLUS, RULES_MINUS, POSTER_RULES_PLUS, POSTER_RULES_MINUS, LEVELS, POSTER_TIERS, TYPES, seedTasks, detourMin } from '../data'
+import { RULES_PLUS, RULES_MINUS, POSTER_RULES_PLUS, POSTER_RULES_MINUS, LEVELS, POSTER_TIERS, TYPES, seedTasks, detourMin, findBanned } from '../data'
 import { useNavigate } from 'react-router-dom'
 import { gi } from '../ui'
 import { routePath, PLACES } from '../campusMap'
@@ -98,7 +98,7 @@ function PageRoute() {
     return () => { clearTimeout(t); window.removeEventListener('resize', measure) }
   }, [])
   return (
-    <nav aria-label="页面路线" className="fixed bottom-10 left-6 top-24 z-20 hidden w-28 min-[1560px]:block">
+    <nav aria-label="页面路线" className="fixed bottom-10 left-6 top-24 z-20 hidden w-28 min-[1400px]:block">
       <span aria-hidden="true" className="absolute bottom-0 left-[7px] top-0 border-l-2 border-dashed border-line" />
       <motion.span aria-hidden="true" style={{ scaleY: fill }} className="absolute bottom-0 left-[6px] top-0 w-[4px] origin-top rounded-full bg-accent" />
       {stops.map((s) => (
@@ -135,7 +135,9 @@ function Nav({ page }) {
   const [here, setHere] = useState(null)
   useMotionValueEvent(scrollY, 'change', (v) => {
     setScrolled(v > 420)
-    setHere([...SECTIONS].reverse().find(([id]) => (document.getElementById(id)?.getBoundingClientRect().top ?? 1e9) < 160)?.[0] ?? null)
+    // 没进顶栏的两节（拦截、结尾）算在上一项「双向信用」里
+    const id = [...SECTIONS].reverse().find(([k]) => (document.getElementById(k)?.getBoundingClientRect().top ?? 1e9) < 160)?.[0] ?? null
+    setHere(id === 'safety' || id === 'final' ? 'credit' : id)
   })
   const home = page !== 'thinking'
   const linkCls = 'group relative py-1 transition-colors hover:text-ink'
@@ -158,7 +160,7 @@ function Nav({ page }) {
         </nav>
         <div className="flex items-center gap-2">
           <div className={`transition-opacity duration-300 ${(scrolled || !home) && !open ? '' : 'max-md:pointer-events-none max-md:opacity-0'}`}><Cta size="sm" /></div>
-          {!home && <Link to="/" className="inline-flex h-10 items-center gap-1.5 rounded-full bg-sunken px-4 text-[15px] font-semibold active:scale-[0.97]"><ArrowLeft size={16} weight="bold" /><span><span className="max-md:hidden">回</span>首页</span></Link>}
+          {!home && <Link to="/" className="inline-flex h-10 items-center gap-1.5 rounded-full bg-sunken px-4 text-[15px] font-semibold active:scale-[0.97]"><ArrowLeft size={16} weight="bold" />回首页</Link>}
           {home && (
             <button onClick={() => { setCur(scrollY + innerHeight >= document.documentElement.scrollHeight - 4 ? SECTIONS[SECTIONS.length - 1][0] : [...SECTIONS].reverse().find(([id]) => (document.getElementById(id)?.getBoundingClientRect().top ?? 1e9) < 140)?.[0]); setOpen((v) => !v) }} aria-expanded={open} aria-controls="mnav" className="grid h-10 place-items-center rounded-full bg-sunken px-4 text-[15px] font-semibold active:scale-[0.97] lg:hidden">{open ? '收起' : '目录'}</button>
           )}
@@ -220,7 +222,7 @@ const SCENES = [
     fix: '接单人的信用分公开可见。接了不去算爽约，直接扣 5 分，下次能接的单就变少。',
   },
   {
-    key: 'handoff', tab: '宿舍楼下的交接', short: '楼下交接', route: ['北门', '桃园 2 号楼', '一教回桃园的同学，多走 3 分钟'], img: 'scene-handoff-v3', alt: '傍晚的宿舍楼门口，一名学生把外卖袋递给另一名学生',
+    key: 'handoff', tab: '宿舍楼下的交接', short: '楼下交接', route: ['北门', '桃园 2 号楼', '从北门进校回桃园的同学，多走 3 分钟'], img: 'scene-handoff-v3', alt: '傍晚的宿舍楼门口，一名学生把外卖袋递给另一名学生',
     who: '赶作业下不了楼的于小渔',
     pain: '外卖放在北门取餐点，走回 6 楼要十分钟。正好回宿舍的同学顺手就能捎上来，可彼此不认识，也不想把宿舍号给陌生人。',
     fix: '大厅按距离排序，顺路回宿舍的人最先看到；宿舍号接单后才显示，订单结束自动隐藏。',
@@ -357,13 +359,13 @@ function StageMap({ i, tall = false }) {
         <motion.path d={NEED_D} fill="none" stroke="var(--accent)" strokeWidth={tall ? 30 : 16} strokeLinecap="round" strokeLinejoin="round" initial={false}
           animate={{ pathLength: Math.max(0, (STAGE_P[i] - STAGE_F) / (1 - STAGE_F)), opacity: i >= 3 ? 1 : 0 }} transition={sp} />
       </svg>
-      {tag('一教', [STAGE_PTS[0][0] - 40, STAGE_PTS[0][1] - 150], false, 'z-20')}
+      {tag('一教', [STAGE_PTS[0][0] - 40, STAGE_PTS[0][1] - (tall ? 200 : 150)], false, 'z-20')}
       {/* 驿站名牌放在路下面（驿站楼在路南），和路北的「一教」分开，也不压阿远 */}
       {tag('菜鸟驿站', [station[0], STAGE_PTS[1][1] + 130], false, 'z-20')}
       {/* 梅园名牌落在梅园那栋楼上（路南），和首屏、全校地图同一栋 */}
       {tag('梅园', [PLACES.mei5.door[0], 490], i >= 4)}
-      {/* 包裹：先在驿站等着（发布时一闪），第 3 步起跟着阿远走，送到后落在梅园 */}
-      {i < 3 && (
+      {/* 包裹：先在驿站等着（发布时一闪），阿远走到驿站那步就收起（被他拿走了），不和头像叠 */}
+      {i < 2 && (
         <motion.img src={icon('type-express-v1')} width={28} height={28} alt="" className="absolute size-7 -translate-x-1/2 -translate-y-1/2" style={spct(station)}
           initial={false} animate={{ scale: i === 0 ? [1, 1.25, 1] : 1 }} transition={{ duration: 0.6 }} />
       )}
@@ -378,7 +380,7 @@ function StageMap({ i, tall = false }) {
           initial={reduce ? false : { opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={sp}>{i === 4 ? '+¥5 给阿远' : '阿远信用 73'}</motion.span>
       )}
     </div>
-    <p className="mt-1.5 flex flex-wrap gap-x-3 text-[12px] text-ink/80"><span className="inline-flex items-center gap-1"><i className="h-1 w-4 rounded-full bg-ink/80" />头像是阿远，黑线是他走过的路</span><span className="inline-flex items-center gap-1"><i className="w-4 border-t-2 border-dotted border-ink/50" />还没走的</span><span className={`inline-flex items-center gap-1 transition-opacity ${i >= 3 ? '' : 'opacity-60'}`}><i className="h-1.5 w-4 rounded-full bg-accent" />捎着你快递的那段{i < 3 && '（取到后出现）'}</span></p>
+    <p className="mt-1.5 flex flex-wrap gap-x-3 text-[12px] text-ink/80"><span className="inline-flex items-center gap-1"><i className="h-1 w-4 rounded-full bg-ink/80" />{i === 0 ? '有人接单后，头像会沿路走' : '头像是阿远，黑线是他走过的路'}</span><span className="inline-flex items-center gap-1"><i className="w-4 border-t-2 border-dotted border-ink/50" />还没走的</span><span className={`inline-flex items-center gap-1 transition-opacity ${i >= 3 ? '' : 'opacity-60'}`}><i className="h-1.5 w-4 rounded-full bg-accent" />捎着你快递的那段{i < 3 && '（取到后出现）'}</span></p>
     </div>
   )
 }
@@ -551,7 +553,7 @@ function Loop() {
 
 const TRUST = [
   { icon: 'trust-verify-v1', alt: '带对勾的学生证', t: '校园身份认证', fear: '怕对方是校外的人', fix: '学号或 .edu.cn 邮箱认证，带徽章；没认证只能浏览，不能接单。' },
-  { icon: 'trust-credit-v1', alt: '带上升箭头的奖牌', t: '双向信用分', fear: '怕碰上不靠谱的人', fix: '跑腿人按时 +2、爽约 -5；发单人按时确认 +1、超时不确认 -2，接单后取消或恶意申诉 -5。赏金越高，要求的信用越高。' },
+  { icon: 'trust-credit-v1', alt: '带上升箭头的奖牌', t: '双向信用分', fear: '怕碰上不靠谱的人', fix: '跑腿人按时 +2、爽约 -5、被判责 -8；发单人按时确认 +1、超时不确认 -2、取消或恶意申诉 -5。赏金越高，要求的信用越高。' },
   { icon: 'trust-escrow-v1', alt: '护着硬币的盾牌', t: '赏金托管', fear: '怕付了钱没人管', fix: '发布即冻结，确认送达才放款；2 小时不确认自动放款，跑腿人也不怕白跑。' },
   { icon: 'trust-privacy-v1', alt: '挂锁和钥匙', t: '隐私分级', fear: '怕取件码和宿舍号被乱传', fix: '接单后才可见，订单结束自动隐藏；电话一律走虚拟号。' },
   { icon: 'trust-dispute-v1', alt: '天平', t: '送达凭证与申诉', fear: '怕出了问题说不清', fix: '送达码当面核验或拍照留证；申诉期间钱继续冻结，平台判责。' },
@@ -803,7 +805,7 @@ function Credit() {
                         )}
                       </span>
                       <span className={`tnum w-10 shrink-0 text-2xl font-bold ${r.delta > 0 ? 'text-accent' : 'text-danger'}`}>{r.delta > 0 ? '+' : ''}{r.delta}</span>
-                      <span className="min-w-0 flex-1 max-lg:pr-[5.5rem]"><span className="block text-lg font-semibold">{r.label}</span><span className="block text-[15px] text-muted">{r.note}</span>
+                      <span className={`min-w-0 flex-1 ${here ? 'max-lg:pr-[5.5rem]' : ''}`}><span className="block text-lg font-semibold">{r.label}</span><span className="block text-[15px] text-muted">{r.note}</span>
 </span>
                       {/* 浮在这一行右边，不往列表里插东西，下面的规则不会被推走 */}
                       {here && (
@@ -842,7 +844,7 @@ function BanDemo() {
     return () => clearTimeout(id)
   }, [n, text, on, reduce, i, own])
   const typed = own ?? text.slice(0, n)
-  const hit = /代签到|代写作业|代考|替考|代点名/.exec(typed)
+  const hit = findBanned(typed)[0] ? [findBanned(typed)[0]] : null
   return (
     <div ref={ref} className="rounded-[24px] bg-surface p-5 text-ink shadow-[0_30px_60px_-30px_rgba(0,0,0,0.6)]" aria-label="发布表单拦截演示">
       <p className="text-[15px] font-semibold">备注（选填）</p>
@@ -1017,7 +1019,7 @@ function Final({ page }) {
   const reduce = useReducedMotion()
   const hits = routeHits(R)
   const n = hits.length
-  const go = () => { try { localStorage.setItem('shunluxia:myroute', JSON.stringify({ from: R.from, to: R.to })) } catch { /* 存不了就用默认路线 */ } nav('/app') }
+  const go = () => { try { localStorage.setItem('shunluxia:myroute', JSON.stringify({ from: R.from, to: R.to })) } catch { /* 存不了就用默认路线 */ } nav('/app?from=remind') }
   const goBtn = (
     <button onClick={go} className="group relative inline-flex h-14 items-center gap-2 overflow-hidden whitespace-nowrap rounded-full bg-accent px-7 text-[17px] font-semibold text-on-accent shadow-[0_10px_30px_-12px_rgba(11,122,85,0.7)] transition active:scale-[0.97]">
       <span className="relative">带着这条路去看看</span><ArrowRight size={20} weight="bold" className="relative transition-transform duration-300 group-hover:translate-x-1" />
@@ -1139,12 +1141,13 @@ function ThinkingIntro() {
         <div className="rounded-[24px] bg-surface p-5 ring-1 ring-line md:p-6 lg:sticky lg:top-28">
           <p className="text-[15px] font-semibold text-muted">托人取个快递，现在有三种办法</p>
           {/* 手机上四列放不下：每一行拆成一小块，三种办法横着并排 */}
-          <dl className="mt-4 divide-y divide-line sm:hidden">
+          <p className="mt-4 grid grid-cols-3 gap-2 border-b border-line pb-2 text-[13px] font-semibold text-muted sm:hidden" aria-hidden="true"><span>群接龙</span><span>外卖跑腿</span><span className="text-accent">顺路侠</span></p>
+          <dl className="divide-y divide-line sm:hidden">
             {COMPARE.map(([k, v]) => (
               <div key={k} className="py-3">
                 <dt className="text-sm font-semibold text-muted">{k}</dt>
                 <dd className="mt-1.5 grid grid-cols-3 gap-2 text-[14px]">
-                  {v.map((x, i) => <span key={i} className={i === 2 ? 'font-bold text-accent' : 'text-ink/80'}><span className="block text-[11px] font-semibold text-muted">{['群接龙', '外卖跑腿', '顺路侠'][i]}</span>{x}</span>)}
+                  {v.map((x, i) => <span key={i} className={i === 2 ? 'font-bold text-accent' : 'text-ink/80'}><span className="sr-only">{['群接龙', '外卖跑腿', '顺路侠'][i]}：</span>{x}</span>)}
                 </dd>
               </div>
             ))}
