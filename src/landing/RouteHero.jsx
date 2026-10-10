@@ -73,11 +73,14 @@ export function RouteMap() {
         <motion.path d={NEED} fill="none" stroke="var(--accent)" strokeWidth="10" strokeDasharray="2 20" strokeLinecap="round" strokeLinejoin="round"
           initial={reduce ? false : { opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.6, delay: 0.6 }} />
         <path ref={path} d={RUN} fill="none" stroke="none" />
+        {/* 「一教 出发」名牌到起点的一条引线 */}
+        <path d={`M${ICHI[0] + 18} ${ICHI[1] + 26} L${RUN_PTS[0][0] - 6} ${RUN_PTS[0][1] - 14}`} fill="none" stroke="var(--ink)" strokeOpacity="0.55" strokeWidth="4" strokeDasharray="1 10" strokeLinecap="round" />
         {/* 整条路一直淡淡地画着，动画只是把它描深 */}
         <path d={RUN} fill="none" stroke="var(--ink)" strokeOpacity="0.3" strokeWidth="10" strokeDasharray="4 18" strokeLinecap="round" strokeLinejoin="round" />
         <motion.path d={RUN} fill="none" stroke="var(--ink)" strokeOpacity="0.9" strokeWidth="12" strokeLinecap="round" strokeLinejoin="round" style={{ pathLength: runLen }} />
         {/* 交汇之后：带着你的快递走完，变成绿色实线 */}
-        <motion.path d={NEED} fill="none" stroke="var(--accent)" strokeWidth="14" strokeLinecap="round" strokeLinejoin="round" style={{ pathLength: carry }} />
+        {/* 绿线细一号压在黑线中间：黑色「本来就要走的路」一直看得见，绿色是「捎着你的快递」的那一段 */}
+        <motion.path d={NEED} fill="none" stroke="var(--accent)" strokeWidth="6" strokeLinecap="round" strokeLinejoin="round" style={{ pathLength: carry }} />
         <motion.circle cx={STATION[0]} cy={STATION[1]} r="70" fill="var(--accent)" initial={false}
           animate={lit && !reduce ? { opacity: [0.35, 0], scale: [0.6, 1.6] } : { opacity: 0 }}
           transition={{ duration: 1.1, ease: 'easeOut' }} style={{ transformOrigin: `${STATION[0]}px ${STATION[1]}px` }} />

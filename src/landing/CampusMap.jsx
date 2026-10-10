@@ -96,7 +96,7 @@ export default function CampusMap({ R, hits, reduce, pills = true, walker = true
           <path key={`c${R.from}${R.to}${t.id}`} d={toD(routePath(t.from, t.to).pts)} fill="none" stroke="var(--surface)" className="[stroke-width:28] md:[stroke-width:12]" strokeLinecap="round" strokeLinejoin="round" />
         ))}
         {marks.map(({ t, f }) => (
-          <motion.path key={`${R.from}${R.to}${t.id}`} d={toD(routePath(t.from, t.to).pts)} fill="none" stroke="var(--accent)" className="[stroke-width:16] md:[stroke-width:7]" strokeLinecap="round" strokeLinejoin="round"
+          <motion.path key={`${R.from}${R.to}${t.id}`} d={toD(routePath(t.from, t.to).pts)} fill="none" stroke="var(--accent)" className="[stroke-width:8] md:[stroke-width:5]" strokeLinecap="round" strokeLinejoin="round"
             initial={false} animate={{ opacity: p >= f ? 0.95 : 0.25 }} transition={{ duration: 0.3 }} />
         ))}
       </svg>
