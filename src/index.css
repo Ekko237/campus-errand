@@ -61,9 +61,10 @@ h1, h2, h3 { text-wrap: balance; }
 
 
 /* 导览：当前这一步要点的东西，外面一圈呼吸的绿描边 */
-@keyframes tour-ring { 0%, 100% { box-shadow: 0 0 0 2px var(--bg), 0 0 0 4px var(--accent); } 50% { box-shadow: 0 0 0 2px var(--bg), 0 0 0 6px color-mix(in srgb, var(--accent) 40%, transparent); } }
+/* 导览描边往里呼吸：外面只多 2px，不越过页面边距、不把并排按钮撑得一大一小 */
+@keyframes tour-ring { 0%, 100% { box-shadow: 0 0 0 2px var(--accent), inset 0 0 0 2px var(--bg); } 50% { box-shadow: 0 0 0 2px var(--accent), inset 0 0 0 5px color-mix(in srgb, var(--bg) 55%, transparent); } }
 .tour-focus { animation: tour-ring 1.6s ease-in-out infinite; }
-@media (prefers-reduced-motion: reduce) { .tour-focus { animation: none; box-shadow: 0 0 0 2px var(--bg), 0 0 0 4px var(--accent); } }
+@media (prefers-reduced-motion: reduce) { .tour-focus { animation: none; box-shadow: 0 0 0 2px var(--accent), inset 0 0 0 2px var(--bg); } }
 
 /* 原型换页：轻轻滑进来 */
 @keyframes page-in { from { opacity: 0.6; transform: translateX(var(--dx, 0)); } to { opacity: 1; transform: none; } }

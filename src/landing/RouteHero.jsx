@@ -101,7 +101,7 @@ export function RouteMap() {
           {phase === 3 && <motion.img src={icon('type-express-v1')} width={28} height={28} alt="" initial={reduce ? false : { scale: 0 }} animate={{ scale: 1 }} transition={{ type: 'spring', stiffness: 500, damping: 18 }} className="absolute -right-5 -top-5 size-6 md:-right-6 md:-top-6 md:size-7" />}
         </div>
       </Node>
-      <Node x={MEI[0] + 80} y={MEI[1] + 92}><Tag>梅园 5 号楼 · 你</Tag></Node>
+      <Node x={MEI[0] + 80} y={MEI[1] + 116}><Tag>梅园 5 号楼 · 你</Tag></Node>
       <motion.div className="absolute z-10 -translate-x-1/2 -translate-y-[92%]" style={{ left: rl, top: rt }} animate={{ opacity: phase === 3 ? 0 : 1 }} transition={{ duration: 0.25 }}>
         <div className={`relative size-8 rounded-full bg-surface p-0.5 ring-[3px] shadow-[0_6px_16px_-6px_rgba(17,40,30,0.5)] transition-colors md:size-11 ${phase >= 1 ? 'ring-accent' : 'ring-ink'}`}>
           <img src={icon('avatar-runner-v1')} width={44} height={44} alt="" className="size-full rounded-full object-cover" />

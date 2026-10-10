@@ -98,7 +98,7 @@ function PageRoute() {
     return () => { clearTimeout(t); window.removeEventListener('resize', measure) }
   }, [])
   return (
-    <nav aria-label="页面路线" className="fixed bottom-10 left-6 top-24 z-20 hidden w-28 min-[1400px]:block">
+    <nav aria-label="页面路线" className="fixed bottom-10 left-6 top-24 z-20 hidden w-28 min-[1560px]:block">
       <span aria-hidden="true" className="absolute bottom-0 left-[7px] top-0 border-l-2 border-dashed border-line" />
       <motion.span aria-hidden="true" style={{ scaleY: fill }} className="absolute bottom-0 left-[6px] top-0 w-[4px] origin-top rounded-full bg-accent" />
       {stops.map((s) => (
@@ -363,7 +363,7 @@ function StageMap({ i, tall = false }) {
       {/* 驿站名牌放在路下面（驿站楼在路南），和路北的「一教」分开，也不压阿远 */}
       {tag('菜鸟驿站', [station[0], STAGE_PTS[1][1] + 130], false, 'z-20')}
       {/* 梅园名牌落在梅园那栋楼上（路南），和首屏、全校地图同一栋 */}
-      {tag('梅园', [PLACES.mei5.door[0], 490], i >= 4)}
+      {tag('梅园', [PLACES.mei5.door[0], 505], false)}
       {/* 包裹：先在驿站等着（发布时一闪），阿远走到驿站那步就收起（被他拿走了），不和头像叠 */}
       {i < 2 && (
         <motion.img src={icon('type-express-v1')} width={28} height={28} alt="" className="absolute size-7 -translate-x-1/2 -translate-y-1/2" style={spct(station)}
@@ -380,7 +380,7 @@ function StageMap({ i, tall = false }) {
           initial={reduce ? false : { opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={sp}>{i === 4 ? '+¥5 给阿远' : '阿远信用 73'}</motion.span>
       )}
     </div>
-    <p className="mt-1.5 flex flex-wrap gap-x-3 text-[12px] text-ink/80"><span className="inline-flex items-center gap-1"><i className="h-1 w-4 rounded-full bg-ink/80" />{i === 0 ? '有人接单后，头像会沿路走' : '头像是阿远，黑线是他走过的路'}</span><span className="inline-flex items-center gap-1"><i className="w-4 border-t-2 border-dotted border-ink/50" />还没走的</span><span className={`inline-flex items-center gap-1 transition-opacity ${i >= 3 ? '' : 'opacity-60'}`}><i className="h-1.5 w-4 rounded-full bg-accent" />捎着你快递的那段{i < 3 && '（取到后出现）'}</span></p>
+    <p className="mt-1.5 flex flex-wrap gap-x-3 text-[12px] text-ink/80"><span className="inline-flex items-center gap-1"><img src={icon('avatar-runner-v1')} width={16} height={16} alt="" className="size-4 rounded-full ring-2 ring-ink" />{i === 0 ? '跑腿的阿远，接单后沿路走' : '跑腿的阿远'}</span><span className="inline-flex items-center gap-1"><i className="h-1 w-4 rounded-full bg-ink/80" />走过的路</span><span className="inline-flex items-center gap-1"><i className="w-4 border-t-2 border-dotted border-ink/50" />还没走的</span><span className={`inline-flex items-center gap-1 transition-opacity ${i >= 3 ? '' : 'opacity-60'}`}><i className="h-1.5 w-4 rounded-full bg-accent" />捎着你快递的那段{i < 3 && '（取到后出现）'}</span></p>
     </div>
   )
 }
@@ -601,10 +601,16 @@ function PrivacyDemo() {
   }, [reduce, hold, seen, steps])
   const p = PRIV[i]
   const pick = (k) => { setI(k); setHold(true) }
-  const val = (v) => (
+  const val = (v, stamp = false) => (
     <span className="relative inline-block">
-      {/* 结束后真的收回：糊掉，看不清原来的码和门牌 */}
-      <span className={`transition-[filter,opacity] duration-500 ${p.tone === 'open' ? '' : p.tone === 'closed' ? 'opacity-50 blur-[6px] select-none' : 'opacity-40'}`}>{v}</span>
+      {/* 结束后真的收回：换成圆点，盖一个「已收回」章，不再留看得出字形的模糊 */}
+      {p.tone === 'closed' ? (
+        <span className="inline-flex items-center gap-2">
+          <span className="tracking-[0.2em] opacity-40">{String(v).replace(/[^\s·]/g, '•')}</span>
+          {stamp && <motion.span key={`stamp${i}`} initial={reduce ? false : { scale: 1.6, opacity: 0, rotate: -14 }} animate={{ scale: 1, opacity: 1, rotate: -8 }} transition={{ type: 'spring', stiffness: 420, damping: 18 }}
+            className="rounded border-2 border-accent px-1.5 text-xs font-bold leading-5 text-accent">已收回</motion.span>}
+        </span>
+      ) : <span className={`transition-opacity duration-500 ${p.tone === 'open' ? '' : 'opacity-40'}`}>{v}</span>}
     </span>
   )
   return (
@@ -630,7 +636,7 @@ function PrivacyDemo() {
         </div>
         <AnimatePresence mode="wait" initial={false}>
           <motion.div key={i} initial={reduce ? false : { opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -6 }} transition={{ duration: 0.2 }}>
-            <p className="tnum text-4xl font-bold tracking-wide">{val(p.code)}</p>
+            <p className="tnum text-4xl font-bold tracking-wide">{val(p.code, true)}</p>
             <div className="mt-4 flex justify-between border-t border-bg/15 pt-3 text-[15px]"><span className="opacity-70">送到</span><span className="font-semibold">{val(p.room)}</span></div>
             <p className="mt-3 text-sm opacity-80">{p.who}</p>
           </motion.div>
@@ -1035,10 +1041,10 @@ function Final({ page }) {
         </div>
       ) : (
       <div className="mx-auto grid max-w-7xl gap-10 px-4 py-20 md:px-8 md:py-28 lg:grid-cols-12 lg:items-center lg:gap-12 lg:py-32">
-        <div className="text-center lg:col-span-5 lg:text-left">
+        <div className="lg:col-span-5">
           <Reveal><h2 className="font-display text-balance text-[40px] font-bold leading-[1.08] tracking-[-0.035em] md:text-7xl">你下课<br />常走哪条路？</h2></Reveal>
           <Reveal delay={0.05}>
-            <div className="mt-8 flex flex-wrap justify-center gap-1.5 md:gap-2 lg:justify-start" role="group" aria-label="选你常走的路">
+            <div className="mt-8 flex flex-wrap gap-1.5 md:gap-2" role="group" aria-label="选你常走的路">
               {ROUTES.map((x, i) => (
                 <button key={x.label} onClick={() => setRi(i)} aria-pressed={i === ri}
                   className={`h-11 whitespace-nowrap rounded-full px-3 text-[14px] font-semibold transition-colors active:scale-[0.97] md:px-4 md:text-[15px] ${i === ri ? 'bg-ink text-bg' : 'bg-surface text-ink ring-1 ring-line'}`}><span className="md:hidden">{x.short}</span><span className="max-md:hidden">{x.label}</span></button>
@@ -1047,9 +1053,9 @@ function Final({ page }) {
           </Reveal>
           <Reveal delay={0.1}>
             <p className="mt-8 text-lg text-muted md:text-xl" aria-live="polite">此刻路上有 <AnimatePresence mode="wait" initial={false}><motion.b key={n} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.18 }} className="tnum inline-block text-3xl text-accent md:text-4xl">{n}</motion.b></AnimatePresence> 单顺路，<span className="whitespace-nowrap">捎上都不超过 5 分钟</span></p>
-            <p className="mx-auto mt-3 max-w-[34ch] text-[15px] text-muted lg:mx-0">在原型「我的」里打开下课提醒，下课前 5 分钟把这条路上的单推给你。</p>
+            <p className="mt-3 max-w-[34ch] text-[15px] text-muted">在原型「我的」里打开下课提醒，下课前 5 分钟把这条路上的单推给你。</p>
           </Reveal>
-          <Reveal delay={0.15} className="mt-10 flex justify-center max-lg:hidden lg:justify-start">
+          <Reveal delay={0.15} className="mt-10 flex max-lg:hidden">
             <Magnetic>{goBtn}</Magnetic>
           </Reveal>
         </div>
@@ -1082,7 +1088,7 @@ function Final({ page }) {
             </div>
           </div>
         </Reveal>
-        <div className="flex justify-center lg:hidden">{goBtn}</div>
+        <div className="lg:hidden">{goBtn}</div>
       </div>
       )}
       <footer className="border-t border-line">

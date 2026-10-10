@@ -79,7 +79,7 @@ export function Sheet({ open, onClose, title, children }) {
     <AnimatePresence>
       {open && (
         <motion.div className="fixed inset-0 z-50 flex items-end justify-center sm:items-center" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-          <div className="absolute inset-0 bg-ink/40" onClick={onClose} />
+          <div className="absolute inset-0 bg-ink/50" onClick={onClose} />
           <motion.div
             role="dialog" aria-modal="true" aria-label={title}
             className="relative max-h-[88dvh] w-full max-w-lg overflow-y-auto rounded-t-2xl bg-surface p-5 pb-8 sm:rounded-2xl"
