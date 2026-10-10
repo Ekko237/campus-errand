@@ -122,19 +122,19 @@ function Ticker() {
 
 const SCENES = [
   {
-    key: 'express', tab: '排长队的快递驿站', short: '驿站排队', img: 'scene-express-v1', alt: '校园快递驿站里排着长队，货架上堆满包裹',
+    key: 'express', tab: '排长队的快递驿站', short: '驿站排队', route: ['菜鸟驿站', '梅园 5 号楼', '一教下课回梅园的同学，多走 1 分钟'], img: 'scene-express-v1', alt: '校园快递驿站里排着长队，货架上堆满包裹',
     who: '大三，课排满的小禾',
     pain: '驿站傍晚要排二十分钟，她 17:50 才下课，18:00 就关门。三个快递放了三天，找室友要欠人情，找陌生人又怕取件码被乱用。',
     fix: '发一单 ¥5。取件码只在有人接单后才给对方看，送到后当面核验送达码，钱才放出去。',
   },
   {
-    key: 'seat', tab: '早八前的图书馆座位', short: '早八占座', img: 'scene-seat-v1', alt: '清晨图书馆靠窗的空位上放着一本书',
+    key: 'seat', tab: '早八前的图书馆座位', short: '早八占座', route: ['图书馆', '图书馆 3F', '去一教路过图书馆的同学，就在路上'], img: 'scene-seat-v1', alt: '清晨图书馆靠窗的空位上放着一本书',
     who: '考研，住得远的周砚',
     pain: '宿舍离图书馆一公里，每天 7:40 靠窗位就没了。住在旁边的同学顺手就能占，但不知道谁靠谱。',
     fix: '接单人的信用分公开可见。接了不去算爽约，直接扣 5 分，下次能接的单就变少。',
   },
   {
-    key: 'handoff', tab: '宿舍楼下的交接', short: '楼下交接', img: 'scene-handoff-v1', alt: '宿舍楼门口，两名学生交接一袋外卖',
+    key: 'handoff', tab: '宿舍楼下的交接', short: '楼下交接', route: ['北门', '桃园 2 号楼', '一教去兰园的同学，多走 3 分钟'], img: 'scene-handoff-v1', alt: '宿舍楼门口，两名学生交接一袋外卖',
     who: '赶作业下不了楼的于小渔',
     pain: '外卖放在北门取餐点，走回 6 楼要十分钟。正好回宿舍的同学顺手就能捎上来，可彼此不认识，也不想把宿舍号给陌生人。',
     fix: '大厅按距离排序，顺路回宿舍的人最先看到；宿舍号接单后才显示，订单结束自动隐藏。',
@@ -173,17 +173,25 @@ function Scenes() {
               initial={reduce ? false : { clipPath: 'inset(0 0 0 100%)' }} animate={{ clipPath: 'inset(0 0 0 0%)' }} exit={{ opacity: 0 }} transition={{ duration: 0.8, ease }}
               className="aspect-[4/3] w-full object-cover md:absolute md:inset-0 md:aspect-auto md:h-full" />
           </AnimatePresence>
-          <div className="hidden md:block md:aspect-[4/5]" />
+          <div className="hidden md:block md:aspect-[5/4]" />
         </div>
         <AnimatePresence mode="wait">
           <motion.div key={s.key} initial={reduce ? false : { opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} exit={reduce ? { opacity: 0 } : { opacity: 0, y: -10 }} transition={{ duration: 0.45, ease }}
-            className="flex flex-col justify-center md:col-span-7">
+            className="flex flex-col justify-start md:col-span-7 md:pt-2">
             <p className="text-[15px] font-semibold text-muted">{s.who}</p>
             <p className="mt-4 text-2xl font-medium leading-[1.55] tracking-[-0.01em] md:text-[28px]">「{s.pain}」</p>
             <div className="mt-8 flex gap-4 rounded-2xl bg-accent-soft p-5 md:p-6">
               <img src={`${import.meta.env.BASE_URL}brand/logo-v2.png`} width={44} height={44} alt="" aria-hidden="true" className="size-11 shrink-0" />
               <p className="text-lg leading-relaxed">{s.fix}</p>
             </div>
+            {s.route && (
+              <div className="mt-4 flex items-center gap-3 rounded-2xl bg-surface p-4 ring-1 ring-line">
+                <span className="whitespace-nowrap text-[15px] font-semibold">{s.route[0]}</span>
+                <span aria-hidden="true" className="relative h-0.5 min-w-8 flex-1 bg-accent"><span className="absolute -left-1 -top-[5px] size-3 rounded-full bg-ink" /><span className="absolute -right-1 -top-[5px] size-3 rounded-full bg-accent" /></span>
+                <span className="whitespace-nowrap text-[15px] font-semibold">{s.route[1]}</span>
+              </div>
+            )}
+            {s.route && <p className="mt-2 px-1 text-sm text-accent">顺路的人：{s.route[2]}</p>}
           </motion.div>
         </AnimatePresence>
       </div>
