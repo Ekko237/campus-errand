@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { motion, animate, useMotionValue, useTransform, useReducedMotion } from 'motion/react'
+import { motion, AnimatePresence, animate, useMotionValue, useTransform, useReducedMotion } from 'motion/react'
 import { CaretRight, ArrowRight, ArrowCounterClockwise, ListBullets } from '@phosphor-icons/react'
 import { useStore, useMe } from '../store'
-import { levelOf, nextLevel, iconUrl, posterTierOf, posterNextTier, B, detourMin, onMyWay } from '../data'
+import { levelOf, nextLevel, iconUrl, posterTierOf, posterNextTier, B, detourMin, onMyWay, myRoute } from '../data'
 import { Avatar, VerifiedBadge, Panel, Btn, Empty, ago, gi } from '../ui'
 const Path = gi('path')
 const Wallet = gi('wallet')
@@ -21,20 +21,42 @@ function CountUp({ value, from = value }) {
   return <motion.span>{out}</motion.span>
 }
 
-// 留存钩子：下课前提醒路上的单（原型只记住开关，不真的发通知）
+// 留存钩子：下课前提醒路上的单（原型只记住开关，不真的发通知）；打开后预览一条推送长什么样
 function RemindToggle() {
+  const { state } = useStore()
+  const reduce = useReducedMotion()
   const [on, setOn] = useState(() => { try { return localStorage.getItem('shunluxia:remind') === '1' } catch { return false } })
   const flip = () => setOn((v) => { const n = !v; try { localStorage.setItem('shunluxia:remind', n ? '1' : '0') } catch { /* 存不了不影响 */ } return n })
+  const r = myRoute()
+  const name = (id) => B[id]?.name.replace(/（.*?）/, '')
+  const open = state.tasks.filter((t) => t.status === 'open' && t.deadline > Date.now() && t.posterId !== 'runner')
+  const near = open.map((t) => ({ t, m: detourMin(r.from, r.to, t) })).filter((x) => x.m <= 5).sort((a, b) => a.m - b.m)
   return (
-    <button onClick={flip} role="switch" aria-checked={on} aria-label="下课前 5 分钟提醒我路上的单" className="flex w-full items-center gap-3 border-t border-line px-4 py-3 text-left">
-      <span className="min-w-0 flex-1">
-        <span className="block text-[15px] font-semibold">下课前 5 分钟提醒我路上的单</span>
-        <span className="block text-sm text-muted">{on ? '已开启：每天 17:45 推送这条路上的单（原型里不真发通知）' : '按课表在你要走这条路之前提醒，不用自己翻大厅'}</span>
-      </span>
-      <span className={`relative h-7 w-12 shrink-0 rounded-full transition-colors ${on ? 'bg-accent' : 'bg-sunken ring-1 ring-line'}`}>
-        <motion.span layout transition={{ type: 'spring', stiffness: 500, damping: 32 }} className={`absolute top-1 size-5 rounded-full bg-surface shadow ${on ? 'right-1' : 'left-1'}`} />
-      </span>
-    </button>
+    <div className="border-t border-line">
+      <button onClick={flip} role="switch" aria-checked={on} aria-label="下课前 5 分钟提醒我路上的单" className="flex w-full items-center gap-3 px-4 py-3 text-left">
+        <span className="min-w-0 flex-1">
+          <span className="block text-[15px] font-semibold">下课前 5 分钟提醒我路上的单</span>
+          <span className="block text-sm text-muted">{on ? '已开启：每天下课前推送这条路上的单（原型里不真发通知）' : '按课表在你要走这条路之前提醒，不用自己翻大厅'}</span>
+        </span>
+        <span className={`relative h-7 w-12 shrink-0 rounded-full transition-colors ${on ? 'bg-accent' : 'bg-sunken ring-1 ring-line'}`}>
+          <span className={`absolute left-1 top-1 size-5 rounded-full bg-surface shadow transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] ${on ? 'translate-x-5' : ''}`} />
+        </span>
+      </button>
+      <AnimatePresence initial={false}>
+        {on && (
+          <motion.div initial={reduce ? false : { opacity: 0, y: -8, height: 0 }} animate={{ opacity: 1, y: 0, height: 'auto' }} exit={{ opacity: 0, height: 0 }} transition={{ duration: 0.25 }} className="overflow-hidden px-4">
+            <p className="text-xs font-semibold text-muted">推送预览</p>
+            <div className="mb-4 mt-1.5 flex gap-3 rounded-2xl bg-bg p-3 shadow-[0_10px_24px_-16px_rgba(17,40,30,0.5)] ring-1 ring-line">
+              <img src={`${import.meta.env.BASE_URL}brand/logo-v2.png`} width={36} height={36} alt="" className="size-9 shrink-0 rounded-lg" />
+              <div className="min-w-0 text-sm">
+                <p className="flex justify-between gap-2 font-semibold"><span>顺路侠</span><span className="tnum font-normal text-muted">17:45</span></p>
+                <p className="mt-0.5 leading-snug">{near.length ? <>{name(r.from)} → {name(r.to)} 上有 <b className="text-accent">{near.length} 单</b>顺路，最近的在{name(near[0].t.from)}，捎上多走 {near[0].m} 分钟</> : <>{name(r.from)} → {name(r.to)} 上暂时没有顺路的单，有了第一时间告诉你</>}</p>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
   )
 }
 

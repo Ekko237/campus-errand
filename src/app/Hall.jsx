@@ -183,13 +183,13 @@ export default function Hall() {
         <span className="text-sm text-muted">{list.filter((t) => t.deadline > Date.now()).length} 个待接</span>
       </div>
 
-      <div className="flex flex-wrap gap-2" role="group" aria-label="按类型筛选">
+      <div className="flex flex-wrap gap-1.5 sm:gap-2" role="group" aria-label="按类型筛选">
         {[['all', '全部'], ...TYPE_KEYS.map((k) => [k, TYPES[k].label])].map(([k, label]) => {
           const Icon = TYPES[k]?.Icon
           return (
             <button key={k} onClick={() => setType(k)} aria-pressed={type === k}
-              className={`inline-flex h-10 shrink-0 items-center gap-1.5 rounded-full px-4 text-[15px] font-semibold transition ${type === k ? 'bg-ink text-bg' : 'bg-surface text-ink ring-1 ring-line'}`}>
-              {Icon && <Icon size={18} weight="bold" />}{label}
+              className={`inline-flex h-10 shrink-0 items-center gap-1.5 rounded-full px-3 text-[14px] font-semibold transition sm:px-4 sm:text-[15px] ${type === k ? 'bg-ink text-bg' : 'bg-surface text-ink ring-1 ring-line'}`}>
+              {Icon && <span className="hidden sm:inline-flex"><Icon size={18} weight="bold" /></span>}{label}
             </button>
           )
         })}

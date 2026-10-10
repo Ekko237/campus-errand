@@ -100,7 +100,7 @@ function Onboarding() {
     nav('/app/publish?tour=1')
   }
   return (
-    <Sheet open={!state.onboarded} onClose={() => act('onboarded')} title="30 秒看懂顺路侠">
+    <Sheet open={!state.onboarded} onClose={() => act('onboarded')} title="顺路侠怎么用">
       <ol className="space-y-4">
         {steps.map((s, i) => (
           <li key={s.t} className="flex gap-3">
@@ -147,7 +147,10 @@ function Shell() {
   const { state } = useStore()
   const { pathname, search } = useLocation()
   // 子页面亮它的来源标签：订单详情、从订单来的认证亮「订单」；钱包、信用规则、其他认证亮「我的」
-  const sub = pathname.startsWith('/app/task') || (pathname.startsWith('/app/verify') && search.includes('back=/app/task')) ? '/app/orders'
+  const openTask = pathname.startsWith('/app/task/') && state.tasks.find((x) => x.id === pathname.split('/').pop())
+  // 还没人接的单，是从大厅点进来的：亮「大厅」
+  const sub = openTask && openTask.status === 'open' && openTask.posterId !== 'poster' ? '/app'
+    : pathname.startsWith('/app/task') || (pathname.startsWith('/app/verify') && search.includes('back=/app/task')) ? '/app/orders'
     : ['/app/verify', '/app/wallet', '/app/credit'].some((p) => pathname.startsWith(p)) ? '/app/me' : null
   const reduce = useReducedMotion()
   const dir = useDirection(pathname)

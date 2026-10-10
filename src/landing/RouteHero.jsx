@@ -8,7 +8,7 @@ import CampusMap, { SHORT, along } from './CampusMap'
 const ease = [0.16, 1, 0.3, 1]
 const icon = (name) => `${import.meta.env.BASE_URL}icons/${name}.webp`
 // 首屏地图就是全校地图（campus-map-v2）的局部放大：同一张图、同一套坐标、同一个寻路，和下面的全景永远对得上
-const X0 = 80, Y0 = 50, VW = 1280, VH = 800
+const X0 = 40, Y0 = 50, VW = 1360, VH = 800
 const toD = (pts) => pts.map(([x, y], i) => `${i ? 'L' : 'M'}${x} ${y}`).join(' ')
 // 学弟下课的路：一教 → 沿主路往西 → 梅园；驿站门口就在这条路边
 const RUN_PTS = routePath('jiao1', 'mei5').pts
@@ -58,7 +58,7 @@ export function RouteMap() {
 
   const lit = phase >= 1
   return (
-    <div ref={box} className="relative -mx-4 aspect-[16/10] w-[calc(100%+2rem)] overflow-hidden bg-surface sm:mx-0 sm:w-full sm:rounded-[28px] sm:ring-1 sm:ring-line"
+    <div ref={box} className="relative -mx-4 aspect-[17/10] w-[calc(100%+2rem)] overflow-hidden bg-surface sm:mx-0 sm:w-full sm:rounded-[28px] sm:ring-1 sm:ring-line"
       role="img" aria-label="示意地图：你的快递在菜鸟驿站，学弟从一教走回梅园正好经过驿站门口，顺手捎上，只多走 1 分钟">
       <svg viewBox={`${X0} ${Y0} ${VW} ${VH}`} preserveAspectRatio="xMidYMid slice" className="absolute inset-0 size-full" aria-hidden="true">
         <image href={`${import.meta.env.BASE_URL}images/campus-map-v2.webp`} x="0" y="0" width="1600" height="900" />
@@ -151,7 +151,7 @@ export default function RouteHero({ Cta, Anchor }) {
   // 副标题和按钮第一帧就在，只做一点位移，不从透明开始
   const fade = (d) => ({ initial: reduce ? false : { y: 10 }, animate: { y: 0 }, transition: { duration: 0.5, delay: d * 0.3, ease } })
   return (
-    <section id="top" className="mx-auto grid max-w-7xl items-center gap-10 px-4 pb-20 pt-8 md:px-8 md:pb-28 md:pt-14 lg:grid-cols-12 lg:gap-10 lg:pb-14 lg:pt-10 xl:pt-14">
+    <section id="top" className="mx-auto grid max-w-7xl items-center gap-10 px-4 pb-12 pt-8 md:px-8 md:pb-28 md:pt-14 lg:grid-cols-12 lg:gap-10 lg:pb-14 lg:pt-10 xl:pt-14">
       <div className="lg:col-span-5">
         <h1 className="font-display text-[length:clamp(54px,4vw_+_20px,78px)] leading-[1.05]">
           <span className="block pb-1"><motion.span className="block" {...line(0)}>本来就要经过，</motion.span></span>
@@ -212,8 +212,10 @@ export function CampusRoutes() {
       <p className="mt-4 max-w-[40ch] text-lg leading-relaxed text-muted md:text-xl" aria-live="polite">
         此刻 {tasks.length} 个单里，有 <b className="text-accent">{hits.length} 个</b>顺路，捎上多走 {!hits.length ? 0 : hits[0].m === hits[hits.length - 1].m ? hits[0].m : `${hits[0].m} 到 ${hits[hits.length - 1].m}`} 分钟。
       </p>
-      <div ref={box} className="mt-6"><CampusMap R={R} hits={hits} reduce={reduce} legend /></div>
-      <SubwayLine R={R} hits={hits} reduce={reduce} />
+      <div className="mt-6 lg:grid lg:grid-cols-12 lg:items-start lg:gap-8">
+        <div ref={box} className="lg:col-span-8"><CampusMap R={R} hits={hits} reduce={reduce} legend /></div>
+        <div className="lg:col-span-4"><SubwayLine R={R} hits={hits} reduce={reduce} /></div>
+      </div>
     </div>
   )
 }
@@ -230,7 +232,7 @@ function SubwayLine({ R, hits, reduce }) {
     </li>
   )
   return (
-    <div className="mt-3 rounded-[24px] bg-surface p-4 ring-1 ring-line md:hidden">
+    <div className="mt-3 rounded-[24px] bg-surface p-4 ring-1 ring-line md:hidden lg:mt-0 lg:block">
       <ol key={R.label} className="relative space-y-3">
         <span aria-hidden="true" className="absolute bottom-4 left-[11px] top-4 w-[3px] rounded-full bg-ink/80" />
         {end(SHORT[R.from], '出发')}

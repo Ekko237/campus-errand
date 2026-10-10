@@ -69,15 +69,15 @@ export default function TourBar() {
   return (
     <AnimatePresence initial={false}>
       {step && (
-        <motion.div key="bar" initial={reduce ? false : { height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.25 }}
-          className="overflow-hidden border-t border-line bg-ink text-bg">
+        <motion.div key="bar" initial={reduce ? false : { opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.2 }}
+          className="border-t border-line bg-ink text-bg">
           <div data-tour-bar className="mx-auto flex min-h-12 max-w-xl items-center gap-3 px-4 py-1.5 xl:max-w-[66rem]">
             <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-bg/15 px-2 py-0.5 text-xs font-bold">{step.final ? <><Confetti size={12} weight="fill" />走完了</> : '下一步'}</span>
             <AnimatePresence mode="wait" initial={false}>
               <motion.p key={text} initial={reduce ? false : { opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -6 }} transition={{ duration: 0.18 }}
                 className="min-w-0 flex-1 text-[14px] font-semibold leading-snug md:text-[15px]">{text}</motion.p>
             </AnimatePresence>
-            {!here && <button onClick={go} className="inline-flex h-9 shrink-0 items-center gap-1 whitespace-nowrap rounded-full bg-accent px-3.5 text-[14px] font-semibold text-on-accent active:scale-[0.98]">
+            {!here && !loc.pathname.startsWith('/app/verify') && <button onClick={go} className="inline-flex h-9 shrink-0 items-center gap-1 whitespace-nowrap rounded-full bg-accent px-3.5 text-[14px] font-semibold text-on-accent active:scale-[0.98]">
               {step.cta}<ArrowRight size={14} weight="bold" />
             </button>}
             <button onClick={() => act('tour', { tour: { active: false } })} aria-label="退出演示" className="grid size-8 shrink-0 place-items-center rounded-full opacity-70 hover:opacity-100"><X size={16} weight="bold" /></button>

@@ -138,16 +138,17 @@ function Nav({ page }) {
             <img src={`${import.meta.env.BASE_URL}brand/logo-v2.png`} width={36} height={36} alt="顺路侠标志：背着书包、夹着包裹奔跑的小人" className="size-9" />顺路侠
           </Anchor>
         ) : (
-          <Link to="/" className="group flex items-center gap-2 text-[17px] font-semibold">
-            <ArrowLeft size={18} weight="bold" className="transition-transform group-hover:-translate-x-0.5" />回首页
+          <Link to="/" className="flex items-center gap-2.5 text-lg font-bold tracking-tight">
+            <img src={`${import.meta.env.BASE_URL}brand/logo-v2.png`} width={36} height={36} alt="顺路侠标志：背着书包、夹着包裹奔跑的小人" className="size-9" />顺路侠
           </Link>
         )}
         <nav className="hidden items-center gap-8 text-[15px] font-medium text-muted lg:flex" aria-label="页面导航">
           {home && NAV_LINKS.map(([to, l]) => <Anchor key={to} to={to} className={linkCls}>{l}{under}</Anchor>)}
-          {home && <Link to="/thinking" className={linkCls}>产品思考{under}</Link>}
+          {home ? <Link to="/thinking" className={linkCls}>产品思考{under}</Link> : <Link to="/" className={`${linkCls} inline-flex items-center gap-1.5`}><ArrowLeft size={16} weight="bold" />回首页{under}</Link>}
         </nav>
         <div className="flex items-center gap-2">
           <div className={`transition-opacity duration-300 ${scrolled || !home ? '' : 'max-md:pointer-events-none max-md:opacity-0'}`}><Cta size="sm" /></div>
+          {!home && <Link to="/" className="grid h-10 place-items-center rounded-full bg-sunken px-4 text-[15px] font-semibold active:scale-[0.97] lg:hidden">回首页</Link>}
           {home && (
             <button onClick={() => setOpen((v) => !v)} aria-expanded={open} aria-controls="mnav" className="grid h-10 place-items-center rounded-full bg-sunken px-4 text-[15px] font-semibold active:scale-[0.97] lg:hidden">{open ? '收起' : '目录'}</button>
           )}
@@ -196,19 +197,19 @@ function Ticker() {
 
 const SCENES = [
   {
-    key: 'express', tab: '排长队的快递驿站', short: '驿站排队', route: ['菜鸟驿站', '梅园 5 号楼', '一教下课回梅园的同学，多走 1 分钟'], img: 'scene-express-v2', alt: '校园快递驿站里排着长队，货架上堆满包裹',
+    key: 'express', tab: '排长队的快递驿站', short: '驿站排队', route: ['菜鸟驿站', '梅园 5 号楼', '一教下课回梅园的同学，多走 1 分钟'], img: 'scene-express-v3', alt: '傍晚的校园快递驿站，货架上堆满包裹，门口排着长队',
     who: '大三，课排满的小禾',
     pain: '驿站傍晚要排二十分钟，她 17:50 才下课，18:00 就关门。三个快递放了三天，找室友要欠人情，找陌生人又怕取件码被乱用。',
     fix: '发一单 ¥5。取件码只在有人接单后才给对方看，送到后当面核验送达码，钱才放出去。',
   },
   {
-    key: 'seat', tab: '早八前的图书馆座位', short: '早八占座', route: ['图书馆', '图书馆 3F', '去一教路过图书馆的同学，就在路上'], img: 'scene-seat-v2', alt: '清晨图书馆靠窗的空位上放着一本书',
+    key: 'seat', tab: '早八前的图书馆座位', short: '早八占座', route: ['图书馆', '图书馆 3F', '去一教路过图书馆的同学，就在路上'], img: 'scene-seat-v3', alt: '清晨的图书馆阅览室，靠窗的空位上放着一本书占座',
     who: '考研，住得远的周砚',
     pain: '宿舍离图书馆一公里，每天 7:40 靠窗位就没了。住在旁边的同学顺手就能占，但不知道谁靠谱。',
     fix: '接单人的信用分公开可见。接了不去算爽约，直接扣 5 分，下次能接的单就变少。',
   },
   {
-    key: 'handoff', tab: '宿舍楼下的交接', short: '楼下交接', route: ['北门', '桃园 2 号楼', '一教去兰园的同学，多走 3 分钟'], img: 'scene-handoff-v2', alt: '宿舍楼门口，两名学生交接一袋外卖',
+    key: 'handoff', tab: '宿舍楼下的交接', short: '楼下交接', route: ['北门', '桃园 2 号楼', '一教去兰园的同学，多走 3 分钟'], img: 'scene-handoff-v3', alt: '傍晚的宿舍楼门口，一名学生把外卖袋递给另一名学生',
     who: '赶作业下不了楼的于小渔',
     pain: '外卖放在北门取餐点，走回 6 楼要十分钟。正好回宿舍的同学顺手就能捎上来，可彼此不认识，也不想把宿舍号给陌生人。',
     fix: '大厅按距离排序，顺路回宿舍的人最先看到；宿舍号接单后才显示，订单结束自动隐藏。',
@@ -695,20 +696,25 @@ function BanDemo() {
   const on = useInView(ref, { amount: 0.4 })
   const [i, setI] = useState(1)
   const [n, setN] = useState(reduce ? BAN_DEMO[1].length : 0)
+  // 用户一点输入框，自动打字就停下，换成他自己打的字
+  const [own, setOwn] = useState(null)
   const text = BAN_DEMO[i]
   useEffect(() => {
-    if (reduce || !on) return
+    if (reduce || !on || own !== null) return
     if (n < text.length) { const id = setTimeout(() => setN(n + 1), 110); return () => clearTimeout(id) }
     const id = setTimeout(() => { setI((i + 1) % BAN_DEMO.length); setN(0) }, 2200)
     return () => clearTimeout(id)
-  }, [n, text, on, reduce, i])
-  const typed = text.slice(0, n)
+  }, [n, text, on, reduce, i, own])
+  const typed = own ?? text.slice(0, n)
   const hit = /代签到|代写作业|代考|替考|代点名/.exec(typed)
   return (
     <div ref={ref} className="rounded-[24px] bg-surface p-5 text-ink shadow-[0_30px_60px_-30px_rgba(0,0,0,0.6)]" aria-label="发布表单拦截演示">
       <p className="text-[15px] font-semibold">备注（选填）</p>
-      <div className={`mt-2 min-h-12 rounded-xl px-3.5 py-3 text-base ring-1 transition-colors ${hit ? 'bg-danger-soft ring-2 ring-danger' : 'bg-bg ring-line'}`}>
-        {typed}<span aria-hidden="true" className="ml-0.5 inline-block h-5 w-0.5 translate-y-1 animate-pulse bg-ink" />
+      <div className="relative mt-2">
+        <input value={typed} onFocus={() => setOwn((v) => v ?? typed)} onChange={(e) => setOwn(e.target.value)} maxLength={40} aria-label="备注（选填），可以自己打字试试"
+          placeholder="自己打一句试试，比如：帮我代签到" aria-invalid={!!hit}
+          className={`h-12 w-full rounded-xl px-3.5 text-base text-ink ring-1 transition-colors placeholder:text-muted focus:outline-none ${hit ? 'bg-danger-soft ring-2 ring-danger' : 'bg-bg ring-line focus:ring-2 focus:ring-accent'}`} />
+        {own === null && <span aria-hidden="true" className="pointer-events-none absolute top-1/2 h-5 w-0.5 -translate-y-1/2 animate-pulse bg-ink" style={{ left: `calc(14px + ${typed.length}em)` }} />}
       </div>
       {/* 提示区固定高度：拦截卡只淡入淡出，下面的按钮不跟着跳 */}
       <div className="relative mt-3 h-[96px] md:h-[80px]">
@@ -732,7 +738,7 @@ function BanDemo() {
           <li key={w} className={`rounded-full px-2.5 py-1 text-xs font-semibold line-through decoration-danger decoration-2 transition-colors ${hit && hit[0] === w ? 'bg-danger text-on-accent' : 'bg-sunken text-muted'}`}>{w}</li>
         ))}
       </ul>
-      <p className="mt-3 text-center text-xs text-muted">这是原型里的真实表单，可以去发布页自己试</p>
+      <Link to="/app/publish" className="mt-3 flex items-center justify-center gap-1 text-sm font-semibold text-accent hover:underline">去原型的发布页试试<ArrowRight size={14} weight="bold" /></Link>
     </div>
   )
 }
@@ -876,14 +882,21 @@ function Final({ page }) {
   const go = () => { try { localStorage.setItem('shunluxia:myroute', JSON.stringify({ from: R.from, to: R.to })) } catch { /* 存不了就用默认路线 */ } nav('/app') }
   return (
     <section className="border-t border-line">
+      {page === 'thinking' ? (
+        <div className="mx-auto max-w-3xl px-4 py-20 text-center md:py-28">
+          <Reveal><h2 className="font-display text-balance text-[40px] leading-[1.08] md:text-6xl">想法讲完了，<br />点一遍看看</h2></Reveal>
+          <Reveal delay={0.05}><p className="mx-auto mt-5 max-w-[32ch] text-lg text-muted">原型里一个人就能分别扮演发单人和跑腿人，大约两分钟走完一单。</p></Reveal>
+          <Reveal delay={0.1} className="mt-8"><Cta /></Reveal>
+        </div>
+      ) : (
       <div className="mx-auto max-w-7xl px-4 py-20 md:px-8 md:py-28 lg:py-32">
         <div className="mx-auto max-w-3xl text-center">
           <Reveal><h2 className="font-display text-balance text-[40px] font-bold leading-[1.08] tracking-[-0.035em] md:text-7xl">你下课<br />常走哪条路？</h2></Reveal>
           <Reveal delay={0.05}>
-            <div className="mt-8 flex flex-wrap justify-center gap-2" role="group" aria-label="选你常走的路">
+            <div className="mt-8 flex flex-wrap justify-center gap-1.5 md:gap-2" role="group" aria-label="选你常走的路">
               {ROUTES.map((x, i) => (
                 <button key={x.label} onClick={() => setRi(i)} aria-pressed={i === ri}
-                  className={`h-11 whitespace-nowrap rounded-full px-4 text-[15px] font-semibold transition-colors active:scale-[0.97] ${i === ri ? 'bg-ink text-bg' : 'bg-surface text-ink ring-1 ring-line'}`}>{x.label}</button>
+                  className={`h-11 whitespace-nowrap rounded-full px-3 text-[14px] font-semibold transition-colors active:scale-[0.97] md:px-4 md:text-[15px] ${i === ri ? 'bg-ink text-bg' : 'bg-surface text-ink ring-1 ring-line'}`}><span className="md:hidden">{x.short}</span><span className="max-md:hidden">{x.label}</span></button>
               ))}
             </div>
           </Reveal>
@@ -900,6 +913,7 @@ function Final({ page }) {
           </Reveal>
         </div>
       </div>
+      )}
       <footer className="border-t border-line">
         <div className="mx-auto grid max-w-7xl gap-6 px-4 py-10 text-sm text-muted md:grid-cols-[1fr_auto] md:items-center md:px-8">
           <div>
@@ -951,7 +965,8 @@ function ThinkingTeaser() {
 }
 
 export default function Landing({ page }) {
-  useEffect(() => { if (page === 'thinking') window.scrollTo(0, 0) }, [page])
+  // 首页和产品思考页之间切换：都从顶上开始看
+  useEffect(() => { window.scrollTo(0, 0) }, [page])
   // 预加载原型分包：首页停一会儿就把原型的代码取下来，点「体验原型」不再先看骨架屏
   useEffect(() => { const id = setTimeout(() => { import('../app/AppRoot') }, 1500); return () => clearTimeout(id) }, [])
   return (

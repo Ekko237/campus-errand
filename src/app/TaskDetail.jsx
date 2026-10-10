@@ -5,7 +5,7 @@ import { ArrowLeft, Check, ArrowClockwise } from '@phosphor-icons/react'
 import { useStore } from '../store'
 import CampusMap from '../landing/CampusMap'
 import { PLACES } from '../campusMap'
-import { B, dist, fmtDist, RUNNER_HOME, minCreditFor, levelOf, detourMin, myRoute, onMyWay } from '../data'
+import { B, dist, fmtDist, RUNNER_HOME, minCreditFor, levelOf, detourMin, detourMeters, myRoute, onMyWay } from '../data'
 import { Btn, Panel, TypeTag, UrgentTag, VerifiedBadge, Sheet, Stars, Empty, Field, inputCls, left, clock, spring, gi } from '../ui'
 const MapPin = gi('pin')
 const Clock = gi('clock')
@@ -87,7 +87,7 @@ function PrivateInfo({ t, role }) {
           <div key={k} className="flex items-center gap-3">
             <Icon size={20} className="shrink-0 text-muted" />
             <dt className="w-16 shrink-0 text-[15px] text-muted">{k}</dt>
-            <dd className={`tnum text-[15px] font-semibold ${show ? '' : 'select-none text-muted blur-[3px]'}`} aria-label={show ? undefined : '已隐藏'}>{show ? v : masked}</dd>
+            <dd className={`tnum text-[15px] font-semibold ${show ? '' : 'select-none text-muted'}`}>{show ? v : mode === 'hidden' ? '已收回' : masked}</dd>
           </div>
         ))}
       </dl>
@@ -282,6 +282,15 @@ function DeliverSheet({ t, open, onClose }) {
 function RateBlock({ t, by }) {
   const { act } = useStore()
   const [stars, setStars] = useState(0)
+  const submitRef = useRef(null)
+  // 选完星，标签会展开把「提交评价」往下推：等它展开后，滚到刚好露在底部导航上面
+  const revealSubmit = () => setTimeout(() => {
+    const b = submitRef.current; if (!b) return
+    const navTop = document.querySelector('nav[aria-label="主导航"]')?.getBoundingClientRect().top ?? innerHeight
+    const limit = (navTop > innerHeight / 2 ? navTop : innerHeight) - 16
+    const r = b.getBoundingClientRect()
+    if (r.bottom > limit) window.scrollBy({ top: r.bottom - limit, behavior: 'smooth' })
+  }, 80)
   const tagsGood = by === 'poster' ? ['准时', '沟通顺畅', '物品完好'] : ['描述准确', '确认及时', '好说话']
   const tagsBad = by === 'poster' ? ['超时', '物品有损', '态度差'] : ['描述不符', '拖延确认', '态度差']
   const [tags, setTags] = useState([])
@@ -291,14 +300,14 @@ function RateBlock({ t, by }) {
     <Panel className="p-4" data-tour-target>
       <p className="text-[17px] font-semibold">{by === 'poster' ? '给跑腿人打分' : '给发单人打分'}</p>
       <p className="mt-0.5 truncate text-sm text-muted">{stars ? <>对方信用 <b className="tnum">{effect}</b> · </> : null}4 到 5 星 +1，1 到 2 星 -4</p>
-      <div className="mt-3"><Stars value={stars} onChange={(n) => { setStars(n); setTags([]) }} /></div>
+      <div className="mt-3"><Stars value={stars} onChange={(n) => { setStars(n); setTags([]); revealSubmit() }} /></div>
       <div className="mt-3 flex flex-wrap gap-2">
         {stars > 0 && opts.map((x) => (
           <button key={x} onClick={() => setTags((v) => (v.includes(x) ? v.filter((y) => y !== x) : [...v, x]))} aria-pressed={tags.includes(x)}
             className={`h-10 rounded-full px-4 text-[15px] font-semibold ${tags.includes(x) ? 'bg-ink text-bg' : 'bg-sunken text-ink'}`}>{x}</button>
         ))}
       </div>
-      <Btn className="mt-4 w-full" disabled={!stars} onClick={() => { act('rate', { id: t.id, by, stars, tags }); if (by === 'poster' ? t.ratingByRunner : t.ratingByPoster) setTimeout(() => window.scrollTo({ top: 0, behavior: 'smooth' }), 60) }}>{stars ? '提交评价' : '先点星星打分'}</Btn>
+      <Btn ref={submitRef} className="mt-4 w-full" disabled={!stars} onClick={() => { act('rate', { id: t.id, by, stars, tags }); if (by === 'poster' ? t.ratingByRunner : t.ratingByPoster) setTimeout(() => window.scrollTo({ top: 0, behavior: 'smooth' }), 60) }}>{stars ? '提交评价' : '先点星星打分'}</Btn>
     </Panel>
   )
 }
@@ -353,7 +362,7 @@ function Actions({ t }) {
           {!t.picked ? <Btn size="lg" className="w-full" onClick={() => { pickedAt.current = Date.now(); act('pick', { id: t.id }) }}>我已取到，出发送达</Btn>
             : <Btn size="lg" className="w-full" onClick={() => { if (Date.now() - pickedAt.current > 700) setDeliver(true) }}>提交送达凭证</Btn>}
           <div className="flex flex-wrap justify-center gap-x-4">
-            {!t.picked && <Btn variant="plain" size="sm" onClick={() => setAbandon(true)}>放弃这单（信用 -5）</Btn>}
+            {!t.picked && <Btn variant="plain" size="sm" className="text-danger!" onClick={() => setAbandon(true)}>放弃这单（信用 -5）</Btn>}
             <Btn variant="plain" size="sm" onClick={() => setMismatch(true)}>与描述不符，申诉</Btn>
           </div>
           <Sheet open={mismatch} onClose={() => setMismatch(false)} title="任务与描述不符">
@@ -497,14 +506,17 @@ function WrapUp({ t }) {
   ].filter(Boolean)
   const name = (id) => B[id]?.name.replace(/（.*?）/, '')
   const ease = [0.16, 1, 0.3, 1]
+  const mine = onMyWay(t) ? myRoute() : null
+  const mapR = mine || { from: t.from, to: t.to }
+  const mapHits = mine ? [{ ...t, m: detourMin(mine.from, mine.to, t), dm: detourMeters(mine.from, mine.to, t) }] : []
   return (
     <motion.section initial={play ? { opacity: 0, y: 16, scale: 0.98 } : false} animate={{ opacity: 1, y: 0, scale: 1 }} transition={{ type: 'spring', stiffness: 260, damping: 26 }}
       className="overflow-hidden rounded-[24px] bg-accent-deep p-5 text-on-accent" aria-label="这一单的收尾">
       <p className="text-sm font-semibold opacity-75">这一单走完了</p>
       <p className="mt-1 text-balance text-2xl font-bold"><span className="whitespace-nowrap">顺路一趟，¥{t.reward} 到账，</span><span className="whitespace-nowrap">{rows.every((x) => x.d >= 0) ? '信用都涨了' : '信用有涨有跌'}</span></p>
-      {PLACES[t.from] && PLACES[t.to] && t.from !== t.to ? (
-        // 这一单在校园地图上真正走过的那段路，小人从取件点走到送达点
-        <div className="mt-4 overflow-hidden rounded-2xl ring-1 ring-on-accent/20"><CampusMap R={{ from: t.from, to: t.to }} hits={[]} reduce={!play} pills={false} walker={play} /></div>
+      {PLACES[mapR.from] && PLACES[mapR.to] && mapR.from !== mapR.to ? (
+        // 顺路的单：画跑腿人本来要走的整条路，这一单捎的那段亮绿；不顺路的单：只画取件到送达
+        <div className="mt-4 overflow-hidden rounded-2xl ring-1 ring-on-accent/20"><CampusMap R={mapR} hits={mapHits} reduce={!play} pills={false} walker={play} /></div>
       ) : (
       <div className="relative mt-5 h-12" aria-hidden="true">
         <span className="absolute left-0 right-0 top-1/2 h-[3px] -translate-y-1/2 rounded-full bg-on-accent/25" />

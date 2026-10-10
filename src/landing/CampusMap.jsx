@@ -5,10 +5,16 @@ import { MAP_W, MAP_H, PLACES, routePath } from '../campusMap'
 const icon = (name) => `${import.meta.env.BASE_URL}icons/${name}.webp`
 export const SHORT = { cainiao: '菜鸟驿站', sf: '顺丰点', jd: '京东柜', canteen1: '一食堂', canteen2: '二食堂', market: '教育超市', gate: '北门', lib: '图书馆', jiao1: '一教', hall: '学术报告厅', gym: '体育馆', zhu3: '竹园', mei5: '梅园', tao2: '桃园', lan1: '兰园', yan: '研究生公寓' }
 
-// 地图上标点的位置：小亭子、商铺标在房子正中，其他楼标在门口
+// 地图上标点的位置：小亭子、校门标在正中，其他楼标在楼里取件的地方（从门口拐进去那段虚线的尽头）
+// 楼里取件的位置：从门口往楼里走 70，离楼边至少 20
+const inside = (id) => {
+  const P = PLACES[id]
+  const [x0, y0, x1, y1] = P.box
+  return [Math.min(Math.max(P.door[0] + (P.road[0] === 'v' ? 70 : 0), x0 + 20), x1 - 20), Math.min(Math.max(P.door[1] + (P.road[0] === 'h' ? (P.door[1] > P.road[1] ? 70 : -70) : 0), y0 + 20), y1 - 20)]
+}
 const markAt = (id) => {
   const P = PLACES[id]
-  if (P.kind !== 'kiosk' && P.kind !== 'gate') return P.door
+  if (P.kind !== 'kiosk' && P.kind !== 'gate') return inside(id)
   const [x0, y0, x1, y1] = P.box
   return [(x0 + x1) / 2, (y0 + y1) / 2]
 }
@@ -63,6 +69,15 @@ export default function CampusMap({ R, hits, reduce, pills = true, walker = true
       role="img" aria-label={`示意地图：从${SHORT[R.from]}到${SHORT[R.to]}，沿路有 ${hits.length} 个顺路的单`}>
       <img src={`${import.meta.env.BASE_URL}images/campus-map-v2.webp`} width={1600} height={900} alt="" aria-hidden="true" loading="lazy" className="absolute inset-0 size-full object-cover" />
       <svg viewBox={`0 0 ${MAP_W} ${MAP_H}`} className="absolute inset-0 size-full" aria-hidden="true">
+        {/* 拐进楼里取件的那一小段：从路边进门、走进楼里，多走的分钟数大多花在这里 */}
+        {marks.map(({ t, f }) => {
+          const P = PLACES[t.from]
+          if (!P || P.kind === 'kiosk' || P.kind === 'gate') return null
+          const foot = P.road[0] === 'h' ? [P.door[0], P.road[1]] : [P.road[1], P.door[1]]
+          const deep = inside(t.from)
+          return <motion.path key={`in${R.from}${R.to}${t.id}`} d={toD([foot, P.door, deep])} fill="none" stroke="var(--accent)" strokeWidth="9" strokeDasharray="1 15" strokeLinecap="round" strokeLinejoin="round"
+            initial={false} animate={{ opacity: p >= f ? 1 : 0.35 }} transition={{ duration: 0.3 }} />
+        })}
         {/* 你的路：整条先淡淡画着，小人走过的部分描深 */}
         <path d={toD(mine)} fill="none" stroke="var(--ink)" strokeOpacity="0.3" strokeWidth="10" strokeDasharray="4 18" strokeLinecap="round" strokeLinejoin="round" />
         <motion.path key={`${R.from}${R.to}`} d={toD(mine)} fill="none" stroke="var(--ink)" strokeOpacity="0.88" strokeWidth="12" strokeLinecap="round" strokeLinejoin="round"
@@ -74,7 +89,7 @@ export default function CampusMap({ R, hits, reduce, pills = true, walker = true
         ))}
       </svg>
       {marks.map(({ t, f }, i) => (
-        <span key={t.id} aria-hidden="true" className={`tnum absolute z-10 grid size-5 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full text-[11px] font-bold text-on-accent ring-[3px] ring-surface transition-colors md:size-4 md:text-[0px] ${p >= f ? 'bg-accent' : 'bg-muted'}`} style={pct(markAt(t.from))}>{i + 1}</span>
+        <span key={t.id} aria-hidden="true" className={`tnum absolute z-10 grid size-5 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full text-[11px] font-bold text-on-accent ring-[3px] ring-surface transition-colors md:size-7 md:text-[13px] ${p >= f ? 'bg-accent' : 'bg-muted'}`} style={pct(markAt(t.from))}>{i + 1}</span>
       ))}
       {ends.map((id) => (
         <span key={id} className="absolute z-20" style={pct(PLACES[id].door)}>
@@ -109,6 +124,7 @@ export default function CampusMap({ R, hits, reduce, pills = true, walker = true
       <p className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted md:text-sm">
         <span className="inline-flex items-center gap-1.5"><i className="h-1 w-5 rounded-full bg-ink/80" />你正要走的路</span>
         <span className="inline-flex items-center gap-1.5"><i className="h-1.5 w-5 rounded-full bg-accent" />顺手捎的那段（取件到送达）</span>
+        <span className="inline-flex items-center gap-1.5"><i className="w-5 border-t-[3px] border-dotted border-accent" />拐进楼里取件（多走的路）</span>
         <span className="inline-flex items-center gap-1.5"><i className="size-2.5 rounded-full bg-accent" /><span>取件点，<span className="md:hidden">按路上先后编号，</span>共 {hits.length} 单</span></span>
       </p>
     )}
