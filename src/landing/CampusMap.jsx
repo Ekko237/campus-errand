@@ -142,7 +142,7 @@ export default function CampusMap({ R, hits, reduce, pills = true, walker = true
         <span key={`p${t.id}`} aria-hidden="true" className={`tnum absolute z-10 -translate-x-1/2 translate-y-[9px] whitespace-nowrap rounded-full bg-surface px-1 text-[12px] font-bold leading-4 text-accent shadow-sm md:hidden`} style={pct(markAt(t.from))}>{t.type === 'express' ? `${TINY[t.from] || SHORT[t.from]} ` : ''}¥{t.reward}</span>
       ))}
       {/* 原型订单页：小人还在起点附近时起点不标，到了终点就不再标「到达」，免得和小人叠在一起 */}
-      {ends.filter((id) => !((at != null || park) && ((id === R.from && p < 0.15) || (id === R.to && p >= 0.99)))).map((id) => (
+      {ends.filter((id) => !(at != null && !park && ((id === R.from && p < 0.15) || (id === R.to && p >= 0.99)))).map((id) => (
         <span key={id} className="absolute z-20" style={pct(id === R.from ? mine[0] : mine[mine.length - 1])}>
           <span className="absolute left-0 top-0 block size-3 -translate-x-1/2 -translate-y-1/2 rounded-full bg-ink ring-[3px] ring-surface md:size-4" />
           <span className={`absolute whitespace-nowrap rounded-full bg-ink px-2 py-0.5 text-[13px] font-semibold text-bg shadow-sm md:px-2.5 md:text-[13px] ${side(id) === 'right' ? 'left-3 -translate-y-1/2' : side(id) === 'left' ? 'right-3 -translate-y-1/2' : `${edge(id) === 'l' ? '-left-5' : edge(id) === 'r' ? '-right-5' : 'left-0 -translate-x-1/2'} ${labelUp(id) ? 'bottom-3.5' : 'top-3.5'}`}`}>{side(id) ? <><span className="max-md:hidden">{SHORT[id]} </span><span className="md:hidden">{TINY[id] || SHORT[id]} </span></> : `${SHORT[id]} `}{id === R.from ? '出发' : '到达'}</span>

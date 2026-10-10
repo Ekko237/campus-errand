@@ -49,7 +49,7 @@ export default function TourBar() {
     let wait = 0
     // 停过「奖励时刻」之后那一下滚动用瞬移：滚动过程只有一帧，不会正好吞掉用户的点击
     let late = false
-    // 量两次：图片（比如送达照片）加载完会把按钮往下推，第一次量完 0.6 秒后再补一次
+    // 量三次：图片（比如送达照片）加载完会把按钮往下推，0.6 秒、1.3 秒后各补一次
     const reveal = () => {
       if (!el || !(loc.pathname.startsWith('/app/task/') || loc.pathname.startsWith('/app/publish'))) return
       const head = document.querySelector('header')?.getBoundingClientRect().bottom ?? 64
@@ -98,7 +98,7 @@ export default function TourBar() {
         if (!el) return
         el.classList.add('tour-focus')
         reveal()
-        timers.push(setTimeout(reveal, 600))
+        timers.push(setTimeout(reveal, 600), setTimeout(reveal, 1300))
       }, moment ? wait : 0))
     }, 350)
     return () => { clearTimeout(id); timers.forEach(clearTimeout); evs.forEach((e) => window.removeEventListener(e, hands, { capture: true })); el?.classList.remove('tour-focus') }

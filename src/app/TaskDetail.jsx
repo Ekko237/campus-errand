@@ -617,7 +617,7 @@ export default function TaskDetail() {
   const t = state.tasks.find((x) => x.id === id)
   // 切了身份，页面换成另一方能做的事：回到顶上从头看，不停在半中间
   const firstRole = useRef(true)
-  // 导览进行中由导览条负责滚到要点的按钮，这里不抢
+  // 切了身份回到顶上从头看；导览进行中由导览条负责滚到要点的按钮，这里不抢
   useEffect(() => { if (firstRole.current) { firstRole.current = false; return } if (state.tour.active) return; window.scrollTo({ top: 0, behavior: 'smooth' }) }, [state.role]) // eslint-disable-line react-hooks/exhaustive-deps
   if (!t) {
     return <Empty img="empty-search" alt="空纸箱和放大镜" title="找不到这个任务" hint="可能已被取消，或演示数据被重置了。" action={<Btn variant="ghost" onClick={() => nav('/app')}>回到任务大厅</Btn>} />
