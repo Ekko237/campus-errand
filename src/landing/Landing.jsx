@@ -589,7 +589,7 @@ function TrustStop({ x, lit, reduce }) {
 const PRIV = [
   { k: '接单前', code: '• • ••••', room: '梅园 * 号楼 ***', tone: 'muted', who: '大厅里只看到「梅园」，楼号和门牌都打了码' },
   { k: '接单后', code: '6-2-3108', room: '梅园 5 号楼 412', tone: 'open', who: '只有接下这单的同学看得到' },
-  { k: '结束后', code: '6-2-3108', room: '梅园 5 号楼 412', tone: 'closed', who: '确认放款那一刻收回，对方再也看不到' },
+  { k: '结束后', code: '• • ••••', room: '梅园 * 号楼 ***', tone: 'closed', who: '确认放款那一刻收回，对方再也看不到' },
 ]
 function PrivacyDemo() {
   const reduce = useReducedMotion()
@@ -608,10 +608,10 @@ function PrivacyDemo() {
   const pick = (k) => { setI(k); setHold(true) }
   const val = (v, stamp = false) => (
     <span className="relative inline-block">
-      {/* 结束后真的收回：换成圆点，盖一个「已收回」章，不再留看得出字形的模糊 */}
+      {/* 结束后真的收回：和接单前一样打码，取件码旁盖一个「已收回」章 */}
       {p.tone === 'closed' ? (
         <span className="inline-flex items-center gap-2">
-          <span className="tracking-[0.2em] opacity-40">{String(v).replace(/[^\s·]/g, '•')}</span>
+          <span className="opacity-40">{v}</span>
           {stamp && <motion.span key={`stamp${i}`} initial={reduce ? false : { scale: 1.6, opacity: 0, rotate: -14 }} animate={{ scale: 1, opacity: 1, rotate: -8 }} transition={{ type: 'spring', stiffness: 420, damping: 18 }}
             className="rounded border-2 border-accent px-1.5 text-xs font-bold leading-5 text-accent">已收回</motion.span>}
         </span>
@@ -786,7 +786,7 @@ function Credit() {
             <AnimatePresence>
               {hist.length > 0 && !cardOn && listOn && (
                 <motion.div key="mini" initial={reduce ? false : { y: 16, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: 10, opacity: 0 }} transition={{ type: 'spring', stiffness: 420, damping: 32 }}
-                  className="fixed inset-x-4 bottom-4 z-30 flex items-center gap-3 rounded-full bg-accent-deep py-2 pl-2 pr-5 text-on-accent shadow-[0_16px_30px_-12px_rgba(11,122,85,0.7)] lg:hidden" aria-hidden="true">
+                  className="fixed inset-x-4 bottom-4 z-20 flex items-center gap-3 rounded-full bg-accent-deep py-2 pl-2 pr-5 text-on-accent shadow-[0_16px_30px_-12px_rgba(11,122,85,0.7)] lg:hidden" aria-hidden="true">
                   <img src={icon(tier.badge + '-v1')} width={40} height={40} alt="" className="size-10 rounded-full bg-on-accent/90 object-contain p-0.5" />
                   <span className="text-[15px] font-semibold">{who === 'runner' ? '跑腿人' : '发单人'}「{tier.name}」</span>
                   <span className="ml-auto flex items-baseline gap-2">

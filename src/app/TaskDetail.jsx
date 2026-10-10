@@ -580,7 +580,7 @@ function WrapUp({ t }) {
       <dl className="mt-5 grid gap-2">
         {rows.map((x) => (
           <div key={x.who.id} className="flex items-center gap-3 rounded-2xl bg-on-accent/10 px-3 py-2.5">
-            <img src={`${import.meta.env.BASE_URL}icons/${x.avatar}.webp`} width={32} height={32} alt="" className="size-8 rounded-full bg-on-accent" />
+            <img src={`${import.meta.env.BASE_URL}icons/${x.avatar}.webp`} width={32} height={32} alt="" className="size-9 shrink-0 rounded-full bg-surface ring-2 ring-on-accent" />
             <dt className="min-w-0 flex-1 text-[15px]">{x.who.name}<span className="opacity-70"> · {x.who.role}信用</span>{why(x.who).length > 0 && <span className="tnum mt-0.5 flex flex-wrap gap-x-2 text-xs leading-snug opacity-75">{why(x.who).map((w) => <span key={w} className="whitespace-nowrap">{w}</span>)}</span>}</dt>
             <dd className="tnum text-xl font-bold"><Roll from={x.who.credit - x.d} to={x.who.credit} play={play} /></dd>
             {x.d !== 0 && <span className="tnum rounded-full bg-on-accent px-2 py-0.5 text-sm font-bold text-accent-deep">{x.d > 0 ? '+' : ''}{x.d}</span>}

@@ -4,7 +4,7 @@ import { MAP_W, MAP_H, PLACES, routePath } from '../campusMap'
 
 const icon = (name) => `${import.meta.env.BASE_URL}icons/${name}.webp`
 // 手机上名牌放在点旁边时用的更短的名字
-const TINY = { market: '超市', canteen1: '一食', canteen2: '二食', hall: '报告厅', cainiao: '驿站' }
+const TINY = { market: '超市', canteen1: '一食', canteen2: '二食', hall: '报告厅', cainiao: '驿站', lib: '图书馆', gate: '北门', jd: '京东', sf: '顺丰', gym: '体育馆', yan: '研究生楼' }
 export const SHORT = { cainiao: '菜鸟驿站', sf: '顺丰点', jd: '京东柜', canteen1: '一食堂', canteen2: '二食堂', market: '教育超市', gate: '北门', lib: '图书馆', jiao1: '一教', hall: '学术报告厅', gym: '体育馆', zhu3: '竹园', mei5: '梅园', tao2: '桃园', lan1: '兰园', yan: '研究生公寓' }
 
 // 地图上标点的位置：小亭子、校门标在正中，其他楼标在楼里取件的地方（从门口拐进去那段虚线的尽头）
@@ -88,7 +88,7 @@ export default function CampusMap({ R, hits, reduce, pills = true, walker = true
   // 起终点名牌在点的上面还是下面
   const labelUp = (id) => (outward(id) === 'up') !== flip(id)
   // 离起终点名牌近的取件点：价签放到名牌的另一侧，而不是不放
-  const nearId = (t) => ends.find((id) => { const e = id === R.from ? mine[0] : mine[mine.length - 1]; const [x, y] = markAt(t.from); return Math.abs(x - e[0]) < 220 && Math.abs(y - e[1]) < 200 })
+  const nearId = (t) => ends.find((id) => { const e = id === R.from ? mine[0] : mine[mine.length - 1]; const [x, y] = markAt(t.from); return Math.abs(x - e[0]) < (small ? 380 : 220) && Math.abs(y - e[1]) < 200 })
   // 上下都挨着取件点（比如超市出发：1 号在下、2 号在上）：名牌放到点的旁边，手机上只写「出发 / 到达」
   const side = (id) => {
     const e = id === R.from ? mine[0] : mine[mine.length - 1]
@@ -134,7 +134,7 @@ export default function CampusMap({ R, hits, reduce, pills = true, walker = true
         <span key={`d${t.id}`} aria-hidden="true" className="absolute z-10 size-3.5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-surface ring-[3px] ring-accent md:size-4" style={pct(PLACES[t.to].door)} />
       ))}
       {marks.map(({ t }) => (
-        <span key={`p${t.id}`} aria-hidden="true" className={`tnum absolute z-10 -translate-x-1/2 ${nearId(t) && pillUp(t) ? '-translate-y-[27px]' : 'translate-y-[9px]'} rounded-full bg-surface px-1 text-[12px] font-bold leading-4 text-accent shadow-sm md:hidden`} style={pct(markAt(t.from))}>¥{t.reward}</span>
+        <span key={`p${t.id}`} aria-hidden="true" className={`tnum absolute z-10 -translate-x-1/2 ${nearId(t) && pillUp(t) ? '-translate-y-[27px]' : 'translate-y-[9px]'} whitespace-nowrap rounded-full bg-surface px-1 text-[12px] font-bold leading-4 text-accent shadow-sm md:hidden`} style={pct(markAt(t.from))}>{TINY[t.from] || SHORT[t.from]} ¥{t.reward}</span>
       ))}
       {/* 原型订单页：小人还在起点附近时起点不标，到了终点就不再标「到达」，免得和小人叠在一起 */}
       {ends.filter((id) => !(at != null && ((id === R.from && at < 0.15) || (id === R.to && at >= 0.99)))).map((id) => (

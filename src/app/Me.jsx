@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { createPortal } from 'react-dom'
 import { Link, useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence, animate, useMotionValue, useTransform, useReducedMotion } from 'motion/react'
 import { CaretRight, ArrowRight, ArrowCounterClockwise, ListBullets } from '@phosphor-icons/react'
@@ -23,7 +24,12 @@ function CountUp({ value, from = value }) {
 
 // 留存钩子：下课前提醒路上的单（原型只记住开关，不真的发通知）；打开后预览一条推送长什么样
 function RemindToggle() {
-  const { state } = useStore()
+  const { state, act } = useStore()
+  const nav = useNavigate()
+  // 「模拟下课」：从屏幕顶上真的掉下来一条推送，点它就以跑腿人身份进大厅看这条路上的单
+  const [ring, setRing] = useState(false)
+  useEffect(() => { if (!ring) return; const id = setTimeout(() => setRing(false), 5000); return () => clearTimeout(id) }, [ring])
+  const goRoute = () => { setRing(false); act('role', { role: 'runner' }); nav('/app') }
   const reduce = useReducedMotion()
   const [on, setOn] = useState(() => { try { return localStorage.getItem('shunluxia:remind') === '1' } catch { return false } })
   const flip = () => setOn((v) => { const n = !v; try { localStorage.setItem('shunluxia:remind', n ? '1' : '0') } catch { /* 存不了不影响 */ } return n })
@@ -45,7 +51,7 @@ function RemindToggle() {
       <AnimatePresence initial={false}>
         {on && (
           <motion.div initial={reduce ? false : { opacity: 0, y: -8, height: 0 }} animate={{ opacity: 1, y: 0, height: 'auto' }} exit={{ opacity: 0, height: 0 }} transition={{ duration: 0.25 }} className="overflow-hidden px-4">
-            <p className="text-xs font-semibold text-muted">推送预览</p>
+            <p className="flex items-center justify-between text-xs font-semibold text-muted">推送预览<button onClick={() => setRing(true)} className="h-8 rounded-full bg-accent-soft px-3 text-[13px] font-semibold text-accent active:scale-[0.97]">模拟下课，推给我</button></p>
             <div className="mb-4 mt-1.5 flex gap-3 rounded-2xl bg-bg p-3 shadow-[0_10px_24px_-16px_rgba(17,40,30,0.5)] ring-1 ring-line">
               <img src={`${import.meta.env.BASE_URL}brand/logo-v2.png`} width={36} height={36} alt="" className="size-9 shrink-0 rounded-lg" />
               <div className="min-w-0 text-sm">
@@ -56,6 +62,21 @@ function RemindToggle() {
           </motion.div>
         )}
       </AnimatePresence>
+      {createPortal(
+        <AnimatePresence>
+          {ring && (
+            <motion.button key="push" onClick={goRoute} initial={reduce ? false : { y: -120, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: -120, opacity: 0 }} transition={{ type: 'spring', stiffness: 380, damping: 30 }}
+              className="fixed inset-x-3 top-3 z-[60] mx-auto flex max-w-md gap-3 rounded-[20px] bg-surface/95 p-3 text-left shadow-[0_20px_40px_-16px_rgba(17,40,30,0.55)] ring-1 ring-line backdrop-blur-md">
+              <img src={`${import.meta.env.BASE_URL}brand/logo-v2.png`} width={36} height={36} alt="" className="size-9 shrink-0 rounded-[10px]" />
+              <span className="min-w-0 flex-1 text-sm">
+                <span className="flex justify-between gap-2 font-semibold"><span>顺路侠 · 顺路提醒</span><span className="font-normal text-muted">现在</span></span>
+                <span className="mt-0.5 block leading-snug">{near.length ? <>{name(r.from)} → {name(r.to)} 上有 <b className="text-accent">{near.length} 单</b>顺路，点开看看</> : <>{name(r.from)} → {name(r.to)} 上暂时没有顺路的单</>}</span>
+              </span>
+            </motion.button>
+          )}
+        </AnimatePresence>,
+        document.body,
+      )}
     </div>
   )
 }
