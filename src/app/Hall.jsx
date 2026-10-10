@@ -126,15 +126,19 @@ export default function Hall() {
   }, [loading])
 
   const me = state.role === 'runner' ? state.accounts.runner : state.accounts.poster
+  const runnerView = state.role === 'runner'
+  const sortBy = !runnerView && sort === 'route' ? 'dist' : sort
+  const sorts = runnerView ? SORTS : SORTS.filter(([k]) => k !== 'route')
+  const [editRoute, setEditRoute] = useState(false)
   const list = useMemo(() => {
     let l = state.tasks.filter((t) => t.status === 'open')
     if (type !== 'all') l = l.filter((t) => t.type === type)
     if (urgentOnly) l = l.filter((t) => t.urgent)
     if (goodPoster) l = l.filter((t) => t.posterId === 'poster' || t.posterCredit >= 85)
-    const key = { route: (t) => detourMin(route.from, route.to, t), dist: (t) => dist(RUNNER_HOME, t.from), reward: (t) => -t.reward, deadline: (t) => t.deadline }[sort]
+    const key = { route: (t) => detourMin(route.from, route.to, t), dist: (t) => dist(RUNNER_HOME, t.from), reward: (t) => -t.reward, deadline: (t) => t.deadline }[sortBy]
     const t0 = Date.now()
     return [...l].sort((a, b) => (a.deadline < t0) - (b.deadline < t0) || key(a) - key(b))
-  }, [state.tasks, type, sort, urgentOnly, goodPoster, route])
+  }, [state.tasks, type, sortBy, urgentOnly, goodPoster, route])
 
   return (
     <div className="space-y-5">
@@ -165,39 +169,48 @@ export default function Hall() {
             </button>
           )
         })}
-      </div>
-
-      <div className="flex flex-wrap items-center gap-2">
-        <div className="grid min-w-0 flex-1 basis-full grid-cols-4 rounded-full bg-sunken p-1 sm:basis-0" role="group" aria-label="排序">
-          {SORTS.map(([k, label]) => (
-            <button key={k} onClick={() => setSort(k)} aria-pressed={sort === k}
-              className={`h-9 whitespace-nowrap rounded-full text-sm font-semibold transition ${sort === k ? 'bg-surface text-ink shadow-sm' : 'text-muted'}`}>{label}</button>
-          ))}
-        </div>
+        <span aria-hidden="true" className="mx-1 w-px shrink-0 self-stretch bg-line" />
         <button onClick={() => setUrgentOnly((v) => !v)} aria-pressed={urgentOnly}
-          className={`inline-flex h-11 shrink-0 items-center gap-1 rounded-full px-3.5 text-sm font-semibold transition ${urgentOnly ? 'bg-ink text-bg' : 'bg-surface text-ink ring-1 ring-line'}`}>
+          className={`inline-flex h-10 shrink-0 items-center gap-1 rounded-full px-3.5 text-[15px] font-semibold transition ${urgentOnly ? 'bg-ink text-bg' : 'bg-surface text-ink ring-1 ring-line'}`}>
           <Lightning size={16} weight="fill" />加急
         </button>
         <button onClick={() => setGoodPoster((v) => !v)} aria-pressed={goodPoster}
-          className={`inline-flex h-11 shrink-0 items-center gap-1 rounded-full px-3.5 text-sm font-semibold transition ${goodPoster ? 'bg-ink text-bg' : 'bg-surface text-ink ring-1 ring-line'}`}>
-          <ShieldCheck size={16} weight="fill" />发单人信用 ≥ 85
+          className={`inline-flex h-10 shrink-0 items-center gap-1 rounded-full px-3.5 text-[15px] font-semibold transition ${goodPoster ? 'bg-ink text-bg' : 'bg-surface text-ink ring-1 ring-line'}`}>
+          <ShieldCheck size={16} weight="fill" />信用 ≥ 85
         </button>
       </div>
 
-      {sort === 'route' && (
-        <div className="rounded-2xl bg-accent-soft p-4">
-          <p className="text-[15px] font-semibold">我正要走这段路，顺手捎一单</p>
-          <div className="mt-3 grid grid-cols-[auto_1fr] items-center gap-x-3 gap-y-2 text-[15px] sm:grid-cols-[auto_1fr_auto_1fr]">
-            <span className="text-muted">从</span>
-            <select aria-label="出发地" value={route.from} onChange={setLeg('from')} className="h-10 w-full rounded-full bg-surface px-4 text-[15px] font-semibold ring-1 ring-line">
-              {BUILDINGS.map((b) => <option key={b.id} value={b.id}>{b.name}</option>)}
-            </select>
-            <span className="text-muted">去</span>
-            <select aria-label="目的地" value={route.to} onChange={setLeg('to')} className="h-10 w-full rounded-full bg-surface px-4 text-[15px] font-semibold ring-1 ring-line">
-              {BUILDINGS.map((b) => <option key={b.id} value={b.id}>{b.name}</option>)}
-            </select>
+      <div className="grid rounded-full bg-sunken p-1" style={{ gridTemplateColumns: `repeat(${sorts.length}, minmax(0, 1fr))` }} role="group" aria-label="排序">
+        {sorts.map(([k, label]) => (
+          <button key={k} onClick={() => setSort(k)} aria-pressed={sortBy === k}
+            className={`h-9 whitespace-nowrap rounded-full text-sm font-semibold transition ${sortBy === k ? 'bg-surface text-ink shadow-sm' : 'text-muted'}`}>{label}</button>
+        ))}
+      </div>
+
+      {sortBy === 'route' && (
+        <div className="rounded-2xl bg-accent-soft px-4 py-3">
+          <div className="flex items-center gap-3">
+            <span aria-hidden="true" className="hidden shrink-0 items-center sm:flex"><span className="size-2.5 rounded-full bg-ink" /><span className="h-0.5 w-5 bg-ink" /><span className="size-2.5 rounded-full bg-accent ring-2 ring-accent-soft" /><span className="h-0.5 w-5 bg-ink" /><span className="size-2.5 rounded-full bg-ink" /></span>
+            <p className="min-w-0 flex-1 text-[15px] font-semibold leading-snug">{B[route.from].name.replace(/（.*?）/, '')} → {B[route.to].name.replace(/（.*?）/, '')}</p>
+            <button onClick={() => setEditRoute((v) => !v)} aria-expanded={editRoute} className="shrink-0 text-sm font-semibold text-accent">{editRoute ? '收起' : '换条路'}</button>
           </div>
-          <p className="mt-3 text-sm text-muted">按捎上每单要多走几分钟排序，5 分钟以内标为顺路。</p>
+          <AnimatePresence initial={false}>
+            {editRoute && (
+              <motion.div initial={reduce ? false : { height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.25 }} className="overflow-hidden">
+                <div className="grid grid-cols-[auto_1fr] items-center gap-x-3 gap-y-2 pt-3 text-[15px] sm:grid-cols-[auto_1fr_auto_1fr]">
+                  <span className="text-muted">从</span>
+                  <select aria-label="出发地" value={route.from} onChange={setLeg('from')} className="h-10 w-full rounded-full bg-surface px-4 text-[15px] font-semibold ring-1 ring-line">
+                    {BUILDINGS.map((b) => <option key={b.id} value={b.id}>{b.name}</option>)}
+                  </select>
+                  <span className="text-muted">去</span>
+                  <select aria-label="目的地" value={route.to} onChange={setLeg('to')} className="h-10 w-full rounded-full bg-surface px-4 text-[15px] font-semibold ring-1 ring-line">
+                    {BUILDINGS.map((b) => <option key={b.id} value={b.id}>{b.name}</option>)}
+                  </select>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+          <p className="mt-2 text-sm text-muted">按捎上每单要多走几分钟排，5 分钟以内标为顺路。</p>
         </div>
       )}
 
@@ -209,7 +222,7 @@ export default function Hall() {
           <AnimatePresence initial={false}>
             {list.map((t) => (
               <motion.div key={t.id} layout={!reduce} initial={reduce ? false : { opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={spring}>
-                <TaskCard t={t} me={me} role={state.role} route={sort === 'route' ? route : null} />
+                <TaskCard t={t} me={me} role={state.role} route={sortBy === 'route' ? route : null} />
               </motion.div>
             ))}
           </AnimatePresence>

@@ -136,7 +136,7 @@ function Shell() {
   return (
     <div className="min-h-[100dvh] bg-bg">
       <header className="sticky top-0 z-30 border-b border-line bg-bg/95 backdrop-blur">
-        <div className="mx-auto flex h-16 max-w-xl items-center justify-between gap-3 px-4">
+        <div className="mx-auto flex h-16 max-w-xl items-center justify-between gap-3 px-4 xl:-translate-x-40">
           <Link to="/" className="flex shrink-0 items-center gap-2 text-lg font-bold tracking-tight">
             <img src={`${import.meta.env.BASE_URL}brand/logo-v2.png`} width={36} height={36} alt="顺路侠标志：背着书包、夹着包裹奔跑的小人" className="size-9" />
             <span className="max-[359px]:hidden">顺路侠</span>
@@ -144,7 +144,7 @@ function Shell() {
           <RoleSwitch />
         </div>
       </header>
-      <main className="mx-auto max-w-xl overflow-x-clip px-4 pb-44 pt-4">
+      <main className="mx-auto max-w-xl overflow-x-clip px-4 pb-44 pt-4 xl:-translate-x-40">
         <motion.div key={pathname} initial={reduce || dir === 0 ? false : { opacity: 0.35, x: 28 * dir }} animate={{ opacity: 1, x: 0 }}
           transition={{ type: 'spring', stiffness: 520, damping: 42, mass: 0.7 }}>
         <Routes>
@@ -163,7 +163,7 @@ function Shell() {
       <DemoPanel />
       <TourBar />
       <nav className="fixed inset-x-0 bottom-0 z-30 border-t border-line bg-surface/95 backdrop-blur" aria-label="主导航">
-        <div className="mx-auto grid max-w-xl grid-cols-4 pb-[env(safe-area-inset-bottom)]">
+        <div className="mx-auto grid max-w-xl grid-cols-4 pb-[env(safe-area-inset-bottom)] xl:-translate-x-40">
           {tabs.map(([to, label, img, end]) => (
             <NavLink key={to} to={to} end={end} className={({ isActive }) => `relative flex h-16 flex-col items-center justify-center gap-0.5 text-[13px] font-semibold ${isActive ? 'text-accent' : 'text-muted'}`}>
               {({ isActive }) => (<>{isActive && <motion.span layoutId="nav-dot" transition={{ type: 'spring', stiffness: 500, damping: 34 }} className="absolute top-0 h-[3px] w-10 rounded-b-full bg-accent" />}<img src={`${import.meta.env.BASE_URL}icons/${img}-v1.webp`} width={28} height={28} alt="" aria-hidden="true" className={`size-7 object-contain transition ${isActive ? 'scale-110' : 'opacity-55 grayscale'}`} />{label}</>)}

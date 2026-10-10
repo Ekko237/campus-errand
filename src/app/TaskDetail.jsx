@@ -429,7 +429,7 @@ function Actions({ t }) {
       <div className="grid gap-2 text-center">
         <p className="text-[15px] text-muted">订单已完成{t.ratingByPoster ? `，发单人评价 ${t.ratingByPoster.stars} 星` : ''}{t.ratingByRunner ? `，跑腿人评价 ${t.ratingByRunner.stars} 星` : ''}。</p>
         {otherPending && <Btn variant="ghost" onClick={() => act('role', { role: role === 'poster' ? 'runner' : 'poster' })}>切换身份去互评</Btn>}
-        {mine && <Btn variant="ghost" onClick={() => { act('role', { role: 'runner' }); nav('/app/me') }}>看跑腿人信用变化</Btn>}
+        {mine && <Btn variant="ghost" onClick={() => { act('role', { role: 'runner' }); nav('/app/me') }}>{role === 'runner' ? '看我的信用变化' : '看跑腿人信用变化'}</Btn>}
         {own && role === 'poster' && <Btn onClick={() => nav(`/app/publish?again=${t.id}`)}><ArrowClockwise size={18} weight="bold" />同样的再来一单</Btn>}
       </div>
     )

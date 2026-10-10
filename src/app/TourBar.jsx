@@ -42,7 +42,7 @@ export default function TourBar() {
       {step && (
         <motion.div key="bar" initial={reduce ? false : { y: 40, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: 40, opacity: 0 }} transition={spring}
           className="fixed inset-x-0 bottom-[calc(4rem+env(safe-area-inset-bottom))] z-20 px-3 pb-2">
-          <div className="mx-auto flex max-w-xl items-center gap-3 rounded-2xl bg-ink p-3 pl-4 text-bg shadow-xl shadow-ink/20">
+          <div className="mx-auto flex max-w-xl items-center gap-3 rounded-2xl bg-ink xl:-translate-x-40 p-3 pl-4 text-bg shadow-xl shadow-ink/20">
             <div className="min-w-0 flex-1">
               <p className="text-[13px] font-semibold opacity-70">
                 {step.final ? <span className="inline-flex items-center gap-1"><Confetti size={14} weight="fill" />完整流程</span> : `完整流程 ${Math.min(step.n, TOTAL)}/${TOTAL}`}

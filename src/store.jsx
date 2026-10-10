@@ -101,7 +101,7 @@ function reducer(s, a) {
     case 'accept':
       return toast(upd(a.id, (t) => log({ ...t, status: 'ongoing', runnerId: 'runner', acceptedAt: now() }, `${s.accounts.runner.name} 接单，联系方式与取件码已对其可见`)), '接单成功，取件码、电话、宿舍号已解锁')
     case 'pick':
-      return upd(a.id, (t) => log({ ...t, picked: true }, '跑腿人已取到物品，正在送达'))
+      return toast(upd(a.id, (t) => log({ ...t, picked: true }, '跑腿人已取到物品，正在送达')), '已取到，出发送达。到了让发单人报送达码')
     case 'abandon': {
       const r = s.accounts.runner
       const runner = credit(r, -5, `接单后放弃「${task.title}」`)
