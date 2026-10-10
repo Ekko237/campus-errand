@@ -321,46 +321,59 @@ const TRUST = [
   { icon: 'trust-dispute-v1', alt: '天平', t: '送达凭证与申诉', fear: '怕出了问题说不清', fix: '送达码当面核验或拍照留证；申诉期间钱继续冻结，平台判责。' },
 ]
 
+// 信任五道关：沿一条路排开，包裹往下走，每过一关，那一种「怕」被划掉、对应的办法亮起来
+function TrustStop({ x, lit, reduce }) {
+  return (
+    <li className="relative flex gap-5 pb-10 last:pb-0 md:gap-6">
+      <motion.span animate={{ scale: lit ? 1 : 0.92 }} transition={{ type: 'spring', stiffness: 400, damping: 22 }}
+        className={`relative z-10 grid size-14 shrink-0 place-items-center rounded-2xl ring-4 ring-bg transition-colors duration-300 ${lit ? 'bg-accent-soft' : 'bg-sunken'}`}>
+        <img src={icon(x.icon)} width={44} height={44} alt={x.alt} loading="lazy" className={`size-11 object-contain transition duration-300 ${lit ? '' : 'opacity-50 grayscale'}`} />
+      </motion.span>
+      <div className="min-w-0 pt-1">
+        <p className="relative inline-block text-[15px] font-semibold text-muted">
+          {x.fear}
+          <motion.span aria-hidden="true" className="absolute inset-x-0 top-1/2 h-0.5 origin-left rounded-full bg-accent"
+            initial={false} animate={{ scaleX: lit ? 1 : 0 }} transition={{ duration: reduce ? 0 : 0.35, ease }} />
+        </p>
+        <p className="mt-1 text-2xl font-bold md:text-3xl">{x.t}</p>
+        <p className={`mt-2 max-w-[44ch] text-lg leading-relaxed transition-opacity duration-300 ${lit ? 'opacity-100' : 'opacity-45'}`}>{x.fix}</p>
+      </div>
+    </li>
+  )
+}
+
 function Trust() {
-  const [open, setOpen] = useState(0)
   const reduce = useReducedMotion()
+  const list = useRef(null)
+  const { scrollYProgress } = useScroll({ target: list, offset: ['start 65%', 'end 55%'] })
+  const fill = useTransform(scrollYProgress, [0, 1], [0, 1])
+  const top = useTransform(scrollYProgress, (v) => `calc(28px + ${Math.min(1, Math.max(0, v))} * (100% - 56px))`)
+  const [lit, setLit] = useState(reduce ? TRUST.length : 0)
+  useMotionValueEvent(scrollYProgress, 'change', (v) => { if (!reduce) setLit(Math.floor(v * TRUST.length + 0.35)) })
   return (
     <section id="trust" className={`mx-auto max-w-7xl scroll-mt-16 ${SECTION}`}>
       <div className="grid gap-12 lg:grid-cols-12">
         <div className="lg:col-span-5">
-          <Reveal><H2>凭什么把取件码<br />交给一个陌生同学</H2></Reveal>
-          <Reveal delay={0.05}><Lead>校园跑腿最大的成本不是钱，是对陌生人的不放心。信任拆成五道关，每一道只解决一种具体的怕。</Lead></Reveal>
-          <Reveal delay={0.1}>
-            <img src={img('trust-v1')} width={1100} height={825} alt="两只手在校园里交接一个小包裹" loading="lazy" className="mt-10 hidden aspect-[4/3] w-full rounded-2xl bg-sunken object-cover lg:block" />
-          </Reveal>
+          <div className="lg:sticky lg:top-28">
+            <Reveal><H2>凭什么把取件码<br />交给一个陌生同学</H2></Reveal>
+            <Reveal delay={0.05}><Lead>校园跑腿最大的成本不是钱，是对陌生人的不放心。信任拆成五道关，包裹每过一关，就少一种怕。</Lead></Reveal>
+            <Reveal delay={0.1}>
+              <img src={img('trust-v1')} width={1100} height={825} alt="两只手在校园里交接一个小包裹" loading="lazy" className="mt-10 hidden aspect-[4/3] w-full rounded-2xl bg-sunken object-cover lg:block" />
+            </Reveal>
+          </div>
         </div>
-        <ul className="border-t border-line lg:col-span-7 lg:col-start-6 lg:self-start">
-          {TRUST.map((x, i) => {
-            const on = open === i
-            return (
-              <li key={x.t} className="border-b border-line">
-                <button onClick={() => setOpen(on ? -1 : i)} aria-expanded={on} className="group flex w-full items-center gap-5 py-6 text-left md:py-7">
-                  <img src={icon(x.icon)} width={56} height={56} alt={x.alt} loading="lazy" className="size-12 shrink-0 object-contain transition-transform duration-300 group-hover:scale-110 md:size-14" />
-                  <span className="min-w-0 flex-1">
-                    <span className="block text-sm font-semibold text-muted">{x.fear}</span>
-                    <span className="block text-2xl font-bold md:text-3xl">{x.t}</span>
-                  </span>
-                  <motion.span animate={{ rotate: on ? 45 : 0 }} transition={{ type: 'spring', stiffness: 300, damping: 20 }}
-                    className={`grid size-10 shrink-0 place-items-center rounded-full transition-colors ${on ? 'bg-accent text-on-accent' : 'bg-sunken text-ink group-hover:bg-accent-soft'}`}>
-                    <Plus size={18} weight="bold" />
-                  </motion.span>
-                </button>
-                <AnimatePresence initial={false}>
-                  {on && (
-                    <motion.div initial={reduce ? false : { height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.4, ease }} className="overflow-hidden">
-                      <p className="max-w-[46ch] pb-7 pl-[68px] text-lg leading-relaxed md:pl-[76px]">{x.fix}</p>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </li>
-            )
-          })}
-        </ul>
+        <ol ref={list} className="relative lg:col-span-7 lg:col-start-6 lg:pt-2">
+          <span aria-hidden="true" className="absolute bottom-7 left-[27px] top-7 w-0.5 -translate-x-1/2 border-l-2 border-dashed border-line" />
+          {!reduce && (
+            <>
+              <motion.span aria-hidden="true" style={{ scaleY: fill }} className="absolute bottom-7 left-[27px] top-7 w-[3px] origin-top -translate-x-1/2 rounded-full bg-accent" />
+              <motion.span aria-hidden="true" style={{ top }} className="absolute left-[27px] z-20 -ml-[15px] grid size-[30px] -translate-y-1/2 place-items-center rounded-full bg-surface shadow-[0_6px_16px_-6px_rgba(11,122,85,0.6)] ring-2 ring-accent">
+                <img src={icon('type-express-v1')} width={20} height={20} alt="" className="size-5" />
+              </motion.span>
+            </>
+          )}
+          {TRUST.map((x, i) => <TrustStop key={x.t} x={x} lit={i < lit} reduce={reduce} />)}
+        </ol>
       </div>
     </section>
   )
@@ -595,7 +608,6 @@ export default function Landing() {
       <Nav />
       <main>
         <RouteHero Cta={Cta} Anchor={Anchor} />
-        <Ticker />
         <Scenes />
         <Loop />
         <Trust />
