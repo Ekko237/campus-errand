@@ -3,6 +3,8 @@ import { motion, AnimatePresence, animate } from 'motion/react'
 import { MAP_W, MAP_H, PLACES, routePath } from '../campusMap'
 
 const icon = (name) => `${import.meta.env.BASE_URL}icons/${name}.webp`
+// 手机地图标签用的最短叫法
+const TINY = { cainiao: '驿站', sf: '顺丰', jd: '京东柜', canteen1: '一食堂', canteen2: '二食堂', market: '超市', gate: '北门', lib: '图书馆', jiao1: '一教', hall: '报告厅', gym: '体育馆', zhu3: '竹园', mei5: '梅园', tao2: '桃园', lan1: '兰园', yan: '研究生楼' }
 export const SHORT = { cainiao: '菜鸟驿站', sf: '顺丰点', jd: '京东柜', canteen1: '一食堂', canteen2: '二食堂', market: '教育超市', gate: '北门', lib: '图书馆', jiao1: '一教', hall: '学术报告厅', gym: '体育馆', zhu3: '竹园', mei5: '梅园', tao2: '桃园', lan1: '兰园', yan: '研究生公寓' }
 
 // 地图上标点的位置：小亭子、商铺标在房子正中，其他楼标在门口
@@ -79,7 +81,7 @@ export default function CampusMap({ R, hits, reduce, pills = true, walker = true
           initial={false} style={{ pathLength: p }} />
         {/* 顺路的单：取件到送达那段路，小人经过取件点时亮起 */}
         {marks.map(({ t, f }) => (
-          <motion.path key={`${R.from}${R.to}${t.id}`} d={toD(routePath(t.from, t.to).pts)} fill="none" stroke="var(--accent)" strokeWidth="16" strokeLinecap="round" strokeLinejoin="round"
+          <motion.path key={`${R.from}${R.to}${t.id}`} d={toD(routePath(t.from, t.to).pts)} fill="none" stroke="var(--accent)" strokeWidth="7" strokeLinecap="round" strokeLinejoin="round"
             initial={false} animate={{ opacity: p >= f ? 0.95 : 0.25 }} transition={{ duration: 0.3 }} />
         ))}
       </svg>
@@ -96,7 +98,7 @@ export default function CampusMap({ R, hits, reduce, pills = true, walker = true
         <span key={`l${t.id}`} className="absolute z-10" style={pct(markAt(t.from))}>
           <span className={`absolute left-0 -translate-x-1/2 whitespace-nowrap rounded-full bg-surface px-1.5 py-0.5 text-[12px] font-semibold md:px-2.5 md:text-[13px] text-ink shadow-sm ring-1 ring-line ${outward(t.from) === 'up' ? 'bottom-2.5' : 'top-2.5'}`}>
             <span className="hidden md:inline">{SHORT[t.from]}</span>
-            <span className="tnum md:hidden">¥{t.reward}</span>
+            <span className="tnum md:hidden">{TINY[t.from]} ¥{t.reward}</span>
           </span>
         </span>
       ))}
@@ -119,7 +121,9 @@ export default function CampusMap({ R, hits, reduce, pills = true, walker = true
     {legend && (
       <p className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted md:text-sm">
         <span className="inline-flex items-center gap-1.5"><i className="h-1 w-5 rounded-full bg-ink/80" />你正要走的路</span>
-        <span className="inline-flex items-center gap-1.5"><i className="size-2.5 rounded-full bg-accent" />路上能顺手捎的 {hits.length} 单（绿虚线：捎上它要绕的路）</span>
+        <span className="inline-flex items-center gap-1.5"><i className="h-1.5 w-5 rounded-full bg-accent" />顺手捎的那段（取件到送达）</span>
+        <span className="inline-flex items-center gap-1.5"><i className="w-5 border-t-[3px] border-dotted border-accent" />捎上它要绕的路</span>
+        <span className="inline-flex items-center gap-1.5"><i className="size-2.5 rounded-full bg-accent" />取件点，共 {hits.length} 单</span>
       </p>
     )}
     </div>
