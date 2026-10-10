@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
-import { motion, useReducedMotion } from 'motion/react'
+import { motion, useReducedMotion, useMotionValue, useTransform, animate } from 'motion/react'
 import { ArrowLeft, MapPin, Clock, LockKey, LockKeyOpen, EyeSlash, Phone, Package, House, ShieldCheck, Camera, Numpad, Check, Scales, Warning, FileX, ArrowClockwise } from '@phosphor-icons/react'
 import { useStore } from '../store'
 import { B, dist, fmtDist, RUNNER_HOME, minCreditFor, levelOf, detourMin } from '../data'
@@ -427,6 +427,7 @@ function Actions({ t }) {
     if (role === 'poster' && own && !t.ratingByPoster) blocks.push(<RateBlock key="p" t={t} by="poster" />)
     if (role === 'runner' && mine && !t.ratingByRunner) blocks.push(<RateBlock key="r" t={t} by="runner" />)
     if (blocks.length) return <div className="grid gap-3">{blocks}</div>
+    if (t.ratingByPoster && t.ratingByRunner) return null
     const otherPending = (role === 'poster' && own && mine && !t.ratingByRunner) || (role === 'runner' && mine && own && !t.ratingByPoster)
     return (
       <div className="grid gap-2 text-center">
@@ -456,6 +457,65 @@ function RouteFit({ t }) {
   )
 }
 
+// 这一单的收尾：路线、硬币从发单人滑到跑腿人、两边信用跟着涨；刚互评完会完整播一遍
+function Roll({ from, to, play }) {
+  const mv = useMotionValue(play ? from : to)
+  const out = useTransform(mv, (v) => Math.round(v))
+  useEffect(() => { if (!play) return; const c = animate(mv, to, { duration: 1.2, delay: 1.1, ease: [0.16, 1, 0.3, 1] }); return () => c.stop() }, [play, to, mv])
+  return <motion.span>{out}</motion.span>
+}
+function WrapUp({ t }) {
+  const { state, act } = useStore()
+  const nav = useNavigate()
+  const reduce = useReducedMotion()
+  const { poster, runner } = state.accounts
+  const lastAt = Math.max(...t.timeline.map((x) => x.at))
+  const [play] = useState(() => !reduce && Date.now() - lastAt < 8000)
+  const sum = (acc) => acc.creditLog.filter((l) => l.label.includes(t.title)).reduce((n, l) => n + l.delta, 0)
+  const rows = [
+    t.runnerId === 'runner' && { who: runner, d: sum(runner), avatar: 'avatar-runner-v1' },
+    t.posterId === 'poster' && { who: poster, d: sum(poster), avatar: 'avatar-poster-v1' },
+  ].filter(Boolean)
+  const name = (id) => B[id]?.name.replace(/（.*?）/, '')
+  const ease = [0.16, 1, 0.3, 1]
+  return (
+    <motion.section initial={play ? { opacity: 0, y: 16, scale: 0.98 } : false} animate={{ opacity: 1, y: 0, scale: 1 }} transition={{ type: 'spring', stiffness: 260, damping: 26 }}
+      className="overflow-hidden rounded-[24px] bg-accent-deep p-5 text-on-accent" aria-label="这一单的收尾">
+      <p className="text-sm font-semibold opacity-75">这一单走完了</p>
+      <p className="mt-1 text-2xl font-bold">顺路一趟，¥{t.reward} 到账，{rows.every((x) => x.d >= 0) ? '信用都涨了' : '信用有涨有跌'}</p>
+      <div className="relative mt-5 h-12" aria-hidden="true">
+        <span className="absolute left-0 right-0 top-1/2 h-[3px] -translate-y-1/2 rounded-full bg-on-accent/25" />
+        <motion.span className="absolute left-0 top-1/2 h-[3px] -translate-y-1/2 rounded-full bg-on-accent" initial={play ? { width: '0%' } : false} animate={{ width: '100%' }} transition={{ duration: 1, delay: 0.3, ease }} />
+        <span className="absolute left-0 top-1/2 size-4 -translate-y-1/2 rounded-full bg-on-accent" />
+        <span className="absolute right-0 top-1/2 size-4 -translate-y-1/2 rounded-full bg-on-accent ring-4 ring-on-accent/30" />
+        {play && (
+          <motion.span className="absolute top-1/2 grid size-8 -translate-y-1/2 place-items-center rounded-full bg-on-accent text-sm font-bold text-accent-deep"
+            initial={{ left: '0%', x: '-50%', opacity: 0 }} animate={{ left: '100%', opacity: [0, 1, 1, 0] }} transition={{ duration: 1, delay: 0.3, ease }}>¥</motion.span>
+        )}
+      </div>
+      <div className="flex justify-between text-sm font-semibold">
+        <span>{name(t.from)}</span><span className="opacity-75">{t.from === t.to ? '占座' : '顺路捎到'}</span><span>{name(t.to)}</span>
+      </div>
+      <dl className="mt-5 grid gap-2">
+        {rows.map((x) => (
+          <div key={x.who.id} className="flex items-center gap-3 rounded-2xl bg-on-accent/10 px-3 py-2.5">
+            <img src={`${import.meta.env.BASE_URL}icons/${x.avatar}.webp`} width={32} height={32} alt="" className="size-8 rounded-full bg-on-accent" />
+            <dt className="flex-1 text-[15px]">{x.who.name}<span className="opacity-70"> · {x.who.role}信用</span></dt>
+            <dd className="tnum text-xl font-bold"><Roll from={x.who.credit - x.d} to={x.who.credit} play={play} /></dd>
+            {x.d !== 0 && <span className="tnum rounded-full bg-on-accent px-2 py-0.5 text-sm font-bold text-accent-deep">{x.d > 0 ? '+' : ''}{x.d}</span>}
+          </div>
+        ))}
+      </dl>
+      <div className="mt-4 grid grid-cols-2 gap-2">
+        {state.role === 'poster' && t.posterId === 'poster'
+          ? <button onClick={() => nav(`/app/publish?again=${t.id}`)} className="h-11 rounded-full bg-on-accent text-[15px] font-semibold text-accent-deep active:scale-[0.98]">再顺一单</button>
+          : <button onClick={() => nav('/app')} className="h-11 rounded-full bg-on-accent text-[15px] font-semibold text-accent-deep active:scale-[0.98]">看看还有谁顺路</button>}
+        <button onClick={() => { act('role', { role: 'runner' }); nav('/app/me') }} className="h-11 rounded-full bg-on-accent/15 text-[15px] font-semibold active:scale-[0.98]">看信用变化</button>
+      </div>
+    </motion.section>
+  )
+}
+
 export default function TaskDetail() {
   const { id } = useParams()
   const { state } = useStore()
@@ -473,6 +533,8 @@ export default function TaskDetail() {
         <span className="text-[15px] font-semibold text-muted">订单详情</span>
         <span className={`ml-auto rounded-full px-3 py-1 text-sm font-semibold ${['refunded', 'cancelled', 'disputed'].includes(t.status) ? 'bg-sunken text-ink' : 'bg-accent-soft text-accent'}`}>{t.status === 'ongoing' ? (t.picked ? '送达中' : '待取件') : STATUS_TEXT[t.status]}</span>
       </div>
+
+      {t.status === 'completed' && t.ratingByPoster && t.ratingByRunner && <WrapUp t={t} />}
 
       {pmode === 'open' && <><PickupCard t={t} /><div><Actions t={t} /></div></>}
 
