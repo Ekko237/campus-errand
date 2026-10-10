@@ -151,9 +151,9 @@ function Scenes() {
   }, [])
   return (
     <section id="scenes" className={`mx-auto max-w-7xl scroll-mt-16 ${SECTION}`}>
-      <div className="max-w-4xl">
-        <Reveal><H2>三个每天都在发生的<br />跑腿时刻</H2></Reveal>
-        <Reveal delay={0.05}><Lead>目标用户：时间被课表切碎、又在意隐私的在校生。需求小、频次高、怕被坑。</Lead></Reveal>
+      <div className="grid gap-x-12 lg:grid-cols-12 lg:items-end">
+        <Reveal className="lg:col-span-7"><H2>三个每天都在发生的<br />跑腿时刻</H2></Reveal>
+        <Reveal delay={0.05} className="lg:col-span-5 lg:pb-1"><Lead className="lg:mt-0">目标用户：时间被课表切碎、又在意隐私的在校生。需求小、频次高、怕被坑。</Lead></Reveal>
       </div>
       <div className="no-scrollbar -mx-4 mt-12 overflow-x-auto px-4">
         <div className="inline-flex gap-1 rounded-full bg-sunken p-1" role="tablist" aria-label="用户场景">
@@ -243,7 +243,7 @@ function OrderStage({ i }) {
 
 function LoopStep({ s }) {
   return (
-    <li className="flex gap-5 lg:min-h-[min(32vh,320px)] lg:items-center">
+    <li className="flex gap-5 lg:min-h-[min(26vh,260px)] lg:items-center">
       <span className="grid size-16 shrink-0 place-items-center rounded-2xl bg-bg">
         <img src={icon(s.icon + '-v1')} width={48} height={48} alt={s.alt} loading="lazy" className="size-12 object-contain" />
       </span>
@@ -292,9 +292,9 @@ function Loop() {
     <section id="loop" className="scroll-mt-16 px-2 md:px-4">
       <div className="rounded-[32px] bg-accent-deep text-on-accent md:rounded-[48px]">
       <div className={`mx-auto max-w-7xl ${SECTION}`}>
-        <div className="max-w-4xl">
-          <Reveal><H2>一单从发布到信用变化，<br />六步走完</H2></Reveal>
-          <Reveal delay={0.05}><p className="mt-5 max-w-[38ch] text-lg leading-relaxed opacity-80 md:text-xl">往下滚，<span className="lg:hidden">上面</span><span className="hidden lg:inline">左边</span>这张订单会跟着走完一遍：钱什么时候冻结、取件码什么时候出现、信用什么时候变。</p></Reveal>
+        <div className="grid gap-x-12 lg:grid-cols-12 lg:items-end">
+          <Reveal className="lg:col-span-7"><H2>一单从发布到信用变化，<br />六步走完</H2></Reveal>
+          <Reveal delay={0.05} className="lg:col-span-5 lg:pb-1"><p className="mt-5 lg:mt-0 max-w-[38ch] text-lg leading-relaxed opacity-80 md:text-xl">往下滚，<span className="lg:hidden">上面</span><span className="hidden lg:inline">左边</span>这张订单会跟着走完一遍：钱什么时候冻结、取件码什么时候出现、信用什么时候变。</p></Reveal>
         </div>
         <div className="mt-12 grid gap-12 lg:mt-14 lg:grid-cols-12">
           <div className="hidden lg:col-span-5 lg:block">
@@ -380,17 +380,22 @@ function Credit() {
     const c = animate(mv, score, { duration: 0.6, ease })
     return () => c.stop()
   }, [score, reduce, mv])
-  const switchWho = (w) => { setWho(w); const s0 = w === 'runner' ? 70 : 88; setScore(s0); setLast(null) }
+  const switchWho = (w) => { setWho(w); const s0 = w === 'runner' ? 70 : 88; setScore(s0); setLast(null); setHist([]) }
   const rules = who === 'runner' ? [...RULES_PLUS, ...RULES_MINUS] : [...POSTER_RULES_PLUS, ...POSTER_RULES_MINUS]
   const tiers = who === 'runner' ? LEVELS : POSTER_TIERS
   const tier = [...tiers].reverse().find((l) => score >= l.min)
-  const apply = (r) => { setScore((v) => Math.max(0, Math.min(100, v + r.delta))); setLast(r) }
+  const [hist, setHist] = useState([])
+  const apply = (r) => {
+    const to = Math.max(0, Math.min(100, score + r.delta))
+    setScore(to); setLast(r)
+    setHist((h) => [{ id: Date.now(), label: r.label, delta: r.delta, to }, ...h].slice(0, 3))
+  }
   return (
     <section className="border-y border-line bg-surface">
       <div className={`mx-auto max-w-7xl ${SECTION}`}>
-        <div className="max-w-4xl">
-          <Reveal><H2>双向信用：<br />谁不守约谁扣分</H2></Reveal>
-          <Reveal delay={0.05}><Lead>满分 100，认证后从 70 起步，不能充值也不能刷。点任意一条规则，看分数和等级怎么变。</Lead></Reveal>
+        <div className="grid gap-x-12 lg:grid-cols-12 lg:items-end">
+          <Reveal className="lg:col-span-7"><H2>双向信用：<br />谁不守约谁扣分</H2></Reveal>
+          <Reveal delay={0.05} className="lg:col-span-5 lg:pb-1"><Lead className="lg:mt-0">满分 100，认证后从 70 起步，不能充值也不能刷。点任意一条规则，看分数和等级怎么变。</Lead></Reveal>
         </div>
         <div className="mt-14 grid gap-6 lg:grid-cols-12">
           <Reveal className="lg:col-span-5">
@@ -412,7 +417,19 @@ function Credit() {
                   )}
                 </AnimatePresence>
               </div>
-              <div className="mt-auto flex items-center gap-3 pt-10">
+              <ul className="mt-6 min-h-[6.5rem] space-y-1.5 text-[15px]" aria-live="polite">
+                {hist.length === 0 && <li className="opacity-75"><span className="lg:hidden">点下面</span><span className="hidden lg:inline">点右边</span>任意一条规则，分数会在这里记一笔。</li>}
+                <AnimatePresence initial={false}>
+                  {hist.map((h) => (
+                    <motion.li key={h.id} layout initial={reduce ? false : { opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.25 }}
+                      className="flex items-center justify-between gap-3 border-b border-on-accent/15 pb-1.5">
+                      <span className="truncate opacity-90">{h.label}</span>
+                      <span className="tnum shrink-0 font-bold">{h.delta > 0 ? '+' : ''}{h.delta} → {h.to}</span>
+                    </motion.li>
+                  ))}
+                </AnimatePresence>
+              </ul>
+              <div className="mt-auto flex items-center gap-3 pt-6">
                 <img src={icon(tier.badge + '-v1')} width={56} height={56} alt={tier.alt} className="size-14 rounded-2xl bg-on-accent/90 object-contain p-1" />
                 <div>
                   <p className="text-xl font-bold">「{tier.name}」</p>

@@ -214,7 +214,7 @@ export function CampusRoutes() {
       <p className="mt-4 max-w-[40ch] text-lg leading-relaxed text-muted md:text-xl" aria-live="polite">
         此刻 {tasks.length} 个示例单里，有 <b className="text-accent">{hits.length} 个</b>顺路，捎上多走 {!hits.length ? 0 : hits[0].m === hits[hits.length - 1].m ? hits[0].m : `${hits[0].m} 到 ${hits[hits.length - 1].m}`} 分钟。
       </p>
-      <div ref={box} className="relative mt-6 aspect-[3/4] w-full overflow-hidden rounded-[24px] bg-surface ring-1 ring-line sm:aspect-[4/3] md:rounded-[28px] lg:aspect-[16/9]"
+      <div ref={box} className="relative mt-6 aspect-[3/4] w-full overflow-hidden rounded-[24px] bg-surface ring-1 ring-line sm:aspect-[4/3] md:rounded-[28px] lg:aspect-[2/1]"
         style={{ backgroundImage: 'linear-gradient(var(--bg) 2px, transparent 2px), linear-gradient(90deg, var(--bg) 2px, transparent 2px)', backgroundSize: '56px 56px' }}
         role="img" aria-label={`示意地图：沿「${R.label}」这条路，${hits.length} 个示例单顺路`}>
         <svg viewBox="0 0 100 100" preserveAspectRatio="none" className="absolute inset-0 size-full" aria-hidden="true">
