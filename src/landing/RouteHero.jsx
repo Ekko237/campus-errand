@@ -87,7 +87,7 @@ export function RouteMap() {
       </svg>
 
       <Node x={RUN_PTS[0][0]} y={RUN_PTS[0][1]}><span className="block size-3 rounded-full bg-ink ring-4 ring-surface md:size-4" /></Node>
-      <Node x={ICHI[0]} y={ICHI[1]} className="z-20"><Tag>一教 出发</Tag></Node>
+      <Node x={ICHI[0]} y={ICHI[1]} className="z-20 max-sm:-translate-y-[85%]"><Tag>一教 出发</Tag></Node>
       <Node x={PLACES.cainiao.door[0]} y={PLACES.cainiao.door[1] + 22}>
         <motion.div animate={{ scale: lit ? 1.08 : 1 }} transition={{ type: 'spring', stiffness: 400, damping: 18 }}
           className={`grid size-10 place-items-center rounded-full ring-[3px] transition-colors md:size-14 ${lit ? 'bg-accent-soft ring-accent' : 'bg-surface ring-line'}`}>

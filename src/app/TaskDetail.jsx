@@ -543,6 +543,17 @@ function Roll({ from, to, play }) {
   useEffect(() => { if (!play) return; const c = animate(mv, to, { duration: 1.2, delay: 1.1, ease: [0.16, 1, 0.3, 1] }); return () => c.stop() }, [play, to, mv])
   return <motion.span>{out}</motion.span>
 }
+// 走完一单趁热留个钩子：一键打开下课提醒，和「我的」页那个开关是同一个
+function RemindAgain() {
+  const [on, setOn] = useState(() => { try { return localStorage.getItem('shunluxia:remind') === '1' } catch { return false } })
+  const turnOn = () => { try { localStorage.setItem('shunluxia:remind', '1') } catch { /* 存不了不影响 */ } setOn(true) }
+  return (
+    <button onClick={turnOn} disabled={on} aria-pressed={on}
+      className="mt-3 flex min-h-11 w-full items-center justify-center gap-2 rounded-full border border-on-accent/30 px-4 text-[15px] font-semibold transition active:scale-[0.98] disabled:border-transparent disabled:bg-on-accent/10">
+      {on ? <><Check size={16} weight="bold" />已开启，明天下课前提醒你</> : '明天下课也提醒我顺路的单'}
+    </button>
+  )
+}
 function WrapUp({ t }) {
   const { state, act } = useStore()
   const nav = useNavigate()
@@ -606,6 +617,7 @@ function WrapUp({ t }) {
           : <button onClick={() => nav('/app')} className="h-11 rounded-full bg-on-accent text-[15px] font-semibold text-accent-deep active:scale-[0.98]">看看还有谁顺路</button>}
         <button onClick={() => { act('role', { role: 'runner' }); nav('/app/me') }} className="h-11 rounded-full bg-on-accent/15 text-[15px] font-semibold active:scale-[0.98]">看信用变化</button>
       </div>
+      {t.runnerId === 'runner' && <RemindAgain />}
     </motion.section>
   )
 }
