@@ -75,16 +75,16 @@ export default function CampusMap({ R, hits, reduce, pills = true, walker = true
           if (!P || P.kind === 'kiosk' || P.kind === 'gate') return null
           const foot = P.road[0] === 'h' ? [P.door[0], P.road[1]] : [P.road[1], P.door[1]]
           const deep = inside(t.from)
-          return <motion.path key={`in${R.from}${R.to}${t.id}`} d={toD([foot, P.door, deep])} fill="none" stroke="var(--accent)" strokeWidth="9" strokeDasharray="1 15" strokeLinecap="round" strokeLinejoin="round"
+          return <motion.path key={`in${R.from}${R.to}${t.id}`} d={toD([foot, P.door, deep])} fill="none" stroke="var(--accent)" className="[stroke-dasharray:1_28] [stroke-width:20] md:[stroke-dasharray:1_15] md:[stroke-width:9]" strokeLinecap="round" strokeLinejoin="round"
             initial={false} animate={{ opacity: p >= f ? 1 : 0.35 }} transition={{ duration: 0.3 }} />
         })}
         {/* 你的路：整条先淡淡画着，小人走过的部分描深 */}
         <path d={toD(mine)} fill="none" stroke="var(--ink)" strokeOpacity="0.3" strokeWidth="10" strokeDasharray="4 18" strokeLinecap="round" strokeLinejoin="round" />
-        <motion.path key={`${R.from}${R.to}`} d={toD(mine)} fill="none" stroke="var(--ink)" strokeOpacity="0.88" strokeWidth="12" strokeLinecap="round" strokeLinejoin="round"
+        <motion.path key={`${R.from}${R.to}`} d={toD(mine)} fill="none" stroke="var(--ink)" strokeOpacity="0.88" className="[stroke-width:18] md:[stroke-width:12]" strokeLinecap="round" strokeLinejoin="round"
           initial={false} style={{ pathLength: p }} />
         {/* 顺路的单：取件到送达那段路，小人经过取件点时亮起 */}
         {marks.map(({ t, f }) => (
-          <motion.path key={`${R.from}${R.to}${t.id}`} d={toD(routePath(t.from, t.to).pts)} fill="none" stroke="var(--accent)" strokeWidth="7" strokeLinecap="round" strokeLinejoin="round"
+          <motion.path key={`${R.from}${R.to}${t.id}`} d={toD(routePath(t.from, t.to).pts)} fill="none" stroke="var(--accent)" strokeWidth="7" className="max-md:hidden" strokeLinecap="round" strokeLinejoin="round"
             initial={false} animate={{ opacity: p >= f ? 0.95 : 0.25 }} transition={{ duration: 0.3 }} />
         ))}
       </svg>
@@ -123,7 +123,7 @@ export default function CampusMap({ R, hits, reduce, pills = true, walker = true
     {legend && (
       <p className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted md:text-sm">
         <span className="inline-flex items-center gap-1.5"><i className="h-1 w-5 rounded-full bg-ink/80" />你正要走的路</span>
-        <span className="inline-flex items-center gap-1.5"><i className="h-1.5 w-5 rounded-full bg-accent" />顺手捎的那段（取件到送达）</span>
+        <span className="inline-flex items-center gap-1.5 max-md:hidden"><i className="h-1.5 w-5 rounded-full bg-accent" />顺手捎的那段（取件到送达）</span>
         <span className="inline-flex items-center gap-1.5"><i className="w-5 border-t-[3px] border-dotted border-accent" />拐进楼里取件（多走的路）</span>
         <span className="inline-flex items-center gap-1.5"><i className="size-2.5 rounded-full bg-accent" /><span>取件点，<span className="md:hidden">按路上先后编号，</span>共 {hits.length} 单</span></span>
       </p>
