@@ -122,19 +122,19 @@ function Ticker() {
 
 const SCENES = [
   {
-    key: 'express', tab: '排长队的快递驿站', img: 'scene-express-v1', alt: '校园快递驿站里排着长队，货架上堆满包裹',
+    key: 'express', tab: '排长队的快递驿站', short: '驿站排队', img: 'scene-express-v1', alt: '校园快递驿站里排着长队，货架上堆满包裹',
     who: '大三，课排满的小禾',
     pain: '驿站傍晚要排二十分钟，她 17:50 才下课，18:00 就关门。三个快递放了三天，找室友要欠人情，找陌生人又怕取件码被乱用。',
     fix: '发一单 ¥5。取件码只在有人接单后才给对方看，送到后当面核验送达码，钱才放出去。',
   },
   {
-    key: 'seat', tab: '早八前的图书馆座位', img: 'scene-seat-v1', alt: '清晨图书馆靠窗的空位上放着一本书',
+    key: 'seat', tab: '早八前的图书馆座位', short: '早八占座', img: 'scene-seat-v1', alt: '清晨图书馆靠窗的空位上放着一本书',
     who: '考研，住得远的周砚',
     pain: '宿舍离图书馆一公里，每天 7:40 靠窗位就没了。住在旁边的同学顺手就能占，但不知道谁靠谱。',
     fix: '接单人的信用分公开可见。接了不去算爽约，直接扣 5 分，下次能接的单就变少。',
   },
   {
-    key: 'handoff', tab: '宿舍楼下的交接', img: 'scene-handoff-v1', alt: '宿舍楼门口，两名学生交接一袋外卖',
+    key: 'handoff', tab: '宿舍楼下的交接', short: '楼下交接', img: 'scene-handoff-v1', alt: '宿舍楼门口，两名学生交接一袋外卖',
     who: '赶作业下不了楼的于小渔',
     pain: '外卖放在北门取餐点，走回 6 楼要十分钟。正好回宿舍的同学顺手就能捎上来，可彼此不认识，也不想把宿舍号给陌生人。',
     fix: '大厅按距离排序，顺路回宿舍的人最先看到；宿舍号接单后才显示，订单结束自动隐藏。',
@@ -155,13 +155,13 @@ function Scenes() {
         <Reveal className="lg:col-span-7"><H2>三个每天都在发生的<br />跑腿时刻</H2></Reveal>
         <Reveal delay={0.05} className="lg:col-span-5 lg:pb-1"><Lead className="lg:mt-0">目标用户：时间被课表切碎、又在意隐私的在校生。需求小、频次高、怕被坑。</Lead></Reveal>
       </div>
-      <div className="no-scrollbar -mx-4 mt-12 overflow-x-auto px-4 [mask-image:linear-gradient(to_right,black_82%,transparent)] md:[mask-image:none]">
-        <div className="inline-flex gap-1 rounded-full bg-sunken p-1" role="tablist" aria-label="用户场景">
+      <div className="mt-12">
+        <div className="grid grid-cols-3 gap-1 rounded-full bg-sunken p-1 md:inline-flex" role="tablist" aria-label="用户场景">
           {SCENES.map((x) => (
             <button key={x.key} role="tab" aria-selected={k === x.key} onClick={() => setK(x.key)}
-              className={`relative h-11 shrink-0 whitespace-nowrap rounded-full px-5 text-[15px] font-semibold transition-colors ${k === x.key ? 'text-bg' : 'text-muted hover:text-ink'}`}>
+              className={`relative h-11 shrink-0 whitespace-nowrap rounded-full px-3 text-[15px] font-semibold transition-colors md:px-5 ${k === x.key ? 'text-bg' : 'text-muted hover:text-ink'}`}>
               {k === x.key && <motion.span layoutId="scene-pill" transition={{ type: 'spring', stiffness: 380, damping: 32 }} className="absolute inset-0 rounded-full bg-ink" />}
-              <span className="relative">{x.tab}</span>
+              <span className="relative"><span className="md:hidden">{x.short || x.tab}</span><span className="hidden md:inline">{x.tab}</span></span>
             </button>
           ))}
         </div>

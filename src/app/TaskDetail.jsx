@@ -3,7 +3,7 @@ import { useParams, useNavigate, Link } from 'react-router-dom'
 import { motion, useReducedMotion } from 'motion/react'
 import { ArrowLeft, MapPin, Clock, LockKey, LockKeyOpen, EyeSlash, Phone, Package, House, ShieldCheck, Camera, Numpad, Check, Scales, Warning, FileX, ArrowClockwise } from '@phosphor-icons/react'
 import { useStore } from '../store'
-import { B, dist, fmtDist, RUNNER_HOME, minCreditFor, levelOf } from '../data'
+import { B, dist, fmtDist, RUNNER_HOME, minCreditFor, levelOf, detourMin } from '../data'
 import { Btn, Panel, TypeTag, UrgentTag, VerifiedBadge, Sheet, Stars, Empty, Field, inputCls, left, clock, spring } from '../ui'
 
 const STEPS = ['发布', '接单', '进行中', '送达', '确认', '互评']
@@ -440,6 +440,19 @@ function Actions({ t }) {
   return null
 }
 
+// 跑腿人决定接不接时，直接看到这单顺不顺「我常走的路」
+function RouteFit({ t }) {
+  let route = { from: 'jiao1', to: 'mei5' }
+  try { const r = JSON.parse(localStorage.getItem('shunluxia:myroute')); if (B[r?.from] && B[r?.to]) route = r } catch { /* 用默认路线 */ }
+  const m = detourMin(route.from, route.to, t)
+  const name = (id) => B[id].name.replace(/（.*?）/, '')
+  return (
+    <span className={`tnum inline-flex items-center rounded-full px-3 py-1 text-sm font-semibold ${m <= 5 ? 'bg-accent-soft text-accent' : 'bg-sunken text-ink'}`}>
+      {m <= 5 ? '顺路 · ' : ''}{name(route.from)}到{name(route.to)}，多走 {m} 分钟
+    </span>
+  )
+}
+
 export default function TaskDetail() {
   const { id } = useParams()
   const { state } = useStore()
@@ -471,7 +484,7 @@ export default function TaskDetail() {
       <Panel className="p-4"><Stepper t={t} /></Panel>
 
       <div>
-        <div className="flex flex-wrap items-center gap-2"><TypeTag type={t.type} />{t.urgent && <UrgentTag />}</div>
+        <div className="flex flex-wrap items-center gap-2"><TypeTag type={t.type} />{t.urgent && <UrgentTag />}{state.role === 'runner' && t.status === 'open' && <RouteFit t={t} />}</div>
         <h1 className="mt-3 text-2xl font-bold leading-snug tracking-tight">{t.title}</h1>
         <div className="mt-3 space-y-1.5 text-[15px] text-muted">
           <p className="flex items-start gap-1.5"><MapPin size={18} className="mt-0.5 shrink-0" /><span>{B[t.from]?.name}{t.from !== t.to && <> 到 {B[t.to]?.name}</>}{state.role === 'runner' && <span className="tnum block text-sm">取件点距你 {fmtDist(dist(RUNNER_HOME, t.from))}</span>}</span></p>

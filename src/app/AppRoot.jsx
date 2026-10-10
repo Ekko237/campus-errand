@@ -47,7 +47,7 @@ function Toasts() {
   const last = list[list.length - 1]
   useEffect(() => {
     if (!last) return
-    const id = setTimeout(() => list.forEach((t) => act('dismissToast', { tid: t.id })), 2800)
+    const id = setTimeout(() => list.forEach((t) => act('dismissToast', { tid: t.id })), 2200)
     return () => clearTimeout(id)
   }, [last?.id]) // eslint-disable-line react-hooks/exhaustive-deps
   const bad = list.some((t) => t.tone === 'bad')
@@ -56,7 +56,7 @@ function Toasts() {
       <AnimatePresence initial={false}>
         {last && (
           <motion.div key="toast" layout initial={reduce ? false : { y: 12, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ opacity: 0, transition: { duration: 0.15 } }} transition={spring}
-            className={`pointer-events-auto w-full max-w-md space-y-1 rounded-2xl px-4 py-3 text-[15px] font-medium shadow-lg shadow-ink/10 ring-1 ${bad ? 'bg-danger-soft text-danger ring-danger/30' : 'bg-surface text-ink ring-line'}`}
+            className={`pointer-events-auto w-auto max-w-md space-y-1 rounded-full px-4 py-2.5 text-sm font-medium shadow-lg shadow-ink/10 ring-1 ${bad ? 'bg-danger-soft text-danger ring-danger/30' : 'bg-surface text-ink ring-line'}`}
             onClick={() => list.forEach((t) => act('dismissToast', { tid: t.id }))}>
             {list.map((t) => (
               <motion.p key={t.id} layout="position" initial={reduce ? false : { opacity: 0 }} animate={{ opacity: 1 }} className="flex items-start gap-2">
