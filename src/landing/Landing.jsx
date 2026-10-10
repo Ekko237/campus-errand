@@ -328,8 +328,10 @@ const stagePt = (f) => {
   }
   return STAGE_PTS[STAGE_PTS.length - 1]
 }
-const spct = ([x, y]) => ({ left: `${((x - SX0) / SVW) * 100}%`, top: `${((y - SY0) / SVH) * 100}%` })
-function StageMap({ i }) {
+// tall：手机六步卡里用，上下多看一点，地图高一些、标签不挤
+function StageMap({ i, tall = false }) {
+  const Y0 = tall ? 40 : SY0, VH = tall ? 600 : SVH
+  const spct = ([x, y]) => ({ left: `${((x - SX0) / SVW) * 100}%`, top: `${((y - Y0) / VH) * 100}%` })
   const reduce = useReducedMotion()
   const sp = reduce ? { duration: 0 } : { type: 'spring', stiffness: 120, damping: 22 }
   const me = stagePt(STAGE_P[i])
@@ -338,8 +340,8 @@ function StageMap({ i }) {
   const mei = [PLACES.mei5.door[0], PLACES.mei5.door[1] + 60]
   const tag = (txt, at, strong, z = '') => <span className={`absolute ${z} -translate-x-1/2 whitespace-nowrap rounded-full px-1.5 py-0.5 text-[11px] font-semibold shadow-sm ${strong ? 'bg-ink text-bg' : 'bg-surface text-ink ring-1 ring-line'}`} style={spct(at)}>{txt}</span>
   return (
-    <div className="relative mt-5 aspect-[1290/460] overflow-hidden rounded-xl ring-1 ring-line" aria-hidden="true">
-      <svg viewBox={`${SX0} ${SY0} ${SVW} ${SVH}`} preserveAspectRatio="xMidYMid slice" className="absolute inset-0 size-full">
+    <div className={`relative mt-5 overflow-hidden rounded-xl ring-1 ring-line ${tall ? 'aspect-[1290/600]' : 'aspect-[1290/460]'}`} aria-hidden="true">
+      <svg viewBox={`${SX0} ${Y0} ${SVW} ${VH}`} preserveAspectRatio="xMidYMid slice" className="absolute inset-0 size-full">
         <image href={`${import.meta.env.BASE_URL}images/campus-map-v2.webp`} x="0" y="0" width="1600" height="900" />
         <path d={D} fill="none" stroke="var(--ink)" strokeOpacity="0.35" strokeWidth="12" strokeDasharray="4 22" strokeLinecap="round" strokeLinejoin="round" />
         <motion.path d={D} fill="none" stroke="var(--ink)" strokeOpacity="0.9" strokeWidth="14" strokeLinecap="round" strokeLinejoin="round" initial={false} animate={{ pathLength: STAGE_P[i] }} transition={sp} />
@@ -457,7 +459,7 @@ function MobileLoop() {
         <img src={icon('type-express-v1')} width={28} height={28} alt="" aria-hidden="true" className="size-7" />
         <p className="text-[15px] font-semibold">菜鸟驿站取 2 个小件快递</p>
       </div>
-      <div className="[&>div]:mt-3"><StageMap i={i} /></div>
+      <div className="[&>div]:mt-3"><StageMap i={i} tall /></div>
       <div className="mt-3 grid grid-cols-6 gap-1" role="tablist" aria-label="一单的六步">
         {LOOP.map((x, k) => (
           <button key={x.t} role="tab" aria-selected={k === i} onClick={() => go(k)} className="grid gap-1 pt-1 text-center text-xs font-semibold">
