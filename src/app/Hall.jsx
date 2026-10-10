@@ -159,7 +159,7 @@ export default function Hall() {
         <span className="text-sm text-muted">示例数据 · {list.filter((t) => t.deadline > Date.now()).length} 个待接</span>
       </div>
 
-      <div className="no-scrollbar -mx-4 flex gap-2 overflow-x-auto px-4 [mask-image:linear-gradient(to_right,black_85%,transparent)]" role="group" aria-label="按类型筛选">
+      <div className="no-scrollbar -mx-4 flex gap-2 overflow-x-auto px-4 [mask-image:linear-gradient(to_right,black_85%,transparent)] md:mx-0 md:flex-wrap md:overflow-visible md:px-0 md:[mask-image:none]" role="group" aria-label="按类型筛选">
         {[['all', '全部'], ...TYPE_KEYS.map((k) => [k, TYPES[k].label])].map(([k, label]) => {
           const Icon = TYPES[k]?.Icon
           return (

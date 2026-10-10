@@ -136,7 +136,7 @@ function Shell() {
   return (
     <div className="min-h-[100dvh] bg-bg">
       <header className="sticky top-0 z-30 border-b border-line bg-bg/95 backdrop-blur">
-        <div className="mx-auto flex h-16 max-w-xl items-center justify-between gap-3 px-4 xl:-translate-x-40">
+        <div className="mx-auto flex h-16 max-w-xl items-center justify-between gap-3 px-4 xl:max-w-[66rem] xl:-translate-x-20">
           <Link to="/" className="flex shrink-0 items-center gap-2 text-lg font-bold tracking-tight">
             <img src={`${import.meta.env.BASE_URL}brand/logo-v2.png`} width={36} height={36} alt="顺路侠标志：背着书包、夹着包裹奔跑的小人" className="size-9" />
             <span className="max-[359px]:hidden">顺路侠</span>

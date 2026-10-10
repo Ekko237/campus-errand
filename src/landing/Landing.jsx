@@ -542,7 +542,7 @@ function Metrics() {
               <div className="mt-6 grid gap-8 md:grid-cols-[auto_1fr] md:items-end">
                 <DotMatrix />
                 <div>
-                  <p className="text-7xl font-bold tracking-[-0.04em] md:text-[112px] md:leading-none"><CountUp to={97} suffix="%" /></p>
+                  <p className="text-7xl font-bold tracking-[-0.04em] md:text-[112px] md:leading-none">97%</p>
                   <p className="mt-2 text-lg font-semibold">每 100 单，至少 97 单按时送到</p>
                   <p className="mt-1 text-[15px] font-medium opacity-60">示例目标值</p>
                 </div>
@@ -552,13 +552,13 @@ function Metrics() {
           </Reveal>
           <Reveal delay={0.05} className="rounded-2xl bg-bg p-6 ring-1 ring-line">
             <p className="text-lg font-semibold">接单率</p>
-            <p className="mt-1 text-5xl font-bold tracking-tight text-accent"><span className="mr-2 align-middle text-base font-semibold tracking-normal opacity-80">至少</span><CountUp to={85} suffix="%" /></p>
+            <p className="mt-1 text-5xl font-bold tracking-tight text-accent"><span className="mr-2 align-middle text-base font-semibold tracking-normal opacity-80">至少</span>85%</p>
             <p className="mt-4 text-[15px] leading-relaxed text-muted">24 小时内被接的单 ÷ 发布的单。低了说明供给不够或定价偏低。示例目标。</p>
           </Reveal>
           <Reveal delay={0.1} className="rounded-2xl bg-bg p-6 ring-1 ring-line">
             <div>
               <p className="text-lg font-semibold">平均接单时长</p>
-              <p className="mt-1 text-5xl font-bold tracking-tight text-accent"><span className="mr-2 align-middle text-base font-semibold tracking-normal opacity-80">不超过</span><CountUp to={10} suffix=" 分钟" /></p>
+              <p className="mt-1 text-5xl font-bold tracking-tight text-accent"><span className="mr-2 align-middle text-base font-semibold tracking-normal opacity-80">不超过</span>10 分钟</p>
               <p className="mt-4 text-[15px] leading-relaxed text-muted">发布到被接的中位时间。跑腿要的是快，超过 10 分钟用户就会自己去。示例目标。</p>
             </div>
           </Reveal>
