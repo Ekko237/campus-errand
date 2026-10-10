@@ -221,6 +221,35 @@ function StateRow({ k, v }) {
   )
 }
 
+// 六步卡里的小地图：每走一步，跑腿人在路上前进一段
+const STAGE_X = [8, 8, 42, 90, 90, 90] // 一教 → 驿站 → 梅园
+function StageMap({ i }) {
+  const reduce = useReducedMotion()
+  const sp = reduce ? { duration: 0 } : { type: 'spring', stiffness: 160, damping: 22 }
+  return (
+    <div className="relative mt-5 h-24 overflow-hidden rounded-xl bg-sunken" aria-hidden="true">
+      <span className="absolute left-[8%] right-[10%] top-1/2 h-[3px] -translate-y-1/2 rounded-full bg-ink/70" />
+      <motion.span className="absolute left-[42%] top-1/2 h-[6px] -translate-y-1/2 rounded-full bg-accent" initial={false} animate={{ width: i >= 2 ? '48%' : '0%' }} transition={sp} />
+      {[['一教', 8], ['菜鸟驿站', 42], ['梅园', 90]].map(([n, x]) => (
+        <span key={n} className="absolute top-1/2" style={{ left: `${x}%` }}>
+          <span className={`absolute left-0 top-0 block size-3 -translate-x-1/2 -translate-y-1/2 rounded-full ring-4 ring-sunken ${n === '菜鸟驿站' ? 'bg-accent' : 'bg-ink'}`} />
+          <span className="absolute left-0 top-3 -translate-x-1/2 whitespace-nowrap text-xs font-semibold text-muted">{n}</span>
+        </span>
+      ))}
+      <motion.img src={icon('type-express-v1')} width={28} height={28} alt="" className="absolute top-[4%] size-7 translate-x-1"
+        initial={false} animate={{ left: `${i >= 2 ? STAGE_X[i] : 42}%`, scale: i === 0 ? [1, 1.2, 1] : 1, opacity: i >= 4 ? 0 : 1 }} transition={sp} />
+      <motion.span className="absolute top-[34%] grid size-9 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full bg-surface ring-[3px] ring-ink"
+        initial={false} animate={{ left: `${STAGE_X[i]}%`, opacity: i === 0 ? 0 : 1 }} transition={sp}>
+        <img src={icon('avatar-runner-v1')} width={28} height={28} alt="" className="size-7 rounded-full" />
+      </motion.span>
+      {i >= 4 && (
+        <motion.span key={`pay${i}`} className="tnum absolute right-[4%] top-[10%] rounded-full bg-accent px-2 py-0.5 text-xs font-bold text-on-accent"
+          initial={reduce ? false : { opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={sp}>{i === 4 ? '+¥5' : '信用 +3'}</motion.span>
+      )}
+    </div>
+  )
+}
+
 function OrderStage({ i }) {
   const s = LOOP[i]
   const code = s.code === 'open' ? '6-2-3108' : s.code === 'hidden' ? '订单结束，已隐藏' : '接单后可见'
@@ -230,7 +259,8 @@ function OrderStage({ i }) {
         <img src={icon('type-express-v1')} width={36} height={36} alt="" aria-hidden="true" className="size-9" />
         <p className="text-lg font-semibold">菜鸟驿站取 2 个小件快递</p>
       </div>
-      <div className="mt-5 grid grid-cols-6 gap-1.5" aria-hidden="true">
+      <StageMap i={i} />
+      <div className="mt-4 grid grid-cols-6 gap-1.5" aria-hidden="true">
         {LOOP.map((_, k) => (
           <motion.span key={k} className="h-2 rounded-full" animate={{ backgroundColor: k <= i ? 'var(--accent)' : 'var(--sunken)' }} transition={{ duration: 0.35 }} />
         ))}
@@ -251,7 +281,7 @@ function OrderStage({ i }) {
 
 function LoopStep({ s, now, past }) {
   return (
-    <li className={`flex scroll-mt-40 gap-5 transition-opacity duration-300 lg:min-h-[min(26vh,260px)] lg:items-center ${now ? 'opacity-100' : past ? 'opacity-20 lg:opacity-70' : 'opacity-45'}`}>
+    <li className={`flex scroll-mt-40 gap-5 transition-opacity duration-300 lg:min-h-[min(20vh,200px)] lg:items-center ${now ? 'opacity-100' : past ? 'opacity-20 lg:opacity-70' : 'opacity-45'}`}>
       <span className="grid size-16 shrink-0 place-items-center rounded-2xl bg-bg">
         <img src={icon(s.icon + '-v1')} width={48} height={48} alt={s.alt} loading="lazy" className="size-12 object-contain" />
       </span>
