@@ -75,7 +75,7 @@ const Br = () => <br className="hidden md:inline" />
 const Lead = ({ children, className = '' }) => <p className={`mt-5 max-w-[38ch] text-lg leading-relaxed text-muted md:text-xl ${className}`}>{children}</p>
 
 // 贯穿全站的那条路：宽屏左边一条虚线，每一段是一个站，往下滚它就被走成绿色，小人跟着走
-const STOPS = [['top', '一条路'], ['routes', '整个校园'], ['scenes', '场景'], ['loop', '一单'], ['trust', '信任'], ['credit', '信用'], ['safety', '底线']]
+const STOPS = [['top', '一条路'], ['scenes', '场景'], ['routes', '整个校园'], ['loop', '一单'], ['trust', '信任'], ['credit', '信用'], ['safety', '底线']]
 function PageRoute() {
   const reduce = useReducedMotion()
   const { scrollYProgress } = useScroll()
@@ -123,7 +123,7 @@ function ScrollProgress() {
 }
 
 const NAV_LINKS = [['scenes', '场景'], ['loop', '一单怎么走'], ['trust', '信任机制'], ['credit', '双向信用']]
-const SECTIONS = [['routes', '整个校园的顺路'], ...NAV_LINKS, ['safety', '这些单发不出去'], ['final', '你下课常走哪条路']]
+const SECTIONS = [NAV_LINKS[0], ['routes', '整个校园的顺路'], ...NAV_LINKS.slice(1), ['safety', '这些单发不出去'], ['final', '你下课常走哪条路']]
 function Nav({ page }) {
   const { scrollY } = useScroll()
   const [scrolled, setScrolled] = useState(false)
@@ -147,11 +147,11 @@ function Nav({ page }) {
         )}
         <nav className="hidden items-center gap-8 text-[15px] font-medium text-muted lg:flex" aria-label="页面导航">
           {home && NAV_LINKS.map(([to, l]) => <Anchor key={to} to={to} className={linkCls}>{l}{under}</Anchor>)}
-          {home ? <Link to="/thinking" className={linkCls}>产品思考{under}</Link> : <Link to="/" className={`${linkCls} inline-flex items-center gap-1.5`}><ArrowLeft size={16} weight="bold" />回首页{under}</Link>}
+          {home && <Link to="/thinking" className={linkCls}>产品思考{under}</Link>}
         </nav>
         <div className="flex items-center gap-2">
           <div className={`transition-opacity duration-300 ${scrolled || !home ? '' : 'max-md:pointer-events-none max-md:opacity-0'}`}><Cta size="sm" /></div>
-          {!home && <Link to="/" className="grid h-10 place-items-center rounded-full bg-sunken px-4 text-[15px] font-semibold active:scale-[0.97] lg:hidden">回首页</Link>}
+          {!home && <Link to="/" className="inline-flex h-10 items-center gap-1.5 rounded-full bg-sunken px-4 text-[15px] font-semibold active:scale-[0.97]"><ArrowLeft size={16} weight="bold" />回首页</Link>}
           {home && (
             <button onClick={() => { setCur([...SECTIONS].reverse().find(([id]) => (document.getElementById(id)?.getBoundingClientRect().top ?? 1e9) < 140)?.[0]); setOpen((v) => !v) }} aria-expanded={open} aria-controls="mnav" className="grid h-10 place-items-center rounded-full bg-sunken px-4 text-[15px] font-semibold active:scale-[0.97] lg:hidden">{open ? '收起' : '目录'}</button>
           )}
@@ -166,7 +166,8 @@ function Nav({ page }) {
               {SECTIONS.map(([to, l], i) => (
                 <li key={to}><Anchor to={to} onClick={() => setOpen(false)} aria-current={cur === to ? 'location' : undefined} className={`flex h-12 items-center gap-3 rounded-xl px-2 text-[17px] active:bg-sunken ${cur === to ? 'bg-accent-soft font-bold text-accent' : 'font-semibold'}`}><span className="tnum w-5 text-sm opacity-60">{i + 1}</span>{l}{cur === to && <span className="ml-auto text-sm font-semibold">你在这里</span>}</Anchor></li>
               ))}
-              <li><Link to="/thinking" className="flex h-12 items-center gap-3 rounded-xl px-2 text-[17px] font-semibold text-muted active:bg-sunken"><span className="w-5" />产品思考</Link></li>
+              <li><Link to="/thinking" className="flex h-12 items-center gap-3 rounded-xl px-2 text-[17px] font-semibold active:bg-sunken"><span className="w-5" />产品思考<ArrowRight size={16} weight="bold" className="ml-auto text-muted" /></Link></li>
+              <li className="pt-2"><Link to="/app" className="flex h-12 items-center justify-center gap-2 rounded-full bg-accent text-[17px] font-semibold text-on-accent active:scale-[0.98]">体验原型<ArrowRight size={18} weight="bold" /></Link></li>
             </ol>
           </motion.nav>
         )}
@@ -307,7 +308,7 @@ function StateRow({ k, v }) {
 
 // 六步卡里的小地图：每走一步，跑腿人在路上前进一段
 // 六步区订单卡上的小地图：就是首屏那张校园地图的一条横带，阿远按步骤从一教走到驿站、捎上包裹、送到梅园
-const SX0 = 180, SY0 = 100, SVW = 1220, SVH = 460
+const SX0 = 110, SY0 = 100, SVW = 1320, SVH = 460
 // 只画路面上那段（去掉两头进门的小短线），线头不会拐出一个小钩
 const STAGE_PTS = routePath('jiao1', 'mei5').pts.slice(1, -1)
 const STAGE_LEN = STAGE_PTS.slice(1).reduce((n, [x, y], k) => n + Math.hypot(x - STAGE_PTS[k][0], y - STAGE_PTS[k][1]), 0)
@@ -333,9 +334,9 @@ function StageMap({ i }) {
   const D = STAGE_PTS.map(([x, y], k) => `${k ? 'L' : 'M'}${x} ${y}`).join(' ')
   const station = [PLACES.cainiao.door[0], PLACES.cainiao.door[1] + 40]
   const mei = [PLACES.mei5.door[0], PLACES.mei5.door[1] + 60]
-  const tag = (txt, at, strong) => <span className={`absolute -translate-x-1/2 whitespace-nowrap rounded-full px-1.5 py-0.5 text-[11px] font-semibold shadow-sm ${strong ? 'bg-ink text-bg' : 'bg-surface text-ink ring-1 ring-line'}`} style={spct(at)}>{txt}</span>
+  const tag = (txt, at, strong, z = '') => <span className={`absolute ${z} -translate-x-1/2 whitespace-nowrap rounded-full px-1.5 py-0.5 text-[11px] font-semibold shadow-sm ${strong ? 'bg-ink text-bg' : 'bg-surface text-ink ring-1 ring-line'}`} style={spct(at)}>{txt}</span>
   return (
-    <div className="relative mt-5 aspect-[1220/460] overflow-hidden rounded-xl ring-1 ring-line" aria-hidden="true">
+    <div className="relative mt-5 aspect-[1320/460] overflow-hidden rounded-xl ring-1 ring-line" aria-hidden="true">
       <svg viewBox={`${SX0} ${SY0} ${SVW} ${SVH}`} preserveAspectRatio="xMidYMid slice" className="absolute inset-0 size-full">
         <image href={`${import.meta.env.BASE_URL}images/campus-map-v2.webp`} x="0" y="0" width="1600" height="900" />
         <path d={D} fill="none" stroke="var(--ink)" strokeOpacity="0.35" strokeWidth="12" strokeDasharray="4 22" strokeLinecap="round" strokeLinejoin="round" />
@@ -344,7 +345,7 @@ function StageMap({ i }) {
         <motion.path d={NEED_D} fill="none" stroke="var(--accent)" strokeWidth="14" strokeLinecap="round" strokeLinejoin="round" initial={false}
           animate={{ pathLength: Math.max(0, (STAGE_P[i] - STAGE_F) / (1 - STAGE_F)), opacity: i >= 3 ? 1 : 0 }} transition={sp} />
       </svg>
-      {tag('一教', [STAGE_PTS[0][0] + 15, STAGE_PTS[0][1] + 60])}
+      {tag('一教', [STAGE_PTS[0][0] - 10, STAGE_PTS[0][1] - 110], false, 'z-20')}
       {tag('菜鸟驿站', [station[0], station[1] + 70], i === 2)}
       {tag('梅园', [mei[0], mei[1] + 70], i >= 4)}
       {/* 包裹：先在驿站等着（发布时一闪），第 3 步起跟着阿远走，送到后落在梅园 */}
@@ -358,7 +359,7 @@ function StageMap({ i }) {
         {i === 3 && <img src={icon('type-express-v1')} width={20} height={20} alt="" className="absolute -right-2 -top-2 size-5" />}
       </motion.span>
       {i >= 4 && (
-        <motion.span key={`pay${i}`} className="tnum absolute z-20 -translate-x-1/2 rounded-full bg-accent px-2 py-0.5 text-xs font-bold text-on-accent" style={spct([mei[0] + 120, mei[1] - 150])}
+        <motion.span key={`pay${i}`} className="tnum absolute z-20 -translate-x-1/2 rounded-full bg-accent px-2 py-0.5 text-xs font-bold text-on-accent" style={spct([mei[0] + 10, mei[1] - 262])}
           initial={reduce ? false : { opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={sp}>{i === 4 ? '+¥5' : '信用 +3'}</motion.span>
       )}
     </div>
@@ -395,7 +396,7 @@ function OrderStage({ i }) {
 
 function LoopStep({ s, k, now, past }) {
   return (
-    <li className={`flex scroll-mt-40 gap-5 transition-opacity duration-300 lg:min-h-[min(16vh,150px)] lg:items-center ${now ? 'opacity-100' : past ? 'opacity-100 lg:opacity-70' : 'opacity-100 lg:opacity-75'}`}>
+    <li className={`flex scroll-mt-40 gap-5 transition-opacity duration-300 lg:min-h-[min(16vh,150px)] lg:items-center ${now ? 'opacity-100' : 'opacity-100 lg:opacity-85'}`}>
       <span className="grid size-16 shrink-0 place-items-center rounded-2xl bg-bg">
         <img src={icon(s.icon + '-v1')} width={48} height={48} alt={s.alt} loading="lazy" className="size-12 object-contain" />
       </span>
@@ -443,16 +444,10 @@ function MiniOrder({ i }) {
 // 手机：一张地图卡当舞台，六步在下面点着走（进屏后自己走一遍，点过就停）
 function MobileLoop() {
   const reduce = useReducedMotion()
+  // 只由按钮和进度段控制，不自动走：点「下一步」永远只前进一步
   const [i, setI] = useState(0)
-  const [hold, setHold] = useState(false)
   const box = useRef(null)
-  const seen = useInView(box, { amount: 0.5 })
-  useEffect(() => {
-    if (reduce || hold || !seen || i >= LOOP.length - 1) return
-    const id = setTimeout(() => setI((v) => v + 1), 2600)
-    return () => clearTimeout(id)
-  }, [reduce, hold, seen, i])
-  const go = (k) => { setHold(true); setI(Math.max(0, Math.min(LOOP.length - 1, k))) }
+  const go = (k) => setI(Math.max(0, Math.min(LOOP.length - 1, k)))
   const s = LOOP[i]
   return (
     <div ref={box} className="rounded-2xl bg-bg p-4 text-ink lg:hidden">
@@ -471,7 +466,8 @@ function MobileLoop() {
       </div>
       <div className="mt-4 grid">
         {LOOP.map((x, k) => (
-          <motion.div key={x.t} aria-hidden={k !== i} initial={false} animate={{ opacity: k === i ? 1 : 0, y: k === i ? 0 : 6 }} transition={{ duration: reduce ? 0 : 0.25 }}
+          <motion.div key={x.t} aria-hidden={k !== i} initial={false} animate={{ opacity: k === i ? 1 : 0, y: k === i ? 0 : 6 }}
+            transition={reduce ? { duration: 0 } : k === i ? { duration: 0.18, delay: 0.12 } : { duration: 0.12 }}
             className={`col-start-1 row-start-1 flex gap-3 ${k === i ? '' : 'pointer-events-none'}`}>
             <img src={icon(x.icon + '-v1')} width={44} height={44} alt={x.alt} className="size-11 shrink-0 object-contain" />
             <div className="min-w-0">
@@ -809,8 +805,8 @@ function BanDemo() {
   const text = BAN_DEMO[i]
   useEffect(() => {
     if (reduce || !on || own !== null) return
-    if (n < text.length) { const id = setTimeout(() => setN(n + 1), 110); return () => clearTimeout(id) }
-    const id = setTimeout(() => { setI((i + 1) % BAN_DEMO.length); setN(0) }, 2200)
+    if (n < text.length) { const id = setTimeout(() => setN(n + 1), 120); return () => clearTimeout(id) }
+    const id = setTimeout(() => { setI((i + 1) % BAN_DEMO.length); setN(0) }, 3400)
     return () => clearTimeout(id)
   }, [n, text, on, reduce, i, own])
   const typed = own ?? text.slice(0, n)
@@ -914,13 +910,12 @@ function Metrics() {
         <div className="mt-14 grid grid-cols-[minmax(0,1fr)] gap-3 md:grid-cols-2 lg:grid-cols-3 lg:grid-rows-2">
           <Reveal className="flex flex-col justify-between rounded-2xl bg-accent-deep p-6 text-on-accent md:col-span-2 md:p-10 lg:row-span-2">
             <div>
-              <p className="text-lg font-semibold opacity-80">北极星指标：履约率</p>
+              <p className="flex items-center gap-2 text-lg font-semibold"><span className="opacity-80">北极星指标：履约率</span><span className="rounded-full bg-on-accent/15 px-2 py-0.5 text-xs">目标</span></p>
               <div className="mt-6 grid gap-8 md:grid-cols-[auto_1fr] md:items-end">
                 <DotMatrix />
                 <div>
                   <p className="text-7xl font-bold tracking-[-0.04em] md:text-[112px] md:leading-none">97%</p>
                   <p className="mt-2 text-lg font-semibold">每 100 趟顺路，至少 97 趟按时送到</p>
-                  <p className="mt-2 inline-flex rounded-full bg-on-accent/15 px-2 py-0.5 text-xs font-semibold">目标</p>
                 </div>
               </div>
             </div>
@@ -974,7 +969,7 @@ function Roadmap() {
 // 首屏之后第二段：从「一条路」放大到「整个校园」
 function Routes() {
   return (
-    <section id="routes" className="mx-auto max-w-7xl scroll-mt-16 px-4 pb-4 pt-4 md:px-8 md:pb-10 md:pt-8 lg:pb-6">
+    <section id="routes" className="mx-auto max-w-7xl scroll-mt-16 px-4 pb-16 pt-2 md:px-8 md:pb-24 lg:pb-28">
       <Reveal><H2>同一时间<br />校园里到处是顺路</H2></Reveal>
       <div className="mt-5"><CampusRoutes /></div>
     </section>
@@ -1095,8 +1090,8 @@ export default function Landing({ page }) {
       ) : (
         <main>
           <RouteHero Cta={Cta} Anchor={Anchor} />
-          <Routes />
           <Scenes />
+          <Routes />
           <Loop />
           <Trust />
           <Credit />

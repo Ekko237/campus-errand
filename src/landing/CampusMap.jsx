@@ -51,13 +51,20 @@ function pointAt(pts, f) {
 }
 
 // 底图是按路网画的生成图，路线全部沿路走（src/campusMap.js 里寻路）；不缩放不旋转，画框和底图一样比例，四边不会露白
-export default function CampusMap({ R, hits, reduce, pills = true, walker = true, endsOnly = false, legend = false }) {
+export default function CampusMap({ R, hits, reduce, pills = true, walker = true, endsOnly = false, legend = false, at = null }) {
   // 画路线只画路面上的那段（去掉两头进门的小短线），起点终点的圆点就压在路上，不会偏开
   const full = routePath(R.from, R.to).pts
   const mine = full.length > 3 ? full.slice(1, -1) : full
   const marks = useMemo(() => hits.map((t) => ({ t, f: along(mine, PLACES[t.from].door) })).sort((a, b) => a.f - b.f), [hits, mine])
-  const [p, setP] = useState(reduce || !walker ? 1 : 0)
+  const [p, setP] = useState(at ?? (reduce || !walker ? 1 : 0))
+  // at：小人停在路上的某个位置（原型订单页按订单状态给），变了就沿路走过去
   useEffect(() => {
+    if (at == null) return
+    const c = animate(p, at, { duration: reduce ? 0 : 0.6, ease: [0.16, 1, 0.3, 1], onUpdate: setP })
+    return () => c.stop()
+  }, [at]) // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => {
+    if (at != null) return
     if (reduce || !walker) { setP(1); return }
     setP(0)
     const c = animate(0, 1, { duration: 3, delay: 0.4, ease: 'easeInOut', onUpdate: setP })
@@ -122,7 +129,7 @@ export default function CampusMap({ R, hits, reduce, pills = true, walker = true
           </span>
         ))}
       </AnimatePresence>
-      {walker && !reduce && p > 0 && (
+      {((walker && !reduce) || at != null) && p > 0 && (
         <span aria-hidden="true" className="absolute z-[5] grid size-7 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full bg-surface shadow-[0_6px_16px_-6px_rgba(17,40,30,0.5)] ring-[3px] ring-ink md:size-10" style={pct(me)}>
           <img src={icon('avatar-runner-v1')} width={32} height={32} alt="" className="size-5 rounded-full md:size-8" />
         </span>

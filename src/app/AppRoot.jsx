@@ -168,8 +168,8 @@ function Shell() {
         <TourBar />
       </header>
       <main className={`mx-auto max-w-xl overflow-x-clip px-4 pt-4 xl:-translate-x-20 pb-44`}>
-        <motion.div key={pathname} initial={reduce || dir === 0 ? false : { opacity: 0.35, x: 28 * dir }} animate={{ opacity: 1, x: 0 }}
-          transition={{ type: 'spring', stiffness: 520, damping: 42, mass: 0.7 }}>
+        {/* 换页：CSS 动画（后台标签页里也会走完，不会停在半透明的中间帧） */}
+        <div key={pathname} className={reduce || dir === 0 ? '' : 'page-in'} style={{ '--dx': `${12 * dir}px` }}>
         <Routes>
           <Route index element={<Hall />} />
           <Route path="publish" element={<Publish />} />
@@ -181,7 +181,7 @@ function Shell() {
           <Route path="wallet" element={<Wallet />} />
           <Route path="*" element={<Hall />} />
         </Routes>
-        </motion.div>
+        </div>
       </main>
       <DemoPanel />
       <nav className={`fixed inset-x-0 bottom-0 z-30 border-t border-line bg-surface/95 backdrop-blur xl:inset-x-auto xl:bottom-auto xl:left-[calc(50%-33rem)] ${state.tour.active ? 'xl:top-[132px]' : 'xl:top-20'} xl:w-36 xl:border-0 xl:bg-transparent xl:backdrop-blur-none`} aria-label="主导航">

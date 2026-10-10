@@ -8,7 +8,10 @@ import CampusMap, { SHORT, along } from './CampusMap'
 const ease = [0.16, 1, 0.3, 1]
 const icon = (name) => `${import.meta.env.BASE_URL}icons/${name}.webp`
 // 首屏地图就是全校地图（campus-map-v2）的局部放大：同一张图、同一套坐标、同一个寻路，和下面的全景永远对得上
-const X0 = 40, Y0 = 72, VW = 1360, VH = 736
+// 视窗：桌面裁成横幅，上下裁切线落在路上；手机屏窄，用整张图的高度，地图高一些、标签不挤
+const WIDE = { X0: 40, Y0: 72, VW: 1360, VH: 736 }
+const TALL = { X0: 110, Y0: 0, VW: 1250, VH: 900 }
+let V = WIDE
 const toD = (pts) => pts.map(([x, y], i) => `${i ? 'L' : 'M'}${x} ${y}`).join(' ')
 // 阿远下课的路：一教 → 沿主路往西 → 梅园；驿站门口就在这条路边
 const RUN_PTS = routePath('jiao1', 'mei5').pts
@@ -18,7 +21,7 @@ const NEED = toD(routePath('cainiao', 'mei5').pts)
 const STATION = [PLACES.cainiao.door[0], RUN_PTS[1][1]]
 // 阿远走到驿站门口那一刻，在整条路上的位置
 const F = (() => { let acc = 0; for (let i = 1; i < RUN_PTS.length; i++) { const [ax, ay] = RUN_PTS[i - 1], [bx, by] = RUN_PTS[i]; const l = Math.hypot(bx - ax, by - ay); if (ay === STATION[1] && by === STATION[1] && (STATION[0] - ax) * (STATION[0] - bx) <= 0) return (acc + Math.abs(STATION[0] - ax)) / routePath('jiao1', 'mei5').len; acc += l } return 0.2 })()
-const pct = (x, y) => ({ left: `${((x - X0) / VW) * 100}%`, top: `${((y - Y0) / VH) * 100}%` })
+const pct = (x, y) => ({ left: `${((x - V.X0) / V.VW) * 100}%`, top: `${((y - V.Y0) / V.VH) * 100}%` })
 const MEI = [260, 438] // 「你」在梅园 5 号楼里
 const ICHI = [1160, 250] // 一教的名牌：在起点左上，阿远头像出发时不压住它
 
@@ -32,6 +35,10 @@ function Tag({ children, strong }) {
 // 首屏记忆点：阿远的路经过驿站，交汇点亮起，订单成立
 export function RouteMap() {
   const reduce = useReducedMotion()
+  // 手机和桌面用不同视窗；渲染前定好，子组件 Node 都按它算位置
+  const [small, setSmall] = useState(() => typeof window !== 'undefined' && window.matchMedia('(max-width: 639px)').matches)
+  useEffect(() => { const m = window.matchMedia('(max-width: 639px)'); const f = () => setSmall(m.matches); m.addEventListener('change', f); return () => m.removeEventListener('change', f) }, [])
+  V = small ? TALL : WIDE
   const box = useRef(null)
   const path = useRef(null)
   const inView = useInView(box, { amount: 0.3 })
@@ -45,8 +52,8 @@ export function RouteMap() {
   const rx = useTransform(p, (v) => pt(v).x)
   const ry = useTransform(p, (v) => pt(v).y)
   const runLen = useTransform(p, (v) => v)
-  const rl = useTransform(rx, (v) => `${((v - X0) / VW) * 100}%`)
-  const rt = useTransform(ry, (v) => `${((v - Y0) / VH) * 100}%`)
+  const rl = useTransform(rx, (v) => `${((v - V.X0) / V.VW) * 100}%`)
+  const rt = useTransform(ry, (v) => `${((v - V.Y0) / V.VH) * 100}%`)
   const carry = useTransform(p, (v) => Math.max(0, Math.min(1, (v - F) / (1 - F))))
   useMotionValueEvent(p, 'change', (v) => setPhase(v < F - 0.001 ? 0 : v < F + 0.001 ? 1 : v < 0.999 ? 2 : 3))
 
@@ -58,9 +65,9 @@ export function RouteMap() {
 
   const lit = phase >= 1
   return (
-    <div ref={box} className="relative -mx-4 aspect-[85/46] w-[calc(100%+2rem)] overflow-hidden bg-surface sm:mx-0 sm:w-full sm:rounded-[28px] sm:ring-1 sm:ring-line"
+    <div ref={box} className="relative -mx-4 aspect-[1250/900] w-[calc(100%+2rem)] sm:aspect-[85/46] overflow-hidden bg-surface sm:mx-0 sm:w-full sm:rounded-[28px] sm:ring-1 sm:ring-line"
       role="img" aria-label="示意地图：你的快递在菜鸟驿站，阿远从一教走回梅园正好经过驿站门口，顺手捎上，只多走 1 分钟">
-      <svg viewBox={`${X0} ${Y0} ${VW} ${VH}`} preserveAspectRatio="xMidYMid slice" className="absolute inset-0 size-full" aria-hidden="true">
+      <svg viewBox={`${V.X0} ${V.Y0} ${V.VW} ${V.VH}`} preserveAspectRatio="xMidYMid slice" className="absolute inset-0 size-full" aria-hidden="true">
         <image href={`${import.meta.env.BASE_URL}images/campus-map-v2.webp`} x="0" y="0" width="1600" height="900" />
         {/* 你的需求：驿站到梅园，绿色点线 */}
         <motion.path d={NEED} fill="none" stroke="var(--accent)" strokeWidth="10" strokeDasharray="2 20" strokeLinecap="round" strokeLinejoin="round"
@@ -169,6 +176,10 @@ export default function RouteHero({ Cta, Anchor }) {
       </div>
       <motion.div {...fade(0.2)} className="lg:col-span-7">
         <RouteMap />
+        <p className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-ink/70 md:text-[14px]">
+          <span className="inline-flex items-center gap-1.5"><i className="h-1 w-5 rounded-full bg-ink/80" />阿远本来就要走的路</span>
+          <span className="inline-flex items-center gap-1.5"><i className="h-1.5 w-5 rounded-full bg-accent" />顺手捎上你的快递</span>
+        </p>
       </motion.div>
     </section>
   )
@@ -179,8 +190,8 @@ const PX = (x) => 13 + ((x + 600) / 1580) * 74
 const PY = (y) => 7 + ((y + 380) / 1280) * 84
 export const ROUTES = [
   { from: 'jiao1', to: 'mei5', label: '一教下课回梅园', short: '一教→梅园' },
-  { from: 'jiao1', to: 'tao2', label: '一教去桃园', short: '一教→桃园' },
-  { from: 'gym', to: 'tao2', label: '体育馆回桃园', short: '体育馆→桃园' },
+  { from: 'tao2', to: 'jiao1', label: '桃园去上课', short: '桃园→一教' },
+  { from: 'market', to: 'mei5', label: '超市回梅园', short: '超市→梅园' },
 ]
 
 export function CampusRoutes() {

@@ -3,8 +3,8 @@ import { useParams, useNavigate, Link } from 'react-router-dom'
 import { motion, useReducedMotion, useMotionValue, useTransform, animate } from 'motion/react'
 import { ArrowLeft, Check, ArrowClockwise } from '@phosphor-icons/react'
 import { useStore } from '../store'
-import CampusMap from '../landing/CampusMap'
-import { PLACES } from '../campusMap'
+import CampusMap, { along } from '../landing/CampusMap'
+import { PLACES, routePath } from '../campusMap'
 import { B, dist, fmtDist, RUNNER_HOME, minCreditFor, levelOf, detourMin, detourMeters, myRoute, onMyWay } from '../data'
 import { Btn, Panel, TypeTag, UrgentTag, VerifiedBadge, Sheet, Stars, Empty, Field, inputCls, left, clock, spring, gi } from '../ui'
 const MapPin = gi('pin')
@@ -158,7 +158,7 @@ function PickupCard({ t }) {
         <div className="flex gap-3"><dt className="w-10 shrink-0 opacity-70">送到</dt><dd className="font-semibold">{t.private?.room}</dd></div>
         <div className="flex gap-3"><dt className="w-10 shrink-0 opacity-70">电话</dt><dd className="tnum font-semibold">{t.private?.phone}（虚拟号）</dd></div>
       </dl>
-      <p className="mt-2 text-xs opacity-60">{sealed ? '订单已送达，宿舍号和电话订单结束后自动隐藏' : '只在接单期间可见，订单结束后自动隐藏'}</p>
+      <p className="mt-2 text-xs opacity-60">{sealed ? '已送达，宿舍号和电话会在订单结束后自动隐藏' : '只在接单期间可见，订单结束后自动隐藏'}</p>
     </motion.section>
   )
 }
@@ -192,6 +192,8 @@ function PayoutRail({ t, play }) {
       <motion.p className="mt-3 flex items-center justify-center gap-2 text-sm" initial={anim ? { opacity: 0, y: 6 } : false} animate={{ opacity: 1, y: 0 }} transition={{ ...spring, delay: anim ? 1.25 : 0 }}>
         <span className="text-muted">跑腿人信用</span>
         <span className={`rounded-full px-2.5 py-0.5 font-bold ${t.late ? 'bg-danger-soft text-danger' : 'bg-surface text-accent'}`}>{t.late ? '-3 超时' : '+2 按时完成'}</span>
+        {/* 发单人打完分，跑腿人信用的那一笔也列出来，和下面收尾卡的合计对得上 */}
+        {t.ratingByPoster && (() => { const st = t.ratingByPoster.stars; const d = st >= 4 ? 1 : st <= 2 ? -4 : 0; return d ? <span className={`tnum rounded-full px-2.5 py-0.5 font-bold ${d > 0 ? 'bg-surface text-accent' : 'bg-danger-soft text-danger'}`}>{d > 0 ? '+1 好评' : '-4 差评'}</span> : null })()}
       </motion.p>
     </div>
   )
@@ -301,7 +303,7 @@ function RateBlock({ t, by }) {
       <p className="text-[17px] font-semibold">{by === 'poster' ? '给跑腿人打分' : '给发单人打分'}</p>
       <p className="mt-0.5 truncate text-sm text-muted">{stars ? <>对方信用 <b className="tnum">{effect}</b> · </> : null}4 到 5 星 +1，1 到 2 星 -4</p>
       <div className="mt-3"><Stars value={stars} onChange={(n) => { setStars(n); setTags([]); revealSubmit() }} /></div>
-      <div className="mt-3 flex flex-wrap gap-2">
+      <div className="mt-3 flex min-h-10 flex-wrap gap-2">
         {stars > 0 && opts.map((x) => (
           <button key={x} onClick={() => setTags((v) => (v.includes(x) ? v.filter((y) => y !== x) : [...v, x]))} aria-pressed={tags.includes(x)}
             className={`h-10 rounded-full px-4 text-[15px] font-semibold ${tags.includes(x) ? 'bg-ink text-bg' : 'bg-sunken text-ink'}`}>{x}</button>
@@ -491,10 +493,16 @@ function OnTheWay({ t }) {
   const R = mine || { from: t.from, to: t.to }
   if (!PLACES[R.from] || !PLACES[R.to] || R.from === R.to) return null
   const hits = mine ? [{ ...t, m: detourMin(mine.from, mine.to, t), dm: detourMeters(mine.from, mine.to, t) }] : []
+  // 小人在哪：刚接单在出发点，取到件在取件点，送到了在终点
+  const pts = routePath(R.from, R.to).pts
+  const pick = mine ? along(pts.length > 3 ? pts.slice(1, -1) : pts, PLACES[t.from].door) : 0
+  const at = t.status === 'delivered' ? 1 : t.picked ? Math.max(pick, 0.02) : 0.02
+  const name = (id) => B[id]?.name.replace(/（.*?）/, '')
+  const cap = t.status === 'delivered' ? `已送到${name(t.to)}，等发单人确认` : t.picked ? `已取到，正往${name(t.to)}走` : `在去${name(t.from)}取件的路上`
   return (
     <Panel className="p-3">
-      <p className="px-1 pb-2 text-sm font-semibold text-muted">{mine ? `顺路：${B[mine.from]?.name.replace(/（.*?）/, '')} → ${B[mine.to]?.name.replace(/（.*?）/, '')}，这一单在路上` : '这一单的路线'}</p>
-      <CampusMap R={R} hits={hits} reduce pills={false} walker={false} />
+      <p className="px-1 pb-2 text-sm font-semibold"><span className="text-accent">{cap}</span>{mine && <span className="text-muted"> · 顺路 {name(mine.from)} → {name(mine.to)}</span>}</p>
+      <CampusMap R={R} hits={hits} pills={false} walker={false} at={at} />
     </Panel>
   )
 }
@@ -575,6 +583,9 @@ export default function TaskDetail() {
   const { state } = useStore()
   const nav = useNavigate()
   const t = state.tasks.find((x) => x.id === id)
+  // 切了身份，页面换成另一方能做的事：回到顶上从头看，不停在半中间
+  const firstRole = useRef(true)
+  useEffect(() => { if (firstRole.current) { firstRole.current = false; return } window.scrollTo({ top: 0, behavior: 'smooth' }) }, [state.role])
   if (!t) {
     return <Empty img="empty-search" alt="空纸箱和放大镜" title="找不到这个任务" hint="可能已被取消，或演示数据被重置了。" action={<Btn variant="ghost" onClick={() => nav('/app')}>回到任务大厅</Btn>} />
   }

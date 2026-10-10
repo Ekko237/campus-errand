@@ -189,7 +189,7 @@ export default function Hall() {
         <span className="text-sm text-muted">{list.filter((t) => t.deadline > Date.now()).length} 个待接</span>
       </div>
 
-      <div className="flex flex-wrap gap-1.5 sm:gap-2" role="group" aria-label="按类型筛选">
+      <div className="no-scrollbar -mx-4 flex gap-1.5 overflow-x-auto px-4 sm:mx-0 sm:gap-2 sm:px-0" role="group" aria-label="按类型筛选">
         {[['all', '全部'], ...TYPE_KEYS.map((k) => [k, TYPES[k].label])].map(([k, label]) => {
           return (
             <button key={k} onClick={() => setType(k)} aria-pressed={type === k}
@@ -198,14 +198,7 @@ export default function Hall() {
             </button>
           )
         })}
-        <button onClick={() => setUrgentOnly((v) => !v)} aria-pressed={urgentOnly}
-          className={`inline-flex h-10 shrink-0 items-center gap-1 rounded-full px-3.5 text-[15px] font-semibold transition ${urgentOnly ? 'bg-ink text-bg' : 'bg-surface text-ink ring-1 ring-line'}`}>
-          <Lightning size={16} weight="fill" />加急
-        </button>
-        {runnerView && <button onClick={() => setGoodPoster((v) => !v)} aria-pressed={goodPoster}
-          className={`inline-flex h-10 shrink-0 items-center gap-1 rounded-full px-3.5 text-[15px] font-semibold transition ${goodPoster ? 'bg-ink text-bg' : 'bg-surface text-ink ring-1 ring-line'}`}>
-          <ShieldCheck size={16} weight="fill" />信用 ≥ 85
-        </button>}
+
       </div>
 
       <div className="grid rounded-full bg-sunken p-1" style={{ gridTemplateColumns: `repeat(${sorts.length}, minmax(0, 1fr))` }} role="group" aria-label="排序">
@@ -213,6 +206,18 @@ export default function Hall() {
           <button key={k} onClick={() => setSort(k)} aria-pressed={sortBy === k}
             className={`h-9 whitespace-nowrap rounded-full text-sm font-semibold transition ${sortBy === k ? 'bg-surface text-ink shadow-sm' : 'text-muted'}`}>{label}</button>
         ))}
+      </div>
+
+      {/* 两个开关单独一行，不和类型挤在一起 */}
+      <div className="-mt-1 flex flex-wrap items-center justify-end gap-2" role="group" aria-label="更多筛选">
+        <button onClick={() => setUrgentOnly((v) => !v)} aria-pressed={urgentOnly}
+          className={`inline-flex h-9 shrink-0 items-center gap-1 rounded-full px-3.5 text-[15px] font-semibold transition ${urgentOnly ? 'bg-ink text-bg' : 'bg-surface text-ink ring-1 ring-line'}`}>
+          <Lightning size={16} weight="fill" />加急
+        </button>
+        {runnerView && <button onClick={() => setGoodPoster((v) => !v)} aria-pressed={goodPoster}
+          className={`inline-flex h-9 shrink-0 items-center gap-1 rounded-full px-3.5 text-[15px] font-semibold transition ${goodPoster ? 'bg-ink text-bg' : 'bg-surface text-ink ring-1 ring-line'}`}>
+          <ShieldCheck size={16} weight="fill" />信用 ≥ 85
+        </button>}
       </div>
 
       {sortBy === 'route' && (
