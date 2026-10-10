@@ -3,8 +3,6 @@ import { motion, AnimatePresence, animate } from 'motion/react'
 import { MAP_W, MAP_H, PLACES, routePath } from '../campusMap'
 
 const icon = (name) => `${import.meta.env.BASE_URL}icons/${name}.webp`
-// 手机地图标签用的最短叫法
-const TINY = { cainiao: '驿站', sf: '顺丰', jd: '京东柜', canteen1: '一食堂', canteen2: '二食堂', market: '超市', gate: '北门', lib: '图书馆', jiao1: '一教', hall: '报告厅', gym: '体育馆', zhu3: '竹园', mei5: '梅园', tao2: '桃园', lan1: '兰园', yan: '研究生楼' }
 export const SHORT = { cainiao: '菜鸟驿站', sf: '顺丰点', jd: '京东柜', canteen1: '一食堂', canteen2: '二食堂', market: '教育超市', gate: '北门', lib: '图书馆', jiao1: '一教', hall: '学术报告厅', gym: '体育馆', zhu3: '竹园', mei5: '梅园', tao2: '桃园', lan1: '兰园', yan: '研究生公寓' }
 
 // 地图上标点的位置：小亭子、商铺标在房子正中，其他楼标在门口
@@ -65,16 +63,6 @@ export default function CampusMap({ R, hits, reduce, pills = true, walker = true
       role="img" aria-label={`示意地图：从${SHORT[R.from]}到${SHORT[R.to]}，沿路有 ${hits.length} 个顺路的单`}>
       <img src={`${import.meta.env.BASE_URL}images/campus-map-v2.webp`} width={1600} height={900} alt="" aria-hidden="true" loading="lazy" className="absolute inset-0 size-full object-cover" />
       <svg viewBox={`0 0 ${MAP_W} ${MAP_H}`} className="absolute inset-0 size-full" aria-hidden="true">
-        {/* 捎这单要绕的路：从你的路拐去取件点、送到再回来，绿色虚线 */}
-        {marks.map(({ t }) => {
-          const via = [...routePath(R.from, t.from).pts, ...(t.from !== t.to ? routePath(t.from, t.to).pts : []), ...routePath(t.to, R.to).pts]
-          return (
-            <g key={`v${t.id}`}>
-              <path d={toD(via)} fill="none" stroke="var(--surface)" strokeWidth="19" strokeDasharray="1 18" strokeLinecap="round" strokeLinejoin="round" className={reduce ? '' : 'dash-flow'} />
-              <path d={toD(via)} fill="none" stroke="var(--accent)" strokeWidth="12" strokeDasharray="1 18" strokeLinecap="round" strokeLinejoin="round" className={reduce ? '' : 'dash-flow'} />
-            </g>
-          )
-        })}
         {/* 你的路：整条先淡淡画着，小人走过的部分描深 */}
         <path d={toD(mine)} fill="none" stroke="var(--ink)" strokeOpacity="0.3" strokeWidth="10" strokeDasharray="4 18" strokeLinecap="round" strokeLinejoin="round" />
         <motion.path key={`${R.from}${R.to}`} d={toD(mine)} fill="none" stroke="var(--ink)" strokeOpacity="0.88" strokeWidth="12" strokeLinecap="round" strokeLinejoin="round"
@@ -85,8 +73,8 @@ export default function CampusMap({ R, hits, reduce, pills = true, walker = true
             initial={false} animate={{ opacity: p >= f ? 0.95 : 0.25 }} transition={{ duration: 0.3 }} />
         ))}
       </svg>
-      {marks.map(({ t, f }) => (
-        <span key={t.id} aria-hidden="true" className={`absolute z-10 size-3 -translate-x-1/2 -translate-y-1/2 rounded-full ring-[3px] ring-surface transition-colors md:size-4 ${p >= f ? 'bg-accent' : 'bg-muted'}`} style={pct(markAt(t.from))} />
+      {marks.map(({ t, f }, i) => (
+        <span key={t.id} aria-hidden="true" className={`tnum absolute z-10 grid size-5 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full text-[11px] font-bold text-on-accent ring-[3px] ring-surface transition-colors md:size-4 md:text-[0px] ${p >= f ? 'bg-accent' : 'bg-muted'}`} style={pct(markAt(t.from))}>{i + 1}</span>
       ))}
       {ends.map((id) => (
         <span key={id} className="absolute z-20" style={pct(PLACES[id].door)}>
@@ -95,10 +83,9 @@ export default function CampusMap({ R, hits, reduce, pills = true, walker = true
         </span>
       ))}
       {!endsOnly && marks.filter(({ t }) => !ends.includes(t.from)).map(({ t }) => (
-        <span key={`l${t.id}`} className="absolute z-10" style={pct(markAt(t.from))}>
+        <span key={`l${t.id}`} className="absolute z-10 hidden md:block" style={pct(markAt(t.from))}>
           <span className={`absolute left-0 -translate-x-1/2 whitespace-nowrap rounded-full bg-surface px-1.5 py-0.5 text-[12px] font-semibold md:px-2.5 md:text-[13px] text-ink shadow-sm ring-1 ring-line ${outward(t.from) === 'up' ? 'bottom-3.5' : 'top-3.5'}`}>
-            <span className="hidden md:inline">{SHORT[t.from]}</span>
-            <span className="tnum md:hidden">{TINY[t.from]} ¥{t.reward}</span>
+            {SHORT[t.from]}
           </span>
         </span>
       ))}
@@ -122,8 +109,7 @@ export default function CampusMap({ R, hits, reduce, pills = true, walker = true
       <p className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted md:text-sm">
         <span className="inline-flex items-center gap-1.5"><i className="h-1 w-5 rounded-full bg-ink/80" />你正要走的路</span>
         <span className="inline-flex items-center gap-1.5"><i className="h-1.5 w-5 rounded-full bg-accent" />顺手捎的那段（取件到送达）</span>
-        <span className="inline-flex items-center gap-1.5"><i className="w-5 border-t-[3px] border-dotted border-accent" />捎上它要绕的路</span>
-        <span className="inline-flex items-center gap-1.5"><i className="size-2.5 rounded-full bg-accent" />取件点，共 {hits.length} 单</span>
+        <span className="inline-flex items-center gap-1.5"><i className="size-2.5 rounded-full bg-accent" /><span>取件点，<span className="md:hidden">按路上先后编号，</span>共 {hits.length} 单</span></span>
       </p>
     )}
     </div>

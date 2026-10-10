@@ -20,7 +20,7 @@ const STATION = [PLACES.cainiao.door[0], RUN_PTS[1][1]]
 const F = (() => { let acc = 0; for (let i = 1; i < RUN_PTS.length; i++) { const [ax, ay] = RUN_PTS[i - 1], [bx, by] = RUN_PTS[i]; const l = Math.hypot(bx - ax, by - ay); if (ay === STATION[1] && by === STATION[1] && (STATION[0] - ax) * (STATION[0] - bx) <= 0) return (acc + Math.abs(STATION[0] - ax)) / routePath('jiao1', 'mei5').len; acc += l } return 0.2 })()
 const pct = (x, y) => ({ left: `${((x - X0) / VW) * 100}%`, top: `${((y - Y0) / VH) * 100}%` })
 const MEI = [260, 438] // 「你」在梅园 5 号楼里
-const ICHI = [1220, 112] // 一教的名牌
+const ICHI = [1236, 262] // 一教的名牌：挨着起点，在门口左上
 
 function Node({ x, y, children, className = '' }) {
   return <div className={`absolute -translate-x-1/2 -translate-y-1/2 ${className}`} style={pct(x, y)}>{children}</div>
@@ -237,7 +237,7 @@ function SubwayLine({ R, hits, reduce }) {
         {stops.map((t, i) => (
           <motion.li key={t.id} initial={reduce ? false : { opacity: 0, x: -8 }} animate={{ opacity: 1, x: 0 }} transition={{ type: 'spring', stiffness: 420, damping: 30, delay: 0.15 + i * 0.12 }}
             className="relative flex items-center gap-3">
-            <span className="z-10 ml-[3px] size-[18px] shrink-0 rounded-full bg-accent ring-4 ring-bg" />
+            <span className="tnum z-10 -ml-px grid size-[26px] shrink-0 place-items-center rounded-full bg-accent text-[13px] font-bold text-on-accent ring-4 ring-bg">{i + 1}</span>
             <span className="min-w-0 flex-1 rounded-2xl bg-accent-soft px-3 py-2">
               <span className="block text-[15px] font-semibold leading-snug">{t.title}</span>
               <span className="tnum mt-0.5 flex flex-wrap gap-x-2 text-sm text-accent"><span className="whitespace-nowrap">{t.dm ? `多走 ${t.m} 分钟（${t.dm} 米）` : '就在路上'}</span><span className="whitespace-nowrap">在{SHORT[t.from]}顺手{{ express: '取', buy: '买', seat: '占', food: '拿', other: '带' }[t.type] || '带'}</span><span className="whitespace-nowrap font-bold">¥{t.reward}</span></span>
