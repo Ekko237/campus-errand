@@ -60,7 +60,8 @@ h1, h2, h3 { text-wrap: balance; }
 /* 得意黑还在路上时，替身字先斜过来，换字那一下不从直体跳成斜体 */
 /* 方向 B「下课那 5 分钟」：标题用宋体粗体（编辑感），时间数字用等宽 */
 .font-display { font-family: "Songti SC", "STSong", "Noto Serif SC", "Source Han Serif SC", serif; font-weight: 900; letter-spacing: -0.01em; }
-.font-clock { font-family: ui-monospace, "SF Mono", "Menlo", monospace; font-variant-numeric: tabular-nums; letter-spacing: -0.04em; }
+/* 全站所有时间数字只用这一种字：等宽、收紧、半粗，颜色只用傍晚橙 */
+.font-clock { font-family: ui-monospace, "SF Mono", "Menlo", monospace; font-variant-numeric: tabular-nums; letter-spacing: -0.06em; font-weight: 600; color: var(--dusk); }
 
 
 

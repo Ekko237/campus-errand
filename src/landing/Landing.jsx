@@ -68,8 +68,12 @@ function Anchor({ to, children, onClick, ...p }) {
   return <a href="#/" onClick={go} {...p}>{children}</a>
 }
 
-const H2 = ({ children, className = '' }) => (
-  <h2 className={`font-display text-balance text-[34px] leading-[1.12] md:text-[44px] xl:text-[50px] ${className}`}>{children}</h2>
+// 方向 B：整页挂在一根时间线上，每一节标题上方是这一刻的时间
+const H2 = ({ children, className = '', time }) => (
+  <>
+    {time && <p className="font-clock mb-3 text-[44px] leading-none md:text-[64px]">{time}</p>}
+    <h2 className={`font-display text-balance text-[34px] leading-[1.15] md:text-[48px] xl:text-[56px] ${className}`}>{children}</h2>
+  </>
 )
 const Br = () => <br className="hidden md:inline" />
 const Lead = ({ children, className = '' }) => <p className={`mt-5 max-w-[38ch] text-lg leading-relaxed text-muted md:text-xl ${className}`}>{children}</p>
@@ -123,6 +127,8 @@ function ScrollProgress() {
 }
 
 const NAV_LINKS = [['scenes', '场景'], ['routes', '顺路地图'], ['loop', '一单怎么走'], ['trust', '信任机制'], ['credit', '双向信用']]
+// 顶栏小时钟：每一节对应的时刻（和各节标题上的时间一致）
+const CLOCK = { scenes: '17:45', routes: '17:46', loop: '17:47', trust: '18:03', credit: '18:05', safety: '18:05', final: '17:45' }
 const SECTIONS = [...NAV_LINKS, ['safety', '这些单发不出去'], ['final', '你下课常走哪条路']]
 function Nav({ page }) {
   const { scrollY } = useScroll()
@@ -135,11 +141,14 @@ function Nav({ page }) {
   useEffect(() => { if (!open) return; const f = (e) => { if (e.key === 'Escape') setOpen(false) }; window.addEventListener('keydown', f); return () => window.removeEventListener('keydown', f) }, [open])
   // 桌面顶栏标出现在读到哪一节
   const [here, setHere] = useState(null)
-  useMotionValueEvent(scrollY, 'change', (v) => {
-    setScrolled(v > 420)
-    // 没进顶栏的两节（拦截、结尾）滚到时不亮任何一项
-    setHere([...SECTIONS].reverse().find(([k]) => (document.getElementById(k)?.getBoundingClientRect().top ?? 1e9) < 160)?.[0] ?? null)
-  })
+  // 用原生滚动事件算（不依赖动画帧，后台标签页、低帧率时也准）；没进顶栏的两节（拦截、结尾）滚到时不亮任何一项
+  useEffect(() => {
+    const f = () => {
+      setScrolled(window.scrollY > 420)
+      setHere([...SECTIONS].reverse().find(([k]) => (document.getElementById(k)?.getBoundingClientRect().top ?? 1e9) < 160)?.[0] ?? null)
+    }
+    f(); window.addEventListener('scroll', f, { passive: true }); return () => window.removeEventListener('scroll', f)
+  }, [page])
   const home = page !== 'thinking'
   const linkCls = 'group relative py-1 transition-colors hover:text-ink'
   const under = (on) => <span className={`absolute inset-x-0 -bottom-0.5 h-px origin-left bg-ink transition-transform duration-300 group-hover:scale-x-100 ${on ? 'scale-x-100' : 'scale-x-0'}`} />
@@ -149,6 +158,10 @@ function Nav({ page }) {
         {home ? (
           <Anchor to="top" className="flex items-center gap-2.5 text-lg font-bold tracking-tight">
             <img src={`${import.meta.env.BASE_URL}brand/logo-v2.png`} width={36} height={36} alt="顺路侠标志：背着书包、夹着包裹奔跑的小人" className="size-9" />顺路侠
+            {/* 顶栏小时钟：读到哪一节，就走到那一刻 */}
+            <span className="ml-1 overflow-hidden rounded-md bg-[var(--dusk)]/10 px-1.5 py-0.5" aria-hidden="true">
+              <motion.span key={CLOCK[here] || '17:45'} initial={{ y: 10 }} animate={{ y: 0 }} transition={{ duration: 0.25 }} className="font-clock block text-sm">{CLOCK[here] || '17:45'}</motion.span>
+            </span>
           </Anchor>
         ) : (
           <Link to="/" className="flex items-center gap-2.5 text-lg font-bold tracking-tight">
@@ -211,19 +224,19 @@ function Ticker() {
 
 const SCENES = [
   {
-    key: 'express', tab: '排长队的快递驿站', short: '驿站排队', route: ['菜鸟驿站', '梅园 5 号楼', '一教下课回梅园的同学，多走 1 分钟'], img: 'scene-express-v3', alt: '傍晚的校园快递驿站，货架上堆满包裹，门口排着长队',
+    key: 'express', tab: '排长队的快递驿站', short: '驿站排队', route: ['菜鸟驿站', '梅园 5 号楼', '一教下课回梅园的同学，多走 1 分钟'], img: 'scene-express-v4', alt: '傍晚的校园快递驿站，货架上堆满包裹，一个背书包的男生在柜台接过一个小纸箱，身后排着队',
     who: '大三，课排满的小禾',
     pain: '驿站傍晚要排二十分钟，我 17:50 才下课，18:00 就关门。三个快递放了三天，找室友要欠人情，找陌生人又怕取件码被乱用。',
     fix: '发一单 ¥5。取件码只在有人接单后才给对方看，送到后当面核验送达码，钱才放出去。',
   },
   {
-    key: 'seat', tab: '早八前的图书馆座位', short: '早八占座', route: ['竹园', '图书馆', '从竹园去一教、路过图书馆的同学，就在路上'], img: 'scene-seat-v3', alt: '清晨的图书馆阅览室，靠窗的空位上放着一本书占座',
+    key: 'seat', tab: '早八前的图书馆座位', short: '早八占座', route: ['竹园', '图书馆', '从竹园去一教、路过图书馆的同学，就在路上'], img: 'scene-seat-v4', alt: '清晨的图书馆阅览室，一个背书包的男生把一本书放在靠窗的空桌上占座',
     who: '考研，住得远的周砚',
     pain: '宿舍离图书馆一公里，每天 7:40 靠窗位就没了。住在旁边的同学顺手就能占，但不知道谁靠谱。',
     fix: '接单人的信用分公开可见。接了不去算爽约，直接扣 5 分，下次能接的单就变少。',
   },
   {
-    key: 'handoff', tab: '宿舍楼下的交接', short: '楼下交接', route: ['北门', '桃园 2 号楼', '从北门进校回桃园的同学，多走 3 分钟'], img: 'scene-handoff-v3', alt: '傍晚的宿舍楼门口，一名学生把外卖袋递给另一名学生',
+    key: 'handoff', tab: '宿舍楼下的交接', short: '楼下交接', route: ['北门', '桃园 2 号楼', '从北门进校回桃园的同学，多走 3 分钟'], img: 'scene-handoff-v4', alt: '中午的宿舍楼门口，一个背书包的男生把外卖袋递给站在门口的女生',
     who: '赶作业下不了楼的于小渔',
     pain: '外卖放在北门取餐点，走回 6 楼要十分钟。正好回宿舍的同学顺手就能捎上来，可彼此不认识，也不想把宿舍号给陌生人。',
     fix: '大厅优先显示顺你路的单，顺路回宿舍的人最先看到；宿舍号接单后才显示，订单结束自动隐藏。',
@@ -271,7 +284,7 @@ function Scenes() {
             return (
               <motion.div key={x.key} aria-hidden={!on} initial={false} animate={{ opacity: on ? 1 : 0, y: on ? 0 : 10 }} transition={{ duration: reduce ? 0 : on ? 0.3 : 0.12, delay: reduce || !on ? 0 : 0.12, ease }}
                 className={`col-start-1 row-start-1 flex flex-col justify-start ${on ? '' : 'pointer-events-none'}`}>
-                <p className="font-clock text-[56px] font-semibold leading-none text-[var(--dusk)] md:text-[80px]">{{ express: '17:50', seat: '07:40', handoff: '12:10' }[x.key]}</p>
+                <p className="font-clock text-[56px] leading-none md:text-[88px]">{{ express: '17:50', seat: '07:40', handoff: '12:10' }[x.key]}</p>
                 <p className="mt-3 text-[15px] font-semibold text-muted">{x.who}</p>
                 <p className="mt-4 -indent-[0.5em] text-2xl font-medium leading-[1.55] tracking-[-0.01em] md:text-[28px]">「{x.pain}」</p>
                 <div className="mt-8 flex gap-4 rounded-2xl bg-accent-soft p-5 md:p-6">
@@ -430,7 +443,7 @@ function LoopStep({ s, k, now, past }) {
         <img src={icon(s.icon + '-v1')} width={48} height={48} alt={s.alt} loading="lazy" className="size-12 object-contain" />
       </span>
       <div className="min-w-0 flex-1">
-        <p className="flex items-center gap-2 text-2xl font-bold md:text-3xl">{s.t}{now && <span className="rounded-full bg-on-accent px-2 py-0.5 text-xs font-bold text-accent-deep">现在</span>}</p>
+        <p className="flex items-baseline gap-3 text-2xl font-bold md:text-3xl"><span className="font-clock text-xl md:text-2xl">{['17:44', '17:47', '17:50', '17:56', '18:00', '18:02'][k]}</span>{s.t}{now && <span className="self-center rounded-full bg-on-accent px-2 py-0.5 text-xs font-bold text-accent-deep">现在</span>}</p>
         <p className="mt-2 max-w-[30ch] text-lg leading-relaxed opacity-90">{s.d}</p>
         <p className="tnum mt-3 flex flex-wrap gap-1.5 text-sm font-semibold lg:hidden">
           {[s.status, s.escrow, s.credit].map((v, k) => <span key={k} className={`whitespace-nowrap rounded-lg bg-bg px-2.5 py-1 ${k === 0 ? 'text-accent' : 'text-ink'}`}>{v}</span>)}
@@ -541,7 +554,7 @@ function Loop() {
       <div className="rounded-[32px] bg-accent-deep text-on-accent md:rounded-[48px]">
       <div className={`mx-auto max-w-7xl ${SECTION}`}>
         <div className="grid gap-x-12 lg:grid-cols-12 lg:items-end">
-          <Reveal className="lg:col-span-7"><H2>一单从发布到信用变化，<br />六步走完</H2></Reveal>
+          <Reveal className="lg:col-span-7"><H2 time="17:47 → 18:02">一单从发布到信用变化，<br />六步走完</H2></Reveal>
           <Reveal delay={0.05} className="lg:col-span-5 lg:pb-1"><p className="mt-5 lg:mt-0 max-w-[38ch] text-lg leading-relaxed opacity-80 md:text-xl"><span className="lg:hidden">点着走一遍，</span><span className="hidden lg:inline">往下滚，左边这张订单会跟着走完一遍：</span>钱什么时候冻结、取件码什么时候出现、信用什么时候变。</p></Reveal>
         </div>
         <div className="mt-12 grid gap-12 lg:mt-14 lg:grid-cols-12">
@@ -669,7 +682,7 @@ function Trust() {
       <div className="grid gap-12 lg:grid-cols-12">
         <div className="lg:col-span-5">
           <div className="lg:sticky lg:top-28">
-            <Reveal><H2>凭什么把取件码<br />交给一个陌生同学</H2></Reveal>
+            <Reveal><H2 time="18:03">凭什么把取件码<br />交给一个陌生同学</H2></Reveal>
             <Reveal delay={0.05}><Lead>校园跑腿最大的成本不是钱，是对陌生人的不放心。信任拆成五道关，包裹每过一关，就少一种怕。</Lead></Reveal>
             <Reveal delay={0.1}>
               <div className="mt-8 lg:mt-10"><PrivacyDemo /></div>
@@ -738,7 +751,7 @@ function Credit() {
     <section id="credit" className="scroll-mt-16">
       <div className={`mx-auto max-w-7xl ${SECTION}`}>
         <div className="grid gap-x-12 lg:grid-cols-12 lg:items-end">
-          <Reveal className="lg:col-span-7"><H2>双向信用：<br />谁不守约谁扣分</H2></Reveal>
+          <Reveal className="lg:col-span-7"><H2 time="18:05">双向信用：<br />谁不守约谁扣分</H2></Reveal>
           <Reveal delay={0.05} className="lg:col-span-5 lg:pb-1"><Lead className="lg:mt-0">满分 100，跑腿人认证后从 70 起步，发单人小满现在 88 分；不能充值也不能刷。点任意一条规则，看分数和等级怎么变。</Lead></Reveal>
         </div>
         <div className="mt-14 grid gap-6 lg:grid-cols-12">
@@ -865,7 +878,7 @@ function BanDemo() {
   const typed = own ?? text.slice(0, n)
   const hit = findBanned(typed)[0] ? [findBanned(typed)[0]] : null
   return (
-    <div ref={ref} className="rounded-[24px] bg-surface p-5 text-ink shadow-[0_30px_60px_-30px_rgba(0,0,0,0.6)]" aria-label="发布表单拦截演示">
+    <div ref={ref} className="rounded-[24px] bg-bg p-5 text-ink ring-1 ring-line shadow-[0_30px_60px_-30px_rgba(60,40,10,0.35)]" aria-label="发布表单拦截演示">
       <p className="text-[15px] font-semibold">备注（选填）</p>
       <div className="relative mt-2">
         <input value={typed} onFocus={() => setOwn((v) => v ?? '')} onChange={(e) => setOwn(e.target.value)} maxLength={40} aria-label="备注（选填），可以自己打字试试"
@@ -905,8 +918,8 @@ function Safety() {
   const reduce = useReducedMotion()
   return (
     <section id="safety" className="mx-auto max-w-7xl scroll-mt-16 px-4 pb-20 pt-10 md:px-8 md:pb-28 md:pt-14 lg:pb-32">
-      <Reveal className="relative overflow-hidden rounded-[32px] bg-ink md:rounded-[40px]">
-        <div className="relative grid gap-10 px-6 py-14 text-bg md:px-14 md:py-20 lg:grid-cols-12 lg:items-center">
+      <Reveal className="relative overflow-hidden rounded-[32px] bg-surface ring-1 ring-line md:rounded-[40px]">
+        <div className="relative grid gap-10 px-6 py-14 text-ink md:px-14 md:py-20 lg:grid-cols-12 lg:items-center">
           <div className="lg:col-span-6">
             <h2 className="font-display text-[44px] font-bold leading-[1.05] tracking-[-0.03em] md:text-7xl">这些单<br className="md:hidden" /><span className="max-md:hidden">，</span>发不出去</h2>
             <p className="mt-5 max-w-[34ch] text-lg leading-relaxed opacity-85 md:text-xl">互助不等于帮人作弊。发布时自动识别关键词并拦截，被举报核实的账号直接封禁。</p>
@@ -1024,7 +1037,7 @@ function Roadmap() {
 function Routes() {
   return (
     <section id="routes" className="mx-auto max-w-7xl scroll-mt-16 px-4 pb-16 pt-2 md:px-8 md:pb-24 lg:pb-28">
-      <Reveal><H2>同一时间<br />校园里到处是顺路</H2></Reveal>
+      <Reveal><H2 time="17:46">下课铃一响<br />校园里到处是顺路</H2></Reveal>
       <div className="mt-5"><CampusRoutes /></div>
     </section>
   )
@@ -1077,7 +1090,7 @@ function Final({ page }) {
         <Reveal delay={0.1} className="flex justify-center lg:col-span-7">
           <div className="relative aspect-[9/15] w-full max-w-[300px] overflow-hidden rounded-[44px] bg-ink p-2.5 shadow-[0_40px_80px_-40px_rgba(17,40,30,0.6)] md:max-w-[340px]">
             <div className="relative size-full overflow-hidden rounded-[36px]">
-              <img src={`${import.meta.env.BASE_URL}images/campus-map-v2.webp`} width={1600} height={900} alt="" aria-hidden="true" loading="lazy" className="absolute inset-0 size-full scale-110 object-cover blur-[3px] brightness-[0.55]" />
+              <img src={`${import.meta.env.BASE_URL}images/dusk-v1.webp`} width={1920} height={1080} alt="" aria-hidden="true" loading="lazy" className="absolute inset-0 size-full scale-110 object-cover object-[72%_center] blur-[2px] brightness-[0.6]" />
               <div className="relative flex h-full flex-col items-center px-3 pt-12 text-bg">
                 <p className="text-sm font-semibold opacity-80">{R.lock}</p>
                 <p className="tnum mt-1 text-[64px] font-light leading-none tracking-[-0.03em] md:text-[72px]">{R.time}</p>
@@ -1194,6 +1207,15 @@ function ThinkingIntro() {
 }
 
 
+// 节与节之间：一根细细的时间线，走到下一刻
+function Tick() {
+  return (
+    <div aria-hidden="true" className="mx-auto flex max-w-7xl items-center gap-2 px-4 md:px-8">
+      <span className="size-1.5 rounded-full bg-[var(--dusk)]" /><span className="h-px flex-1 bg-gradient-to-r from-[var(--dusk)]/45 to-transparent" />
+    </div>
+  )
+}
+
 export default function Landing({ page }) {
   // 首页和产品思考页之间切换：都从顶上开始看
   useEffect(() => { window.scrollTo(0, 0) }, [page])
@@ -1214,10 +1236,15 @@ export default function Landing({ page }) {
       ) : (
         <main>
           <RouteHero Cta={Cta} Anchor={Anchor} />
+          <Tick />
           <Scenes />
+          <Tick />
           <Routes />
+          <Tick />
           <Loop />
+          <Tick />
           <Trust />
+          <Tick />
           <Credit />
           <Safety />
           <Final />

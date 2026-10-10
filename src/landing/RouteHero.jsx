@@ -162,21 +162,22 @@ export default function RouteHero({ Cta, Anchor }) {
   const fade = (d) => ({ initial: reduce ? false : { y: 10 }, animate: { y: 0 }, transition: { duration: 0.5, delay: d * 0.3, ease } })
   return (
     <section id="top" className="relative isolate overflow-hidden">
-      {/* 方向 B：首屏是一个时刻。17:45，还有 5 分钟下课，傍晚教学楼门口 */}
-      <img src={`${import.meta.env.BASE_URL}images/dusk-v1.webp`} width={1920} height={1080} alt="傍晚五点多的教学楼门口，下课的同学走下台阶，一个男生手里捧着一个快递盒" className="absolute inset-0 -z-10 size-full object-cover object-[70%_center]" />
-      <div aria-hidden="true" className="absolute inset-0 -z-10 bg-gradient-to-r from-[#f5efe3]/95 via-[#f5efe3]/60 to-transparent max-md:bg-gradient-to-b max-md:from-[#f5efe3]/95 max-md:via-[#f5efe3]/70 max-md:to-transparent" />
-      <div className="mx-auto flex min-h-[86vh] max-w-7xl flex-col justify-center px-4 py-16 md:px-8 md:py-24">
-        <motion.p {...fade(0)} className="font-clock text-[96px] font-semibold leading-none text-[var(--dusk)] md:text-[168px]">17:45</motion.p>
-        <h1 className="font-display mt-4 max-w-[13em] text-[40px] leading-[1.15] md:text-[64px]">
+      {/* 方向 B：首屏是一个时刻。17:45，还有 5 分钟下课，傍晚教学楼门口。手机上照片占上半屏、不加蒙层，字放在下面 */}
+      <img src={`${import.meta.env.BASE_URL}images/dusk-v1.webp`} width={1920} height={1080} alt="傍晚五点多的教学楼门口，下课的同学走下台阶，一个男生手里捧着一个快递盒"
+        className="block aspect-[4/3] w-full object-cover object-[78%_center] md:absolute md:inset-0 md:-z-10 md:aspect-auto md:size-full md:object-[70%_center]" />
+      <div aria-hidden="true" className="absolute inset-0 -z-10 hidden bg-gradient-to-r from-[#f5efe3] from-[22%] via-[#f5efe3]/70 via-[36%] to-transparent to-[52%] md:block" />
+      <div className="mx-auto flex max-w-7xl flex-col justify-center px-4 pb-14 pt-6 md:min-h-[88vh] md:px-8 md:py-24">
+        <motion.p {...fade(0)} className="font-clock text-[88px] leading-none md:text-[160px]">17:45</motion.p>
+        <h1 className="font-display mt-3 max-w-[13em] text-[38px] leading-[1.15] md:mt-4 md:text-[68px]">
           <motion.span className="block" {...line(0)}>还有 5 分钟下课，</motion.span>
-          <motion.span className="block" {...line(1)}>你的快递<em className="not-italic text-accent">有人顺路</em></motion.span>
+          <motion.span className="block" {...line(1)}>你的快递<span className="underline decoration-accent decoration-[0.08em] underline-offset-[0.18em]">有人顺路</span></motion.span>
         </h1>
-        <motion.p {...fade(0.35)} className="mt-6 max-w-[30ch] text-lg leading-relaxed text-ink/80 md:text-xl">
+        <motion.p {...fade(0.35)} className="mt-5 max-w-[30ch] text-lg leading-relaxed text-ink/80 md:text-xl">
           快递在驿站，你在宿舍。阿远下课正好从驿站走回梅园，顺手帮你带上，只多走 1 分钟。校内实名，赏金先托管。
         </motion.p>
         <motion.div {...fade(0.45)} className="mt-8 flex flex-wrap items-center gap-3">
           <Cta />
-          <Anchor to="routes" className="group inline-flex h-14 items-center gap-2 whitespace-nowrap rounded-full bg-surface/70 px-5 text-[17px] font-semibold text-ink backdrop-blur transition hover:bg-surface">
+          <Anchor to="routes" className="group inline-flex h-14 items-center gap-2 whitespace-nowrap rounded-full bg-surface/80 px-5 text-[17px] font-semibold text-ink ring-1 ring-line backdrop-blur transition hover:bg-surface">
             看看谁顺路<ArrowDown size={18} weight="bold" className="transition-transform group-hover:translate-y-0.5" />
           </Anchor>
         </motion.div>
