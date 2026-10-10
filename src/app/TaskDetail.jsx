@@ -352,7 +352,7 @@ function Actions({ t }) {
     if (role === 'poster') {
       return own ? (
         <div className="grid gap-2">
-          <p className="text-center text-[15px] text-muted">等待同学接单。切到跑腿人可以自己接下这单试试。</p>
+          <p className="text-balance text-center text-[15px] text-muted">等待同学接单。切到跑腿人可以自己接下这单试试。</p>
           <div className="grid grid-cols-2 gap-3">
             <Btn variant="ghost" onClick={() => act('cancel', { id: t.id })}>取消并退款</Btn>
             <Btn onClick={() => act('role', { role: 'runner' })}>切到跑腿人</Btn>
@@ -623,10 +623,10 @@ export default function TaskDetail() {
 
       {!(t.status === 'completed' && t.ratingByPoster && t.ratingByRunner) && <Panel className="p-4"><Stepper t={t} /></Panel>}
 
-      {pmode === 'open' && <><PickupCard t={t} /><div><Actions t={t} /></div></>}
-
-      {/* 进行中：这一单在校园地图上怎么走，顺路的单画跑腿人整条路、这一单那段亮绿 */}
+      {/* 进行中：这一单在校园地图上怎么走，放在取件码上面，导览里一眼就看到「顺路」 */}
       {['ongoing', 'delivered'].includes(t.status) && <OnTheWay t={t} />}
+
+      {pmode === 'open' && <><PickupCard t={t} /><div><Actions t={t} /></div></>}
 
       {own && state.role === 'poster' && ['ongoing', 'delivered'].includes(t.status) && (
         t.status === 'delivered' && t.proof?.kind === 'photo' ? (

@@ -726,7 +726,7 @@ function Credit() {
                 <AnimatePresence mode="wait">
                   {last && (
                     <motion.span key={last.n} initial={reduce ? false : { opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
-                      className={`tnum mb-4 rounded-full px-3 py-1 text-lg font-bold ${last.delta > 0 ? 'bg-on-accent/15' : 'bg-danger text-on-accent'}`}>{last.delta > 0 ? '+' : ''}{last.delta}</motion.span>
+                      className={`tnum mb-4 rounded-full px-3 py-1 text-lg font-bold ${last.delta > 0 ? 'bg-on-accent/15' : 'bg-on-accent text-danger'}`}>{last.delta > 0 ? '+' : ''}{last.delta}</motion.span>
                   )}
                 </AnimatePresence>
               </div>
@@ -1066,7 +1066,7 @@ function Final({ page }) {
 
 function ThinkingIntro() {
   return (
-    <section className="mx-auto max-w-3xl px-4 pb-4 pt-14 md:px-8 md:pt-20">
+    <section className="mx-auto max-w-7xl px-4 pb-4 pt-14 md:px-8 md:pt-20">
       <Reveal><p className="text-[15px] font-semibold text-accent">产品思考</p></Reveal>
       <Reveal delay={0.05}><h1 className="mt-3 font-display text-balance text-[44px] leading-[1.08] md:text-7xl">为什么是「顺路」</h1></Reveal>
       {/* 一条推理，画成一段路：三站走下来，结论放大 */}

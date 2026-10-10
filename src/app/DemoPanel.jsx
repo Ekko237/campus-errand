@@ -5,7 +5,7 @@ import { useStore } from '../store'
 import { levelOf, posterTierOf } from '../data'
 import { Avatar, gi } from '../ui'
 
-const STEPS = ['发布托管', '认证接单', '取件送达', '提交凭证', '确认放款', '发单人评价', '跑腿人回评']
+const STEPS = ['发布托管', '认证接单', '取到快递', '送达交凭证', '确认放款', '发单人评价', '跑腿人回评']
 function progress(t) {
   if (!t) return 0
   if (t.status === 'open') return 1

@@ -179,7 +179,7 @@ export default function RouteHero({ Cta, Anchor }) {
       </div>
       <motion.div {...fade(0.2)} className="lg:col-span-7">
         <RouteMap />
-        <p className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-ink/70 md:text-[14px]">
+        <p className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-[13px] text-ink/80 md:text-[14px]">
           <span className="inline-flex items-center gap-1.5"><i className="h-1 w-5 rounded-full bg-ink/80" />阿远本来就要走的路</span>
           <span className="inline-flex items-center gap-1.5"><i className="h-1.5 w-5 rounded-full bg-accent" />顺手捎上你的快递</span>
         </p>
