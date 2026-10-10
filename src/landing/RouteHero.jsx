@@ -55,7 +55,7 @@ export function RouteMap() {
       <svg viewBox={`0 0 ${W} ${H}`} className="absolute inset-0 size-full" aria-hidden="true">
         {BLOCKS.map(([x, y, w, h, kind], i) => (
           <g key={i}>
-            <rect x={x} y={y} width={w} height={h} rx="16" fill={kind === 'green' ? 'var(--accent-soft)' : 'var(--sunken)'} />
+            <rect x={x} y={y} width={w} height={h} rx="16" fill={kind === 'green' ? 'var(--accent-soft)' : '#dfe3df'} />
             {kind === 'green'
               ? [0.25, 0.6, 0.85].map((f, k) => <circle key={k} cx={x + w * f} cy={y + h * (k % 2 ? 0.35 : 0.62)} r="9" fill="var(--accent)" fillOpacity="0.28" />)
               : Array.from({ length: Math.floor((w - 24) / 20) * Math.floor((h - 24) / 22) }, (_, k) => {
@@ -71,11 +71,11 @@ export function RouteMap() {
           <path d="M40 220 H560 M90 50 V400 M500 50 V400 M90 360 H500 M90 90 H500" />
         </g>
         {/* 你的需求：虚线 */}
-        <motion.path d={NEED} fill="none" stroke="var(--accent)" strokeWidth="4" strokeDasharray="1 10" strokeLinecap="round"
+        <motion.path d={NEED} fill="none" stroke="var(--accent)" strokeWidth="5" strokeDasharray="1 10" strokeLinecap="round"
           initial={reduce ? false : { opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.6, delay: 0.6 }} />
         {/* 学弟走过的路 */}
         <path ref={path} d={RUN} fill="none" stroke="none" />
-        <motion.path d={RUN} fill="none" stroke="var(--ink)" strokeOpacity="0.8" strokeWidth="5" strokeLinecap="round" strokeLinejoin="round" style={{ pathLength: runLen }} />
+        <motion.path d={RUN} fill="none" stroke="var(--ink)" strokeOpacity="0.9" strokeWidth="6" strokeLinecap="round" strokeLinejoin="round" style={{ pathLength: runLen }} />
         {/* 交汇之后：带着你的快递走完，路线变成绿色实线 */}
         <motion.path d={NEED} fill="none" stroke="var(--accent)" strokeWidth="7" strokeLinecap="round" strokeLinejoin="round" style={{ pathLength: carry }} />
         {/* 交汇点 */}
