@@ -16,8 +16,8 @@ export function tourStep(state) {
     if (!accounts.runner.verified) return { n: 2, who: 'runner', text: '切到跑腿人：先做校园认证，才能接单', to: `/app/verify?back=/app/task/${t.id}`, cta: '去认证' }
     return { n: 2, who: 'runner', text: '切到跑腿人，接下刚发布的这一单', to: `/app/task/${t.id}`, cta: '去接单' }
   }
-  if (t.status === 'ongoing' && !t.picked) return { n: 3, who: 'runner', text: '跑腿人：取件码已解锁，去取件', to: `/app/task/${t.id}`, cta: '去取件' }
-  if (t.status === 'ongoing') return { n: 4, who: 'runner', text: '跑腿人：输入送达码或拍照，提交凭证', to: `/app/task/${t.id}`, cta: '去送达' }
+  if (t.status === 'ongoing' && !t.picked) return { n: 3, who: 'runner', text: `跑腿人：取件码 ${t.private?.code || '已解锁'}，取到后点「我已取到」`, to: `/app/task/${t.id}`, cta: '去取件' }
+  if (t.status === 'ongoing') return { n: 4, who: 'runner', text: `跑腿人：送到后输入送达码 ${t.deliverCode}，或拍照留证`, to: `/app/task/${t.id}`, cta: '去送达' }
   if (t.status === 'delivered') return { n: 5, who: 'poster', text: '切回发单人：确认送达，托管赏金放款', to: `/app/task/${t.id}`, cta: '去确认' }
   if (t.status === 'completed' && !t.ratingByPoster) return { n: 6, who: 'poster', text: '发单人：给跑腿人打分，信用分会跟着变', to: `/app/task/${t.id}`, cta: '去评价' }
   if (t.status === 'completed' && !t.ratingByRunner) return { n: 7, who: 'runner', text: '切到跑腿人：也给发单人打分，完成双向互评', to: `/app/task/${t.id}`, cta: '去互评' }
@@ -48,7 +48,7 @@ export default function TourBar() {
                 {step.final ? <span className="inline-flex items-center gap-1"><Confetti size={14} weight="fill" />完整流程</span> : `完整流程 ${Math.min(step.n, TOTAL)}/${TOTAL}`}
               </p>
               <p className="text-[15px] font-semibold leading-snug">{step.text}</p>
-              {here && <p className="text-[13px] opacity-70">操作按钮就在这一页</p>}
+              {here && <p className="text-[13px] opacity-70">操作按钮在页面上方</p>}
             </div>
             {!here && <button onClick={go} className="inline-flex h-11 shrink-0 items-center gap-1 whitespace-nowrap rounded-full bg-accent px-4 text-[15px] font-semibold text-on-accent active:scale-[0.98]">
               {step.cta}<ArrowRight size={16} weight="bold" />

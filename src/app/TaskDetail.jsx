@@ -77,6 +77,36 @@ function PrivateInfo({ t, role }) {
   )
 }
 
+// 接单后最要紧的信息：取件码放大、置顶，带复制按钮
+function PickupCard({ t }) {
+  const [copied, setCopied] = useState(false)
+  const copy = async () => {
+    try { await navigator.clipboard.writeText(t.private.code) } catch {}
+    setCopied(true)
+    setTimeout(() => setCopied(false), 1500)
+  }
+  return (
+    <section aria-label="取件信息" className="rounded-2xl bg-ink p-4 text-bg">
+      {t.private?.code ? (
+        <>
+          <p className="flex items-center gap-1.5 text-sm font-semibold opacity-75"><LockKeyOpen size={16} weight="bold" />取件码，到{B[t.from]?.name}报这个码</p>
+          <div className="mt-1 flex items-center justify-between gap-3">
+            <p className="tnum text-4xl font-bold tracking-wide">{t.private.code}</p>
+            <button onClick={copy} className="h-10 shrink-0 whitespace-nowrap rounded-full bg-bg/15 px-4 text-sm font-semibold transition active:scale-95">{copied ? '已复制' : '复制'}</button>
+          </div>
+        </>
+      ) : (
+        <p className="flex items-center gap-1.5 text-[15px] font-semibold"><LockKeyOpen size={18} weight="bold" />不需要取件码，直接去{B[t.from]?.name}</p>
+      )}
+      <dl className="mt-3 grid gap-1.5 border-t border-bg/15 pt-3 text-[15px]">
+        <div className="flex gap-3"><dt className="w-10 shrink-0 opacity-70">送到</dt><dd className="font-semibold">{t.private?.room}</dd></div>
+        <div className="flex gap-3"><dt className="w-10 shrink-0 opacity-70">电话</dt><dd className="tnum font-semibold">{t.private?.phone}（虚拟号）</dd></div>
+      </dl>
+      <p className="mt-2 text-xs opacity-60">只在接单期间可见，订单结束后自动隐藏</p>
+    </section>
+  )
+}
+
 function Escrow({ t }) {
   const map = {
     open: ['托管中', '赏金已冻结，送达确认后才放款'],
@@ -336,6 +366,7 @@ export default function TaskDetail() {
     return <Empty img="empty-search" alt="空纸箱和放大镜" title="找不到这个任务" hint="可能已被取消，或演示数据被重置了。" action={<Btn variant="ghost" onClick={() => nav('/app')}>回到任务大厅</Btn>} />
   }
   const own = t.posterId === 'poster'
+  const pmode = privacyMode(t, state.role)
   return (
     <div className="space-y-5">
       <div className="flex items-center gap-2">
@@ -343,6 +374,16 @@ export default function TaskDetail() {
         <span className="text-[15px] font-semibold text-muted">订单详情</span>
         <span className={`ml-auto rounded-full px-3 py-1 text-sm font-semibold ${['refunded', 'cancelled', 'disputed'].includes(t.status) ? 'bg-sunken text-ink' : 'bg-accent-soft text-accent'}`}>{STATUS_TEXT[t.status]}</span>
       </div>
+
+      {pmode === 'open' && <><PickupCard t={t} /><div><Actions t={t} /></div></>}
+
+      {own && state.role === 'poster' && ['ongoing', 'delivered'].includes(t.status) && (
+        <div className="flex items-center gap-3 rounded-2xl bg-ink p-4 text-bg">
+          <Numpad size={26} className="shrink-0" />
+          <p className="flex-1 text-[15px]">送达码，见面后告诉跑腿人</p>
+          <span className="tnum text-3xl font-bold tracking-[0.2em]">{t.deliverCode}</span>
+        </div>
+      )}
 
       <Panel className="p-4"><Stepper t={t} /></Panel>
 
@@ -356,7 +397,7 @@ export default function TaskDetail() {
         {t.note && <p className="mt-3 rounded-xl bg-sunken p-3 text-[15px]">备注：{t.note}</p>}
       </div>
 
-      <div><Actions t={t} /></div>
+      {pmode !== 'open' && <div><Actions t={t} /></div>}
 
       <Escrow t={t} />
 
@@ -371,15 +412,7 @@ export default function TaskDetail() {
         </div>
       </Panel>
 
-      <PrivateInfo t={t} role={state.role} />
-
-      {own && state.role === 'poster' && ['ongoing', 'delivered'].includes(t.status) && (
-        <div className="flex items-center gap-3 rounded-2xl bg-ink p-4 text-bg">
-          <Numpad size={26} className="shrink-0" />
-          <p className="flex-1 text-[15px]">送达码，见面后告诉跑腿人</p>
-          <span className="tnum text-3xl font-bold tracking-[0.2em]">{t.deliverCode}</span>
-        </div>
-      )}
+      {pmode !== 'open' && <PrivateInfo t={t} role={state.role} />}
 
       {t.proof && (
         <Panel className="p-4">
