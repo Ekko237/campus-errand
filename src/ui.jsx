@@ -1,3 +1,4 @@
+import { createPortal } from 'react-dom'
 import { motion, AnimatePresence, useReducedMotion } from 'motion/react'
 import { X, Star } from '@phosphor-icons/react'
 import { TYPES } from './data'
@@ -73,10 +74,11 @@ export function Avatar({ who, name = '', size = 44 }) {
 
 export function Sheet({ open, onClose, title, children }) {
   const reduce = useReducedMotion()
-  return (
+  // 挂到 body 上：不受页面转场的 transform 影响，遮罩能盖住顶栏和导览条
+  return createPortal(
     <AnimatePresence>
       {open && (
-        <motion.div className="fixed inset-0 z-40 flex items-end justify-center sm:items-center" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+        <motion.div className="fixed inset-0 z-50 flex items-end justify-center sm:items-center" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
           <div className="absolute inset-0 bg-ink/40" onClick={onClose} />
           <motion.div
             role="dialog" aria-modal="true" aria-label={title}
@@ -92,7 +94,7 @@ export function Sheet({ open, onClose, title, children }) {
         </motion.div>
       )}
     </AnimatePresence>
-  )
+  , document.body)
 }
 
 export function Empty({ img, alt = '', title, hint, action }) {

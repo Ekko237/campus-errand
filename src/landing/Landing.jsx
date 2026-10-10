@@ -123,7 +123,7 @@ function ScrollProgress() {
 }
 
 const NAV_LINKS = [['scenes', '场景'], ['loop', '一单怎么走'], ['trust', '信任机制'], ['credit', '双向信用']]
-const SECTIONS = [['routes', '整个校园的顺路'], ...NAV_LINKS, ['safety', '这些单发不出去']]
+const SECTIONS = [['routes', '整个校园的顺路'], ...NAV_LINKS, ['safety', '这些单发不出去'], ['final', '你下课常走哪条路']]
 function Nav({ page }) {
   const { scrollY } = useScroll()
   const [scrolled, setScrolled] = useState(false)
@@ -281,7 +281,7 @@ function Scenes() {
 const LOOP = [
   { icon: 'step-publish', alt: '带硬币的喇叭', t: '发布', d: '选模板和楼栋，赏金先冻结托管。', status: '待接单', escrow: '¥5 冻结中', code: 'locked', credit: '发单人 88' },
   { icon: 'step-accept', alt: '接过包裹的手', t: '接单', d: '认证过、信用够的人才能接。', status: '已接单', escrow: '¥5 冻结中', code: 'open', credit: '跑腿人 70' },
-  { icon: 'step-ongoing', alt: '打开的锁和包裹', t: '进行中', d: '接单后，取件码和宿舍号才对跑腿人可见，去驿站取件。', status: '送达中', escrow: '¥5 冻结中', code: 'open', credit: '跑腿人 70' },
+  { icon: 'step-ongoing', alt: '打开的锁和包裹', t: '进行中', d: '接单后，取件码和宿舍号才对跑腿人可见，去驿站取件。', status: '取件中', escrow: '¥5 冻结中', code: 'open', credit: '跑腿人 70' },
   { icon: 'step-deliver', alt: '放在门口拍照的包裹', t: '送达', d: '当面核验送达码，或拍照留证。', status: '待确认', escrow: '¥5 冻结中', code: 'open', credit: '跑腿人 70' },
   { icon: 'step-confirm', alt: '两只手传递硬币', t: '确认', d: '发单人确认，托管放款。', status: '已放款', escrow: '¥5 已放给跑腿人', code: 'hidden', credit: '跑腿人 70 → 72' },
   { icon: 'step-rate', alt: '带星星的对话气泡', t: '互评', d: '双方互相打分，信用实时变化。', status: '已互评', escrow: '¥5 已放给跑腿人', code: 'hidden', credit: '跑腿人 73，发单人 90' },
@@ -301,7 +301,7 @@ function StateRow({ k, v }) {
 
 // 六步卡里的小地图：每走一步，跑腿人在路上前进一段
 // 六步区订单卡上的小地图：就是首屏那张校园地图的一条横带，学弟按步骤从一教走到驿站、捎上包裹、送到梅园
-const SX0 = 180, SY0 = 170, SVW = 1220, SVH = 440
+const SX0 = 180, SY0 = 100, SVW = 1220, SVH = 460
 const STAGE_PTS = routePath('jiao1', 'mei5').pts
 const STAGE_LEN = routePath('jiao1', 'mei5').len
 const STAGE_F = (18 + (STAGE_PTS[1][0] - PLACES.cainiao.door[0])) / STAGE_LEN // 走到驿站门口时在整条路上的位置
@@ -327,7 +327,7 @@ function StageMap({ i }) {
   const mei = [PLACES.mei5.door[0], PLACES.mei5.door[1] + 60]
   const tag = (txt, at, strong) => <span className={`absolute -translate-x-1/2 whitespace-nowrap rounded-full px-1.5 py-0.5 text-[11px] font-semibold shadow-sm ${strong ? 'bg-ink text-bg' : 'bg-surface text-ink ring-1 ring-line'}`} style={spct(at)}>{txt}</span>
   return (
-    <div className="relative mt-5 aspect-[1220/440] overflow-hidden rounded-xl ring-1 ring-line" aria-hidden="true">
+    <div className="relative mt-5 aspect-[1220/460] overflow-hidden rounded-xl ring-1 ring-line" aria-hidden="true">
       <svg viewBox={`${SX0} ${SY0} ${SVW} ${SVH}`} preserveAspectRatio="xMidYMid slice" className="absolute inset-0 size-full">
         <image href={`${import.meta.env.BASE_URL}images/campus-map-v2.webp`} x="0" y="0" width="1600" height="900" />
         <path d={D} fill="none" stroke="var(--ink)" strokeOpacity="0.35" strokeWidth="12" strokeDasharray="4 22" strokeLinecap="round" strokeLinejoin="round" />
@@ -336,7 +336,7 @@ function StageMap({ i }) {
         <motion.path d={NEED_D} fill="none" stroke="var(--accent)" strokeWidth="14" strokeLinecap="round" strokeLinejoin="round" initial={false}
           animate={{ pathLength: Math.max(0, (STAGE_P[i] - STAGE_F) / (1 - STAGE_F)), opacity: i >= 3 ? 1 : 0 }} transition={sp} />
       </svg>
-      {tag('一教', [STAGE_PTS[0][0] - 40, STAGE_PTS[0][1] - 150])}
+      {tag('一教', [STAGE_PTS[0][0] + 15, STAGE_PTS[0][1] + 60])}
       {tag('菜鸟驿站', [station[0], station[1] + 70], i === 2)}
       {tag('梅园', [mei[0], mei[1] + 70], i >= 4)}
       {/* 包裹：先在驿站等着（发布时一闪），第 3 步起跟着学弟走，送到后落在梅园 */}
@@ -344,9 +344,9 @@ function StageMap({ i }) {
         <motion.img src={icon('type-express-v1')} width={28} height={28} alt="" className="absolute size-7 -translate-x-1/2 -translate-y-1/2" style={spct(station)}
           initial={false} animate={{ scale: i === 0 ? [1, 1.25, 1] : 1 }} transition={{ duration: 0.6 }} />
       )}
-      <motion.span className="absolute z-10 grid size-9 -translate-x-1/2 -translate-y-[90%] place-items-center rounded-full bg-surface ring-[3px] ring-ink"
+      <motion.span className="absolute z-10 grid size-8 -translate-x-1/2 -translate-y-[90%] place-items-center rounded-full bg-surface ring-[3px] ring-ink md:size-9"
         initial={false} animate={{ ...spct(me), opacity: i === 0 ? 0 : 1 }} transition={sp}>
-        <img src={icon('avatar-runner-v1')} width={28} height={28} alt="" className="size-7 rounded-full" />
+        <img src={icon('avatar-runner-v1')} width={28} height={28} alt="" className="size-6 rounded-full md:size-7" />
         {i === 3 && <img src={icon('type-express-v1')} width={20} height={20} alt="" className="absolute -right-2 -top-2 size-5" />}
       </motion.span>
       {i >= 4 && (
@@ -385,19 +385,21 @@ function OrderStage({ i }) {
   )
 }
 
-function LoopStep({ s, now, past }) {
+function LoopStep({ s, k, now, past }) {
   return (
-    <li className={`flex scroll-mt-40 gap-5 transition-opacity duration-300 lg:min-h-[min(16vh,150px)] lg:items-center ${now ? 'opacity-100' : past ? 'opacity-100 lg:opacity-70' : 'opacity-100 lg:opacity-75'}`}>
+    <li className={`flex scroll-mt-40 flex-wrap gap-x-5 gap-y-4 lg:flex-nowrap transition-opacity duration-300 lg:min-h-[min(16vh,150px)] lg:items-center ${now ? 'opacity-100' : past ? 'opacity-100 lg:opacity-70' : 'opacity-100 lg:opacity-75'}`}>
       <span className="grid size-16 shrink-0 place-items-center rounded-2xl bg-bg">
         <img src={icon(s.icon + '-v1')} width={48} height={48} alt={s.alt} loading="lazy" className="size-12 object-contain" />
       </span>
-      <div>
+      <div className="min-w-0 flex-1">
         <p className="flex items-center gap-2 text-2xl font-bold md:text-3xl">{s.t}{now && <span className="rounded-full bg-on-accent px-2 py-0.5 text-xs font-bold text-accent-deep">现在</span>}</p>
         <p className="mt-2 max-w-[30ch] text-lg leading-relaxed opacity-75">{s.d}</p>
         <p className="tnum mt-3 flex flex-wrap gap-1.5 text-sm font-semibold lg:hidden">
           {[s.status, s.escrow, s.credit].map((v, k) => <span key={k} className={`whitespace-nowrap rounded-lg bg-bg px-2.5 py-1 ${k === 0 ? 'text-accent' : 'text-ink'}`}>{v}</span>)}
         </p>
       </div>
+      {/* 手机：每一步下面一整行，是这一刻的校园小地图（桌面在左边的订单卡里） */}
+      <div className="basis-full lg:hidden [&>div]:mt-0"><StageMap i={k} /></div>
     </li>
   )
 }
@@ -465,7 +467,7 @@ function Loop() {
           </div>
           <div className="lg:col-span-6 lg:col-start-7">
             <ol ref={ol} className="space-y-10 lg:space-y-0">
-              {LOOP.map((s, k) => <LoopStep key={s.t} s={s} now={k === active} past={k < active} />)}
+              {LOOP.map((s, k) => <LoopStep key={s.t} s={s} k={k} now={k === active} past={k < active} />)}
             </ol>
           </div>
         </div>
@@ -508,20 +510,23 @@ function TrustStop({ x, lit, reduce }) {
 const PRIV = [
   { k: '接单前', code: '• • ••••', room: '梅园 * 号楼 ***', tone: 'muted', who: '大厅里谁都看不到，只看到「梅园」' },
   { k: '接单后', code: '6-2-3108', room: '梅园 5 号楼 412', tone: 'open', who: '只有接下这单的同学看得到' },
-  { k: '结束后', code: '6-2-3108', room: '梅园 5 号楼 412', tone: 'closed', who: '送达那一刻收回，对方再也看不到' },
+  { k: '结束后', code: '6-2-3108', room: '梅园 5 号楼 412', tone: 'closed', who: '确认放款那一刻收回，对方再也看不到' },
 ]
 function PrivacyDemo() {
   const reduce = useReducedMotion()
-  const [i, setI] = useState(1)
-  const [hold, setHold] = useState(0)
-  // 自己轮播；用户点了某一段，就停在那里 8 秒再继续
+  const [i, setI] = useState(0)
+  const [steps, setSteps] = useState(0)
+  const [hold, setHold] = useState(false)
+  const box = useRef(null)
+  const seen = useInView(box, { amount: 0.6 })
+  // 进到屏幕里才自己走一轮（接单前 → 接单后 → 结束后），走完停住；用户点过就不再自动切
   useEffect(() => {
-    if (reduce) return
-    const id = setTimeout(() => setI((v) => (v + 1) % PRIV.length), hold ? 8000 : 2600)
+    if (reduce || hold || !seen || steps >= PRIV.length - 1) return
+    const id = setTimeout(() => { setI((v) => v + 1); setSteps((n) => n + 1) }, 2800)
     return () => clearTimeout(id)
-  }, [reduce, i, hold])
+  }, [reduce, hold, seen, steps])
   const p = PRIV[i]
-  const pick = (k) => { setI(k); setHold((h) => h + 1) }
+  const pick = (k) => { setI(k); setHold(true) }
   const val = (v) => (
     <span className="relative inline-block">
       <span className={p.tone === 'open' ? '' : 'opacity-40'}>{v}</span>
@@ -529,7 +534,7 @@ function PrivacyDemo() {
     </span>
   )
   return (
-    <div className="rounded-[24px] bg-ink p-5 text-bg">
+    <div ref={box} className="rounded-[24px] bg-ink p-5 text-bg">
       <div role="tablist" aria-label="取件信息在三个阶段的样子" className="relative grid grid-cols-3 gap-1 rounded-full bg-bg/10 p-1 text-sm font-semibold">
         {/* 滑块和文字颜色同一时长、同一缓动，切换时不会有一帧白底白字 */}
         <span aria-hidden="true" className="absolute inset-y-1 left-1 w-[calc((100%-16px)/3)] rounded-full bg-bg transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]" style={{ transform: `translateX(calc(${i} * (100% + 4px)))` }} />
@@ -613,7 +618,7 @@ function Credit() {
     return () => c.stop()
   }, [score, reduce, mv])
   const switchWho = (w) => { setWho(w); const s0 = w === 'runner' ? 70 : 88; setScore(s0); setLast(null); setHist([]) }
-  const rules = who === 'runner' ? [...RULES_PLUS, ...RULES_MINUS] : [...POSTER_RULES_PLUS, ...POSTER_RULES_MINUS]
+  const rules = (who === 'runner' ? [...RULES_PLUS, ...RULES_MINUS] : [...POSTER_RULES_PLUS, ...POSTER_RULES_MINUS]).sort((a, b) => b.delta - a.delta)
   const tiers = who === 'runner' ? LEVELS : POSTER_TIERS
   const tier = [...tiers].reverse().find((l) => score >= l.min)
   const [hist, setHist] = useState([])
@@ -656,8 +661,8 @@ function Credit() {
                   )}
                 </AnimatePresence>
               </div>
-              <ul className="mt-4 min-h-[3rem] space-y-1.5 text-[15px] lg:mt-6 lg:min-h-[6.5rem]" aria-live="polite">
-                {hist.length === 0 && <li className="opacity-75"><span className="lg:hidden">点下面</span><span className="hidden lg:inline">点右边</span>任意一条规则，分数会在这里记一笔。</li>}
+              <ul className="mt-4 h-8 space-y-1.5 overflow-hidden text-[15px] lg:mt-6 lg:h-[6.5rem]" aria-live="polite">
+                {hist.length === 0 && <li className="truncate opacity-75"><span className="lg:hidden">点下面的规则，这里记一笔</span><span className="hidden lg:inline">点右边任意一条规则，分数会在这里记一笔。</span></li>}
                 <AnimatePresence initial={false}>
                   {hist.map((h) => (
                     <motion.li key={h.id} layout initial={reduce ? false : { opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.25 }}
@@ -697,7 +702,7 @@ function Credit() {
                 const here = last?.label === r.label
                 return (
                   <li key={r.label} className="relative">
-                    <button onClick={() => apply(r)} className="group flex w-full items-center gap-4 rounded-2xl py-3 pr-3 text-left transition hover:bg-bg active:scale-[0.99]">
+                    <button onClick={() => apply(r)} className="group relative flex w-full items-center gap-4 rounded-2xl py-3 pr-3 text-left transition hover:bg-bg active:scale-[0.99]">
                       <span className="relative z-10 grid size-10 shrink-0 place-items-center">
                         <span className={`size-4 rounded-full ring-4 ring-surface transition-transform group-hover:scale-125 ${r.delta > 0 ? 'bg-accent' : 'bg-danger'}`} />
                         {here && (
@@ -708,10 +713,12 @@ function Credit() {
                       </span>
                       <span className={`tnum w-10 shrink-0 text-2xl font-bold ${r.delta > 0 ? 'text-accent' : 'text-danger'}`}>{r.delta > 0 ? '+' : ''}{r.delta}</span>
                       <span className="min-w-0 flex-1"><span className="block text-lg font-semibold">{r.label}</span><span className="block text-[15px] text-muted">{r.note}</span>
-                        {here && (
-                          <motion.span key={score} initial={reduce ? false : { opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ type: 'spring', stiffness: 380, damping: 30 }}
-                            className="tnum mt-2 inline-flex items-center gap-1.5 rounded-full bg-accent-soft px-3 py-1 text-sm font-bold text-accent lg:hidden">现在 {score} 分 ·「{tier.name}」</motion.span>
-                        )}</span>
+</span>
+                      {/* 浮在这一行右边，不往列表里插东西，下面的规则不会被推走 */}
+                      {here && (
+                        <motion.span key={score} initial={reduce ? false : { opacity: 0, x: 6 }} animate={{ opacity: 1, x: 0 }} transition={{ type: 'spring', stiffness: 380, damping: 30 }}
+                          className="tnum pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 rounded-full bg-accent-soft px-2.5 py-1 text-sm font-bold text-accent lg:hidden">现在 {score}</motion.span>
+                      )}
                     </button>
                   </li>
                 )
@@ -849,22 +856,22 @@ function Metrics() {
                 <div>
                   <p className="text-7xl font-bold tracking-[-0.04em] md:text-[112px] md:leading-none">97%</p>
                   <p className="mt-2 text-lg font-semibold">每 100 趟顺路，至少 97 趟按时送到</p>
-                  <p className="mt-1 text-[15px] font-medium opacity-60">目标值</p>
+                  <p className="mt-2 inline-flex rounded-full bg-on-accent/15 px-2 py-0.5 text-xs font-semibold">目标</p>
                 </div>
               </div>
             </div>
             <p className="mt-10 max-w-[44ch] text-lg leading-relaxed opacity-90">按时送达且无申诉的单 ÷ 被接的单。信任平台的核心就是「接了就送到」，这个数掉了，其他都没意义。</p>
           </Reveal>
           <Reveal delay={0.05} className="rounded-2xl bg-bg p-6 ring-1 ring-line">
-            <p className="text-lg font-semibold">接单率</p>
+            <p className="flex items-center gap-2 text-lg font-semibold">接单率<span className="rounded-full bg-sunken px-2 py-0.5 text-xs text-muted">目标</span></p>
             <p className="mt-1 text-5xl font-bold tracking-tight text-accent"><span className="mr-2 align-middle text-base font-semibold tracking-normal opacity-80">至少</span>85%</p>
-            <p className="mt-4 text-[15px] leading-relaxed text-muted">24 小时内被接的单 ÷ 发布的单。低了说明供给不够或定价偏低。目标值。</p>
+            <p className="mt-4 text-[15px] leading-relaxed text-muted">24 小时内被接的单 ÷ 发布的单。低了说明供给不够或定价偏低。</p>
           </Reveal>
           <Reveal delay={0.1} className="rounded-2xl bg-bg p-6 ring-1 ring-line">
             <div>
-              <p className="text-lg font-semibold">平均接单时长</p>
+              <p className="flex items-center gap-2 text-lg font-semibold">平均接单时长<span className="rounded-full bg-sunken px-2 py-0.5 text-xs text-muted">目标</span></p>
               <p className="mt-1 text-5xl font-bold tracking-tight text-accent"><span className="mr-2 align-middle text-base font-semibold tracking-normal opacity-80">不超过</span>10 分钟</p>
-              <p className="mt-4 text-[15px] leading-relaxed text-muted">发布到被接的中位时间。跑腿要的是快，超过 10 分钟用户就会自己去。目标值。</p>
+              <p className="mt-4 text-[15px] leading-relaxed text-muted">发布到被接的中位时间。跑腿要的是快，超过 10 分钟用户就会自己去。</p>
             </div>
           </Reveal>
         </div>
@@ -918,7 +925,7 @@ function Final({ page }) {
   const n = seedTasks().filter((t) => detourMin(R.from, R.to, t) <= 5).length
   const go = () => { try { localStorage.setItem('shunluxia:myroute', JSON.stringify({ from: R.from, to: R.to })) } catch { /* 存不了就用默认路线 */ } nav('/app') }
   return (
-    <section className="border-t border-line">
+    <section id="final" className="scroll-mt-16 border-t border-line">
       {page === 'thinking' ? (
         <div className="mx-auto max-w-3xl px-4 py-20 text-center md:py-28">
           <Reveal><h2 className="font-display text-balance text-[40px] leading-[1.08] md:text-6xl">想法讲完了<br />点一遍看看</h2></Reveal>

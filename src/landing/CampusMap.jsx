@@ -52,7 +52,9 @@ function pointAt(pts, f) {
 
 // 底图是按路网画的生成图，路线全部沿路走（src/campusMap.js 里寻路）；不缩放不旋转，画框和底图一样比例，四边不会露白
 export default function CampusMap({ R, hits, reduce, pills = true, walker = true, endsOnly = false, legend = false }) {
-  const mine = routePath(R.from, R.to).pts
+  // 画路线只画路面上的那段（去掉两头进门的小短线），起点终点的圆点就压在路上，不会偏开
+  const full = routePath(R.from, R.to).pts
+  const mine = full.length > 3 ? full.slice(1, -1) : full
   const marks = useMemo(() => hits.map((t) => ({ t, f: along(mine, PLACES[t.from].door) })).sort((a, b) => a.f - b.f), [hits, mine])
   const [p, setP] = useState(reduce || !walker ? 1 : 0)
   useEffect(() => {
@@ -94,8 +96,11 @@ export default function CampusMap({ R, hits, reduce, pills = true, walker = true
       {marks.map(({ t, f }, i) => (
         <span key={t.id} aria-hidden="true" className={`tnum absolute z-10 grid size-5 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full text-[11px] font-bold text-on-accent ring-[3px] ring-surface transition-colors md:size-7 md:text-[13px] ${p >= f ? 'bg-accent' : 'bg-muted'}`} style={pct(markAt(t.from))}>{i + 1}</span>
       ))}
+      {marks.map(({ t }) => (
+        <span key={`p${t.id}`} aria-hidden="true" className="tnum absolute z-10 -translate-x-1/2 translate-y-[9px] rounded-full bg-surface px-1 text-[10px] font-bold leading-4 text-accent shadow-sm md:hidden" style={pct(markAt(t.from))}>¥{t.reward}</span>
+      ))}
       {ends.map((id) => (
-        <span key={id} className="absolute z-20" style={pct(PLACES[id].door)}>
+        <span key={id} className="absolute z-20" style={pct(id === R.from ? mine[0] : mine[mine.length - 1])}>
           <span className="absolute left-0 top-0 block size-3 -translate-x-1/2 -translate-y-1/2 rounded-full bg-ink ring-[3px] ring-surface md:size-4" />
           <span className={`absolute left-0 -translate-x-1/2 whitespace-nowrap rounded-full bg-ink px-2 py-0.5 text-[12px] font-semibold text-bg shadow-sm md:px-2.5 md:text-[13px] ${outward(id) === 'up' ? 'bottom-3.5' : 'top-3.5'}`}>{SHORT[id]} {id === R.from ? '出发' : '到达'}</span>
         </span>

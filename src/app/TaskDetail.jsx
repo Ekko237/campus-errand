@@ -313,7 +313,8 @@ function RateBlock({ t, by }) {
 }
 
 // 放款那一下要被看见：确认后把托管卡滚到屏幕中间，再播转账
-const toEscrow = () => setTimeout(() => document.getElementById('escrow')?.scrollIntoView({ block: 'center', behavior: 'smooth' }), 80)
+// 导览进行中由导览条负责滚动，这里不再滚第二次
+const toEscrow = () => { if (document.querySelector('[data-tour-bar]')) return; setTimeout(() => document.getElementById('escrow')?.scrollIntoView({ block: 'center', behavior: 'smooth' }), 80) }
 
 function Actions({ t }) {
   const { state, act } = useStore()
@@ -530,7 +531,7 @@ function WrapUp({ t }) {
       </div>
       )}
       {mine ? (
-        <p className="mt-2 text-sm font-semibold"><span className="opacity-75">{name(mine.from)}出发</span> → 在{name(t.from)}{t.from === t.to ? '占座' : '取件'}{t.from !== t.to && <> → {name(t.to)}送达</>}<span className="opacity-75"> · 顺路</span></p>
+        <p className="mt-2 text-sm font-semibold"><span className="opacity-75">{name(mine.from)}出发</span> → 在{name(t.from)}{t.from === t.to ? '占座' : '取件'}{t.from !== t.to && <> → {name(t.to)}送达</>}</p>
       ) : (
         <div className="mt-2 flex justify-between text-sm font-semibold">
           <span>{name(t.from)}</span><span className="opacity-75">{t.from === t.to ? '占座' : '捎到'}</span><span>{name(t.to)}</span>

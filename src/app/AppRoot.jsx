@@ -184,7 +184,7 @@ function Shell() {
         </motion.div>
       </main>
       <DemoPanel />
-      <nav className="fixed inset-x-0 bottom-0 z-30 border-t border-line bg-surface/95 backdrop-blur xl:inset-x-auto xl:bottom-auto xl:left-[calc(50%-33rem)] xl:top-36 xl:w-36 xl:border-0 xl:bg-transparent xl:backdrop-blur-none" aria-label="主导航">
+      <nav className={`fixed inset-x-0 bottom-0 z-30 border-t border-line bg-surface/95 backdrop-blur xl:inset-x-auto xl:bottom-auto xl:left-[calc(50%-33rem)] ${state.tour.active ? 'xl:top-[132px]' : 'xl:top-20'} xl:w-36 xl:border-0 xl:bg-transparent xl:backdrop-blur-none`} aria-label="主导航">
         <div className="mx-auto grid max-w-xl grid-cols-4 pb-[env(safe-area-inset-bottom)] xl:grid-cols-1 xl:gap-1 xl:pb-0">
           {tabs.map(([to, label, img, end]) => (
             <NavLink key={to} to={to} end={end} className={({ isActive: a0 }) => { const isActive = sub ? to === sub : a0; return `relative flex h-16 flex-col items-center justify-center gap-0.5 text-[13px] font-semibold transition-colors xl:h-12 xl:flex-row xl:justify-start xl:gap-2.5 xl:rounded-xl xl:px-3 xl:text-[15px] ${isActive ? 'text-accent xl:bg-accent-soft' : 'text-muted xl:hover:bg-sunken'}` }}>

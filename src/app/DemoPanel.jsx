@@ -42,7 +42,7 @@ export default function DemoPanel() {
     ['runner', runner, `累计收入 ¥${runner.ledger.filter((l) => l.amount > 0).reduce((a, l) => a + l.amount, 0)} · 完成 ${runner.done} 单`],
   ]
   return (
-    <aside className="fixed top-24 hidden w-72 space-y-4 xl:block" style={{ left: 'calc(50% + 15rem)' }} aria-label="演示面板">
+    <aside className={`fixed hidden w-72 space-y-4 xl:block ${state.tour.active ? 'top-[132px]' : 'top-20'}`} style={{ left: 'calc(50% + 15rem)' }} aria-label="演示面板">
       <p className="text-sm font-semibold text-muted">演示面板 · 示例数据</p>
       {accounts.map(([k, a, sub]) => (
         <button key={k} onClick={() => act('role', { role: k })} aria-pressed={state.role === k}
