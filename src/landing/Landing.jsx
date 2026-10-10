@@ -1,3 +1,4 @@
+import RouteHero from './RouteHero'
 import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import {
@@ -97,137 +98,6 @@ function Nav() {
 }
 
 // Hero 里的「真实订单卡」：用产品自己的状态跑一遍，不是截图
-const LIVE = [
-  { status: '待接单', tone: 'muted', step: 1, line: '赏金 ¥5 已冻结托管', lock: 'locked' },
-  { status: '进行中', tone: 'accent', step: 3, line: '阿远已接单，取件码已解锁', lock: 'open' },
-  { status: '待确认', tone: 'accent', step: 4, line: '送达码当面核验通过', lock: 'open' },
-  { status: '已放款', tone: 'ink', step: 6, line: '¥5 放给跑腿人，信用 +2', lock: 'hidden' },
-]
-function LiveOrder({ className = '' }) {
-  const reduce = useReducedMotion()
-  const [i, setI] = useState(reduce ? 3 : 0)
-  useEffect(() => {
-    if (reduce) return
-    const t = setInterval(() => setI((v) => (v + 1) % LIVE.length), 2600)
-    return () => clearInterval(t)
-  }, [reduce])
-  const s = LIVE[i]
-  const T = TYPES.express
-  const LockIcon = s.lock === 'open' ? LockKeyOpen : s.lock === 'hidden' ? EyeSlash : LockKey
-  return (
-    <div className={`w-[288px] rounded-2xl bg-surface/95 p-4 shadow-[0_24px_60px_-20px_rgba(17,40,30,0.45)] ring-1 ring-line backdrop-blur ${className}`} aria-label="示例订单状态演示">
-      <div className="flex items-center gap-2">
-        <span className="inline-flex items-center gap-1.5 rounded-full bg-sunken px-2.5 py-1 text-sm font-medium"><T.Icon size={16} />{T.label}</span>
-        <AnimatePresence mode="wait">
-          <motion.span key={s.status} initial={reduce ? false : { opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -6 }} transition={{ duration: 0.25 }}
-            className={`rounded-full px-2.5 py-1 text-sm font-semibold ${s.tone === 'accent' ? 'bg-accent-soft text-accent' : s.tone === 'ink' ? 'bg-ink text-bg' : 'bg-sunken text-muted'}`}>
-            {s.status}
-          </motion.span>
-        </AnimatePresence>
-        <span className="tnum ml-auto text-xl font-bold">¥5</span>
-      </div>
-      <p className="mt-2.5 text-[15px] font-semibold">菜鸟驿站取 2 个小件快递</p>
-      <div className="mt-3 grid grid-cols-6 gap-1" aria-hidden="true">
-        {Array.from({ length: 6 }).map((_, k) => (
-          <motion.span key={k} className="h-1.5 rounded-full bg-sunken" animate={{ backgroundColor: k < s.step ? 'var(--accent)' : 'var(--sunken)' }} transition={{ duration: 0.4, delay: k * 0.04 }} />
-        ))}
-      </div>
-      <AnimatePresence mode="wait">
-        <motion.p key={s.line} initial={reduce ? false : { opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.25 }}
-          className="mt-3 flex items-center gap-1.5 text-sm text-muted">
-          <LockIcon size={15} weight="bold" className="shrink-0" />{s.line}
-        </motion.p>
-      </AnimatePresence>
-    </div>
-  )
-}
-
-// 首屏填空句：谁、顺路帮你做什么，胶囊里的词轮换（借鉴 Linearity 的填空句）
-const PAIRS = [
-  { who: '住梅园的同学', what: '取快递', ic: 'type-express' },
-  { who: '早起的学姐', what: '占个靠窗座位', ic: 'type-seat' },
-  { who: '刚下课的学弟', what: '带一份黄焖鸡', ic: 'type-food' },
-  { who: '去超市的室友', what: '捎两包纸巾', ic: 'type-buy' },
-]
-function Chip({ children, icon: ic }) {
-  const reduce = useReducedMotion()
-  return (
-    <motion.span layout={!reduce} transition={{ type: 'spring', stiffness: 260, damping: 26 }} className="mx-1 inline-flex translate-y-[-2px] items-center gap-1.5 whitespace-nowrap rounded-full bg-surface px-3 py-1 align-middle text-ink ring-1 ring-line">
-      {ic && <img src={icon(ic + '-v1')} width={22} height={22} alt="" aria-hidden="true" className="size-[22px]" />}
-      <AnimatePresence mode="popLayout" initial={false}>
-        <motion.span key={children} initial={reduce ? false : { y: '100%', opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: '-100%', opacity: 0 }} transition={{ duration: 0.35, ease }} className="inline-block font-semibold">{children}</motion.span>
-      </AnimatePresence>
-    </motion.span>
-  )
-}
-function ChipSentence() {
-  const reduce = useReducedMotion()
-  const [i, setI] = useState(0)
-  useEffect(() => {
-    if (reduce) return
-    const t = setInterval(() => setI((v) => (v + 1) % PAIRS.length), 2800)
-    return () => clearInterval(t)
-  }, [reduce])
-  const p = PAIRS[i]
-  return (
-    <p className="text-lg leading-[2.2] text-muted md:text-xl md:leading-[2.2]" aria-live="off">
-      <span className="block">让<Chip>{p.who}</Chip></span>
-      <span className="block">顺路帮你<Chip icon={p.ic}>{p.what}</Chip></span>
-      <span className="mt-1 block leading-relaxed">校内实名认证，赏金先托管。</span>
-    </p>
-  )
-}
-
-// 「认人」下面一笔手绘下划线，入场时自己画出来（借鉴 Linearity）
-function Underlined({ children }) {
-  const reduce = useReducedMotion()
-  return (
-    <span className="relative inline-block text-accent">
-      {children}
-      <svg aria-hidden="true" viewBox="0 0 200 20" preserveAspectRatio="none" className="absolute -bottom-[0.2em] left-0 h-[0.18em] w-full overflow-visible">
-        <motion.path d="M3 13 C 45 4, 95 4, 120 9 S 175 17, 197 7" fill="none" stroke="currentColor" strokeWidth="5" strokeLinecap="round"
-          initial={reduce ? false : { pathLength: 0 }} animate={{ pathLength: 1 }} transition={{ duration: 0.9, delay: 0.9, ease }} />
-      </svg>
-    </span>
-  )
-}
-
-function Hero() {
-  const reduce = useReducedMotion()
-  const ref = useRef(null)
-  const { scrollYProgress } = useScroll({ target: ref, offset: ['start start', 'end start'] })
-  const imgY = useTransform(scrollYProgress, [0, 1], [0, 0])
-  const imgScale = useTransform(scrollYProgress, [0, 1], reduce ? [1, 1] : [1.04, 1.12])
-  const line = (i) => ({ initial: reduce ? false : { y: '105%' }, animate: { y: 0 }, transition: { duration: 0.9, delay: 0.1 + i * 0.09, ease } })
-  const fade = (d) => ({ initial: reduce ? false : { opacity: 0, y: 16 }, animate: { opacity: 1, y: 0 }, transition: { duration: 0.8, delay: d, ease } })
-  return (
-    <section id="top" ref={ref} className="mx-auto max-w-7xl px-4 pb-20 pt-10 md:px-8 md:pb-28 md:pt-14">
-      <h1 className="text-[46px] font-bold leading-[1.05] tracking-[-0.035em] md:text-[clamp(64px,8vw,112px)]">
-        <span className="block overflow-hidden pb-1"><motion.span className="block" {...line(0)}>校园跑腿，</motion.span></span>
-        <span className="block overflow-hidden pb-[0.28em]"><motion.span className="block" {...line(1)}>先<Underlined>认人</Underlined>再接单</motion.span></span>
-      </h1>
-      <div className="mt-10 grid items-start gap-10 md:mt-12 lg:grid-cols-12">
-        <div className="lg:col-span-4">
-          <motion.div {...fade(0.35)}><ChipSentence /></motion.div>
-          <motion.div {...fade(0.45)} className="mt-8 flex flex-wrap items-center gap-3">
-            <Cta />
-            <Anchor to="scenes" className="group inline-flex h-14 items-center gap-2 whitespace-nowrap rounded-full px-5 text-[17px] font-semibold text-ink transition hover:bg-sunken">
-              看产品思考<ArrowDown size={18} weight="bold" className="transition-transform group-hover:translate-y-0.5" />
-            </Anchor>
-          </motion.div>
-        </div>
-        <motion.div {...fade(0.2)} className="relative lg:col-span-8">
-          <div className="overflow-hidden rounded-2xl bg-sunken">
-            <motion.img style={{ y: imgY, scale: imgScale }} src={img('hero-v1')} width={1400} height={1050} alt="校园林荫道上，学生抱着快递、拎着外卖快步走" fetchPriority="high"
-              className="aspect-[4/3] w-full object-cover lg:aspect-[16/10]" />
-          </div>
-          <LiveOrder className="relative -mt-16 ml-4 sm:absolute sm:-bottom-8 sm:left-6 sm:mt-0 lg:-left-10" />
-        </motion.div>
-      </div>
-    </section>
-  )
-}
-
 // 唯一的跑马灯：一眼看到能跑哪些单、在哪些楼之间跑
 function Ticker() {
   const reduce = useReducedMotion()
@@ -687,7 +557,7 @@ export default function Landing() {
       <ScrollProgress />
       <Nav />
       <main>
-        <Hero />
+        <RouteHero Cta={Cta} Anchor={Anchor} />
         <Ticker />
         <Scenes />
         <Loop />
