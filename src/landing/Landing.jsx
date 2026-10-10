@@ -336,7 +336,8 @@ function StageMap({ i, tall = false }) {
   const sp = reduce ? { duration: 0 } : { type: 'spring', stiffness: 120, damping: 22 }
   const me = stagePt(STAGE_P[i])
   const D = STAGE_PTS.map(([x, y], k) => `${k ? 'L' : 'M'}${x} ${y}`).join(' ')
-  const station = [PLACES.cainiao.door[0], PLACES.cainiao.door[1] + 40]
+  // 驿站门口就在路边：包裹和名牌都贴着路线，看得出这条路经过驿站
+  const station = [PLACES.cainiao.door[0], STAGE_PTS[1][1] + 34]
   const mei = [PLACES.mei5.door[0], PLACES.mei5.door[1] + 60]
   const tag = (txt, at, strong, z = '') => <span className={`absolute ${z} -translate-x-1/2 whitespace-nowrap rounded-full px-1.5 py-0.5 text-[11px] font-semibold shadow-sm ${strong ? 'bg-ink text-bg' : 'bg-surface text-ink ring-1 ring-line'}`} style={spct(at)}>{txt}</span>
   return (
@@ -346,15 +347,13 @@ function StageMap({ i, tall = false }) {
         <image href={`${import.meta.env.BASE_URL}images/campus-map-v2.webp`} x="0" y="0" width="1600" height="900" />
         <path d={D} fill="none" stroke="var(--ink)" strokeOpacity="0.35" strokeWidth="12" strokeDasharray="4 22" strokeLinecap="round" strokeLinejoin="round" />
         <motion.path d={D} fill="none" stroke="var(--ink)" strokeOpacity="0.9" strokeWidth="14" strokeLinecap="round" strokeLinejoin="round" initial={false} animate={{ pathLength: STAGE_P[i] }} transition={sp} />
-        {/* 路边拐进驿站的一小段：线和驿站连起来 */}
-        <path d={`M${PLACES.cainiao.door[0]} ${STAGE_PTS[1][1]} L${station[0]} ${station[1]}`} fill="none" stroke="var(--ink)" strokeOpacity="0.55" strokeWidth="10" strokeDasharray="2 14" strokeLinecap="round" />
         {/* 捎上包裹以后的那段变绿 */}
         <motion.path d={NEED_D} fill="none" stroke="var(--accent)" strokeWidth="14" strokeLinecap="round" strokeLinejoin="round" initial={false}
           animate={{ pathLength: Math.max(0, (STAGE_P[i] - STAGE_F) / (1 - STAGE_F)), opacity: i >= 3 ? 1 : 0 }} transition={sp} />
       </svg>
       {tag('一教', [STAGE_PTS[0][0] - 50, STAGE_PTS[0][1] - 110], false, 'z-20')}
-      {tag('菜鸟驿站', [station[0], station[1] + 70], i === 2)}
-      {tag('梅园', [mei[0], mei[1] + 70], i >= 4)}
+      {tag('菜鸟驿站', [station[0], station[1] + 62], i === 2)}
+      {tag('梅园', [mei[0], mei[1] + 118], i >= 4)}
       {/* 包裹：先在驿站等着（发布时一闪），第 3 步起跟着阿远走，送到后落在梅园 */}
       {i < 3 && (
         <motion.img src={icon('type-express-v1')} width={28} height={28} alt="" className="absolute size-7 -translate-x-1/2 -translate-y-1/2" style={spct(station)}
