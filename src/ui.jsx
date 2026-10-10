@@ -4,9 +4,9 @@ import { X, Star } from '@phosphor-icons/react'
 import { TYPES } from './data'
 
 // 表达内容的小图标用生成图（public/icons/ic-*.webp），和 Phosphor 同样的用法：<X size={20} className="..." />
-export function gi(name) {
+export function gi(name, v = 'v1') {
   const C = ({ size = 20, className = '' }) => (
-    <img src={`${import.meta.env.BASE_URL}icons/ic-${name}-v1.webp`} width={size} height={size} alt="" aria-hidden="true"
+    <img src={`${import.meta.env.BASE_URL}icons/ic-${name}-${v}.webp`} width={size} height={size} alt="" aria-hidden="true"
       className={`inline-block shrink-0 object-contain ${className.replace(/\btext-\S+/g, '')}`} style={{ width: size, height: size }} />
   )
   C.displayName = `Ico(${name})`

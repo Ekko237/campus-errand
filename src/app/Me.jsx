@@ -70,7 +70,7 @@ function RemindToggle() {
               <img src={`${import.meta.env.BASE_URL}brand/logo-v2.png`} width={36} height={36} alt="" className="size-9 shrink-0 rounded-[10px]" />
               <span className="min-w-0 flex-1 text-sm">
                 <span className="flex justify-between gap-2 font-semibold"><span>顺路侠 · 顺路提醒</span><span className="font-normal text-muted">现在</span></span>
-                <span className="mt-0.5 block leading-snug">{near.length ? <>{name(r.from)} → {name(r.to)} 上有 <b className="text-accent">{near.length} 单</b>顺路，点开看看</> : <>{name(r.from)} → {name(r.to)} 上暂时没有顺路的单</>}</span>
+                <span className="mt-0.5 block leading-snug">{near.length ? <>{name(r.from)} → {name(r.to)} 上有 <b className="text-accent">{near.length} 单</b>顺路，<span className="whitespace-nowrap">点开看看</span></> : <>{name(r.from)} → {name(r.to)} 上暂时没有顺路的单</>}</span>
               </span>
             </motion.button>
           )}

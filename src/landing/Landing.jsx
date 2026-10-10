@@ -4,14 +4,14 @@ import { Link } from 'react-router-dom'
 import {
   motion, AnimatePresence, useReducedMotion, useScroll, useTransform, useSpring, useMotionValue, useInView, animate, useMotionValueEvent,
 } from 'motion/react'
-import { ArrowRight, ArrowLeft, ArrowDown, CaretLeft, CaretRight, Plus, ArrowCounterClockwise } from '@phosphor-icons/react'
+import { ArrowRight, ArrowLeft, ArrowDown, CaretLeft, CaretRight, Plus, ArrowCounterClockwise, Check } from '@phosphor-icons/react'
 import { RULES_PLUS, RULES_MINUS, POSTER_RULES_PLUS, POSTER_RULES_MINUS, LEVELS, POSTER_TIERS, TYPES, seedTasks, detourMin, findBanned } from '../data'
 import { useNavigate } from 'react-router-dom'
 import { gi } from '../ui'
 import { routePath, PLACES } from '../campusMap'
 const LockKey = gi('lock')
 const LockKeyOpen = gi('lock-open')
-const EyeSlash = gi('eye-off')
+const EyeSlash = gi('eye-off', 'v2')
 
 const ease = [0.16, 1, 0.3, 1]
 const img = (name) => `${import.meta.env.BASE_URL}images/${name}.webp`
@@ -159,7 +159,7 @@ function Nav({ page }) {
         </nav>
         <div className="flex items-center gap-2">
           <div className={`transition-opacity duration-300 ${(scrolled || !home) && !open ? '' : 'max-md:pointer-events-none max-md:opacity-0'}`}><Cta size="sm" /></div>
-          {!home && <Link to="/" aria-label="回首页" className="inline-flex h-10 items-center gap-1.5 rounded-full bg-sunken px-3 text-[15px] font-semibold active:scale-[0.97] md:px-4"><ArrowLeft size={16} weight="bold" /><span className="max-md:hidden">回首页</span></Link>}
+          {!home && <Link to="/" aria-label="回首页" className="inline-flex h-10 items-center gap-1.5 rounded-full bg-sunken px-3 text-[15px] font-semibold active:scale-[0.97] md:px-4"><ArrowLeft size={16} weight="bold" /><span className="max-md:hidden">回</span>首页</Link>}
           {home && (
             <button onClick={() => { setCur(scrollY + innerHeight >= document.documentElement.scrollHeight - 4 ? SECTIONS[SECTIONS.length - 1][0] : [...SECTIONS].reverse().find(([id]) => (document.getElementById(id)?.getBoundingClientRect().top ?? 1e9) < 140)?.[0]); setOpen((v) => !v) }} aria-expanded={open} aria-controls="mnav" className="grid h-10 place-items-center rounded-full bg-sunken px-4 text-[15px] font-semibold active:scale-[0.97] lg:hidden">{open ? '收起' : '目录'}</button>
           )}
@@ -363,6 +363,8 @@ function StageMap({ i, tall = false }) {
       {tag('菜鸟驿站', [station[0], STAGE_PTS[1][1] + 130], false, 'z-20')}
       {/* 梅园名牌落在梅园那栋楼上（路南），和首屏、全校地图同一栋 */}
       {tag('梅园', [PLACES.mei5.door[0], tall ? 505 : 470], false)}
+      {/* 取过件以后驿站留一个打勾的小圈：看得出快递是在这里被捎上的 */}
+      {i >= 3 && <span className="absolute z-10 grid size-5 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full bg-surface text-accent ring-2 ring-accent" style={spct(station)}><Check size={12} weight="bold" /></span>}
       {/* 包裹：先在驿站等着（发布时一闪），阿远走到驿站那步就收起（被他拿走了），不和头像叠 */}
       {i < 2 && (
         <motion.img src={icon('type-express-v1')} width={28} height={28} alt="" className="absolute size-7 -translate-x-1/2 -translate-y-1/2" style={spct(station)}
@@ -587,9 +589,9 @@ function TrustStop({ x, lit, reduce }) {
 
 // 隐私分级：同一张取件卡，接单前打码、接单后亮出、结束后收起，三秒换一次
 const PRIV = [
-  { k: '接单前', code: '• • ••••', room: '梅园 * 号楼 ***', tone: 'muted', who: '大厅里只看到「梅园」，楼号和门牌都打了码' },
+  { k: '接单前', code: '•-•-••••', room: '梅园 * 号楼 ***', tone: 'muted', who: '大厅里只看到「梅园」，楼号和门牌都打了码' },
   { k: '接单后', code: '6-2-3108', room: '梅园 5 号楼 412', tone: 'open', who: '只有接下这单的同学看得到' },
-  { k: '结束后', code: '• • ••••', room: '梅园 * 号楼 ***', tone: 'closed', who: '确认放款那一刻收回，对方再也看不到' },
+  { k: '结束后', code: '•-•-••••', room: '梅园 * 号楼 ***', tone: 'closed', who: '确认放款那一刻收回，对方再也看不到' },
 ]
 function PrivacyDemo() {
   const reduce = useReducedMotion()
@@ -889,7 +891,7 @@ function BanDemo() {
       <p className="mt-4 text-xs font-semibold text-muted">会被拦下的词</p>
       <ul className="mt-2 flex flex-wrap gap-1.5">
         {['代考', '替考', '代签到', '代点名', '代写作业', '代刷网课'].map((w) => (
-          <li key={w} className={`rounded-full px-2.5 py-1 text-xs font-semibold transition-colors ${hit && hit[0] === w ? 'bg-danger text-on-accent line-through decoration-2' : 'bg-sunken text-ink/75'}`}>{w}</li>
+          <li key={w} className={`rounded-full px-2.5 py-1 text-xs font-semibold transition-colors ${hit && hit[0] === w ? 'bg-danger text-on-accent' : 'bg-sunken text-ink/75'}`}>{w}</li>
         ))}
       </ul>
     </div>

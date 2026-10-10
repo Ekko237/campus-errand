@@ -11,7 +11,7 @@ const MapPin = gi('pin')
 const Clock = gi('clock')
 const LockKey = gi('lock')
 const LockKeyOpen = gi('lock-open')
-const EyeSlash = gi('eye-off')
+const EyeSlash = gi('eye-off', 'v2')
 const Phone = gi('phone')
 const Package = gi('parcel')
 const House = gi('door')
@@ -268,7 +268,17 @@ function DeliverSheet({ t, open, onClose }) {
       {mode === 'code' ? (
         <div className="mt-5">
           <Field label="发单人的 4 位送达码" error={err} hint={`演示提示：发单人页面能看到送达码，这单是 ${t.deliverCode}`}>
-            <input inputMode="numeric" maxLength={4} value={code} onChange={(e) => { setCode(e.target.value.replace(/\D/g, '')); setErr(null) }} className={`${inputCls} tnum text-center text-2xl tracking-[0.5em] ${err ? 'bg-danger-soft ring-2 ring-danger' : ''}`} placeholder="____" aria-label="4 位送达码" aria-invalid={!!err} />
+            {/* 四格送达码：真输入框透明盖在四个格子上，打一位亮一格，填满四位格子变绿 */}
+            <div className="relative">
+              <div className="grid grid-cols-4 gap-2" aria-hidden="true">
+                {[0, 1, 2, 3].map((k) => (
+                  <span key={k} className={`tnum grid h-14 place-items-center rounded-xl text-2xl font-bold ring-1 transition-colors ${err ? 'bg-danger-soft ring-2 ring-danger' : code.length === 4 ? 'bg-accent-soft ring-2 ring-accent text-accent' : k === code.length ? 'bg-surface ring-2 ring-ink' : 'bg-surface ring-line'}`}>
+                    {code[k] ? <motion.span key={code[k] + k} initial={{ y: 6, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ duration: 0.15 }}>{code[k]}</motion.span> : ''}
+                  </span>
+                ))}
+              </div>
+              <input inputMode="numeric" maxLength={4} value={code} onChange={(e) => { setCode(e.target.value.replace(/\D/g, '').slice(0, 4)); setErr(null) }} className="absolute inset-0 size-full cursor-text opacity-0" aria-label="4 位送达码" aria-invalid={!!err} />
+            </div>
           </Field>
         </div>
       ) : (
@@ -612,12 +622,12 @@ export default function TaskDetail() {
   const own = t.posterId === 'poster'
   const pmode = privacyMode(t, state.role)
   // 刚发布的那几秒：顶上落一张「已冻结托管」，让人看见钱被锁住了，而不是直接跳到详情
-  const justPosted = own && t.status === 'open' && Date.now() - t.createdAt < 6000
+  const justPosted = own && state.role === 'poster' && t.status === 'open' && Date.now() - t.createdAt < 6000
   return (
     <div className="space-y-5">
       {justPosted && (
         <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} transition={{ type: 'spring', stiffness: 380, damping: 28 }}
-          className="flex items-center gap-3 rounded-2xl bg-accent p-4 text-on-accent" role="status">
+          data-tour-moment="" className="flex items-center gap-3 rounded-2xl bg-accent p-4 text-on-accent" role="status">
           <motion.img src={`${import.meta.env.BASE_URL}icons/trust-escrow-v1.webp`} width={40} height={40} alt="" className="size-10 shrink-0 rounded-xl bg-on-accent/90 object-contain p-1"
             initial={{ y: -16, rotate: -12, scale: 1.3 }} animate={{ y: 0, rotate: 0, scale: 1 }} transition={{ type: 'spring', stiffness: 500, damping: 14, delay: 0.15 }} />
           <p className="min-w-0 flex-1 text-[15px] leading-snug"><b className="block text-lg">已发布</b>¥{t.reward} 已冻结托管，送达确认后才放给跑腿人</p>

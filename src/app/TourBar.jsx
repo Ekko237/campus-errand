@@ -76,8 +76,8 @@ export default function TourBar() {
     const evs = ['pointerdown', 'wheel', 'touchstart', 'keydown']
     evs.forEach((e) => window.addEventListener(e, hands, { passive: true, capture: true }))
     const id = setTimeout(() => {
-      // 只在刚接单（下一步取件）和刚放款（下一步打分）这两步停
-      const moment = [4, 7].includes(step?.n) ? document.querySelector('main [data-tour-moment]') : null
+      // 只在刚发布（下一步认证）、刚接单（下一步取件）和刚放款（下一步打分）这三步停
+      const moment = [2, 4, 7].includes(step?.n) ? document.querySelector('main [data-tour-moment]') : null
       if (moment) {
         const head = document.querySelector('header')?.getBoundingClientRect().bottom ?? 64
         const mr = moment.getBoundingClientRect()
