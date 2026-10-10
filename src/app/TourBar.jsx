@@ -55,7 +55,7 @@ export default function TourBar() {
       const head = document.querySelector('header')?.getBoundingClientRect().bottom ?? 64
       const navTop = document.querySelector('nav[aria-label="主导航"]')?.getBoundingClientRect().top ?? innerHeight
       const r = el.getBoundingClientRect()
-      const top = head + 16, bottom = (navTop > innerHeight / 2 ? navTop : innerHeight) - 64
+      const top = head + 16, bottom = (navTop > innerHeight / 2 ? navTop : innerHeight) - 96
       // 贴底常驻的按钮（发布页）本来就看得见，不滚，让人从表单顶上看起
       if (touched) return
       const hard = (navTop > innerHeight / 2 ? navTop : innerHeight) - 4

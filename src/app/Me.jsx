@@ -42,7 +42,7 @@ function RemindToggle() {
       <button onClick={flip} role="switch" aria-checked={on} aria-label="下课前 5 分钟提醒我路上的单" className="flex w-full items-center gap-3 px-4 py-3 text-left">
         <span className="min-w-0 flex-1">
           <span className="block text-[15px] font-semibold">下课前 5 分钟提醒我路上的单</span>
-          <span className="block text-sm text-muted">{on ? '已开启：每天下课前推送这条路上的单（原型里不真发通知）' : '按你常走的路和下课时间提醒，不用自己翻大厅'}</span>
+          <span className="block text-sm text-muted">{on ? '已开启：每天下课前 5 分钟，把这条路上的单推给你' : '按你常走的路和下课时间提醒，不用自己翻大厅'}</span>
         </span>
         <span className={`relative h-7 w-12 shrink-0 rounded-full transition-colors ${on ? 'bg-accent' : 'bg-sunken ring-1 ring-line'}`}>
           <span className={`absolute left-1 top-1 size-5 rounded-full bg-surface shadow transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] ${on ? 'translate-x-5' : ''}`} />
@@ -51,7 +51,7 @@ function RemindToggle() {
       <AnimatePresence initial={false}>
         {on && (
           <motion.div initial={reduce ? false : { opacity: 0, y: -8, height: 0 }} animate={{ opacity: 1, y: 0, height: 'auto' }} exit={{ opacity: 0, height: 0 }} transition={{ duration: 0.25 }} className="overflow-hidden px-4">
-            <p className="flex items-center justify-between text-xs font-semibold text-muted">推送预览<button onClick={() => setRing(true)} className="h-8 rounded-full bg-accent-soft px-3 text-[13px] font-semibold text-accent active:scale-[0.97]">模拟下课，推给我</button></p>
+            <p className="flex items-center justify-between text-xs font-semibold text-muted">下课时你会收到<button onClick={() => setRing(true)} className="h-8 rounded-full bg-accent-soft px-3 text-[13px] font-semibold text-accent active:scale-[0.97]">模拟下课，推给我</button></p>
             <div className="mb-4 mt-1.5 flex gap-3 rounded-2xl bg-bg p-3 shadow-[0_10px_24px_-16px_rgba(17,40,30,0.5)] ring-1 ring-line">
               <img src={`${import.meta.env.BASE_URL}brand/logo-v2.png`} width={36} height={36} alt="" className="size-9 shrink-0 rounded-lg" />
               <div className="min-w-0 text-sm">
