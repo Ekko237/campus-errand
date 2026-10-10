@@ -1032,8 +1032,8 @@ function Routes() {
 // 结尾：选你下课常走的路，当场算出此刻有几单顺路；带着这条路进原型（大厅按它排序）
 function Final({ page }) {
   const nav = useNavigate()
-  // 结尾不再放路线按钮（和「顺路地图」那节重复），就讲最常见的一教下课回梅园
-  const ri = 0
+  // 结尾让人真的选一条自己的路：锁屏推送、单数、按钮带进原型的路线都跟着换
+  const [ri, setRi] = useState(0)
   const R = ROUTES[ri]
   const reduce = useReducedMotion()
   const hits = routeHits(R)
@@ -1056,6 +1056,14 @@ function Final({ page }) {
       <div className="mx-auto grid max-w-7xl gap-10 px-4 py-20 md:px-8 md:py-28 lg:grid-cols-12 lg:items-center lg:gap-12 lg:py-32">
         <div className="lg:col-span-5">
           <Reveal><h2 className="font-display text-balance text-[40px] font-bold leading-[1.08] tracking-[-0.035em] md:text-7xl">你下课<br />常走哪条路？</h2></Reveal>
+          <Reveal delay={0.05}>
+            <div className="mt-8 flex flex-wrap gap-1.5 md:gap-2" role="group" aria-label="选你常走的路">
+              {ROUTES.map((x, i) => (
+                <button key={x.label} onClick={() => setRi(i)} aria-pressed={i === ri}
+                  className={`h-11 whitespace-nowrap rounded-full px-3 text-[14px] font-semibold transition-colors active:scale-[0.97] md:px-4 md:text-[15px] ${i === ri ? 'bg-ink text-bg' : 'bg-surface text-ink ring-1 ring-line'}`}><span className="md:hidden">{x.short}</span><span className="max-md:hidden">{x.label}</span></button>
+              ))}
+            </div>
+          </Reveal>
           <Reveal delay={0.1}>
             <p className="mt-8 text-lg text-muted md:text-xl" aria-live="polite">此刻路上有 <AnimatePresence mode="wait" initial={false}><motion.b key={n} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.18 }} className="tnum inline-block text-3xl text-accent md:text-4xl">{n}</motion.b></AnimatePresence> 单顺路，<span className="whitespace-nowrap">捎上都不超过 5 分钟</span></p>
             <p className="mt-3 max-w-[34ch] text-[15px] text-muted">在原型「我的」里打开下课提醒，下课前 5 分钟把这条路上的单推给你。</p>

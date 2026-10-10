@@ -174,7 +174,7 @@ function PayoutRail({ t, play }) {
     <div className="mt-4 border-t border-accent/15 pt-4" aria-label={`¥${t.reward} 已从托管放给${runnerName}`}>
       <div className="grid grid-cols-[auto_1fr_auto] items-center gap-3">
         <div className="text-center">
-          <p className="text-sm text-muted">{posterName}托管</p>
+          <p className="text-sm text-muted">{posterName}付的</p>
           <motion.p className="tnum text-lg font-bold" initial={anim ? { opacity: 1 } : false} animate={{ opacity: 0.35 }} transition={{ duration: 0.5, delay: anim ? 0.2 : 0 }}>¥{t.reward}</motion.p>
         </div>
         <div className="relative h-1.5 rounded-full bg-surface">
@@ -216,7 +216,7 @@ function Escrow({ t }) {
       <div className="flex items-center gap-3">
         <img src={`${import.meta.env.BASE_URL}icons/trust-escrow-v1.webp`} width={40} height={40} alt="护着硬币的盾牌" className="size-10 shrink-0 object-contain" />
         <div className="flex-1">
-          <p className="text-[15px] font-semibold">赏金托管 · {map[0]}</p>
+          <p className="text-[15px] font-semibold">{map[0] === '托管中' ? '赏金托管中' : `赏金托管 · ${map[0]}`}</p>
           <p className="text-sm text-muted">{map[1]}</p>
         </div>
         <span className="tnum text-3xl font-bold">¥{t.reward}</span>
@@ -268,7 +268,7 @@ function DeliverSheet({ t, open, onClose }) {
       <div className="min-h-[10.5rem]">
       {mode === 'code' ? (
         <div className="mt-5">
-          <Field label="发单人的 4 位送达码" error={err} hint={`演示提示：发单人页面能看到送达码，这单是 ${t.deliverCode}`}>
+          <Field label="发单人的 4 位送达码" error={err} hint={code.length === 2 && t.deliverCode.startsWith(code) ? `对着发单人手机上的码，补上后两位（演示：${t.deliverCode}）` : `演示提示：发单人页面能看到送达码，这单是 ${t.deliverCode}`}>
             {/* 四格送达码：真输入框透明盖在四个格子上，打一位亮一格，填满四位格子变绿 */}
             <div className="relative">
               <div className="grid grid-cols-4 gap-2" aria-hidden="true">

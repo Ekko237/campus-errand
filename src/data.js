@@ -177,7 +177,7 @@ export function seedTasks() {
     mk({ id: 's5', type: 'express', title: '顺丰大件显示器，需要力气', from: 'sf', to: 'yan', reward: 15, windowMin: 180, urgent: false, size: 'l', note: '箱子大约 8 斤，有提手', room: '研究生公寓 B 栋 1103', posterName: '程立', posterCredit: 97, ago: 15 }),
     mk({ id: 's6', type: 'buy', title: '二食堂带一份黄焖鸡米饭', from: 'canteen2', to: 'jiao1', reward: 4, windowMin: 35, urgent: true, size: 's', note: '微辣，不要香菜', room: '一教 204 教室后排', posterName: '于小渔', posterCredit: 68, ago: 4 }),
     mk({ id: 's7', type: 'other', title: '把雨伞送到体育馆门口', from: 'lan1', to: 'gym', reward: 5, windowMin: 45, urgent: false, size: 's', note: '伞在宿管阿姨那里，报我名字', room: '兰园 1 号楼宿管室', posterName: '乐知行', posterCredit: 86, ago: 9 }),
-    mk({ id: 's8', type: 'seat', title: '明天讲座帮占前排两个位', from: 'hall', to: 'hall', reward: 12, windowMin: 1440, urgent: false, size: 's', note: '13:30 开始，13:00 前到', room: '学术报告厅前三排', posterName: '社团 王一凡', posterCredit: 90, ago: 55 }),
+    mk({ id: 's8', type: 'seat', title: '今晚讲座帮占前排两个位', from: 'hall', to: 'hall', reward: 12, windowMin: 120, urgent: false, size: 's', note: '19:00 开始，18:40 前到', room: '学术报告厅前三排', posterName: '社团 王一凡', posterCredit: 90, ago: 55 }),
   ]
 }
 
