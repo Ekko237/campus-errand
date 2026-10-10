@@ -215,7 +215,6 @@ function Bubble({ p, children, small, dark, green }) {
 // 订单卡：六格进度（点哪格跳到哪一步）、状态、托管、取件码、两个人的信用；正在变的那一格亮起来
 function OrderCard({ i, go, small = false }) {
   const reduce = useReducedMotion()
-  const prev = Math.max(0, i - 1)
   const status = (cls) => (
     <AnimatePresence mode="wait" initial={false}>
       <motion.span key={STATUS[i]} initial={reduce ? false : { opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -6 }} transition={{ duration: 0.2 }}
@@ -262,8 +261,8 @@ function OrderCard({ i, go, small = false }) {
       <div className="mt-3 grid grid-cols-2 gap-1.5 xl:grid-cols-4">
         {cell('赏金托管', ESCROW[i], i === 1 || i === 5)}
         {cell('取件码', CODE[i], i === 3, `c${i}`)}
-        {cell('阿远信用', <Roll v={RUNNER[i]} />, i >= 5, `r${RUNNER[i]}`, RUNNER[i] - RUNNER[prev])}
-        {cell('小满信用', <Roll v={POSTER[i]} />, i >= 5, `p${POSTER[i]}`, POSTER[i] - POSTER[prev])}
+        {cell('阿远信用', <Roll v={RUNNER[i]} />, i >= 5, `r${RUNNER[i]}`, RUNNER[i] - RUNNER[0])}
+        {cell('小满信用', <Roll v={POSTER[i]} />, i >= 5, `p${POSTER[i]}`, POSTER[i] - POSTER[0])}
       </div>
     </div>
   )
@@ -274,7 +273,7 @@ function Chapter({ c, k, now, dark, flat, children }) {
   return (
     <article data-ch={k} className={`flex flex-col transition-opacity duration-500 ${flat ? 'py-2' : 'pb-10 pt-8 max-lg:min-h-[64svh] lg:min-h-[74svh] lg:justify-center lg:py-0'} ${now ? '' : 'lg:opacity-45'}`}>
       <div className="flex items-end gap-4">
-        {k > 0 && <span className={`tnum font-display text-[56px] leading-none md:text-[72px] ${dark ? 'text-on-accent/60' : 'text-accent/30'}`}>0{k}</span>}
+        {k > 0 && <span className={`tnum font-display text-[56px] leading-none transition-colors duration-500 md:text-[72px] ${dark ? (now ? 'text-on-accent' : 'text-on-accent/50') : now ? 'text-accent' : 'text-accent/30'}`}>0{k}</span>}
         <p className={`flex items-center gap-2 pb-1 text-sm font-semibold ${dark ? 'text-on-accent' : 'text-accent'}`}>
           <img src={icon(c.icon)} width={32} height={32} alt={c.alt} loading="lazy" className="size-8 object-contain" />{c.kicker}
         </p>
@@ -309,6 +308,21 @@ function SceneShot() {
       <img src={img('scene-express-v3')} width={840} height={560} alt="傍晚的校园快递驿站，货架上堆满包裹，门口排着长队" loading="lazy" className="aspect-[3/2] w-full object-cover" />
       <figcaption className="bg-surface px-3 py-2 text-sm text-muted">傍晚 17:40 的驿站，门口要排二十分钟</figcaption>
     </figure>
+  )
+}
+
+// 最后一步的收尾：两个人的信用分放大，从 70、88 滚到 73、90
+function Finale({ on }) {
+  return (
+    <div className="mt-8 grid max-w-[420px] grid-cols-2 gap-4">
+      {[['阿远 · 跑腿', 70, 73], ['小满 · 发单', 88, 90]].map(([who, a, b]) => (
+        <div key={who} className="rounded-2xl bg-on-accent/10 p-4 ring-1 ring-on-accent/20">
+          <p className="text-sm font-semibold opacity-80">{who}</p>
+          <p className="tnum mt-1 font-display text-[64px] leading-none md:text-[80px]"><Roll v={on ? b : a} /></p>
+          <p className="tnum mt-2 text-sm font-bold">+{b - a} · 从 {a} 起</p>
+        </div>
+      ))}
+    </div>
   )
 }
 
@@ -379,14 +393,14 @@ export default function Story() {
   return (
     <section id="story" className="scroll-mt-16 px-2 md:px-4">
       <div className={`rounded-[32px] transition-colors duration-700 md:rounded-[48px] ${dark ? 'bg-accent-deep text-on-accent' : 'bg-bg text-ink'}`}>
-        <div className="mx-auto max-w-7xl px-2 pb-10 md:px-4 lg:grid lg:grid-cols-12 lg:gap-12 lg:pb-[12svh]">
+        <div className="mx-auto max-w-7xl px-2 pb-10 md:px-4 lg:grid lg:grid-cols-12 lg:gap-12 lg:px-4 lg:pb-[12svh] xl:max-w-[calc(80rem-32px)] xl:px-0">
           {/* 手机：吸在顶栏下面的地图 + 一行订单，下面一段段文字滚过去；顶栏的「体验原型」和「目录」一直在 */}
           <div data-story-mini className={`sticky top-16 z-20 -mx-2 px-3 pb-1 pt-2 transition-colors duration-700 lg:hidden ${dark ? 'bg-accent-deep' : 'bg-bg'}`}>
             <div className="grid gap-1.5"><StoryMap i={i} pos={pos} aspect={2.05} small /><OrderCard i={i} go={go} small /></div>
             <div aria-hidden="true" className={`pointer-events-none absolute inset-x-0 top-full h-10 bg-gradient-to-b ${dark ? 'from-accent-deep' : 'from-bg'} to-transparent`} />
           </div>
           <div ref={list} className="px-2 lg:col-span-5">
-            {CH.map((c, k) => <Chapter key={c.k} c={c} k={k} now={k === i} dark={dark} />)}
+            {CH.map((c, k) => <Chapter key={c.k} c={c} k={k} now={k === i} dark={dark}>{k === 6 && <Finale on={i === 6} />}</Chapter>)}
           </div>
           {/* 桌面：右边的舞台吸住，一直在场 */}
           <div className="hidden lg:col-span-7 lg:block">

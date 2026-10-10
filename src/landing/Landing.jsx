@@ -1027,8 +1027,9 @@ function Roadmap() {
 // 首屏之后第二段：从「一条路」放大到「整个校园」
 function Routes() {
   return (
-    <section id="routes" className="mx-auto max-w-7xl scroll-mt-16 px-4 pb-16 pt-2 md:px-8 md:pb-24 lg:pb-28">
+    <section id="routes" className="mx-auto max-w-7xl scroll-mt-16 px-4 pb-16 pt-20 md:px-8 md:pb-24 md:pt-28 lg:pb-28">
       <Reveal><H2>同一时间<br />校园里到处是顺路</H2></Reveal>
+      <Reveal delay={0.05}><Lead>阿远那一单只是其中一条。选一条路，看看此刻这条路上还有几单，顺手能捎上多少。</Lead></Reveal>
       <div className="mt-5"><CampusRoutes /></div>
     </section>
   )
