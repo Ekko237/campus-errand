@@ -647,14 +647,19 @@ function BanDemo() {
         )}
       </AnimatePresence>
       <div className={`mt-4 grid h-12 place-items-center rounded-full text-[15px] font-semibold transition-colors ${hit ? 'bg-sunken text-muted' : 'bg-accent text-on-accent'}`}>{hit ? '不能发布' : '冻结 ¥5 并发布'}</div>
-      <p className="mt-2 text-center text-xs text-muted">这是原型里的真实表单，可以去发布页自己试</p>
+      <p className="mt-4 text-xs font-semibold text-muted">会被拦下的词</p>
+      <ul className="mt-2 flex flex-wrap gap-1.5">
+        {['代考', '替考', '代签到', '代点名', '代写作业', '代写论文', '代刷网课'].map((w) => (
+          <li key={w} className={`rounded-full px-2.5 py-1 text-xs font-semibold line-through decoration-danger decoration-2 transition-colors ${hit && hit[0] === w ? 'bg-danger text-on-accent' : 'bg-sunken text-muted'}`}>{w}</li>
+        ))}
+      </ul>
+      <p className="mt-3 text-center text-xs text-muted">这是原型里的真实表单，可以去发布页自己试</p>
     </div>
   )
 }
 
 function Safety() {
   const reduce = useReducedMotion()
-  const words = ['代考', '替考', '代签到', '代点名', '代写作业', '代写论文', '代刷网课']
   return (
     <section className={`mx-auto max-w-7xl ${SECTION}`}>
       <Reveal className="relative overflow-hidden rounded-[32px] bg-ink md:rounded-[40px]">
@@ -662,15 +667,7 @@ function Safety() {
           <div className="lg:col-span-6">
             <h2 className="font-display text-[44px] font-bold leading-[1.05] tracking-[-0.03em] md:text-7xl">这些单，<br className="md:hidden" />发不出去</h2>
             <p className="mt-5 max-w-[34ch] text-lg leading-relaxed opacity-85 md:text-xl">互助不等于帮人作弊。发布时自动识别关键词并拦截，被举报核实的账号直接封禁。</p>
-            <ul className="mt-8 flex flex-wrap gap-2.5">
-              {words.map((w, i) => (
-                <li key={w} className="relative rounded-full px-4 py-2 text-[15px] font-semibold ring-1 ring-bg/35">
-                  {w}
-                  <motion.span aria-hidden="true" className="absolute left-3 right-3 top-1/2 h-0.5 origin-left bg-[#f07a6c]"
-                    initial={reduce ? false : { scaleX: 0 }} whileInView={{ scaleX: 1 }} viewport={{ once: true }} transition={{ duration: 0.5, delay: 0.3 + i * 0.08, ease }} />
-                </li>
-              ))}
-            </ul>
+
           </div>
           <div className="lg:col-span-5 lg:col-start-8"><BanDemo /></div>
         </div>
@@ -698,12 +695,20 @@ function DotMatrix() {
   const reduce = useReducedMotion()
   const ref = useRef(null)
   const on = useInView(ref, { once: true, amount: 0.5 })
+  // 100 条小路线：97 条按时送到（实线），3 条没按时（红色虚线）
   return (
-    <div ref={ref} className="grid w-max grid-cols-10 gap-1.5 md:gap-2" aria-hidden="true">
-      {Array.from({ length: 100 }, (_, i) => (
-        <motion.span key={i} className={`size-3 rounded-full md:size-3.5 ${i < 97 ? 'bg-on-accent' : 'ring-2 ring-inset ring-on-accent/50'}`}
-          initial={reduce ? false : { opacity: 0.15, scale: 0.6 }} animate={on ? { opacity: 1, scale: 1 } : {}} transition={{ duration: 0.25, delay: reduce ? 0 : (i % 10) * 0.03 + Math.floor(i / 10) * 0.05 }} />
-      ))}
+    <div ref={ref} className="grid w-max grid-cols-10 gap-x-2 gap-y-2.5" aria-hidden="true">
+      {Array.from({ length: 100 }, (_, i) => {
+        const bad = i === 23 || i === 58 || i === 86
+        return (
+          <motion.span key={i} className="flex items-center" initial={reduce ? false : { opacity: 0.12 }} animate={on ? { opacity: 1 } : {}}
+            transition={{ duration: 0.2, delay: reduce ? 0 : (i % 10) * 0.025 + Math.floor(i / 10) * 0.05 }}>
+            <span className={`size-1.5 rounded-full ${bad ? 'bg-[#f07a6c]' : 'bg-on-accent'}`} />
+            <span className={`h-0 w-3 border-t-2 md:w-4 ${bad ? 'border-dashed border-[#f07a6c]' : 'border-on-accent/80'}`} />
+            <span className={`size-1.5 rounded-full ${bad ? 'bg-[#f07a6c]' : 'bg-on-accent'}`} />
+          </motion.span>
+        )
+      })}
     </div>
   )
 }
@@ -721,7 +726,7 @@ function Metrics() {
                 <DotMatrix />
                 <div>
                   <p className="text-7xl font-bold tracking-[-0.04em] md:text-[112px] md:leading-none">97%</p>
-                  <p className="mt-2 text-lg font-semibold">每 100 单，至少 97 单按时送到</p>
+                  <p className="mt-2 text-lg font-semibold">每 100 趟顺路，至少 97 趟按时送到</p>
                   <p className="mt-1 text-[15px] font-medium opacity-60">示例目标值</p>
                 </div>
               </div>
