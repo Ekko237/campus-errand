@@ -175,59 +175,82 @@ export default function RouteHero({ Cta, Anchor }) {
   )
 }
 
-// 收尾：同一张校园图上，8 个示例单的路线依次亮起；对「一教下课回梅园」顺路的，变绿并标出多走几分钟
-const MX = (x) => 70 + ((x + 600) / 1580) * 860
-const MY = (y) => 60 + ((y + 380) / 1280) * 600
-const ME = { from: 'jiao1', to: 'mei5' }
-const curve = (a, b) => {
-  const x1 = MX(a.x), y1 = MY(a.y), x2 = MX(b.x), y2 = MY(b.y)
-  const mx = (x1 + x2) / 2, my = (y1 + y2) / 2, dx = x2 - x1, dy = y2 - y1
-  return `M${x1} ${y1} Q${mx - dy * 0.18} ${my + dx * 0.18} ${x2} ${y2}`
-}
-const SHORT = { cainiao: '菜鸟驿站', sf: '顺丰点', jd: '京东柜', canteen1: '一食堂', canteen2: '二食堂', market: '超市', gate: '北门', lib: '图书馆', jiao1: '一教', hall: '报告厅', gym: '体育馆', zhu3: '竹园', mei5: '梅园', tao2: '桃园', lan1: '兰园', yan: '研究生公寓' }
+// 收尾：同一张校园图上，8 个示例单的路线；选一条「我正要走的路」，顺路的单变绿并标出多走几分钟（都是按数据实时算的）
+const PX = (x) => 13 + ((x + 600) / 1580) * 74
+const PY = (y) => 7 + ((y + 380) / 1280) * 84
+const SHORT = { cainiao: '菜鸟驿站', sf: '顺丰点', jd: '京东柜', canteen1: '一食堂', canteen2: '二食堂', market: '教育超市', gate: '北门', lib: '图书馆', jiao1: '一教', hall: '报告厅', gym: '体育馆', zhu3: '竹园', mei5: '梅园', tao2: '桃园', lan1: '兰园', yan: '研究生公寓' }
+const ROUTES = [
+  { from: 'jiao1', to: 'mei5', label: '一教下课回梅园' },
+  { from: 'jiao1', to: 'lan1', label: '一教去兰园' },
+  { from: 'market', to: 'yan', label: '超市回研究生公寓' },
+]
 
 export function CampusRoutes() {
   const reduce = useReducedMotion()
   const box = useRef(null)
-  const inView = useInView(box, { amount: 0.35, once: true })
-  const on = reduce || inView
-  const tasks = seedTasks().map((t) => ({ ...t, m: detourMin(ME.from, ME.to, t) }))
-  const hits = tasks.filter((t) => t.m <= 5)
-  const ends = new Set(tasks.flatMap((t) => [t.from, t.to]).concat([ME.from, ME.to]))
-  const runner = `M${MX(B.jiao1.x)} ${MY(B.jiao1.y)} L${MX(B.cainiao.x)} ${MY(B.cainiao.y)} L${MX(B.mei5.x)} ${MY(B.mei5.y)}`
+  const inView = useInView(box, { amount: 0.35 })
+  const [ri, setRi] = useState(0)
+  const [touched, setTouched] = useState(false)
+  useEffect(() => {
+    if (reduce || touched || !inView) return
+    const id = setInterval(() => setRi((v) => (v + 1) % ROUTES.length), 5200)
+    return () => clearInterval(id)
+  }, [reduce, touched, inView])
+  const R = ROUTES[ri]
+  const tasks = seedTasks().map((t) => ({ ...t, m: detourMin(R.from, R.to, t) }))
+  const hits = tasks.filter((t) => t.m <= 5).sort((a, b) => a.m - b.m)
+  const pick = (i) => { setTouched(true); setRi(i) }
   return (
     <div>
-      <p className="max-w-[40ch] text-lg leading-relaxed text-muted md:text-xl">
-        以「一教下课回梅园」为例：此刻 {tasks.length} 个示例单里，有 <b className="text-accent">{hits.length} 个</b>顺路，捎上最多多走 5 分钟。
+      <div className="flex flex-wrap gap-2" role="group" aria-label="选一条你正要走的路">
+        {ROUTES.map((x, i) => (
+          <button key={x.label} onClick={() => pick(i)} aria-pressed={i === ri}
+            className={`relative h-10 whitespace-nowrap rounded-full px-4 text-[15px] font-semibold transition-colors ${i === ri ? 'text-bg' : 'bg-surface text-ink ring-1 ring-line'}`}>
+            {i === ri && <motion.span layoutId="route-chip" transition={{ type: 'spring', stiffness: 420, damping: 34 }} className="absolute inset-0 rounded-full bg-ink" />}
+            <span className="relative">{x.label}</span>
+          </button>
+        ))}
+      </div>
+      <p className="mt-4 max-w-[40ch] text-lg leading-relaxed text-muted md:text-xl" aria-live="polite">
+        此刻 {tasks.length} 个示例单里，有 <b className="text-accent">{hits.length} 个</b>顺路，捎上多走 {!hits.length ? 0 : hits[0].m === hits[hits.length - 1].m ? hits[0].m : `${hits[0].m} 到 ${hits[hits.length - 1].m}`} 分钟。
       </p>
-      <div ref={box} className="relative mt-8 aspect-[1000/720] w-full overflow-hidden rounded-[20px] bg-surface ring-1 ring-line md:rounded-[28px]"
-        role="img" aria-label={`示意地图：${tasks.length} 个示例单的路线，其中 ${hits.length} 个对一教回梅园的路线顺路`}>
-        <svg viewBox="0 0 1000 720" className="absolute inset-0 size-full" aria-hidden="true">
-          {BUILDINGS.map((b) => <circle key={b.id} cx={MX(b.x)} cy={MY(b.y)} r={ends.has(b.id) ? 7 : 5} fill="var(--line)" />)}
-          {tasks.map((t, i) => {
+      <div ref={box} className="relative mt-6 aspect-[3/4] w-full overflow-hidden rounded-[24px] bg-surface ring-1 ring-line sm:aspect-[4/3] md:rounded-[28px] lg:aspect-[16/9]"
+        style={{ backgroundImage: 'linear-gradient(var(--bg) 2px, transparent 2px), linear-gradient(90deg, var(--bg) 2px, transparent 2px)', backgroundSize: '56px 56px' }}
+        role="img" aria-label={`示意地图：沿「${R.label}」这条路，${hits.length} 个示例单顺路`}>
+        <svg viewBox="0 0 100 100" preserveAspectRatio="none" className="absolute inset-0 size-full" aria-hidden="true">
+          {tasks.filter((t) => t.from !== t.to).map((t) => {
             const hit = t.m <= 5
-            const d = { initial: reduce ? false : { pathLength: 0, opacity: 0 }, animate: on ? { pathLength: 1, opacity: 1 } : {}, transition: { duration: 0.8, delay: 0.2 + i * 0.18, ease } }
-            if (t.from === t.to) {
-              return <motion.circle key={t.id} cx={MX(B[t.from].x)} cy={MY(B[t.from].y)} r={hit ? 18 : 14} fill="none" stroke={hit ? 'var(--accent)' : 'var(--muted)'} strokeOpacity={hit ? 1 : 0.35} strokeWidth={hit ? 5 : 2} {...d} />
-            }
-            return <motion.path key={t.id} d={curve(B[t.from], B[t.to])} fill="none" stroke={hit ? 'var(--accent)' : 'var(--muted)'} strokeOpacity={hit ? 1 : 0.35} strokeWidth={hit ? 6 : 2.5} strokeLinecap="round" {...d} />
+            return (
+              <motion.line key={t.id} x1={PX(B[t.from].x)} y1={PY(B[t.from].y)} x2={PX(B[t.to].x)} y2={PY(B[t.to].y)} vectorEffect="non-scaling-stroke" strokeLinecap="round"
+                initial={false} animate={{ stroke: hit ? 'var(--accent)' : 'var(--line)', strokeWidth: hit ? 6 : 2.5 }} transition={{ duration: 0.4 }} />
+            )
           })}
-          <motion.path d={runner} fill="none" stroke="var(--ink)" strokeWidth="4" strokeDasharray="2 10" strokeLinecap="round"
-            initial={reduce ? false : { opacity: 0 }} animate={on ? { opacity: 0.8 } : {}} transition={{ duration: 0.6, delay: 0.1 }} />
+          <motion.line key={R.label} x1={PX(B[R.from].x)} y1={PY(B[R.from].y)} x2={PX(B[R.to].x)} y2={PY(B[R.to].y)} vectorEffect="non-scaling-stroke" stroke="var(--ink)" strokeWidth="3.5" strokeDasharray="1 9" strokeLinecap="round"
+            initial={reduce ? false : { pathLength: 0 }} animate={{ pathLength: 1 }} transition={{ duration: 0.7, ease }} />
         </svg>
-        {[...ends].map((id) => (
-          <span key={id} className={`absolute -translate-x-1/2 translate-y-2.5 whitespace-nowrap text-[11px] font-semibold md:text-[13px] ${id === ME.from || id === ME.to ? 'text-ink' : 'hidden text-muted sm:block'}`}
-            style={{ left: `${MX(B[id].x) / 10}%`, top: `${(MY(B[id].y) / 720) * 100}%` }}>{SHORT[id]}</span>
+        {tasks.filter((t) => t.from === t.to).map((t) => (
+          <motion.span key={t.id} aria-hidden="true" className="absolute size-9 -translate-x-1/2 -translate-y-1/2 rounded-full md:size-11" style={{ left: `${PX(B[t.from].x)}%`, top: `${PY(B[t.from].y)}%` }}
+            initial={false} animate={{ boxShadow: t.m <= 5 ? 'inset 0 0 0 4px var(--accent)' : 'inset 0 0 0 2px var(--line)' }} />
         ))}
-        {hits.map((t, i) => (
-          <motion.span key={t.id} initial={reduce ? false : { opacity: 0, y: 6, scale: 0.9 }} animate={on ? { opacity: 1, y: 0, scale: 1 } : {}} transition={{ type: 'spring', stiffness: 420, damping: 24, delay: 0.4 + tasks.length * 0.18 + i * 0.15 }}
-            className={`tnum absolute hidden -translate-x-1/2 whitespace-nowrap md:block rounded-full bg-accent px-2 py-0.5 text-[10px] md:px-2.5 md:py-1 ${i % 2 ? 'translate-y-[60%]' : '-translate-y-[160%]'} font-bold text-on-accent shadow-[0_8px_18px_-8px_rgba(11,122,85,0.7)] md:text-sm`}
-            style={{ left: `${MX(B[t.from].x) / 10}%`, top: `${(MY(B[t.from].y) / 720) * 100}%` }}>¥{t.reward} · 多走 {t.m} 分钟</motion.span>
-        ))}
-        </div>
+        {BUILDINGS.map((b) => {
+          const mine = b.id === R.from || b.id === R.to
+          return (
+            <span key={b.id} className={`absolute -translate-x-1/2 -translate-y-1/2 whitespace-nowrap rounded-full px-2 py-0.5 text-[11px] font-semibold ring-1 transition-colors md:text-[13px] ${mine ? 'z-10 bg-ink text-bg ring-ink' : 'bg-surface/95 text-muted ring-line'}`}
+              style={{ left: `${PX(b.x)}%`, top: `${PY(b.y)}%` }}>{SHORT[b.id]}</span>
+          )
+        })}
+        <AnimatePresence mode="popLayout">
+          {hits.map((t, i) => (
+            <motion.span key={R.label + t.id} initial={reduce ? false : { opacity: 0, y: 6, scale: 0.9 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, transition: { duration: 0.15 } }}
+              transition={{ type: 'spring', stiffness: 420, damping: 24, delay: 0.5 + i * 0.18 }}
+              className={`tnum absolute z-20 hidden -translate-x-1/2 whitespace-nowrap rounded-full bg-accent px-2.5 py-1 text-sm font-bold text-on-accent shadow-[0_8px_18px_-8px_rgba(11,122,85,0.7)] md:block ${i % 2 ? 'translate-y-[70%]' : '-translate-y-[170%]'}`}
+              style={{ left: `${PX(B[t.from].x)}%`, top: `${PY(B[t.from].y)}%` }}>¥{t.reward} · 多走 {t.m} 分钟</motion.span>
+          ))}
+        </AnimatePresence>
+      </div>
       <ul className="mt-4 space-y-2 md:hidden">
         {hits.map((t) => (
-          <li key={t.id} className="flex items-center gap-3 rounded-2xl bg-surface p-3 ring-1 ring-line">
+          <li key={R.label + t.id} className="flex items-center gap-3 rounded-2xl bg-surface p-3 ring-1 ring-line">
             <span className="tnum shrink-0 rounded-full bg-accent px-2.5 py-1 text-sm font-bold text-on-accent">多走 {t.m} 分钟</span>
             <span className="min-w-0 truncate text-[15px] font-medium">{t.title}</span>
             <span className="tnum ml-auto shrink-0 font-bold">¥{t.reward}</span>
@@ -235,9 +258,9 @@ export function CampusRoutes() {
         ))}
       </ul>
       <div className="mt-3 flex flex-wrap gap-x-5 gap-y-1 text-sm text-muted">
-          <span className="inline-flex items-center gap-1.5"><i className="h-1 w-5 rounded-full bg-ink/80" />你的路</span>
-          <span className="inline-flex items-center gap-1.5"><i className="h-1.5 w-5 rounded-full bg-accent" />顺路的单</span>
-          <span className="inline-flex items-center gap-1.5"><i className="h-0.5 w-5 rounded-full bg-muted/40" />不顺路</span>
+        <span className="inline-flex items-center gap-1.5"><i className="h-1 w-5 rounded-full bg-ink/80" />你正要走的路</span>
+        <span className="inline-flex items-center gap-1.5"><i className="h-1.5 w-5 rounded-full bg-accent" />顺路的单</span>
+        <span className="inline-flex items-center gap-1.5"><i className="h-0.5 w-5 rounded-full bg-line" />不顺路</span>
       </div>
     </div>
   )
