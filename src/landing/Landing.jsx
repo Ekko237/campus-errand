@@ -348,12 +348,12 @@ function StageMap({ i, tall = false }) {
         <path d={D} fill="none" stroke="var(--ink)" strokeOpacity="0.35" strokeWidth="12" strokeDasharray="4 22" strokeLinecap="round" strokeLinejoin="round" />
         <motion.path d={D} fill="none" stroke="var(--ink)" strokeOpacity="0.9" strokeWidth="14" strokeLinecap="round" strokeLinejoin="round" initial={false} animate={{ pathLength: STAGE_P[i] }} transition={sp} />
         {/* 捎上包裹以后的那段变绿 */}
-        <motion.path d={NEED_D} fill="none" stroke="var(--accent)" strokeWidth="9" strokeLinecap="round" strokeLinejoin="round" initial={false}
+        <motion.path d={NEED_D} fill="none" stroke="var(--accent)" strokeWidth="16" strokeLinecap="round" strokeLinejoin="round" initial={false}
           animate={{ pathLength: Math.max(0, (STAGE_P[i] - STAGE_F) / (1 - STAGE_F)), opacity: i >= 3 ? 1 : 0 }} transition={sp} />
       </svg>
       {tag('一教', [STAGE_PTS[0][0] - 40, STAGE_PTS[0][1] - 150], false, 'z-20')}
       {tag('菜鸟驿站', [station[0], STAGE_PTS[1][1] - 72], i === 2, 'z-20')}
-      {tag('梅园', [mei[0] + 150, mei[1] + 40], i >= 4)}
+      {tag('梅园', [mei[0] + 230, mei[1] + 40], i >= 4)}
       {/* 包裹：先在驿站等着（发布时一闪），第 3 步起跟着阿远走，送到后落在梅园 */}
       {i < 3 && (
         <motion.img src={icon('type-express-v1')} width={28} height={28} alt="" className="absolute size-7 -translate-x-1/2 -translate-y-1/2" style={spct(station)}
@@ -370,7 +370,7 @@ function StageMap({ i, tall = false }) {
           initial={reduce ? false : { opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={sp}>{i === 4 ? '+¥5 给阿远' : '阿远信用 +3'}</motion.span>
       )}
     </div>
-    <p className="mt-1.5 flex flex-wrap gap-x-3 text-[11px] text-ink/70"><span className="inline-flex items-center gap-1"><i className="h-1 w-4 rounded-full bg-ink/80" />阿远本来要走的路</span><span className="inline-flex items-center gap-1"><i className="h-1 w-4 rounded-full bg-accent" />捎着你的快递</span></p>
+    <p className="mt-1.5 flex flex-wrap gap-x-3 text-[11px] text-ink/70"><span className="inline-flex items-center gap-1"><i className="h-1 w-4 rounded-full bg-ink/80" />阿远走的路</span><span className="inline-flex items-center gap-1"><i className="h-1.5 w-4 rounded-full bg-accent" />捎着你快递的那段</span></p>
     </div>
   )
 }
