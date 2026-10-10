@@ -122,17 +122,17 @@ function PickupCard({ t }) {
           <div className="flex items-start justify-between gap-2">
           <p className="flex items-center gap-1.5 text-sm font-semibold opacity-75">
             <motion.span key={open ? 'o' : 'c'} initial={fresh ? { rotate: -20, scale: 0.6 } : false} animate={{ rotate: 0, scale: 1 }} transition={{ type: 'spring', stiffness: 500, damping: 14 }} className="inline-flex">
-              {open && !sealed ? <LockKeyOpen size={16} weight="bold" /> : <LockKey size={16} weight="bold" />}
-            </motion.span>{sealed ? '已送达，取件码已收起' : `取件码，到${B[t.from]?.name}报这个码`}
+              {open && !sealed && !t.picked ? <LockKeyOpen size={16} weight="bold" /> : <LockKey size={16} weight="bold" />}
+            </motion.span>{sealed ? '已送达，取件码已收起' : t.picked ? '已取到，取件码用完了' : `取件码，到${B[t.from]?.name}报这个码`}
           </p>
-          {fresh && (
+          {fresh && !t.picked && !sealed && (
             <motion.span className="shrink-0 whitespace-nowrap rounded-full bg-accent px-2.5 py-0.5 text-xs font-bold text-on-accent"
               initial={{ scale: 0, rotate: -12 }} animate={{ scale: 1, rotate: 0 }} transition={{ type: 'spring', stiffness: 500, damping: 16, delay: 0.25 }}>刚刚接单</motion.span>
           )}
           </div>
           <div className="mt-1 flex items-center justify-between gap-3">
-            <p className="tnum text-4xl font-bold tracking-wide">{sealed ? <span className="opacity-40">{t.private.code.replace(/\d/g, '•')}</span> : <CodeReveal code={t.private.code} play={fresh} />}</p>
-            {!sealed && <button onClick={copy} className="h-10 shrink-0 whitespace-nowrap rounded-full bg-bg/15 px-4 text-sm font-semibold transition active:scale-95">{copied ? '已复制' : '复制'}</button>}
+            <p className="tnum text-4xl font-bold tracking-wide">{sealed || t.picked ? <span className="opacity-40">{t.private.code.replace(/\d/g, '•')}</span> : <CodeReveal code={t.private.code} play={fresh} />}</p>
+            {!sealed && !t.picked && <button onClick={copy} className="h-10 shrink-0 whitespace-nowrap rounded-full bg-bg/15 px-4 text-sm font-semibold transition active:scale-95">{copied ? '已复制' : '复制'}</button>}
           </div>
         </>
       ) : (

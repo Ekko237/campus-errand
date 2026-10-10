@@ -155,7 +155,7 @@ function Scenes() {
         <Reveal className="lg:col-span-7"><H2>三个每天都在发生的<br />跑腿时刻</H2></Reveal>
         <Reveal delay={0.05} className="lg:col-span-5 lg:pb-1"><Lead className="lg:mt-0">目标用户：时间被课表切碎、又在意隐私的在校生。需求小、频次高、怕被坑。</Lead></Reveal>
       </div>
-      <div className="no-scrollbar -mx-4 mt-12 overflow-x-auto px-4">
+      <div className="no-scrollbar -mx-4 mt-12 overflow-x-auto px-4 [mask-image:linear-gradient(to_right,black_82%,transparent)] md:[mask-image:none]">
         <div className="inline-flex gap-1 rounded-full bg-sunken p-1" role="tablist" aria-label="用户场景">
           {SCENES.map((x) => (
             <button key={x.key} role="tab" aria-selected={k === x.key} onClick={() => setK(x.key)}
@@ -367,7 +367,7 @@ function Trust() {
           {!reduce && (
             <>
               <motion.span aria-hidden="true" style={{ scaleY: fill }} className="absolute bottom-7 left-[27px] top-7 w-[3px] origin-top -translate-x-1/2 rounded-full bg-accent" />
-              <motion.span aria-hidden="true" style={{ top }} className="absolute left-[27px] z-20 -ml-[15px] grid size-[30px] -translate-y-1/2 place-items-center rounded-full bg-surface shadow-[0_6px_16px_-6px_rgba(11,122,85,0.6)] ring-2 ring-accent">
+              <motion.span aria-hidden="true" style={{ top }} className="absolute left-[27px] z-0 -ml-[15px] grid size-[30px] -translate-y-1/2 place-items-center rounded-full bg-surface shadow-[0_6px_16px_-6px_rgba(11,122,85,0.6)] ring-2 ring-accent">
                 <img src={icon('type-express-v1')} width={20} height={20} alt="" className="size-5" />
               </motion.span>
             </>

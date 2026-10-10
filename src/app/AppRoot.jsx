@@ -43,7 +43,7 @@ function RoleSwitch() {
 function Toasts() {
   const { state, act } = useStore()
   const reduce = useReducedMotion()
-  const list = state.toasts.slice(-2)
+  const list = state.toasts.slice(-1)
   const last = list[list.length - 1]
   useEffect(() => {
     if (!last) return

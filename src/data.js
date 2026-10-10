@@ -52,6 +52,7 @@ export const detourMin = (a, b, t) => {
   const via = dist(a, t.from) + (t.from !== t.to ? dist(t.from, t.to) : 0) + dist(t.to, b) - dist(a, b)
   return Math.max(1, Math.round(via / 80))
 }
+export const detourMeters = (a, b, t) => Math.max(0, dist(a, t.from) + (t.from !== t.to ? dist(t.from, t.to) : 0) + dist(t.to, b) - dist(a, b))
 export const fmtDist = (m) => (m >= 1000 ? (m / 1000).toFixed(1) + ' km' : m + ' m')
 
 export const WINDOWS = [

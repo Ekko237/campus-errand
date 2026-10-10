@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence, useReducedMotion } from 'motion/react'
-import { MapPin, Clock, LockSimple, MagnifyingGlass, WarningOctagon, ShieldCheck, ArrowRight, Lightning } from '@phosphor-icons/react'
+import { CaretDown, MapPin, Clock, LockSimple, MagnifyingGlass, WarningOctagon, ShieldCheck, ArrowRight, Lightning } from '@phosphor-icons/react'
 import { useStore } from '../store'
 import { TYPES, TYPE_KEYS, B, BUILDINGS, dist, fmtDist, detourMin, RUNNER_HOME, levelOf, minCreditFor, POSTER_WARN } from '../data'
 import { TypeTag, UrgentTag, Panel, Empty, Btn, left, spring } from '../ui'
@@ -199,13 +199,13 @@ export default function Hall() {
               <motion.div initial={reduce ? false : { height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.25 }} className="overflow-hidden">
                 <div className="grid grid-cols-[auto_1fr] items-center gap-x-3 gap-y-2 pt-3 text-[15px] sm:grid-cols-[auto_1fr_auto_1fr]">
                   <span className="text-muted">从</span>
-                  <select aria-label="出发地" value={route.from} onChange={setLeg('from')} className="h-10 w-full rounded-full bg-surface px-4 text-[15px] font-semibold ring-1 ring-line">
+                  <span className="relative"><select aria-label="出发地" value={route.from} onChange={setLeg('from')} className="h-10 w-full appearance-none rounded-full bg-surface pl-4 pr-10 text-[15px] font-semibold ring-1 ring-line">
                     {BUILDINGS.map((b) => <option key={b.id} value={b.id}>{b.name}</option>)}
-                  </select>
+                  </select><CaretDown size={16} weight="bold" className="pointer-events-none absolute right-3.5 top-1/2 -translate-y-1/2 text-muted" /></span>
                   <span className="text-muted">去</span>
-                  <select aria-label="目的地" value={route.to} onChange={setLeg('to')} className="h-10 w-full rounded-full bg-surface px-4 text-[15px] font-semibold ring-1 ring-line">
+                  <span className="relative"><select aria-label="目的地" value={route.to} onChange={setLeg('to')} className="h-10 w-full appearance-none rounded-full bg-surface pl-4 pr-10 text-[15px] font-semibold ring-1 ring-line">
                     {BUILDINGS.map((b) => <option key={b.id} value={b.id}>{b.name}</option>)}
-                  </select>
+                  </select><CaretDown size={16} weight="bold" className="pointer-events-none absolute right-3.5 top-1/2 -translate-y-1/2 text-muted" /></span>
                 </div>
               </motion.div>
             )}

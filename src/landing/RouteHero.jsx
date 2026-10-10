@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { motion, AnimatePresence, useReducedMotion, useMotionValue, useTransform, useMotionValueEvent, useInView, animate } from 'motion/react'
 import { ArrowDown } from '@phosphor-icons/react'
-import { B, BUILDINGS, seedTasks, detourMin } from '../data'
+import { B, BUILDINGS, seedTasks, detourMin, detourMeters } from '../data'
 
 const ease = [0.16, 1, 0.3, 1]
 const icon = (name) => `${import.meta.env.BASE_URL}icons/${name}.webp`
@@ -202,7 +202,7 @@ export function CampusRoutes() {
     return () => clearInterval(id)
   }, [reduce, touched, inView])
   const R = ROUTES[ri]
-  const tasks = seedTasks().map((t) => ({ ...t, m: detourMin(R.from, R.to, t) }))
+  const tasks = seedTasks().map((t) => ({ ...t, m: detourMin(R.from, R.to, t), dm: detourMeters(R.from, R.to, t) }))
   const hits = tasks.filter((t) => t.m <= 5).sort((a, b) => a.m - b.m)
   const pick = (i) => { setTouched(true); setRi(i) }
   return (
@@ -224,7 +224,6 @@ export function CampusRoutes() {
       <div className="mt-3 hidden flex-wrap gap-x-5 md:flex gap-y-1 text-sm text-muted">
         <span className="inline-flex items-center gap-1.5"><i className="h-1 w-5 rounded-full bg-ink/80" />你正要走的路</span>
         <span className="inline-flex items-center gap-1.5"><i className="h-1.5 w-5 rounded-full bg-accent" />顺路的单</span>
-        <span className="inline-flex items-center gap-1.5"><i className="h-0.5 w-5 rounded-full bg-line" />不顺路</span>
       </div>
     </div>
   )
@@ -253,7 +252,7 @@ function SubwayLine({ R, hits, reduce }) {
             <span className="z-10 ml-[3px] size-[18px] shrink-0 rounded-full bg-accent ring-4 ring-bg" />
             <span className="min-w-0 flex-1 rounded-2xl bg-accent-soft px-3 py-2">
               <span className="block text-[15px] font-semibold leading-snug">{t.title}</span>
-              <span className="tnum mt-0.5 block text-sm text-accent">在{SHORT[t.from]}顺手{{ express: '取', buy: '买', seat: '占', food: '拿', other: '带' }[t.type] || '带'} · 多走 {t.m} 分钟 · ¥{t.reward}</span>
+              <span className="tnum mt-0.5 block text-sm text-accent">{t.dm ? `多走 ${t.dm} 米` : '就在路上'} · 在{SHORT[t.from]}顺手{{ express: '取', buy: '买', seat: '占', food: '拿', other: '带' }[t.type] || '带'} · ¥{t.reward}</span>
             </span>
           </motion.li>
         ))}
@@ -279,7 +278,6 @@ function RouteZoom({ R, tasks, hits, reduce }) {
   if (w / h > 2) { const d = (w / 2 - h) / 2; y0 -= d; y1 += d } else { const d = (h * 2 - w) / 2; x0 -= d; x1 += d }
   const X = (x) => ((x - x0) / (x1 - x0)) * 100
   const Y = (y) => ((y - y0) / (y1 - y0)) * 100
-  const hitIds = new Set(hits.map((t) => t.id))
   const key = new Set(ids)
   const [p, setP] = useState(reduce ? 1 : 0)
   useEffect(() => {
@@ -294,10 +292,6 @@ function RouteZoom({ R, tasks, hits, reduce }) {
       style={{ backgroundImage: 'linear-gradient(var(--bg) 2px, transparent 2px), linear-gradient(90deg, var(--bg) 2px, transparent 2px)', backgroundSize: '56px 56px' }}
       role="img" aria-label={`示意地图：沿「${R.label}」这条路，${hits.length} 个示例单顺路`}>
       <svg viewBox="0 0 100 100" preserveAspectRatio="none" className="absolute inset-0 size-full" aria-hidden="true">
-        {tasks.filter((t) => t.from !== t.to && !hitIds.has(t.id)).map((t) => (
-          <motion.line key={t.id} initial={false} animate={{ x1: X(B[t.from].x), y1: Y(B[t.from].y), x2: X(B[t.to].x), y2: Y(B[t.to].y) }} transition={sp}
-            stroke="var(--line)" strokeWidth="2" vectorEffect="non-scaling-stroke" strokeLinecap="round" />
-        ))}
         <motion.line initial={false} animate={{ x1: X(a.x), y1: Y(a.y), x2: X(b.x), y2: Y(b.y) }} transition={sp}
           stroke="var(--ink)" strokeOpacity="0.85" strokeWidth="4" vectorEffect="non-scaling-stroke" strokeLinecap="round" />
         {hits.filter((t) => t.from !== t.to).map((t) => (
@@ -328,7 +322,7 @@ function RouteZoom({ R, tasks, hits, reduce }) {
           <motion.span key={R.label + t.id} initial={reduce ? false : { opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1, left: `${X(B[t.from].x)}%`, top: `${Y(B[t.from].y)}%` }} exit={{ opacity: 0 }}
             transition={{ type: 'spring', stiffness: 420, damping: 24 }}
             className={`tnum absolute z-20 whitespace-nowrap rounded-full bg-accent px-3 py-1 text-sm font-bold text-on-accent shadow-[0_8px_18px_-8px_rgba(11,122,85,0.7)] ${side(t.from) > 0 ? '-translate-x-1/2 -translate-y-[calc(100%+14px)]' : '-translate-x-1/2 translate-y-[38px]'}`}>
-            ¥{t.reward} · 多走 {t.m} 分钟
+            ¥{t.reward} · {t.dm ? `多走 ${t.dm} 米` : '就在路上'}
           </motion.span>
         ))}
       </AnimatePresence>
