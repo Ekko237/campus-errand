@@ -10,6 +10,8 @@ const W = 600, H = 440
 const RUN = 'M90 90 L90 220 L500 220 L500 326'
 // 你的需求：驿站 → 梅园，和他后半程完全重合
 const NEED = 'M300 220 L500 220 L500 326'
+// 底图街区：楼（带窗）和绿地（几棵树）
+const BLOCKS = [[118, 114, 156, 80, 'b'], [326, 114, 148, 80, 'green'], [118, 246, 156, 88, 'green'], [326, 246, 148, 88, 'b'], [526, 114, 60, 80, 'b'], [14, 246, 50, 88, 'b']]
 const pct = (x, y) => ({ left: `${(x / W) * 100}%`, top: `${(y / H) * 100}%` })
 
 function Node({ x, y, children, className = '' }) {
@@ -51,14 +53,17 @@ export function RouteMap() {
     <div ref={box} className="relative aspect-[600/440] w-full overflow-hidden rounded-[28px] bg-surface ring-1 ring-line"
       role="img" aria-label="示意地图：你的快递在菜鸟驿站，学弟从一教走回梅园正好经过驿站，顺手捎上，只多走 1 分钟">
       <svg viewBox={`0 0 ${W} ${H}`} className="absolute inset-0 size-full" aria-hidden="true">
-        <g fill="var(--sunken)">
-          <rect x="118" y="114" width="156" height="80" rx="16" />
-          <rect x="326" y="114" width="148" height="80" rx="16" />
-          <rect x="118" y="246" width="156" height="88" rx="16" />
-          <rect x="326" y="246" width="148" height="88" rx="16" />
-          <rect x="526" y="114" width="60" height="80" rx="16" />
-          <rect x="14" y="246" width="50" height="88" rx="16" />
-        </g>
+        {BLOCKS.map(([x, y, w, h, kind], i) => (
+          <g key={i}>
+            <rect x={x} y={y} width={w} height={h} rx="16" fill={kind === 'green' ? 'var(--accent-soft)' : 'var(--sunken)'} />
+            {kind === 'green'
+              ? [0.25, 0.6, 0.85].map((f, k) => <circle key={k} cx={x + w * f} cy={y + h * (k % 2 ? 0.35 : 0.62)} r="9" fill="var(--accent)" fillOpacity="0.28" />)
+              : Array.from({ length: Math.floor((w - 24) / 20) * Math.floor((h - 24) / 22) }, (_, k) => {
+                const cols = Math.floor((w - 24) / 20)
+                return <rect key={k} x={x + 14 + (k % cols) * 20} y={y + 14 + Math.floor(k / cols) * 22} width="9" height="11" rx="2" fill="var(--bg)" opacity="0.9" />
+              })}
+          </g>
+        ))}
         <g stroke="var(--bg)" strokeWidth="22" strokeLinecap="round" fill="none">
           <path d="M40 220 H560 M90 50 V400 M500 50 V400 M90 360 H500 M90 90 H500" />
         </g>
@@ -152,7 +157,7 @@ export default function RouteHero({ Cta, Anchor }) {
   // 副标题和按钮第一帧就在，只做一点位移，不从透明开始
   const fade = (d) => ({ initial: reduce ? false : { y: 10 }, animate: { y: 0 }, transition: { duration: 0.5, delay: d * 0.3, ease } })
   return (
-    <section id="top" className="mx-auto grid max-w-7xl items-center gap-10 px-4 pb-20 pt-8 md:px-8 md:pb-28 md:pt-14 lg:grid-cols-12 lg:gap-12">
+    <section id="top" className="mx-auto grid max-w-7xl items-center gap-10 px-4 pb-20 pt-8 md:px-8 md:pb-28 md:pt-14 lg:min-h-[calc(100svh-64px)] lg:grid-cols-12 lg:gap-12 lg:py-10">
       <div className="lg:col-span-5">
         <h1 className="text-[46px] font-bold leading-[1.08] tracking-[-0.035em] md:text-[clamp(56px,6.4vw,76px)] lg:text-[clamp(48px,4.6vw,68px)]">
           <span className="block overflow-hidden pb-1"><motion.span className="block" {...line(0)}>本来就要经过，</motion.span></span>
