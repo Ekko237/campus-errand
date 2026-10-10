@@ -52,7 +52,7 @@ function Toasts() {
   }, [last?.id]) // eslint-disable-line react-hooks/exhaustive-deps
   const bad = list.some((t) => t.tone === 'bad')
   return (
-    <div className={`pointer-events-none fixed inset-x-0 z-50 flex justify-center px-4 ${state.tour.active ? 'bottom-[calc(10.5rem+env(safe-area-inset-bottom))]' : 'bottom-[calc(4.75rem+env(safe-area-inset-bottom))]'}`} aria-live="polite">
+    <div className={`pointer-events-none fixed inset-x-0 z-50 flex justify-center px-4 ${state.tour.active ? 'bottom-[calc(10.5rem+env(safe-area-inset-bottom))] xl:bottom-32' : 'bottom-[calc(4.75rem+env(safe-area-inset-bottom))] xl:bottom-6'} xl:-translate-x-40`} aria-live="polite">
       <AnimatePresence initial={false}>
         {last && (
           <motion.div key="toast" layout initial={reduce ? false : { y: 12, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ opacity: 0, transition: { duration: 0.15 } }} transition={spring}
@@ -162,11 +162,11 @@ function Shell() {
       </main>
       <DemoPanel />
       <TourBar />
-      <nav className="fixed inset-x-0 bottom-0 z-30 border-t border-line bg-surface/95 backdrop-blur" aria-label="主导航">
-        <div className="mx-auto grid max-w-xl grid-cols-4 pb-[env(safe-area-inset-bottom)] xl:-translate-x-40">
+      <nav className="fixed inset-x-0 bottom-0 z-30 border-t border-line bg-surface/95 backdrop-blur xl:inset-x-auto xl:bottom-auto xl:left-[calc(50%-38rem)] xl:top-24 xl:w-36 xl:border-0 xl:bg-transparent xl:backdrop-blur-none" aria-label="主导航">
+        <div className="mx-auto grid max-w-xl grid-cols-4 pb-[env(safe-area-inset-bottom)] xl:grid-cols-1 xl:gap-1 xl:pb-0">
           {tabs.map(([to, label, img, end]) => (
-            <NavLink key={to} to={to} end={end} className={({ isActive }) => `relative flex h-16 flex-col items-center justify-center gap-0.5 text-[13px] font-semibold ${isActive ? 'text-accent' : 'text-muted'}`}>
-              {({ isActive }) => (<>{isActive && <motion.span layoutId="nav-dot" transition={{ type: 'spring', stiffness: 500, damping: 34 }} className="absolute top-0 h-[3px] w-10 rounded-b-full bg-accent" />}<img src={`${import.meta.env.BASE_URL}icons/${img}-v1.webp`} width={28} height={28} alt="" aria-hidden="true" className={`size-7 object-contain transition ${isActive ? 'scale-110' : 'opacity-55 grayscale'}`} />{label}</>)}
+            <NavLink key={to} to={to} end={end} className={({ isActive }) => `relative flex h-16 flex-col items-center justify-center gap-0.5 text-[13px] font-semibold transition-colors xl:h-12 xl:flex-row xl:justify-start xl:gap-2.5 xl:rounded-xl xl:px-3 xl:text-[15px] ${isActive ? 'text-accent xl:bg-accent-soft' : 'text-muted xl:hover:bg-sunken'}`}>
+              {({ isActive }) => (<>{isActive && <motion.span layoutId="nav-dot" transition={{ type: 'spring', stiffness: 500, damping: 34 }} className="absolute top-0 h-[3px] w-10 rounded-b-full bg-accent xl:hidden" />}<img src={`${import.meta.env.BASE_URL}icons/${img}-v1.webp`} width={28} height={28} alt="" aria-hidden="true" className={`size-7 object-contain transition ${isActive ? 'scale-110' : 'opacity-55 grayscale'}`} />{label}</>)}
             </NavLink>
           ))}
         </div>
