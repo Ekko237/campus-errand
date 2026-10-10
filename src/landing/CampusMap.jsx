@@ -108,7 +108,7 @@ export default function CampusMap({ R, hits, reduce, pills = true, walker = true
         <span key={`d${t.id}`} aria-hidden="true" className="absolute z-10 size-3.5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-surface ring-[3px] ring-accent md:size-4" style={pct(PLACES[t.to].door)} />
       ))}
       {marks.map(({ t }) => (
-        <span key={`p${t.id}`} aria-hidden="true" className="tnum absolute z-10 -translate-x-1/2 translate-y-[9px] rounded-full bg-surface px-1 text-[10px] font-bold leading-4 text-accent shadow-sm md:hidden" style={pct(markAt(t.from))}>¥{t.reward}</span>
+        <span key={`p${t.id}`} aria-hidden="true" className="tnum absolute z-10 -translate-x-1/2 translate-y-[9px] rounded-full bg-surface px-1 text-[11px] font-bold leading-4 text-accent shadow-sm md:hidden" style={pct(markAt(t.from))}>¥{t.reward}</span>
       ))}
       {/* 原型订单页（at 有值）上方已经写了人在哪，起点标签不画，免得和小人、1 号点叠在一起 */}
       {ends.filter((id) => !(at != null && id === R.from)).map((id) => (

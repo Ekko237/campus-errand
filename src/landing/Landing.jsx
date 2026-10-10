@@ -122,8 +122,8 @@ function ScrollProgress() {
   return <motion.div aria-hidden="true" style={{ scaleX }} className="fixed inset-x-0 top-0 z-50 h-[3px] origin-left bg-accent" />
 }
 
-const NAV_LINKS = [['scenes', '场景'], ['loop', '一单怎么走'], ['trust', '信任机制'], ['credit', '双向信用']]
-const SECTIONS = [NAV_LINKS[0], ['routes', '整个校园的顺路'], ...NAV_LINKS.slice(1), ['safety', '这些单发不出去'], ['final', '你下课常走哪条路']]
+const NAV_LINKS = [['scenes', '场景'], ['routes', '顺路地图'], ['loop', '一单怎么走'], ['trust', '信任机制'], ['credit', '双向信用']]
+const SECTIONS = [NAV_LINKS[0], ['routes', '整个校园的顺路'], ...NAV_LINKS.slice(2), ['safety', '这些单发不出去'], ['final', '你下课常走哪条路']]
 function Nav({ page }) {
   const { scrollY } = useScroll()
   const [scrolled, setScrolled] = useState(false)
@@ -152,7 +152,7 @@ function Nav({ page }) {
           {home && <Link to="/thinking" className={linkCls}>产品思考{under}</Link>}
         </nav>
         <div className="flex items-center gap-2">
-          <div className={`transition-opacity duration-300 ${(scrolled || !home) && !open ? '' : 'max-md:pointer-events-none max-md:opacity-0'}`}><Cta size="sm" /></div>
+          <div className={`transition-opacity duration-300 ${!home ? 'max-md:hidden' : ''} ${(scrolled || !home) && !open ? '' : 'max-md:pointer-events-none max-md:opacity-0'}`}><Cta size="sm" /></div>
           {!home && <Link to="/" className="inline-flex h-10 items-center gap-1.5 rounded-full bg-sunken px-4 text-[15px] font-semibold active:scale-[0.97]"><ArrowLeft size={16} weight="bold" />回首页</Link>}
           {home && (
             <button onClick={() => { setCur(scrollY + innerHeight >= document.documentElement.scrollHeight - 4 ? SECTIONS[SECTIONS.length - 1][0] : [...SECTIONS].reverse().find(([id]) => (document.getElementById(id)?.getBoundingClientRect().top ?? 1e9) < 140)?.[0]); setOpen((v) => !v) }} aria-expanded={open} aria-controls="mnav" className="grid h-10 place-items-center rounded-full bg-sunken px-4 text-[15px] font-semibold active:scale-[0.97] lg:hidden">{open ? '收起' : '目录'}</button>
@@ -466,6 +466,10 @@ function MobileLoop() {
         <p className="text-[15px] font-semibold">菜鸟驿站取 2 个小件快递</p>
       </div>
       <div className="[&>div]:mt-3"><StageMap i={i} tall /></div>
+      <div className="mt-3 grid grid-cols-2 gap-2">
+        <button onClick={() => go(i - 1)} disabled={i === 0} className="h-11 rounded-full bg-sunken text-[15px] font-semibold active:scale-[0.98] disabled:opacity-40">上一步</button>
+        <button onClick={() => go(i + 1)} disabled={i === LOOP.length - 1} className="h-11 rounded-full bg-accent text-[15px] font-semibold text-on-accent active:scale-[0.98] disabled:opacity-40">{i === LOOP.length - 1 ? '走完了' : '下一步'}</button>
+      </div>
       <div className="mt-3 grid grid-cols-6 gap-1" role="tablist" aria-label="一单的六步">
         {LOOP.map((x, k) => (
           <button key={x.t} role="tab" aria-selected={k === i} onClick={() => go(k)} className="grid gap-1 pt-1 text-center text-xs font-semibold">
@@ -489,10 +493,6 @@ function MobileLoop() {
             </div>
           </motion.div>
         ))}
-      </div>
-      <div className="mt-4 grid grid-cols-2 gap-2">
-        <button onClick={() => go(i - 1)} disabled={i === 0} className="h-11 rounded-full bg-sunken text-[15px] font-semibold active:scale-[0.98] disabled:opacity-40">上一步</button>
-        <button onClick={() => go(i + 1)} disabled={i === LOOP.length - 1} className="h-11 rounded-full bg-accent text-[15px] font-semibold text-on-accent active:scale-[0.98] disabled:opacity-40">{i === LOOP.length - 1 ? '走完了' : '下一步'}</button>
       </div>
     </div>
   )
@@ -565,7 +565,7 @@ function TrustStop({ x, lit, reduce }) {
             initial={false} animate={{ scaleX: lit ? 1 : 0 }} transition={{ duration: reduce ? 0 : 0.35, ease }} />
         </p>
         <p className="mt-1 text-2xl font-bold md:text-3xl">{x.t}</p>
-        <p className={`mt-2 max-w-[44ch] text-lg leading-relaxed transition-opacity duration-300 ${lit ? 'opacity-100' : 'opacity-45'}`}>{x.fix}</p>
+        <p className={`mt-2 max-w-[44ch] text-lg leading-relaxed transition-opacity duration-300 ${lit ? 'opacity-100' : 'opacity-80'}`}>{x.fix}</p>
       </div>
     </li>
   )
@@ -728,6 +728,17 @@ function Credit() {
                   )}
                 </AnimatePresence>
               </div>
+              {/* 0 到 100 的刻度：60 / 72 / 85 三道门槛，分数一变指针就滑过去 */}
+              <div className="relative mt-5 h-8" aria-hidden="true">
+                <span className="absolute inset-x-0 top-2 h-1.5 rounded-full bg-on-accent/20" />
+                <motion.span className="absolute left-0 top-2 h-1.5 rounded-full bg-on-accent" initial={false} animate={{ width: `${score}%` }} transition={{ duration: reduce ? 0 : 0.6, ease }} />
+                {(who === 'runner' ? [60, 72, 85] : [70, 75, 85]).map((m) => (
+                  <span key={m} className="absolute top-0 -translate-x-1/2 text-center" style={{ left: `${m}%` }}>
+                    <span className="mx-auto block h-5 w-0.5 rounded-full bg-on-accent/60" />
+                    <span className="tnum mt-0.5 block text-[11px] font-semibold opacity-80">{m}</span>
+                  </span>
+                ))}
+              </div>
               <ul className="mt-4 h-8 space-y-1.5 overflow-hidden text-[15px] lg:mt-6 lg:h-[6.5rem]" aria-live="polite">
                 {hist.length === 0 && <li className="truncate opacity-75"><span className="lg:hidden">点下面的规则，这里记一笔</span><span className="hidden lg:inline">点右边任意一条规则，分数会在这里记一笔。</span></li>}
                 <AnimatePresence initial={false}>
@@ -752,8 +763,8 @@ function Credit() {
           <Reveal delay={0.05} className="lg:col-span-7">
             <AnimatePresence>
               {flash > 0 && !cardOn && (
-                <motion.div key="mini" initial={reduce ? false : { y: -16, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: -10, opacity: 0 }} transition={{ type: 'spring', stiffness: 420, damping: 32 }}
-                  className="fixed inset-x-4 top-[76px] z-30 flex items-center gap-3 rounded-full bg-accent py-2 pl-2 pr-5 text-on-accent shadow-[0_16px_30px_-12px_rgba(11,122,85,0.7)] lg:hidden" aria-hidden="true">
+                <motion.div key="mini" initial={reduce ? false : { y: 16, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: 10, opacity: 0 }} transition={{ type: 'spring', stiffness: 420, damping: 32 }}
+                  className="fixed inset-x-4 bottom-4 z-30 flex items-center gap-3 rounded-full bg-accent py-2 pl-2 pr-5 text-on-accent shadow-[0_16px_30px_-12px_rgba(11,122,85,0.7)] lg:hidden" aria-hidden="true">
                   <img src={icon(tier.badge + '-v1')} width={40} height={40} alt="" className="size-10 rounded-full bg-on-accent/90 object-contain p-0.5" />
                   <span className="text-[15px] font-semibold">{who === 'runner' ? '跑腿人' : '发单人'}「{tier.name}」</span>
                   <span className="ml-auto flex items-baseline gap-2">
@@ -824,7 +835,7 @@ function BanDemo() {
       <p className="text-[15px] font-semibold">备注（选填）</p>
       <div className="relative mt-2">
         <input value={typed} onFocus={() => setOwn((v) => v ?? typed)} onChange={(e) => setOwn(e.target.value)} maxLength={40} aria-label="备注（选填），可以自己打字试试"
-          placeholder="自己打一句试试，比如：帮我代签到" aria-invalid={!!hit}
+          placeholder="比如：帮我代签到" aria-invalid={!!hit}
           className={`h-12 w-full rounded-xl px-3.5 text-base text-ink ring-1 transition-colors placeholder:text-muted focus:outline-none ${hit ? 'bg-danger-soft ring-2 ring-danger' : 'bg-bg ring-line focus:ring-2 focus:ring-accent'}`} />
         {own === null && <span aria-hidden="true" className="pointer-events-none absolute top-1/2 h-5 w-0.5 -translate-y-1/2 animate-pulse bg-ink" style={{ left: `calc(14px + ${typed.length}em)` }} />}
       </div>

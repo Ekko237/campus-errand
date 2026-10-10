@@ -321,7 +321,7 @@ function RateBlock({ t, by }) {
         {stars === 0 && tagsGood.map((x) => <span key={x} className="grid h-10 place-items-center rounded-full bg-sunken px-4 text-[15px] font-semibold text-muted/60">{x}</span>)}
         {stars > 0 && opts.map((x) => (
           <button key={x} onClick={() => setTags((v) => (v.includes(x) ? v.filter((y) => y !== x) : [...v, x]))} aria-pressed={tags.includes(x)}
-            className={`h-10 rounded-full px-4 text-[15px] font-semibold ${tags.includes(x) ? 'bg-ink text-bg' : 'bg-sunken text-ink'}`}>{x}</button>
+            className={`h-10 rounded-full px-4 text-[15px] font-semibold ${tags.includes(x) ? 'bg-accent text-on-accent' : 'bg-sunken text-ink'}`}>{x}</button>
         ))}
       </div>
       <Btn ref={submitRef} className="mt-4 w-full" disabled={!stars} onClick={() => { act('rate', { id: t.id, by, stars, tags }); if (by === 'poster' ? t.ratingByRunner : t.ratingByPoster) setTimeout(() => window.scrollTo({ top: 0, behavior: 'smooth' }), 60) }}>{stars ? '提交评价' : '先点星星打分'}</Btn>
@@ -539,7 +539,7 @@ function WrapUp({ t }) {
   const mineLog = (acc) => acc.creditLog.filter((l) => l.label.includes(t.title) && l.at >= (t.completedAt || 0) - 1000)
   const sum = (acc) => mineLog(acc).reduce((n, l) => n + l.delta, 0)
   // 每一笔是怎么来的：「按时完成 +2 · 5 星好评 +1」
-  const why = (acc) => mineLog(acc).slice().reverse().map((l) => `${l.label.replace(`「${t.title}」`, '').replace(/^收到 ?/, '').replace('收到 ', '').replace('，系统自动放款', '')} ${l.delta > 0 ? '+' : ''}${l.delta}`).join(' · ')
+  const why = (acc) => mineLog(acc).slice().reverse().map((l) => `${l.label.replace(`「${t.title}」`, '').replace(/^收到 ?/, '').replace('收到 ', '').replace('，系统自动放款', '')} ${l.delta > 0 ? '+' : ''}${l.delta}`)
   const rows = [
     t.runnerId === 'runner' && { who: runner, d: sum(runner), avatar: 'avatar-runner-v1' },
     t.posterId === 'poster' && { who: poster, d: sum(poster), avatar: 'avatar-poster-v1' },
@@ -580,7 +580,7 @@ function WrapUp({ t }) {
         {rows.map((x) => (
           <div key={x.who.id} className="flex items-center gap-3 rounded-2xl bg-on-accent/10 px-3 py-2.5">
             <img src={`${import.meta.env.BASE_URL}icons/${x.avatar}.webp`} width={32} height={32} alt="" className="size-8 rounded-full bg-on-accent" />
-            <dt className="min-w-0 flex-1 text-[15px]">{x.who.name}<span className="opacity-70"> · {x.who.role}信用</span>{why(x.who) && <span className="tnum block text-xs leading-snug opacity-75">{why(x.who)}</span>}</dt>
+            <dt className="min-w-0 flex-1 text-[15px]">{x.who.name}<span className="opacity-70"> · {x.who.role}信用</span>{why(x.who).length > 0 && <span className="tnum mt-0.5 flex flex-wrap gap-x-2 text-xs leading-snug opacity-75">{why(x.who).map((w) => <span key={w} className="whitespace-nowrap">{w}</span>)}</span>}</dt>
             <dd className="tnum text-xl font-bold"><Roll from={x.who.credit - x.d} to={x.who.credit} play={play} /></dd>
             {x.d !== 0 && <span className="tnum rounded-full bg-on-accent px-2 py-0.5 text-sm font-bold text-accent-deep">{x.d > 0 ? '+' : ''}{x.d}</span>}
           </div>
