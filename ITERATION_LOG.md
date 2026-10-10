@@ -1294,3 +1294,4 @@ dial 调整（Overhaul 再进一级）：DESIGN_VARIANCE 6 到 7，MOTION_INTENS
 - 合并：main 快进到 scroll-story（b193600），分支保留。push 前 `git log --format='%an %ae'`：261 条全是 Ekko237 <Ekko237@users.noreply.github.com>，提交者同样；代码里没有私人邮箱；POLISH_BRIEF.md、REVIEWER.md 不在仓库。
 - Actions 绿；线上脚本哈希和本地一致。
 - 线上验证（独立无头浏览器，不碰用户标签页）：手机导览从发布走到双向互评、收尾卡提醒和「我的」同步；选择页两张卡、#/app/phone 直达；手机版 / 电脑版来回切换带着当前页面（#/app/me）；首页叙事七段在 1440 / 375 正常；首页、产品思考、选择页、大厅、我的、订单在 375 和 1440 下控制台 0 报错、横向溢出 0、破折号 0。
+- 收工：停掉循环；关掉 5192 / 5193 / 5196 / 5197 测试服务器；内置浏览器里本机各端口和线上地址的 shunluxia 演示数据、会话里的界面选择都清掉，打开就是全新示例状态。分支 scroll-story、redesign-a / b、标签 user-pick-1010 都保留。
