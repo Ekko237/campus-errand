@@ -48,7 +48,7 @@ export default function TourBar() {
     let el = null
     // 量两次：图片（比如送达照片）加载完会把按钮往下推，第一次量完 0.6 秒后再补一次
     const reveal = () => {
-      if (!el || !loc.pathname.startsWith('/app/task/')) return
+      if (!el || !(loc.pathname.startsWith('/app/task/') || loc.pathname.startsWith('/app/publish'))) return
       const head = document.querySelector('header')?.getBoundingClientRect().bottom ?? 64
       const navTop = document.querySelector('nav[aria-label="主导航"]')?.getBoundingClientRect().top ?? innerHeight
       const r = el.getBoundingClientRect()
@@ -79,7 +79,7 @@ export default function TourBar() {
         <motion.div key="bar" initial={reduce ? false : { opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.2 }}
           className="border-t border-line bg-ink text-bg">
           <div data-tour-bar className="mx-auto flex min-h-12 max-w-xl items-center gap-3 px-4 py-1.5 xl:max-w-[66rem]">
-            <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-bg/15 px-2 py-0.5 text-xs font-bold">{step.final ? <><Confetti size={12} weight="fill" />走完了</> : '下一步'}</span>
+            <span className="inline-flex shrink-0 items-center gap-1 text-xs font-bold opacity-60">{step.final ? <><Confetti size={12} weight="fill" />走完了</> : '下一步：'}</span>
             <AnimatePresence mode="wait" initial={false}>
               <motion.p key={text} initial={reduce ? false : { opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -6 }} transition={{ duration: 0.18 }}
                 className="min-w-0 flex-1 text-[14px] font-semibold leading-snug md:text-[15px]">{text}</motion.p>

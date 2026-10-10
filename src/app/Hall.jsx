@@ -232,7 +232,7 @@ export default function Hall() {
           <div className="px-2 pt-3">
           <div className="flex items-center gap-3">
             <span aria-hidden="true" className="hidden shrink-0 items-center sm:flex"><span className="size-2.5 rounded-full bg-ink" /><span className="h-0.5 w-5 bg-ink" /><span className="size-2.5 rounded-full bg-accent ring-2 ring-accent-soft" /><span className="h-0.5 w-5 bg-ink" /><span className="size-2.5 rounded-full bg-ink" /></span>
-            <p className="min-w-0 flex-1 text-[15px] font-semibold leading-snug">{B[route.from].name.replace(/（.*?）/, '')} → {B[route.to].name.replace(/（.*?）/, '')}<span className="font-normal text-accent"> · {routeHits.length} 单顺路</span></p>
+            <p className="min-w-0 flex-1 text-[15px] font-semibold leading-snug">{B[route.from].name.replace(/（.*?）/, '')} → {B[route.to].name.replace(/（.*?）/, '')}<span className="whitespace-nowrap font-normal text-accent"> · {routeHits.length} 单顺路</span></p>
             <button onClick={() => setShowMap((v) => !v)} aria-expanded={showMap} className="shrink-0 text-sm font-semibold text-accent">{showMap ? '收起地图' : '看地图'}</button>
             <button onClick={() => setEditRoute((v) => !v)} aria-expanded={editRoute} className="shrink-0 text-sm font-semibold text-accent">{editRoute ? '收起' : '换条路'}</button>
           </div>

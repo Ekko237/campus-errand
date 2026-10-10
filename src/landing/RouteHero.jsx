@@ -189,9 +189,9 @@ export default function RouteHero({ Cta, Anchor }) {
 const PX = (x) => 13 + ((x + 600) / 1580) * 74
 const PY = (y) => 7 + ((y + 380) / 1280) * 84
 export const ROUTES = [
-  { from: 'jiao1', to: 'mei5', label: '一教下课回梅园', short: '一教→梅园' },
-  { from: 'tao2', to: 'jiao1', label: '桃园去上课', short: '桃园→一教' },
-  { from: 'market', to: 'mei5', label: '超市回梅园', short: '超市→梅园' },
+  { from: 'jiao1', to: 'mei5', label: '一教下课回梅园', short: '一教→梅园', verb: '下课顺手捎上' },
+  { from: 'tao2', to: 'jiao1', label: '桃园去上课', short: '桃园→一教', verb: '去上课顺手捎上' },
+  { from: 'market', to: 'mei5', label: '超市回梅园', short: '超市→梅园', verb: '买完东西顺手捎上' },
 ]
 
 export function CampusRoutes() {

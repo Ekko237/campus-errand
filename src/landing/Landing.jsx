@@ -152,10 +152,10 @@ function Nav({ page }) {
           {home && <Link to="/thinking" className={linkCls}>产品思考{under}</Link>}
         </nav>
         <div className="flex items-center gap-2">
-          <div className={`transition-opacity duration-300 ${scrolled || !home ? '' : 'max-md:pointer-events-none max-md:opacity-0'}`}><Cta size="sm" /></div>
+          <div className={`transition-opacity duration-300 ${(scrolled || !home) && !open ? '' : 'max-md:pointer-events-none max-md:opacity-0'}`}><Cta size="sm" /></div>
           {!home && <Link to="/" className="inline-flex h-10 items-center gap-1.5 rounded-full bg-sunken px-4 text-[15px] font-semibold active:scale-[0.97]"><ArrowLeft size={16} weight="bold" />回首页</Link>}
           {home && (
-            <button onClick={() => { setCur([...SECTIONS].reverse().find(([id]) => (document.getElementById(id)?.getBoundingClientRect().top ?? 1e9) < 140)?.[0]); setOpen((v) => !v) }} aria-expanded={open} aria-controls="mnav" className="grid h-10 place-items-center rounded-full bg-sunken px-4 text-[15px] font-semibold active:scale-[0.97] lg:hidden">{open ? '收起' : '目录'}</button>
+            <button onClick={() => { setCur(scrollY + innerHeight >= document.documentElement.scrollHeight - 4 ? SECTIONS[SECTIONS.length - 1][0] : [...SECTIONS].reverse().find(([id]) => (document.getElementById(id)?.getBoundingClientRect().top ?? 1e9) < 140)?.[0]); setOpen((v) => !v) }} aria-expanded={open} aria-controls="mnav" className="grid h-10 place-items-center rounded-full bg-sunken px-4 text-[15px] font-semibold active:scale-[0.97] lg:hidden">{open ? '收起' : '目录'}</button>
           )}
         </div>
       </div>
@@ -291,7 +291,7 @@ const LOOP = [
   { icon: 'step-publish', alt: '带硬币的喇叭', t: '发布', d: '选模板和楼栋，赏金先冻结托管。', status: '待接单', escrow: '¥5 冻结中', code: 'locked', credit: '发单人 88' },
   { icon: 'step-accept', alt: '接过包裹的手', t: '接单', d: '认证过、信用够的人才能接。', status: '已接单', escrow: '¥5 冻结中', code: 'open', credit: '跑腿人 70' },
   { icon: 'step-ongoing', alt: '打开的锁和包裹', t: '进行中', d: '接单后，取件码和宿舍号才对跑腿人可见，去驿站取件。', status: '取件中', escrow: '¥5 冻结中', code: 'open', credit: '跑腿人 70' },
-  { icon: 'step-deliver', alt: '放在门口拍照的包裹', t: '送达', d: '当面核验送达码，或拍照留证。', status: '待确认', escrow: '¥5 冻结中', code: 'open', credit: '跑腿人 70' },
+  { icon: 'step-deliver', alt: '放在门口拍照的包裹', t: '送达', d: '当面核验送达码，或拍照留证。', status: '待确认', escrow: '¥5 冻结中', code: 'used', credit: '跑腿人 70' },
   { icon: 'step-confirm', alt: '两只手传递硬币', t: '确认', d: '发单人确认，托管放款。', status: '已放款', escrow: '¥5 已放给跑腿人', code: 'hidden', credit: '跑腿人 70 → 72' },
   { icon: 'step-rate', alt: '带星星的对话气泡', t: '互评', d: '双方互相打分，信用实时变化。', status: '已互评', escrow: '¥5 已放给跑腿人', code: 'hidden', credit: '跑腿人 73，发单人 90' },
 ]
@@ -372,7 +372,7 @@ function StageMap({ i, tall = false }) {
 
 function OrderStage({ i }) {
   const s = LOOP[i]
-  const code = s.code === 'open' ? '6-2-3108' : s.code === 'hidden' ? '订单结束，已隐藏' : '接单后可见'
+  const code = s.code === 'open' ? '6-2-3108' : s.code === 'used' ? '已取件，收起了' : s.code === 'hidden' ? '订单结束，已隐藏' : '接单后可见'
   return (
     <div className="rounded-2xl bg-bg p-6 text-ink shadow-[0_30px_60px_-30px_rgba(0,0,0,0.5)]">
       <div className="flex items-center gap-2">
@@ -406,7 +406,7 @@ function LoopStep({ s, k, now, past }) {
       </span>
       <div className="min-w-0 flex-1">
         <p className="flex items-center gap-2 text-2xl font-bold md:text-3xl">{s.t}{now && <span className="rounded-full bg-on-accent px-2 py-0.5 text-xs font-bold text-accent-deep">现在</span>}</p>
-        <p className="mt-2 max-w-[30ch] text-lg leading-relaxed opacity-75">{s.d}</p>
+        <p className="mt-2 max-w-[30ch] text-lg leading-relaxed opacity-90">{s.d}</p>
         <p className="tnum mt-3 flex flex-wrap gap-1.5 text-sm font-semibold lg:hidden">
           {[s.status, s.escrow, s.credit].map((v, k) => <span key={k} className={`whitespace-nowrap rounded-lg bg-bg px-2.5 py-1 ${k === 0 ? 'text-accent' : 'text-ink'}`}>{v}</span>)}
         </p>
@@ -432,7 +432,7 @@ function MiniOrder({ i }) {
         {LOOP.map((_, k) => <motion.span key={k} className="h-1.5 rounded-full" animate={{ backgroundColor: k <= i ? 'var(--accent)' : 'var(--sunken)' }} transition={{ duration: 0.3 }} />)}
       </div>
       <div className="mt-2 grid grid-cols-2 gap-2 text-xs">
-        {[['取件码', s.code === 'open' ? '6-2-3108' : s.code === 'hidden' ? '已隐藏' : '接单后可见', s.code === 'open'], ['信用', s.credit, i >= 4]].map(([k, v, hot]) => (
+        {[['取件码', s.code === 'open' ? '6-2-3108' : s.code === 'used' ? '已用完' : s.code === 'hidden' ? '已隐藏' : '接单后可见', s.code === 'open'], ['信用', s.credit, i >= 4]].map(([k, v, hot]) => (
           <div key={k} className={`rounded-lg px-2 py-1 transition-colors ${hot ? 'bg-accent-soft text-accent' : 'bg-sunken text-muted'}`}>
             <span className="opacity-70">{k} </span>
             <AnimatePresence mode="wait" initial={false}>
@@ -454,7 +454,7 @@ function MobileLoop() {
   const go = (k) => setI(Math.max(0, Math.min(LOOP.length - 1, k)))
   const s = LOOP[i]
   return (
-    <div ref={box} className="rounded-2xl bg-bg p-4 text-ink lg:hidden">
+    <div ref={box} className="scroll-mt-24 rounded-2xl bg-bg p-4 text-ink lg:hidden">
       <div className="flex items-center gap-2">
         <img src={icon('type-express-v1')} width={28} height={28} alt="" aria-hidden="true" className="size-7" />
         <p className="text-[15px] font-semibold">菜鸟驿站取 2 个小件快递</p>
@@ -650,9 +650,6 @@ function Trust() {
           {!reduce && (
             <>
               <motion.span aria-hidden="true" style={{ scaleY: fill }} className="absolute bottom-7 left-[27px] top-7 w-[3px] origin-top -translate-x-1/2 rounded-full bg-accent" />
-              <motion.span aria-hidden="true" style={{ top }} className="absolute left-[27px] z-20 -ml-[15px] grid size-[30px] -translate-y-1/2 place-items-center rounded-full bg-surface shadow-[0_6px_16px_-6px_rgba(11,122,85,0.6)] ring-2 ring-accent">
-                <img src={icon('type-express-v1')} width={20} height={20} alt="" className="size-5" />
-              </motion.span>
             </>
           )}
           {TRUST.map((x, i) => <TrustStop key={x.t} x={x} lit={i < lit} reduce={reduce} />)}
@@ -721,7 +718,7 @@ function Credit() {
                 <AnimatePresence mode="wait">
                   {last && (
                     <motion.span key={last.n} initial={reduce ? false : { opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
-                      className="tnum mb-4 rounded-full bg-on-accent/15 px-3 py-1 text-lg font-bold">{last.delta > 0 ? '+' : ''}{last.delta}</motion.span>
+                      className={`tnum mb-4 rounded-full px-3 py-1 text-lg font-bold ${last.delta > 0 ? 'bg-on-accent/15' : 'bg-danger text-on-accent'}`}>{last.delta > 0 ? '+' : ''}{last.delta}</motion.span>
                   )}
                 </AnimatePresence>
               </div>
@@ -800,6 +797,7 @@ function Credit() {
 const BAN_DEMO = ['帮忙带份早饭到一教', '下午帮我代签到一下', '图书馆三楼占个座', '帮我代写作业，价格好说']
 function BanDemo() {
   const reduce = useReducedMotion()
+  const nav = useNavigate()
   const ref = useRef(null)
   const on = useInView(ref, { amount: 0.4 })
   const [i, setI] = useState(1)
@@ -839,14 +837,15 @@ function BanDemo() {
           )}
         </AnimatePresence>
       </div>
-      <div className={`mt-3 grid h-12 place-items-center rounded-full text-[15px] font-semibold ${hit ? 'bg-sunken text-muted' : 'bg-accent text-on-accent'}`}>{hit ? '不能发布' : '冻结 ¥5 并发布'}</div>
+      {/* 真按钮：合规时带着这句备注去原型的发布页；被拦时变灰不能点 */}
+      <button type="button" disabled={!!hit} onClick={() => { try { sessionStorage.setItem('shunluxia:draft-note', typed) } catch { /* 存不了就空着进 */ } nav('/app/publish?as=poster') }}
+        className={`mt-3 grid h-12 w-full place-items-center rounded-full text-[15px] font-semibold active:scale-[0.98] disabled:cursor-not-allowed ${hit ? 'bg-sunken text-muted' : 'bg-accent text-on-accent'}`}>{hit ? '不能发布' : '带着这句去原型里发布 →'}</button>
       <p className="mt-4 text-xs font-semibold text-muted">会被拦下的词</p>
       <ul className="mt-2 flex flex-wrap gap-1.5">
         {['代考', '替考', '代签到', '代点名', '代写作业', '代刷网课'].map((w) => (
           <li key={w} className={`rounded-full px-2.5 py-1 text-xs font-semibold line-through decoration-danger decoration-2 transition-colors ${hit && hit[0] === w ? 'bg-danger text-on-accent' : 'bg-sunken text-muted'}`}>{w}</li>
         ))}
       </ul>
-      <Link to="/app/publish" className="mt-3 flex items-center justify-center gap-1 text-sm font-semibold text-accent hover:underline">去原型的发布页试试<ArrowRight size={14} weight="bold" /></Link>
     </div>
   )
 }
@@ -927,13 +926,13 @@ function Metrics() {
           </Reveal>
           <Reveal delay={0.05} className="rounded-2xl bg-bg p-6 ring-1 ring-line">
             <p className="flex items-center gap-2 text-lg font-semibold">接单率<span className="rounded-full bg-sunken px-2 py-0.5 text-xs text-muted">目标</span></p>
-            <p className="mt-1 text-5xl font-bold tracking-tight text-accent"><span className="mr-2 align-middle text-base font-semibold tracking-normal opacity-80">至少</span>85%</p>
+            <p className="mt-1 text-5xl font-bold tracking-tight text-accent"><span className="mr-2 align-middle text-base font-semibold tracking-normal opacity-80">至少</span> 85%</p>
             <p className="mt-4 text-[15px] leading-relaxed text-muted">24 小时内被接的单 ÷ 发布的单。低了说明供给不够或定价偏低。</p>
           </Reveal>
           <Reveal delay={0.1} className="rounded-2xl bg-bg p-6 ring-1 ring-line">
             <div>
               <p className="flex items-center gap-2 text-lg font-semibold">平均接单时长<span className="rounded-full bg-sunken px-2 py-0.5 text-xs text-muted">目标</span></p>
-              <p className="mt-1 text-5xl font-bold tracking-tight text-accent"><span className="mr-2 align-middle text-base font-semibold tracking-normal opacity-80">不超过</span>10 分钟</p>
+              <p className="mt-1 text-5xl font-bold tracking-tight text-accent"><span className="mr-2 align-middle text-base font-semibold tracking-normal opacity-80">不超过</span> 10 分钟</p>
               <p className="mt-4 text-[15px] leading-relaxed text-muted">发布到被接的中位时间。跑腿要的是快，超过 10 分钟用户就会自己去。</p>
             </div>
           </Reveal>
@@ -1014,7 +1013,7 @@ function Final({ page }) {
               <img src={`${import.meta.env.BASE_URL}brand/logo-v2.png`} width={36} height={36} alt="" className="size-9 shrink-0 rounded-lg" />
               <div className="min-w-0 text-sm">
                 <p className="flex justify-between gap-2 font-semibold"><span>顺路侠 · 下课提醒</span><span className="tnum font-normal text-muted">17:45</span></p>
-                <p className="mt-0.5 leading-snug">{R.short.replace('→', ' → ')} 上有 <b className="text-accent">{n} 单</b>顺路，下课顺手捎上</p>
+                <p className="mt-0.5 leading-snug">{R.short.replace('→', ' → ')} 上有 <b className="text-accent">{n} 单</b>顺路，{R.verb}</p>
               </div>
             </div>
             <p className="mx-auto mt-3 max-w-[34ch] text-[15px] text-muted">在原型「我的」里打开下课提醒，下课前 5 分钟把这条路上的单推给你。</p>

@@ -264,7 +264,7 @@ function DeliverSheet({ t, open, onClose }) {
         ))}
       </div>
       {/* 两个页签内容一样高：切换时页签和按钮都不动，不会点错 */}
-      <div className="min-h-[13rem]">
+      <div className="min-h-[11.5rem]">
       {mode === 'code' ? (
         <div className="mt-5">
           <Field label="发单人的 4 位送达码" error={err} hint={`演示提示：发单人页面能看到送达码，这单是 ${t.deliverCode}`}>

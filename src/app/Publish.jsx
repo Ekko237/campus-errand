@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { Minus, Plus, CaretDown } from '@phosphor-icons/react'
 import { useStore } from '../store'
@@ -37,6 +37,9 @@ const defaultTitle = (f) => ({
 
 const chip = (on) => `inline-flex h-11 items-center gap-1.5 whitespace-nowrap rounded-full px-4 text-[15px] font-semibold transition ${on ? 'bg-ink text-bg' : 'bg-surface text-ink ring-1 ring-line'}`
 
+// 从落地页拦截演示带过来的那句备注（只用一次）
+const draftNote = () => { try { const v = sessionStorage.getItem('shunluxia:draft-note') || ''; sessionStorage.removeItem('shunluxia:draft-note'); return v.slice(0, 80) } catch { return '' } }
+
 export default function Publish() {
   const { state, act } = useStore()
   const nav = useNavigate()
@@ -49,7 +52,7 @@ export default function Publish() {
     title: again.title, note: again.note || '', room: again.private?.room || '', code: '', reward: again.reward,
   } : {
     type: 'express', from: 'cainiao', to: 'mei5', size: 's', windowId: 'w60', urgent: false,
-    title: '', note: tour ? '一个小件，衣服' : '', room: tour ? '梅园 5 号楼 412' : '', code: tour ? '6-2-3108' : '', reward: null,
+    title: '', note: tour ? '一个小件，衣服' : draftNote(), room: tour ? '梅园 5 号楼 412' : '', code: tour ? '6-2-3108' : '', reward: null,
   })
   const usual = useMemo(() => {
     const n = {}
@@ -76,6 +79,8 @@ export default function Publish() {
   }
   const blocking = Object.values(errors).some(Boolean)
 
+  // 从落地页带着备注过来（?as=poster）：直接用发单人身份打开表单
+  useEffect(() => { if (sp.get('as') === 'poster' && state.role !== 'poster') act('role', { role: 'poster' }) }, []) // eslint-disable-line react-hooks/exhaustive-deps
   if (state.role !== 'poster') {
     return (
       <Panel className="overflow-hidden text-center">
