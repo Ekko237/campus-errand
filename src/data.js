@@ -30,7 +30,7 @@ export const BUILDINGS = [
   { id: 'market', name: '教育超市', group: '食堂/超市', x: 600, y: 480 },
   { id: 'gate', name: '北门外卖取餐点', group: '食堂/超市', x: 60, y: -260 },
   { id: 'lib', name: '图书馆', group: '教学区', x: 300, y: 50 },
-  { id: 'jiao1', name: '第一教学楼', group: '教学区', x: 520, y: -80 },
+  { id: 'jiao1', name: '第一教学楼', group: '教学区', x: 980, y: -60 },
   { id: 'hall', name: '学术报告厅', group: '教学区', x: 700, y: 30 },
   { id: 'gym', name: '体育馆', group: '教学区', x: -200, y: 700 },
   { id: 'zhu3', name: '竹园 3 号楼', group: '宿舍区', x: 0, y: 0 },

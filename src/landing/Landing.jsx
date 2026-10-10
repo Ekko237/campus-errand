@@ -1,4 +1,4 @@
-import RouteHero from './RouteHero'
+import RouteHero, { CampusRoutes } from './RouteHero'
 import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import {
@@ -491,7 +491,7 @@ function Metrics() {
       <div className={`mx-auto max-w-7xl ${SECTION}`}>
         <div className="max-w-4xl"><Reveal><H2>看三个数，<br />就知道平台健不健康</H2></Reveal></div>
         <div className="mt-14 grid gap-3 md:grid-cols-2 lg:grid-cols-3 lg:grid-rows-2">
-          <Reveal className="flex flex-col justify-between rounded-2xl bg-ink p-6 text-bg md:col-span-2 md:p-10 lg:row-span-2">
+          <Reveal className="flex flex-col justify-between rounded-2xl bg-accent-deep p-6 text-on-accent md:col-span-2 md:p-10 lg:row-span-2">
             <div>
               <p className="text-lg font-semibold opacity-80">北极星指标：履约率</p>
               <p className="mt-3 text-7xl font-bold tracking-[-0.04em] md:text-[132px] md:leading-none"><CountUp to={97} prefix="≥ " suffix="%" /></p>
@@ -527,30 +527,20 @@ const ROADMAP = [
 ]
 
 function Roadmap() {
-  const track = useRef(null)
-  const { scrollXProgress } = useScroll({ container: track })
-  const by = (dir) => track.current?.scrollBy({ left: dir * track.current.clientWidth * 0.6, behavior: 'smooth' })
   return (
     <section id="roadmap" className={`mx-auto max-w-7xl scroll-mt-16 ${SECTION}`}>
-      <div className="flex items-end justify-between gap-4">
-        <Reveal><H2>接下来做什么</H2></Reveal>
-        <div className="hidden gap-2 md:flex">
-          <button onClick={() => by(-1)} aria-label="上一张" className="grid size-12 place-items-center rounded-full ring-1 ring-line transition hover:bg-ink hover:text-bg active:scale-95"><CaretLeft size={20} weight="bold" /></button>
-          <button onClick={() => by(1)} aria-label="下一张" className="grid size-12 place-items-center rounded-full ring-1 ring-line transition hover:bg-ink hover:text-bg active:scale-95"><CaretRight size={20} weight="bold" /></button>
-        </div>
-      </div>
-      <div className="relative mt-12 h-px bg-line" aria-hidden="true">
-        <motion.div style={{ scaleX: scrollXProgress }} className="absolute inset-0 origin-left bg-accent" />
-      </div>
-      <div ref={track} className="no-scrollbar -mx-4 mt-8 flex snap-x snap-mandatory gap-4 overflow-x-auto px-4 pb-2 md:mx-0 md:px-0">
+      <Reveal><H2>接下来做什么</H2></Reveal>
+      <ol className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {ROADMAP.map((r, i) => (
-          <Reveal key={r.t} delay={i * 0.05} className={`w-[80%] shrink-0 snap-start rounded-2xl p-6 sm:w-[46%] md:w-[38%] lg:w-[31%] ${i === 0 ? 'bg-accent text-on-accent' : 'bg-surface ring-1 ring-line'}`}>
-            <p className={`text-[15px] font-semibold ${i === 0 ? 'opacity-85' : 'text-muted'}`}>{r.when}</p>
-            <p className="mt-10 text-3xl font-bold tracking-tight">{r.t}</p>
+          <Reveal as="li" key={r.t} delay={i * 0.05} className={`relative rounded-2xl p-6 ${i === 0 ? 'bg-accent text-on-accent' : 'bg-surface ring-1 ring-line'}`}>
+            <p className={`flex items-center gap-2 text-[15px] font-semibold ${i === 0 ? 'opacity-90' : 'text-muted'}`}>
+              <span className={`size-2.5 rounded-full ${i === 0 ? 'bg-on-accent' : 'ring-2 ring-line'}`} />{r.when}
+            </p>
+            <p className="mt-8 text-2xl font-bold tracking-tight md:text-3xl">{r.t}</p>
             <p className={`mt-3 text-base leading-relaxed ${i === 0 ? 'opacity-90' : 'text-muted'}`}>{r.d}</p>
           </Reveal>
         ))}
-      </div>
+      </ol>
     </section>
   )
 }
@@ -563,9 +553,8 @@ function Final() {
   return (
     <section className="border-t border-line">
       <div ref={ref} className="mx-auto max-w-7xl px-4 pt-20 md:px-8 md:pt-28 lg:pt-32">
-        <div className="overflow-hidden rounded-2xl bg-sunken">
-          <motion.img style={{ scale }} src={img('closing-v1')} width={1600} height={900} alt="绿树成荫的校园主干道，远处三三两两的学生" loading="lazy" className="aspect-[16/10] w-full object-cover md:aspect-[21/9]" />
-        </div>
+        <Reveal><H2>同一时间，<br />校园里到处是顺路</H2></Reveal>
+        <div className="mt-5"><CampusRoutes /></div>
       </div>
       <div className="mx-auto max-w-7xl px-4 py-20 text-center md:px-8 md:py-28 lg:py-32">
         <Reveal><h2 className="text-balance text-[40px] font-bold leading-[1.05] tracking-[-0.035em] md:text-7xl">自己走一遍，<br className="md:hidden" />大约两分钟</h2></Reveal>
