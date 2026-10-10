@@ -46,6 +46,8 @@ export default function TourBar() {
   useEffect(() => {
     if (!here) return
     let el = null
+    // 刚确认放款（下一步是打分）：先让「已放款」那一下播完，再滚去打分
+    const wait = step?.n === 7 ? 1600 : 350
     // 量两次：图片（比如送达照片）加载完会把按钮往下推，第一次量完 0.6 秒后再补一次
     const reveal = () => {
       if (!el || !(loc.pathname.startsWith('/app/task/') || loc.pathname.startsWith('/app/publish'))) return
@@ -53,7 +55,8 @@ export default function TourBar() {
       const navTop = document.querySelector('nav[aria-label="主导航"]')?.getBoundingClientRect().top ?? innerHeight
       const r = el.getBoundingClientRect()
       const top = head + 16, bottom = (navTop > innerHeight / 2 ? navTop : innerHeight) - 24
-      if (r.top >= top && r.bottom <= bottom) return
+      // 贴底常驻的按钮（发布页）本来就看得见，不滚，让人从表单顶上看起
+      if ((r.top >= top && r.bottom <= bottom) || (el.closest('.sticky') && r.bottom <= innerHeight)) return
       // 先试着把按钮所在的整块（卡片、段落）顶到导览条下面：块的标题不被切，按钮也在屏幕里
       let dy = null
       for (let a = el.parentElement; a && a.tagName !== 'MAIN'; a = a.parentElement) {
@@ -70,8 +73,8 @@ export default function TourBar() {
       if (!el) return
       el.classList.add('tour-focus')
       reveal()
-    }, 350)
-    const id2 = setTimeout(reveal, 950)
+    }, wait)
+    const id2 = setTimeout(reveal, wait + 600)
     return () => { clearTimeout(id); clearTimeout(id2); el?.classList.remove('tour-focus') }
   }, [here, step?.n, loc.pathname, reduce, state.role])
   useEffect(() => { if (!arrived) return; const id = setTimeout(() => act('tour', { tour: { active: false, done: true } }), 3000); return () => clearTimeout(id) }, [arrived, act])

@@ -228,7 +228,10 @@ export default function Publish() {
       {touched && blocking && !errors.banned && (
         <p role="status" className="-mb-2 rounded-xl bg-danger-soft px-4 py-2.5 text-[15px] font-semibold text-danger">还差：{[errors.code && '取件码', errors.room && '宿舍号', errors.same && '楼栋选重了', errors.money && '赏金'].filter(Boolean).join('、')}</p>
       )}
-      <Btn size="lg" className="w-full" onClick={submit} disabled={!!errors.banned}>冻结 ¥{reward} 并发布</Btn>
+      {/* 发布按钮贴在底部导航上面：一进页面就看得到，表单从上往下填，不用先滚到底 */}
+      <div className="sticky bottom-[73px] z-10 -mx-4 bg-gradient-to-t from-bg from-70% to-transparent px-4 pb-1 pt-4 xl:static xl:mx-0 xl:bg-none xl:p-0">
+        <Btn size="lg" className="w-full" onClick={submit} disabled={!!errors.banned}>冻结 ¥{reward} 并发布</Btn>
+      </div>
 
       <Sheet open={confirm} onClose={() => setConfirm(false)} title="确认发布">
         <dl className="space-y-3 text-[15px]">

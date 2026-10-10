@@ -347,9 +347,9 @@ function StageMap({ i, tall = false }) {
       <svg viewBox={`${X0} ${Y0} ${VW} ${VH}`} preserveAspectRatio="xMidYMid slice" className="absolute inset-0 size-full">
         <image href={`${import.meta.env.BASE_URL}images/campus-map-v2.webp`} x="0" y="0" width="1600" height="900" />
         <path d={D} fill="none" stroke="var(--ink)" strokeOpacity="0.35" strokeWidth="12" strokeDasharray="4 22" strokeLinecap="round" strokeLinejoin="round" />
-        <motion.path d={D} fill="none" stroke="var(--ink)" strokeOpacity="0.9" strokeWidth="14" strokeLinecap="round" strokeLinejoin="round" initial={false} animate={{ pathLength: STAGE_P[i] }} transition={sp} />
+        <motion.path d={D} fill="none" stroke="var(--ink)" strokeOpacity="0.9" strokeWidth={tall ? 22 : 14} strokeLinecap="round" strokeLinejoin="round" initial={false} animate={{ pathLength: STAGE_P[i] }} transition={sp} />
         {/* 捎上包裹以后的那段变绿 */}
-        <motion.path d={NEED_D} fill="none" stroke="var(--accent)" strokeWidth="16" strokeLinecap="round" strokeLinejoin="round" initial={false}
+        <motion.path d={NEED_D} fill="none" stroke="var(--accent)" strokeWidth={tall ? 30 : 16} strokeLinecap="round" strokeLinejoin="round" initial={false}
           animate={{ pathLength: Math.max(0, (STAGE_P[i] - STAGE_F) / (1 - STAGE_F)), opacity: i >= 3 ? 1 : 0 }} transition={sp} />
       </svg>
       {tag('一教', [STAGE_PTS[0][0] - 40, STAGE_PTS[0][1] - 150], false, 'z-20')}
@@ -365,15 +365,15 @@ function StageMap({ i, tall = false }) {
       <motion.span className="absolute z-30 grid size-8 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full bg-surface ring-[3px] ring-ink md:size-9"
         initial={false} animate={{ ...spct(me), opacity: i === 0 ? 0 : 1 }} transition={sp}>
         <img src={icon('avatar-runner-v1')} width={28} height={28} alt="" className="size-6 rounded-full md:size-7" />
-        {i === 3 && <img src={icon('type-express-v1')} width={20} height={20} alt="" className="absolute -right-3.5 -top-3.5 size-5" />}
-        {<span className={`absolute left-1/2 -translate-x-1/2 ${tall && i >= 3 ? 'bottom-full mb-2' : 'top-full mt-2'} whitespace-nowrap rounded-full bg-ink px-1.5 text-[11px] font-semibold leading-4 text-bg`}>阿远</span>}
+        {i === 3 && !tall && <img src={icon('type-express-v1')} width={20} height={20} alt="" className="absolute -right-3.5 -top-3.5 size-5" />}
+        {!tall && <span className={`absolute left-1/2 -translate-x-1/2 ${i === 2 ? 'bottom-full mb-2' : 'top-full mt-2'} whitespace-nowrap rounded-full bg-ink px-1.5 text-[11px] font-semibold leading-4 text-bg`}>阿远</span>}
       </motion.span>
       {i >= 4 && (
         <motion.span key={`pay${i}`} className="tnum absolute z-20 -translate-x-1/2 rounded-full bg-accent px-2 py-0.5 text-xs font-bold text-on-accent" style={spct([mei[0] + 200, mei[1] - 262])}
           initial={reduce ? false : { opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={sp}>{i === 4 ? '+¥5 给阿远' : '阿远信用 73'}</motion.span>
       )}
     </div>
-    <p className="mt-1.5 flex flex-wrap gap-x-3 text-[11px] text-ink/70"><span className="inline-flex items-center gap-1"><i className="h-1 w-4 rounded-full bg-ink/80" />阿远走的路</span><span className={`inline-flex items-center gap-1 transition-opacity ${i >= 3 ? '' : 'opacity-60'}`}><i className="h-1.5 w-4 rounded-full bg-accent" />捎着你快递的那段{i < 3 && '（取到后出现）'}</span></p>
+    <p className="mt-1.5 flex flex-wrap gap-x-3 text-[12px] text-ink/80"><span className="inline-flex items-center gap-1"><i className="h-1 w-4 rounded-full bg-ink/80" />{tall ? '头像是阿远，黑线是他走的路' : '阿远走的路'}</span><span className={`inline-flex items-center gap-1 transition-opacity ${i >= 3 ? '' : 'opacity-60'}`}><i className="h-1.5 w-4 rounded-full bg-accent" />捎着你快递的那段{i < 3 && '（取到后出现）'}</span></p>
     </div>
   )
 }
@@ -803,7 +803,7 @@ function Credit() {
                       {/* 浮在这一行右边，不往列表里插东西，下面的规则不会被推走 */}
                       {here && (
                         <motion.span key={score} initial={reduce ? false : { opacity: 0, x: 6 }} animate={{ opacity: 1, x: 0 }} transition={{ type: 'spring', stiffness: 380, damping: 30 }}
-                          className="tnum pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 rounded-full bg-accent-soft px-2.5 py-1 text-sm font-bold text-accent lg:hidden">现在 {score}</motion.span>
+                          className={`tnum pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 rounded-full px-2.5 py-1 text-sm font-bold lg:hidden ${r.delta < 0 ? 'bg-danger-soft text-danger' : 'bg-accent-soft text-accent'}`}>现在 {score}</motion.span>
                       )}
                     </button>
                   </li>
@@ -1023,7 +1023,7 @@ function Final({ page }) {
       {page === 'thinking' ? (
         <div className="mx-auto max-w-3xl px-4 py-20 text-center md:py-28">
           <Reveal><h2 className="font-display text-balance text-[40px] leading-[1.08] md:text-6xl">想法讲完了<br />点一遍看看</h2></Reveal>
-          <Reveal delay={0.05}><p className="mx-auto mt-5 max-w-[32ch] text-lg text-muted">原型里一个人就能分别扮演发单人和跑腿人，大约两分钟走完一单。</p></Reveal>
+          <Reveal delay={0.05}><p className="mx-auto mt-5 max-w-[32ch] text-lg text-muted">原型里一个人就能分别扮演发单人和<span className="whitespace-nowrap">跑腿人</span>，大约两分钟走完一单。</p></Reveal>
           <Reveal delay={0.1} className="mt-8"><Cta /></Reveal>
         </div>
       ) : (
@@ -1061,13 +1061,13 @@ function Final({ page }) {
                       <img src={`${import.meta.env.BASE_URL}brand/logo-v2.png`} width={36} height={36} alt="" className="size-9 shrink-0 rounded-[10px]" />
                       <span className="min-w-0 flex-1 text-[13px]">
                         <span className="flex justify-between gap-2 font-semibold"><span>顺路提醒</span><span className="font-normal text-muted">现在</span></span>
-                        <span className="mt-0.5 block leading-snug">{R.short.replace('→', ' → ')} 上有 <b className="text-accent">{n} 单</b>顺路，{R.verb}</span>
+                        <span className="mt-0.5 block leading-snug">{R.short.replace('→', ' → ')} 上有 <b className="text-accent">{n} 单</b>顺路，<span className="whitespace-nowrap">{R.verb}</span></span>
                       </span>
                     </motion.button>
                   </AnimatePresence>
                   <div className="flex gap-2.5 rounded-[20px] bg-surface/55 p-3 text-left text-[13px] text-ink/80 backdrop-blur-md" aria-hidden="true">
                     <img src={`${import.meta.env.BASE_URL}brand/logo-v2.png`} width={36} height={36} alt="" className="size-9 shrink-0 rounded-[10px] opacity-80" />
-                    <span className="min-w-0 flex-1"><span className="flex justify-between gap-2 font-semibold"><span>托管已放款</span><span className="font-normal text-muted">昨天</span></span><span className="mt-0.5 block leading-snug">小满确认收到，¥5 到账，信用 +2</span></span>
+                    <span className="min-w-0 flex-1"><span className="flex justify-between gap-2 font-semibold"><span>托管已放款</span><span className="font-normal text-muted">昨天</span></span><span className="mt-0.5 block leading-snug">小满确认收到，¥5 到账，<span className="whitespace-nowrap">信用 +2</span></span></span>
                   </div>
                 </div>
                 <p className="mt-auto pb-6 text-xs font-semibold opacity-70">轻点推送，看看这条路上的单</p>

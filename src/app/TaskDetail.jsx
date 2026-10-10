@@ -352,7 +352,7 @@ function Actions({ t }) {
     if (role === 'poster') {
       return own ? (
         <div className="grid gap-2">
-          <p className="text-balance text-center text-[15px] text-muted">等待同学接单。切到跑腿人可以自己接下这单试试。</p>
+          <p className="text-balance text-center text-[15px] text-muted">等待同学接单。<span className="whitespace-nowrap">切到跑腿人</span>可以自己接下这单<span className="whitespace-nowrap">试试。</span></p>
           <div className="grid grid-cols-2 gap-3">
             <Btn variant="ghost" onClick={() => act('cancel', { id: t.id })}>取消并退款</Btn>
             <Btn onClick={() => act('role', { role: 'runner' })}>切到跑腿人</Btn>
@@ -557,7 +557,7 @@ function WrapUp({ t }) {
       <p className="mt-1 text-balance text-2xl font-bold"><span className="whitespace-nowrap">顺路一趟，¥{t.reward} 到账，</span><span className="whitespace-nowrap">{rows.every((x) => x.d >= 0) ? '信用都涨了' : '信用有涨有跌'}</span></p>
       {PLACES[mapR.from] && PLACES[mapR.to] && mapR.from !== mapR.to ? (
         // 顺路的单：画跑腿人本来要走的整条路，这一单捎的那段亮绿；不顺路的单：只画取件到送达
-        <div className="mt-4 overflow-hidden rounded-2xl ring-1 ring-on-accent/20"><CampusMap R={mapR} hits={mapHits} reduce={!play} pills={false} walker={play} /></div>
+        <div className="mt-4 overflow-hidden rounded-2xl ring-1 ring-on-accent/20"><CampusMap R={mapR} hits={mapHits} reduce={!play} pills={false} walker={play} at={play ? null : 1} /></div>
       ) : (
       <div className="relative mt-5 h-12" aria-hidden="true">
         <span className="absolute left-0 right-0 top-1/2 h-[3px] -translate-y-1/2 rounded-full bg-on-accent/25" />
@@ -615,7 +615,8 @@ export default function TaskDetail() {
     <div className="space-y-5">
       <div className="flex items-center gap-2">
         <button onClick={() => nav(-1)} aria-label="返回" className="grid size-10 place-items-center rounded-full bg-surface ring-1 ring-line"><ArrowLeft size={20} weight="bold" /></button>
-        <span className="text-[15px] font-semibold text-muted">订单详情</span>
+        {/* 接单后取件码排在最上面：顶栏先写清是哪一单 */}
+        <span className={`min-w-0 truncate text-[15px] font-semibold ${pmode === 'open' ? 'text-ink' : 'text-muted'}`}>{pmode === 'open' ? t.title : '订单详情'}</span>
         <span className={`ml-auto rounded-full px-3 py-1 text-sm font-semibold ${['refunded', 'cancelled', 'disputed'].includes(t.status) ? 'bg-sunken text-ink' : 'bg-accent-soft text-accent'}`}>{t.status === 'ongoing' && t.picked ? '送达中' : STATUS_TEXT[t.status]}</span>
       </div>
 

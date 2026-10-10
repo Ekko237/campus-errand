@@ -101,8 +101,8 @@ export const findBanned = (text) => BANNED.filter((w) => text.includes(w))
 export const CREDIT_INIT = 70
 export const LEVELS = [
   { name: '受限', min: 0, cap: 0, desc: '暂停接单，只能浏览', badge: 'level-restricted', alt: '带锁的灰色盾牌' },
-  { name: '新手', min: 60, cap: 8, desc: '可接赏金 ≤ ¥8 的单', badge: 'level-newbie', alt: '冒芽的徽章' },
-  { name: '可靠', min: 72, cap: 15, desc: '可接赏金 ≤ ¥15 的单', badge: 'level-reliable', alt: '带对勾的绿色盾牌' },
+  { name: '新手', min: 60, cap: 8, desc: '可接赏金 ≤ ¥8 的单', badge: 'level-newbie', alt: '冒芽的徽章' },
+  { name: '可靠', min: 72, cap: 15, desc: '可接赏金 ≤ ¥15 的单', badge: 'level-reliable', alt: '带对勾的绿色盾牌' },
   { name: '金牌', min: 85, cap: Infinity, desc: '不限金额，加急单优先推送', badge: 'level-gold', alt: '带皇冠的金牌' },
 ]
 export const levelOf = (c) => [...LEVELS].reverse().find((l) => c >= l.min)
