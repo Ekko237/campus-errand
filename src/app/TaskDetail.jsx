@@ -432,9 +432,9 @@ function Actions({ t }) {
     return (
       <div className="grid gap-2 text-center">
         <p className="text-[15px] text-muted">订单已完成{t.ratingByPoster ? `，发单人评价 ${t.ratingByPoster.stars} 星` : ''}{t.ratingByRunner ? `，跑腿人评价 ${t.ratingByRunner.stars} 星` : ''}。</p>
-        {otherPending && <Btn variant="ghost" onClick={() => act('role', { role: role === 'poster' ? 'runner' : 'poster' })}>切换身份去互评</Btn>}
+        {otherPending && <Btn onClick={() => act('role', { role: role === 'poster' ? 'runner' : 'poster' })}>切换身份去互评</Btn>}
         {mine && <Btn variant="ghost" onClick={() => { act('role', { role: 'runner' }); nav('/app/me') }}>{role === 'runner' ? '看我的信用变化' : '看跑腿人信用变化'}</Btn>}
-        {own && role === 'poster' && <Btn onClick={() => nav(`/app/publish?again=${t.id}`)}><ArrowClockwise size={18} weight="bold" />同样的再来一单</Btn>}
+        {own && role === 'poster' && <Btn variant={otherPending ? 'ghost' : undefined} onClick={() => nav(`/app/publish?again=${t.id}`)}><ArrowClockwise size={18} weight="bold" />同样的再来一单</Btn>}
       </div>
     )
   }
@@ -541,7 +541,7 @@ export default function TaskDetail() {
       {own && state.role === 'poster' && ['ongoing', 'delivered'].includes(t.status) && (
         <div className="flex items-center gap-3 rounded-2xl bg-ink p-4 text-bg">
           {t.status === 'delivered' && t.proof?.kind === 'code' ? <Check size={26} weight="bold" className="shrink-0 text-accent" /> : <Numpad size={26} className="shrink-0" />}
-          <p className="flex-1 text-[15px]">{t.status === 'delivered' ? (t.proof?.kind === 'code' ? '跑腿人已当面核验送达码' : '跑腿人已拍照留证') : '送达码，见面后告诉跑腿人'}</p>
+          <p className="flex-1 text-balance text-[15px]">{t.status === 'delivered' ? (t.proof?.kind === 'code' ? '跑腿人已当面核验送达码' : '跑腿人已拍照留证') : '送达码，见面后告诉跑腿人'}</p>
           <span className="tnum text-3xl font-bold tracking-[0.2em]">{t.deliverCode}</span>
         </div>
       )}

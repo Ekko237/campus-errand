@@ -249,14 +249,14 @@ function OrderStage({ i }) {
   )
 }
 
-function LoopStep({ s }) {
+function LoopStep({ s, now, past }) {
   return (
-    <li className="flex gap-5 lg:min-h-[min(26vh,260px)] lg:items-center">
+    <li className={`flex scroll-mt-40 gap-5 transition-opacity duration-300 lg:min-h-[min(26vh,260px)] lg:items-center ${now ? 'opacity-100' : past ? 'opacity-70' : 'opacity-45'}`}>
       <span className="grid size-16 shrink-0 place-items-center rounded-2xl bg-bg">
         <img src={icon(s.icon + '-v1')} width={48} height={48} alt={s.alt} loading="lazy" className="size-12 object-contain" />
       </span>
       <div>
-        <p className="text-2xl font-bold md:text-3xl">{s.t}</p>
+        <p className="flex items-center gap-2 text-2xl font-bold md:text-3xl">{s.t}{now && <span className="rounded-full bg-on-accent px-2 py-0.5 text-xs font-bold text-accent-deep">现在</span>}</p>
         <p className="mt-2 max-w-[30ch] text-lg leading-relaxed opacity-75">{s.d}</p>
       </div>
     </li>
@@ -297,7 +297,7 @@ function Loop() {
     setActive(k)
   })
   return (
-    <section id="loop" className="scroll-mt-16 px-2 md:px-4">
+    <section id="loop" className="scroll-mt-16 px-4">
       <div className="rounded-[32px] bg-accent-deep text-on-accent md:rounded-[48px]">
       <div className={`mx-auto max-w-7xl ${SECTION}`}>
         <div className="grid gap-x-12 lg:grid-cols-12 lg:items-end">
@@ -309,9 +309,9 @@ function Loop() {
             <div className="sticky top-28"><OrderStage i={active} /></div>
           </div>
           <div className="lg:col-span-6 lg:col-start-7">
-            <div className="sticky top-[72px] z-10 -mx-1 mb-8 lg:hidden"><MiniOrder i={active} /></div>
+            <div className="sticky top-[80px] z-10 mb-8 lg:hidden"><MiniOrder i={active} /></div>
             <ol ref={ol} className="space-y-10 lg:space-y-0">
-              {LOOP.map((s) => <LoopStep key={s.t} s={s} />)}
+              {LOOP.map((s, k) => <LoopStep key={s.t} s={s} now={k === active} past={k < active} />)}
             </ol>
           </div>
         </div>

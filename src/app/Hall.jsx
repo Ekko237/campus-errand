@@ -1,9 +1,10 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence, useReducedMotion } from 'motion/react'
+import { RouteZoom } from '../landing/RouteHero'
 import { CaretDown, MapPin, Clock, LockSimple, MagnifyingGlass, WarningOctagon, ShieldCheck, ArrowRight, Lightning } from '@phosphor-icons/react'
 import { useStore } from '../store'
-import { TYPES, TYPE_KEYS, B, BUILDINGS, dist, fmtDist, detourMin, RUNNER_HOME, levelOf, minCreditFor, POSTER_WARN } from '../data'
+import { TYPES, TYPE_KEYS, B, BUILDINGS, dist, fmtDist, detourMin, detourMeters, RUNNER_HOME, levelOf, minCreditFor, POSTER_WARN } from '../data'
 import { TypeTag, UrgentTag, Panel, Empty, Btn, left, spring } from '../ui'
 
 const SORTS = [['route', '顺我路'], ['dist', '距离最近'], ['reward', '赏金最高'], ['deadline', '截止最早']]
@@ -188,7 +189,10 @@ export default function Hall() {
       </div>
 
       {sortBy === 'route' && (
-        <div className="rounded-2xl bg-accent-soft px-4 py-3">
+        <div className="rounded-2xl bg-accent-soft p-2 pb-3">
+          <RouteZoom R={{ ...route, label: route.from + route.to }} reduce={reduce} ratio={2.5} pills={false}
+            hits={state.tasks.filter((t) => t.status === 'open' && t.deadline > Date.now() && detourMin(route.from, route.to, t) <= 5).map((t) => ({ ...t, dm: detourMeters(route.from, route.to, t) }))} />
+          <div className="px-2 pt-3">
           <div className="flex items-center gap-3">
             <span aria-hidden="true" className="hidden shrink-0 items-center sm:flex"><span className="size-2.5 rounded-full bg-ink" /><span className="h-0.5 w-5 bg-ink" /><span className="size-2.5 rounded-full bg-accent ring-2 ring-accent-soft" /><span className="h-0.5 w-5 bg-ink" /><span className="size-2.5 rounded-full bg-ink" /></span>
             <p className="min-w-0 flex-1 text-[15px] font-semibold leading-snug">{B[route.from].name.replace(/（.*?）/, '')} → {B[route.to].name.replace(/（.*?）/, '')}</p>
@@ -210,7 +214,8 @@ export default function Hall() {
               </motion.div>
             )}
           </AnimatePresence>
-          <p className="mt-2 text-sm text-muted">按捎上每单要多走几分钟排，5 分钟以内标为顺路。</p>
+          <p className="mt-2 hidden text-sm text-muted sm:block">按捎上每单要多走几分钟排，5 分钟以内标为顺路，绿点就是路上的单。</p>
+          </div>
         </div>
       )}
 

@@ -126,10 +126,10 @@ function reducer(s, a) {
       const before = runner.credit
       if (a.by === 'poster') {
         runner = { ...runner, ratings: [...runner.ratings, a.stars] }
-        if (delta) runner = credit(runner, delta, a.stars >= 4 ? `收到 ${a.stars} 星好评` : `收到 ${a.stars} 星差评`)
+        if (delta) runner = credit(runner, delta, a.stars >= 4 ? `「${task.title}」收到 ${a.stars} 星好评` : `「${task.title}」收到 ${a.stars} 星差评`)
       } else if (task.posterId === 'poster') {
         poster = { ...poster, ratings: [...poster.ratings, a.stars] }
-        if (delta) poster = credit(poster, delta, a.stars >= 4 ? `收到 ${a.stars} 星好评` : `收到 ${a.stars} 星差评`)
+        if (delta) poster = credit(poster, delta, a.stars >= 4 ? `「${task.title}」收到 ${a.stars} 星好评` : `「${task.title}」收到 ${a.stars} 星差评`)
       }
       const field = a.by === 'poster' ? 'ratingByPoster' : 'ratingByRunner'
       const pc = a.by === 'runner' && task.posterId !== 'poster' ? Math.max(0, Math.min(100, task.posterCredit + delta)) : task.posterCredit

@@ -52,7 +52,7 @@ function Toasts() {
   }, [last?.id]) // eslint-disable-line react-hooks/exhaustive-deps
   const bad = list.some((t) => t.tone === 'bad')
   return (
-    <div className={`pointer-events-none fixed inset-x-0 z-50 flex justify-center px-4 ${state.tour.active ? 'bottom-[calc(10.5rem+env(safe-area-inset-bottom))] xl:bottom-32' : 'bottom-[calc(4.75rem+env(safe-area-inset-bottom))] xl:bottom-6'} xl:-translate-x-40`} aria-live="polite">
+    <div className={`pointer-events-none fixed inset-x-0 z-50 flex justify-center px-4 ${state.tour.active ? 'bottom-[calc(10.5rem+env(safe-area-inset-bottom))] xl:bottom-32' : 'bottom-[calc(4.75rem+env(safe-area-inset-bottom))] xl:bottom-6'} xl:-translate-x-20`} aria-live="polite">
       <AnimatePresence initial={false}>
         {last && (
           <motion.div key="toast" layout initial={reduce ? false : { y: 12, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ opacity: 0, transition: { duration: 0.15 } }} transition={spring}
@@ -136,7 +136,7 @@ function Shell() {
   return (
     <div className="min-h-[100dvh] bg-bg">
       <header className="sticky top-0 z-30 border-b border-line bg-bg/95 backdrop-blur">
-        <div className="mx-auto flex h-16 max-w-xl items-center justify-between gap-3 px-4 xl:max-w-[66rem] xl:-translate-x-20">
+        <div className="mx-auto flex h-16 max-w-xl items-center justify-between gap-3 px-4 xl:max-w-[66rem]">
           <Link to="/" className="flex shrink-0 items-center gap-2 text-lg font-bold tracking-tight">
             <img src={`${import.meta.env.BASE_URL}brand/logo-v2.png`} width={36} height={36} alt="顺路侠标志：背着书包、夹着包裹奔跑的小人" className="size-9" />
             <span className="max-[359px]:hidden">顺路侠</span>
@@ -144,7 +144,7 @@ function Shell() {
           <RoleSwitch />
         </div>
       </header>
-      <main className="mx-auto max-w-xl overflow-x-clip px-4 pb-44 pt-4 xl:-translate-x-40">
+      <main className="mx-auto max-w-xl overflow-x-clip px-4 pb-44 pt-4 xl:-translate-x-20">
         <motion.div key={pathname} initial={reduce || dir === 0 ? false : { opacity: 0.35, x: 28 * dir }} animate={{ opacity: 1, x: 0 }}
           transition={{ type: 'spring', stiffness: 520, damping: 42, mass: 0.7 }}>
         <Routes>
@@ -162,7 +162,7 @@ function Shell() {
       </main>
       <DemoPanel />
       <TourBar />
-      <nav className="fixed inset-x-0 bottom-0 z-30 border-t border-line bg-surface/95 backdrop-blur xl:inset-x-auto xl:bottom-auto xl:left-[calc(50%-38rem)] xl:top-24 xl:w-36 xl:border-0 xl:bg-transparent xl:backdrop-blur-none" aria-label="主导航">
+      <nav className="fixed inset-x-0 bottom-0 z-30 border-t border-line bg-surface/95 backdrop-blur xl:inset-x-auto xl:bottom-auto xl:left-[calc(50%-33rem)] xl:top-24 xl:w-36 xl:border-0 xl:bg-transparent xl:backdrop-blur-none" aria-label="主导航">
         <div className="mx-auto grid max-w-xl grid-cols-4 pb-[env(safe-area-inset-bottom)] xl:grid-cols-1 xl:gap-1 xl:pb-0">
           {tabs.map(([to, label, img, end]) => (
             <NavLink key={to} to={to} end={end} className={({ isActive }) => `relative flex h-16 flex-col items-center justify-center gap-0.5 text-[13px] font-semibold transition-colors xl:h-12 xl:flex-row xl:justify-start xl:gap-2.5 xl:rounded-xl xl:px-3 xl:text-[15px] ${isActive ? 'text-accent xl:bg-accent-soft' : 'text-muted xl:hover:bg-sunken'}`}>

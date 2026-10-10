@@ -102,7 +102,7 @@ export default function Me() {
             <span className="grid size-11 shrink-0 place-items-center rounded-full bg-accent-soft text-accent"><Path size={22} weight="bold" /></span>
             <span className="min-w-0 flex-1">
               <span className="block text-sm text-muted">我常走的路</span>
-              <span className="block text-[15px] font-semibold leading-snug">{B[route.from].name.replace(/（.*?）/, '')} → {B[route.to].name.replace(/（.*?）/, '')}</span>
+              <span className="block text-[15px] font-semibold leading-snug"><span className="whitespace-nowrap">{B[route.from].name.replace(/（.*?）/, '')}</span> → <span className="whitespace-nowrap">{B[route.to].name.replace(/（.*?）/, '')}</span></span>
             </span>
             <span className="shrink-0 text-right">
               <span className="tnum block text-xl font-bold text-accent">{hits.length} 单</span>

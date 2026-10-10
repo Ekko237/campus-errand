@@ -265,7 +265,7 @@ function SubwayLine({ R, hits, reduce }) {
 
 // 桌面：镜头缩放到「你的路 + 顺路的单」；底图是和首屏一样的街区，路线沿街走直角；一个小人沿你的路走，经过取件点时那一单弹出来
 const lpath = (p, q) => ({ d: `M${p[0]} ${p[1]} H${q[0]} V${q[1]}` })
-function RouteZoom({ R, hits, reduce, ratio = 2.2, pills = true }) {
+export function RouteZoom({ R, hits, reduce, ratio = 2.2, pills = true }) {
   const uid = useId().replace(/:/g, '')
   const a = B[R.from], b = B[R.to]
   // 你的路：先横着走，再竖着走
