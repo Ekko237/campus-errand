@@ -420,7 +420,7 @@ function Actions({ t }) {
     return (
       <div className="grid gap-2 text-center">
         <p className="text-[15px] text-muted">已提交凭证，等发单人确认放款。2 小时不确认系统自动放款，发单人信用 -2。</p>
-        <Btn variant="ghost" onClick={() => act('role', { role: 'poster' })}>切回发单人去确认</Btn>
+        <Btn onClick={() => act('role', { role: 'poster' })}>切回发单人去确认</Btn>
         <Btn variant="plain" size="sm" onClick={() => act('confirm', { id: t.id, auto: true })}>演示：发单人 2 小时未确认</Btn>
       </div>
     )

@@ -33,9 +33,11 @@ export default function TourBar() {
   const reduce = useReducedMotion()
   const loc = useLocation()
   const step = tourStep(state)
-  const here = step && loc.pathname === step.to.split('?')[0] && (!step.who || step.who === state.role) && !step.final
+  // 订单页自己有「切到跑腿人 / 切回发单人去确认」这类按钮，导览条就不再放第二颗
+  const samePage = step && loc.pathname === step.to.split('?')[0]
+  const here = samePage && !step.final && (!step.who || step.who === state.role || (loc.pathname.startsWith('/app/task/') && [2, 5, 7].includes(step.n)))
   // 已经是这个身份了，就不再说「切到跑腿人」
-  const text = step && step.who === state.role ? step.text.replace(/^切(到|回)(跑腿人|发单人)[，：]?/, '') : step?.text
+  const text = step && step.who === state.role ? step.text.replace(/^(切(到|回))?(跑腿人|发单人)[，：]?/, '') : step?.text
   const arrived = step?.final && loc.pathname === step.to
   // 每到一步，把页面里该点的那颗绿色按钮滚到屏幕中间
   useEffect(() => {
