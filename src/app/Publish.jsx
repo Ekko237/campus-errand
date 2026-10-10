@@ -85,13 +85,13 @@ export default function Publish() {
     setTouched(true)
     if (!blocking) return setConfirm(true)
     // 报错要在视线里：滚到第一条错误、轻轻抖一下，并把光标放进对应输入框
-    requestAnimationFrame(() => {
+    setTimeout(() => {
       const el = document.querySelector('main [role=alert]')
       if (!el) return
       el.scrollIntoView({ block: 'center', behavior: 'smooth' })
       el.animate?.([{ transform: 'translateX(0)' }, { transform: 'translateX(-6px)' }, { transform: 'translateX(6px)' }, { transform: 'translateX(-3px)' }, { transform: 'translateX(0)' }], { duration: 320, delay: 250 })
       el.parentElement?.querySelector('input, textarea, select')?.focus({ preventScroll: true })
-    })
+    }, 30)
   }
   const doPublish = () => {
     const id = nextId()
@@ -213,6 +213,9 @@ export default function Publish() {
         {touched && errors.money && <p role="alert" className="mt-2 text-sm font-medium text-danger">{errors.money}</p>}
       </Panel>
 
+      {touched && blocking && !errors.banned && (
+        <p role="status" className="-mb-2 rounded-xl bg-danger-soft px-4 py-2.5 text-[15px] font-semibold text-danger">还差：{[errors.code && '取件码', errors.room && '宿舍号', errors.same && '楼栋选重了', errors.money && '赏金'].filter(Boolean).join('、')}</p>
+      )}
       <Btn size="lg" className="w-full" onClick={submit} disabled={!!errors.banned}>冻结 ¥{reward} 并发布</Btn>
 
       <Sheet open={confirm} onClose={() => setConfirm(false)} title="确认发布">

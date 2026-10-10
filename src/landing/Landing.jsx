@@ -76,7 +76,7 @@ function ScrollProgress() {
 function Nav() {
   const { scrollY } = useScroll()
   const [scrolled, setScrolled] = useState(false)
-  useMotionValueEvent(scrollY, 'change', (v) => setScrolled(v > 12))
+  useMotionValueEvent(scrollY, 'change', (v) => setScrolled(v > 420))
   const links = [['scenes', '场景'], ['loop', '一单怎么走'], ['trust', '信任机制'], ['metrics', '核心指标']]
   return (
     <header className={`sticky top-0 z-30 transition-[background-color,border-color,box-shadow] duration-300 ${scrolled ? 'border-b border-line bg-bg/85 shadow-[0_1px_0_rgba(0,0,0,0.02)] backdrop-blur' : 'border-b border-transparent bg-bg'}`}>
@@ -91,7 +91,7 @@ function Nav() {
             </Anchor>
           ))}
         </nav>
-        <Cta size="sm" />
+        <div className={`transition-opacity duration-300 ${scrolled ? '' : 'max-md:pointer-events-none max-md:opacity-0'}`}><Cta size="sm" /></div>
       </div>
     </header>
   )
@@ -243,7 +243,7 @@ function StageMap({ i }) {
         <img src={icon('avatar-runner-v1')} width={28} height={28} alt="" className="size-7 rounded-full" />
       </motion.span>
       {i >= 4 && (
-        <motion.span key={`pay${i}`} className="tnum absolute right-[4%] top-[10%] rounded-full bg-accent px-2 py-0.5 text-xs font-bold text-on-accent"
+        <motion.span key={`pay${i}`} className="tnum absolute right-[17%] top-[6%] rounded-full bg-accent px-2 py-0.5 text-xs font-bold text-on-accent"
           initial={reduce ? false : { opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={sp}>{i === 4 ? '+¥5' : '信用 +3'}</motion.span>
       )}
     </div>
@@ -281,7 +281,7 @@ function OrderStage({ i }) {
 
 function LoopStep({ s, now, past }) {
   return (
-    <li className={`flex scroll-mt-40 gap-5 transition-opacity duration-300 lg:min-h-[min(20vh,200px)] lg:items-center ${now ? 'opacity-100' : past ? 'opacity-20 lg:opacity-70' : 'opacity-45'}`}>
+    <li className={`flex scroll-mt-40 gap-5 transition-opacity duration-300 lg:min-h-[min(20vh,200px)] lg:items-center ${now ? 'opacity-100' : past ? 'opacity-30 lg:opacity-70' : 'opacity-60'}`}>
       <span className="grid size-16 shrink-0 place-items-center rounded-2xl bg-bg">
         <img src={icon(s.icon + '-v1')} width={48} height={48} alt={s.alt} loading="lazy" className="size-12 object-contain" />
       </span>
@@ -308,6 +308,16 @@ function MiniOrder({ i }) {
       </div>
       <div className="mt-2.5 grid grid-cols-6 gap-1">
         {LOOP.map((_, k) => <motion.span key={k} className="h-1.5 rounded-full" animate={{ backgroundColor: k <= i ? 'var(--accent)' : 'var(--sunken)' }} transition={{ duration: 0.3 }} />)}
+      </div>
+      <div className="mt-2 grid grid-cols-2 gap-2 text-xs">
+        {[['取件码', s.code === 'open' ? '6-2-3108' : s.code === 'hidden' ? '已隐藏' : '接单后可见', s.code === 'open'], ['信用', s.credit, i >= 4]].map(([k, v, hot]) => (
+          <div key={k} className={`rounded-lg px-2 py-1 transition-colors ${hot ? 'bg-accent-soft text-accent' : 'bg-sunken text-muted'}`}>
+            <span className="opacity-70">{k} </span>
+            <AnimatePresence mode="wait" initial={false}>
+              <motion.span key={v} initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -4 }} transition={{ duration: 0.18 }} className="tnum inline-block font-bold">{v}</motion.span>
+            </AnimatePresence>
+          </div>
+        ))}
       </div>
     </div>
   )

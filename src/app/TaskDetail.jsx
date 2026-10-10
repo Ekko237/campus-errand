@@ -378,6 +378,7 @@ function Actions({ t }) {
       return (
         <div className="grid gap-2">
           <Btn size="lg" className="w-full" onClick={() => { act('confirm', { id: t.id }); toEscrow() }}>确认送达，放款 ¥{t.reward}</Btn>
+          <p className="text-center text-sm text-muted">送达码证明人到了，东西对不对要你看一眼再放钱；2 小时内确认，你的信用 +1</p>
           <Btn variant="plain" size="sm" onClick={() => setDisputeOpen(true)}>有问题，申诉</Btn>
           <Sheet open={disputeOpen} onClose={() => setDisputeOpen(false)} title="发起申诉">
             <p className="text-[15px] text-muted">申诉期间赏金继续冻结，平台会核对送达凭证。凭证有效、申诉被驳回时，你的信用 -5。</p>

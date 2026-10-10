@@ -19,7 +19,13 @@ function load() {
     const tasks = s.tasks.map((t) => (/^s\d+$/.test(t.id) && t.status === 'open' && t.deadline < t0
       ? { ...t, createdAt: t0 - (t.ago ?? 10) * 60000, deadline: t0 + t.windowMin * 60000, timeline: [{ ...t.timeline[0], at: t0 - (t.ago ?? 10) * 60000 }, ...t.timeline.slice(1)] }
       : t))
-    return { state: { ...s, tasks, toasts: [] }, error: null }
+    // 旧版示例账号只有一行信用记录、没有评价，和「发布 5 单」对不上：换成新版示例
+    let accounts = s.accounts
+    const sp = seedAccounts().poster
+    if (!accounts.poster.ratings.length && accounts.poster.creditLog.length === 1 && accounts.poster.creditLog[0].label.startsWith('示例账号')) {
+      accounts = { ...accounts, poster: { ...accounts.poster, ratings: sp.ratings, creditLog: [...accounts.poster.creditLog.slice(0, 0), ...sp.creditLog] } }
+    }
+    return { state: { ...s, accounts, tasks, toasts: [] }, error: null }
   } catch (e) {
     return { state: fresh(), error: '本地演示数据损坏，已无法读取' }
   }

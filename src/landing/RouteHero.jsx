@@ -357,7 +357,7 @@ export function RouteZoom({ R, hits, reduce, ratio = 2.2, pills = true, vertical
   return (
     <div className="relative max-h-[560px] w-full overflow-hidden rounded-[24px] bg-surface ring-1 ring-line md:rounded-[28px]" style={{ aspectRatio: ratio }}
       role="img" aria-label={`示意地图：沿「${R.label}」这条路，${hits.length} 个示例单顺路`}>
-      <svg className="absolute inset-0 size-full opacity-45" aria-hidden="true">
+      <svg className="absolute inset-0 size-full opacity-20" aria-hidden="true">
         <defs>
           <pattern id={`blk${uid}`} width="120" height="96" patternUnits="userSpaceOnUse">
             <rect x="10" y="10" width="100" height="76" rx="12" fill="var(--sunken)" />

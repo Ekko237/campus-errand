@@ -178,7 +178,7 @@ export function seedAccounts() {
     poster: {
       id: 'poster', name: '小满', role: '发单人', avatar: 'student-city-1',
       verified: true, verifyMethod: '学号认证', credit: 88, balance: 50, frozen: 0,
-      done: 0, ratings: [],
+      done: 0, ratings: [5, 5, 4, 5],
       ledger: [
         [2026, 10, 7, 12, -7, '发布「顺丰大件代取」托管，已放款给跑腿人'],
         [2026, 9, 21, 18, -3, '发布「外卖送上楼」托管，已放款给跑腿人'],
@@ -189,7 +189,12 @@ export function seedAccounts() {
         [2025, 10, 12, 19, -6, '发布「教育超市带生抽」托管，已放款给跑腿人'],
         [2025, 9, 3, 10, 40, '钱包充值'],
       ].map(([y, mo, d, h, amount, label]) => ({ at: new Date(y, mo - 1, d, h, 0).getTime(), amount, label, sample: true })),
-      creditLog: [{ at: now() - 3 * 24 * 60 * M, delta: 0, label: '示例账号：已有信用 88' }],
+      creditLog: [
+        { at: now() - 3 * 24 * 60 * M, delta: 1, label: '示例：「顺丰大件代取」按时确认收货' },
+        { at: now() - 3 * 24 * 60 * M - 5 * M, delta: 1, label: '示例：「顺丰大件代取」收到 5 星好评' },
+        { at: now() - 19 * 24 * 60 * M, delta: 1, label: '示例：「外卖送上楼」收到 5 星好评' },
+        { at: now() - 40 * 24 * 60 * M, delta: 0, label: '示例账号：起始信用 85' },
+      ],
     },
     runner: {
       id: 'runner', name: '阿远', role: '跑腿人', avatar: 'canteen-study-1',
