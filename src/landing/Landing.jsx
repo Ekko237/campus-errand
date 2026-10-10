@@ -195,7 +195,7 @@ function Scenes() {
 const LOOP = [
   { icon: 'step-publish', alt: '带硬币的喇叭', t: '发布', d: '选模板和楼栋，赏金先冻结托管。', status: '待接单', escrow: '¥5 冻结中', code: 'locked', credit: '发单人 88' },
   { icon: 'step-accept', alt: '接过包裹的手', t: '接单', d: '认证过、信用够的人才能接。', status: '已接单', escrow: '¥5 冻结中', code: 'open', credit: '跑腿人 70' },
-  { icon: 'step-ongoing', alt: '打开的锁和包裹', t: '进行中', d: '取件码、宿舍号只在这时对跑腿人可见。', status: '送达中', escrow: '¥5 冻结中', code: 'open', credit: '跑腿人 70' },
+  { icon: 'step-ongoing', alt: '打开的锁和包裹', t: '进行中', d: '接单后，取件码和宿舍号才对跑腿人可见，去驿站取件。', status: '送达中', escrow: '¥5 冻结中', code: 'open', credit: '跑腿人 70' },
   { icon: 'step-deliver', alt: '放在门口拍照的包裹', t: '送达', d: '当面核验送达码，或拍照留证。', status: '待确认', escrow: '¥5 冻结中', code: 'open', credit: '跑腿人 70' },
   { icon: 'step-confirm', alt: '两只手传递硬币', t: '确认', d: '发单人确认，托管放款。', status: '已放款', escrow: '¥5 已放给跑腿人', code: 'hidden', credit: '跑腿人 70 → 72' },
   { icon: 'step-rate', alt: '带星星的对话气泡', t: '互评', d: '双方互相打分，信用实时变化。', status: '已互评', escrow: '¥5 已放给跑腿人', code: 'hidden', credit: '跑腿人 73，发单人 90' },
@@ -241,12 +241,9 @@ function OrderStage({ i }) {
   )
 }
 
-function LoopStep({ s, i, onActive }) {
-  const ref = useRef(null)
-  const inView = useInView(ref, { margin: '-48% 0px -48% 0px' })
-  useEffect(() => { if (inView) onActive(i) }, [inView, i, onActive])
+function LoopStep({ s }) {
   return (
-    <li ref={ref} className="flex gap-5 lg:min-h-[min(42vh,420px)] lg:items-center">
+    <li className="flex gap-5 lg:min-h-[min(32vh,320px)] lg:items-center">
       <span className="grid size-16 shrink-0 place-items-center rounded-2xl bg-bg">
         <img src={icon(s.icon + '-v1')} width={48} height={48} alt={s.alt} loading="lazy" className="size-12 object-contain" />
       </span>
@@ -258,23 +255,57 @@ function LoopStep({ s, i, onActive }) {
   )
 }
 
+// 手机上的跟随订单条：吸在顶部，跟着下面的步骤变
+function MiniOrder({ i }) {
+  const s = LOOP[i]
+  return (
+    <div className="rounded-2xl bg-bg p-3 text-ink shadow-[0_16px_30px_-18px_rgba(0,0,0,0.6)]" aria-hidden="true">
+      <div className="flex items-center gap-2">
+        <img src={icon('type-express-v1')} width={28} height={28} alt="" className="size-7" />
+        <AnimatePresence mode="wait" initial={false}>
+          <motion.span key={s.status} initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -6 }} transition={{ duration: 0.2 }}
+            className="rounded-full bg-accent-soft px-2.5 py-0.5 text-sm font-bold text-accent">{s.status}</motion.span>
+        </AnimatePresence>
+        <span className="tnum ml-auto truncate text-sm font-semibold">{s.escrow}</span>
+      </div>
+      <div className="mt-2.5 grid grid-cols-6 gap-1">
+        {LOOP.map((_, k) => <motion.span key={k} className="h-1.5 rounded-full" animate={{ backgroundColor: k <= i ? 'var(--accent)' : 'var(--sunken)' }} transition={{ duration: 0.3 }} />)}
+      </div>
+    </div>
+  )
+}
+
 function Loop() {
   const [active, setActive] = useState(0)
+  const ol = useRef(null)
+  const { scrollY } = useScroll()
+  // 当前步 = 最后一个顶边越过手机吸顶条下方 / 桌面视口 55%那条线的步骤，卡片永远和正对着的那一步一致
+  useMotionValueEvent(scrollY, 'change', () => {
+    const items = ol.current?.children
+    if (!items) return
+    const line = window.innerWidth >= 1024 ? window.innerHeight * 0.55 : 240
+    let k = 0
+    for (let j = 0; j < items.length; j++) if (items[j].getBoundingClientRect().top < line) k = j
+    setActive(k)
+  })
   return (
     <section id="loop" className="scroll-mt-16 px-2 md:px-4">
       <div className="rounded-[32px] bg-accent-deep text-on-accent md:rounded-[48px]">
       <div className={`mx-auto max-w-7xl ${SECTION}`}>
         <div className="max-w-4xl">
           <Reveal><H2>一单从发布到信用变化，<br />六步走完</H2></Reveal>
-          <Reveal delay={0.05}><p className="mt-5 max-w-[38ch] text-lg leading-relaxed opacity-80 md:text-xl"><span className="hidden lg:inline">往下滚，左边这张订单会跟着走完一遍。</span>钱什么时候冻结、取件码什么时候出现、信用什么时候变，一眼看清。</p></Reveal>
+          <Reveal delay={0.05}><p className="mt-5 max-w-[38ch] text-lg leading-relaxed opacity-80 md:text-xl">往下滚，<span className="lg:hidden">上面</span><span className="hidden lg:inline">左边</span>这张订单会跟着走完一遍：钱什么时候冻结、取件码什么时候出现、信用什么时候变。</p></Reveal>
         </div>
-        <div className="mt-14 grid gap-12 lg:grid-cols-12">
+        <div className="mt-12 grid gap-12 lg:mt-14 lg:grid-cols-12">
           <div className="hidden lg:col-span-5 lg:block">
             <div className="sticky top-28"><OrderStage i={active} /></div>
           </div>
-          <ol className="space-y-10 lg:col-span-6 lg:col-start-7 lg:space-y-0">
-            {LOOP.map((s, i) => <LoopStep key={s.t} s={s} i={i} onActive={setActive} />)}
-          </ol>
+          <div className="lg:col-span-6 lg:col-start-7">
+            <div className="sticky top-[72px] z-10 -mx-1 mb-8 lg:hidden"><MiniOrder i={active} /></div>
+            <ol ref={ol} className="space-y-10 lg:space-y-0">
+              {LOOP.map((s) => <LoopStep key={s.t} s={s} />)}
+            </ol>
+          </div>
         </div>
       </div>
       </div>

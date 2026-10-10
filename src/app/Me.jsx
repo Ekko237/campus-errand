@@ -24,7 +24,7 @@ export default function Me() {
   const nav = useNavigate()
   const reduce = useReducedMotion()
   const isPoster = me.id === 'poster'
-  const posted = state.tasks.filter((t) => t.posterId === 'poster').length
+  const posted = state.tasks.filter((t) => t.posterId === 'poster').length + me.ledger.filter((l) => l.sample && l.label.startsWith('发布')).length
   const good = me.ratings.filter((r) => r >= 4).length
   const rate = me.ratings.length ? Math.round((good / me.ratings.length) * 100) + '%' : '暂无'
   const lv = me.credit != null ? (me.id === 'poster' ? posterTierOf(me.credit) : levelOf(me.credit)) : null
@@ -51,15 +51,15 @@ export default function Me() {
         <Link to="/app/credit" className="block rounded-2xl bg-accent-soft p-5">
           <div className="flex items-end justify-between">
             <div>
-              <p className="text-[15px] font-semibold">{me.id === 'poster' ? '发单人信用' : '跑腿人信用'}</p>
+              <p className="whitespace-nowrap text-[15px] font-semibold">{me.id === 'poster' ? '发单人信用' : '跑腿人信用'}</p>
               <p className="tnum text-6xl font-bold leading-none tracking-tight text-accent"><CountUp value={me.credit} /></p>
             </div>
-            <div className="flex flex-col items-end text-right">
+            <div className="flex shrink-0 flex-col items-end text-right">
               <img src={iconUrl(lv.badge)} width={48} height={48} alt={lv.alt} className="mb-1 size-12 object-contain" />
-              <p className="text-xl font-bold">「{lv.name}」</p>
-              <p className="text-sm text-muted">{lv.desc}</p>
+              <p className="whitespace-nowrap text-xl font-bold">「{lv.name}」</p>
             </div>
           </div>
+          <p className="mt-2 text-sm text-muted">{lv.desc}</p>
           <div className="mt-4 h-2 overflow-hidden rounded-full bg-surface" role="progressbar" aria-label="距下一等级" aria-valuemin={lv.min} aria-valuemax={nx ? nx.min : 100} aria-valuenow={me.credit}>
             <motion.div className="h-full rounded-full bg-accent" initial={reduce ? false : { width: 0 }} animate={{ width: `${nx ? Math.max(6, ((me.credit - lv.min) / (nx.min - lv.min)) * 100) : 100}%` }} transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1] }} />
           </div>

@@ -7,11 +7,12 @@ import { B, dist, fmtDist, RUNNER_HOME, minCreditFor, levelOf } from '../data'
 import { Btn, Panel, TypeTag, UrgentTag, VerifiedBadge, Sheet, Stars, Empty, Field, inputCls, left, clock, spring } from '../ui'
 
 const STEPS = ['发布', '接单', '进行中', '送达', '确认', '互评']
+// 已完成的步数，也就是「当前该做的那一步」的下标：发布完等接单 = 1，双方互评完 = 6（全部打勾）
 function stepIndex(t) {
-  if (t.status === 'open') return 0
-  if (t.status === 'ongoing') return t.picked ? 2 : 1
-  if (t.status === 'delivered' || t.status === 'disputed') return 3
-  if (t.status === 'completed') return t.ratingByPoster && t.ratingByRunner ? 6 : t.ratingByPoster || t.ratingByRunner ? 5 : 4
+  if (t.status === 'open') return 1
+  if (t.status === 'ongoing') return t.picked ? 3 : 2
+  if (t.status === 'delivered' || t.status === 'disputed') return 4
+  if (t.status === 'completed') return t.ratingByPoster && t.ratingByRunner ? 6 : 5
   return 0
 }
 const STATUS_TEXT = { open: '待接单', ongoing: '进行中', delivered: '待确认', completed: '已完成', disputed: '申诉中', refunded: '已退款', cancelled: '已取消' }
@@ -23,14 +24,15 @@ function Stepper({ t }) {
   return (
     <ol className="grid grid-cols-6 gap-1" aria-label="订单进度">
       {STEPS.map((s, i) => {
-        const done = !off && i <= idx
+        const done = !off && i < idx
+        const now = !off && i === idx
         return (
-          <li key={s} className="flex flex-col items-center gap-1.5">
-            <motion.span initial={false} animate={{ scale: done && i === idx && !reduce ? [1, 1.25, 1] : 1 }} transition={{ duration: 0.4 }}
-              className={`grid size-7 place-items-center rounded-full text-xs font-bold ${done ? 'bg-accent text-on-accent' : 'bg-sunken text-muted'}`}>
-              {done && i < idx ? <Check size={14} weight="bold" /> : i + 1}
+          <li key={s} className="flex flex-col items-center gap-1.5" aria-current={now ? 'step' : undefined}>
+            <motion.span initial={false} animate={{ scale: now && !reduce ? [1, 1.2, 1] : 1 }} transition={{ duration: 0.4 }}
+              className={`grid size-7 place-items-center rounded-full text-xs font-bold ${done ? 'bg-accent text-on-accent' : now ? 'bg-accent-soft text-accent ring-2 ring-accent' : 'bg-sunken text-muted'}`}>
+              {done ? <Check size={14} weight="bold" /> : i + 1}
             </motion.span>
-            <span className={`text-xs font-semibold ${done ? 'text-ink' : 'text-muted'}`}>{s}</span>
+            <span className={`text-xs font-semibold ${done || now ? 'text-ink' : 'text-muted'}`}>{s}</span>
           </li>
         )
       })}
