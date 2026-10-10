@@ -52,7 +52,7 @@ function pointAt(pts, f) {
 }
 
 // 底图是按路网画的生成图，路线全部沿路走（src/campusMap.js 里寻路）；不缩放不旋转，画框和底图一样比例，四边不会露白
-export default function CampusMap({ R, hits, reduce, pills = true, walker = true, endsOnly = false, legend = false, at = null }) {
+export default function CampusMap({ R, hits, reduce, pills = true, walker = true, endsOnly = false, legend = false, at = null, park = false }) {
   // 画路线只画路面上的那段（去掉两头进门的小短线），起点终点的圆点就压在路上，不会偏开
   const full = routePath(R.from, R.to).pts
   const mine = full.length > 3 ? full.slice(1, -1) : full
@@ -86,9 +86,14 @@ export default function CampusMap({ R, hits, reduce, pills = true, walker = true
   // 起终点旁边就有取件点时，名牌翻到另一边，不盖住编号
   const flip = (id) => { const e = id === R.from ? mine[0] : mine[mine.length - 1]; return marks.some(({ t }) => { const [x, y] = markAt(t.from); return Math.abs(x - e[0]) < 160 && Math.abs(y - e[1]) < 160 }) }
   // 起终点名牌在点的上面还是下面
-  const labelUp = (id) => (outward(id) === 'up') !== flip(id)
+  // 手机上价签都挂在编号下面：起终点名牌默认放上面，只有上面挨着取件点时才放下面
+  const labelUp = (id) => {
+    if (!small) return (outward(id) === 'up') !== flip(id)
+    const e = id === R.from ? mine[0] : mine[mine.length - 1]
+    return !marks.some(({ t }) => { const [x, y] = markAt(t.from); return Math.abs(x - e[0]) < 380 && y < e[1] && y > e[1] - 250 })
+  }
   // 离起终点名牌近的取件点：价签放到名牌的另一侧，而不是不放
-  const nearId = (t) => ends.find((id) => { const e = id === R.from ? mine[0] : mine[mine.length - 1]; const [x, y] = markAt(t.from); return Math.abs(x - e[0]) < (small ? 380 : 220) && Math.abs(y - e[1]) < 200 })
+  const nearId = (t) => ends.find((id) => { const e = id === R.from ? mine[0] : mine[mine.length - 1]; const [x, y] = markAt(t.from); return Math.abs(x - e[0]) < 220 && Math.abs(y - e[1]) < 200 })
   // 上下都挨着取件点（比如超市出发：1 号在下、2 号在上）：名牌放到点的旁边，手机上只写「出发 / 到达」
   const side = (id) => {
     const e = id === R.from ? mine[0] : mine[mine.length - 1]
@@ -134,13 +139,13 @@ export default function CampusMap({ R, hits, reduce, pills = true, walker = true
         <span key={`d${t.id}`} aria-hidden="true" className="absolute z-10 size-3.5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-surface ring-[3px] ring-accent md:size-4" style={pct(PLACES[t.to].door)} />
       ))}
       {marks.map(({ t }) => (
-        <span key={`p${t.id}`} aria-hidden="true" className={`tnum absolute z-10 -translate-x-1/2 ${nearId(t) && pillUp(t) ? '-translate-y-[27px]' : 'translate-y-[9px]'} whitespace-nowrap rounded-full bg-surface px-1 text-[12px] font-bold leading-4 text-accent shadow-sm md:hidden`} style={pct(markAt(t.from))}>{TINY[t.from] || SHORT[t.from]} ¥{t.reward}</span>
+        <span key={`p${t.id}`} aria-hidden="true" className={`tnum absolute z-10 -translate-x-1/2 translate-y-[9px] whitespace-nowrap rounded-full bg-surface px-1 text-[12px] font-bold leading-4 text-accent shadow-sm md:hidden`} style={pct(markAt(t.from))}>{TINY[t.from] || SHORT[t.from]} ¥{t.reward}</span>
       ))}
       {/* 原型订单页：小人还在起点附近时起点不标，到了终点就不再标「到达」，免得和小人叠在一起 */}
-      {ends.filter((id) => !(at != null && ((id === R.from && at < 0.15) || (id === R.to && at >= 0.99)))).map((id) => (
+      {ends.filter((id) => !((at != null || park) && ((id === R.from && p < 0.15) || (id === R.to && p >= 0.99)))).map((id) => (
         <span key={id} className="absolute z-20" style={pct(id === R.from ? mine[0] : mine[mine.length - 1])}>
           <span className="absolute left-0 top-0 block size-3 -translate-x-1/2 -translate-y-1/2 rounded-full bg-ink ring-[3px] ring-surface md:size-4" />
-          <span className={`absolute whitespace-nowrap rounded-full bg-ink px-2 py-0.5 text-[13px] font-semibold text-bg shadow-sm md:px-2.5 md:text-[13px] ${side(id) === 'right' ? 'left-3 -translate-y-1/2' : side(id) === 'left' ? 'right-3 -translate-y-1/2' : `${edge(id) === 'l' ? '-left-3' : edge(id) === 'r' ? '-right-3' : 'left-0 -translate-x-1/2'} ${labelUp(id) ? 'bottom-3.5' : 'top-3.5'}`}`}>{side(id) ? <><span className="max-md:hidden">{SHORT[id]} </span><span className="md:hidden">{TINY[id] || SHORT[id]} </span></> : `${SHORT[id]} `}{id === R.from ? '出发' : '到达'}</span>
+          <span className={`absolute whitespace-nowrap rounded-full bg-ink px-2 py-0.5 text-[13px] font-semibold text-bg shadow-sm md:px-2.5 md:text-[13px] ${side(id) === 'right' ? 'left-3 -translate-y-1/2' : side(id) === 'left' ? 'right-3 -translate-y-1/2' : `${edge(id) === 'l' ? '-left-5' : edge(id) === 'r' ? '-right-5' : 'left-0 -translate-x-1/2'} ${labelUp(id) ? 'bottom-3.5' : 'top-3.5'}`}`}>{side(id) ? <><span className="max-md:hidden">{SHORT[id]} </span><span className="md:hidden">{TINY[id] || SHORT[id]} </span></> : `${SHORT[id]} `}{id === R.from ? '出发' : '到达'}</span>
         </span>
       ))}
       {!endsOnly && marks.filter(({ t }) => !ends.includes(t.from)).map(({ t }) => (
@@ -161,8 +166,8 @@ export default function CampusMap({ R, hits, reduce, pills = true, walker = true
           </span>
         ))}
       </AnimatePresence>
-      {/* 落地页的小人只在路中间走：出发和到达那一下藏起来，不和起终点名牌叠 */}
-      {((walker && !reduce && p > 0.06 && p < 0.97) || (at != null && p > 0)) && (
+      {/* 落地页的小人只在路中间走：出发和到达那一下藏起来，不和起终点名牌叠；park（收尾卡）走到终点就停在那里 */}
+      {((walker && !reduce && p > 0.06 && (p < 0.97 || park)) || (at != null && p > 0)) && (
         <span aria-hidden="true" className="absolute z-[5] grid size-7 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full bg-surface shadow-[0_6px_16px_-6px_rgba(17,40,30,0.5)] ring-[3px] ring-ink md:size-10" style={pct(me)}>
           <img src={icon('avatar-runner-v1')} width={32} height={32} alt="" className="size-5 rounded-full md:size-8" />
         </span>

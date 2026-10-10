@@ -557,7 +557,7 @@ function WrapUp({ t }) {
       <p className="mt-1 text-balance text-2xl font-bold"><span className="whitespace-nowrap">顺路一趟，¥{t.reward} 到账，</span><span className="whitespace-nowrap">{rows.every((x) => x.d >= 0) ? '信用都涨了' : '信用有涨有跌'}</span></p>
       {PLACES[mapR.from] && PLACES[mapR.to] && mapR.from !== mapR.to ? (
         // 顺路的单：画跑腿人本来要走的整条路，这一单捎的那段亮绿；不顺路的单：只画取件到送达
-        <div className="mt-4 overflow-hidden rounded-2xl ring-1 ring-on-accent/20"><CampusMap R={mapR} hits={mapHits} reduce={!play} pills={false} walker={play} at={play ? null : 1} /></div>
+        <div className="mt-4 overflow-hidden rounded-2xl ring-1 ring-on-accent/20"><CampusMap R={mapR} hits={mapHits} reduce={!play} pills={false} walker={play} park at={play ? null : 1} /></div>
       ) : (
       <div className="relative mt-5 h-12" aria-hidden="true">
         <span className="absolute left-0 right-0 top-1/2 h-[3px] -translate-y-1/2 rounded-full bg-on-accent/25" />

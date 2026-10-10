@@ -716,6 +716,12 @@ function Credit() {
   // 规则列表滚出屏幕（离开信用这一节）就不再浮小分数条
   const listRef = useRef(null)
   const listOn = useInView(listRef)
+  // 这一节的底边一露出来（下一节要进屏幕了）浮条就收起，不盖住「这些单发不出去」
+  const [tail, setTail] = useState(false)
+  useEffect(() => {
+    const f = () => setTail((document.getElementById('credit')?.getBoundingClientRect().bottom ?? 1e9) < innerHeight + 40)
+    f(); window.addEventListener('scroll', f, { passive: true }); return () => window.removeEventListener('scroll', f)
+  }, [])
   const apply = (r) => {
     const to = Math.max(0, Math.min(100, scoreRef.current + r.delta))
     scoreRef.current = to
@@ -754,10 +760,11 @@ function Credit() {
               <div className="relative mt-5 h-8" aria-hidden="true">
                 <span className="absolute inset-x-0 top-2 h-1.5 rounded-full bg-on-accent/20" />
                 <motion.span className="absolute left-0 top-2 h-1.5 rounded-full bg-on-accent" initial={false} animate={{ width: `${score}%` }} transition={{ duration: reduce ? 0 : 0.6, ease }} />
-                {(who === 'runner' ? [60, 72, 85] : [70, 75, 85]).map((m) => (
+                {/* 两道门槛挨得近（发单人 70 和 75）：后一个的数字放到刻度上方，不叠成一串 */}
+                {(who === 'runner' ? [60, 72, 85] : [70, 75, 85]).map((m, k, a) => (
                   <span key={m} className="absolute top-0 -translate-x-1/2 text-center" style={{ left: `${m}%` }}>
                     <span className="mx-auto block h-5 w-0.5 rounded-full bg-on-accent/60" />
-                    <span className="tnum mt-0.5 block text-[12px] font-semibold opacity-80">{m}</span>
+                    <span className={`tnum block text-[12px] font-semibold opacity-80 ${k > 0 && m - a[k - 1] < 8 ? 'absolute bottom-full left-1/2 mb-0.5 -translate-x-1/2' : 'mt-0.5'}`}>{m}</span>
                   </span>
                 ))}
               </div>
@@ -784,7 +791,7 @@ function Credit() {
           </Reveal>
           <Reveal delay={0.05} className="lg:col-span-7">
             <AnimatePresence>
-              {hist.length > 0 && !cardOn && listOn && (
+              {hist.length > 0 && !cardOn && listOn && !tail && (
                 <motion.div key="mini" initial={reduce ? false : { y: 16, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: 10, opacity: 0 }} transition={{ type: 'spring', stiffness: 420, damping: 32 }}
                   className="fixed inset-x-4 bottom-4 z-20 flex items-center gap-3 rounded-full bg-accent-deep py-2 pl-2 pr-5 text-on-accent shadow-[0_16px_30px_-12px_rgba(11,122,85,0.7)] lg:hidden" aria-hidden="true">
                   <img src={icon(tier.badge + '-v1')} width={40} height={40} alt="" className="size-10 rounded-full bg-on-accent/90 object-contain p-0.5" />
@@ -812,12 +819,12 @@ function Credit() {
                         )}
                       </span>
                       <span className={`tnum w-10 shrink-0 text-2xl font-bold ${r.delta > 0 ? 'text-accent' : 'text-danger'}`}>{r.delta > 0 ? '+' : ''}{r.delta}</span>
-                      <span className={`min-w-0 flex-1 max-lg:pr-[5.5rem]`}><span className="block text-lg font-semibold">{r.label}</span><span className="block text-[15px] text-muted">{r.note}</span>
+                      <span className="min-w-0 flex-1"><span className="block text-lg font-semibold max-lg:pr-[5.5rem]">{r.label}</span><span className="block text-[15px] text-muted">{r.note}</span>
 </span>
-                      {/* 浮在这一行右边，不往列表里插东西，下面的规则不会被推走 */}
+                      {/* 浮在规则名那一行的右边：说明文字照常占满整行，下面的规则不会被推走 */}
                       {here && (
                         <motion.span key={score} initial={reduce ? false : { opacity: 0, x: 6 }} animate={{ opacity: 1, x: 0 }} transition={{ type: 'spring', stiffness: 380, damping: 30 }}
-                          className={`tnum pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 rounded-full px-2.5 py-1 text-sm font-bold lg:hidden ${r.delta < 0 ? 'bg-danger-soft text-danger' : 'bg-accent-soft text-accent'}`}>现在 {score}</motion.span>
+                          className={`tnum pointer-events-none absolute right-2 top-3 rounded-full px-2.5 py-1 text-sm font-bold lg:hidden ${r.delta < 0 ? 'bg-danger-soft text-danger' : 'bg-accent-soft text-accent'}`}>现在 {score}</motion.span>
                       )}
                     </button>
                   </li>
@@ -1066,8 +1073,8 @@ function Final({ page }) {
             <div className="relative size-full overflow-hidden rounded-[36px]">
               <img src={`${import.meta.env.BASE_URL}images/campus-map-v2.webp`} width={1600} height={900} alt="" aria-hidden="true" loading="lazy" className="absolute inset-0 size-full scale-110 object-cover blur-[3px] brightness-[0.55]" />
               <div className="relative flex h-full flex-col items-center px-3 pt-12 text-bg">
-                <p className="text-sm font-semibold opacity-80">还有 5 分钟下课</p>
-                <p className="tnum mt-1 text-[64px] font-light leading-none tracking-[-0.03em] md:text-[72px]">17:45</p>
+                <p className="text-sm font-semibold opacity-80">{R.lock}</p>
+                <p className="tnum mt-1 text-[64px] font-light leading-none tracking-[-0.03em] md:text-[72px]">{R.time}</p>
                 <div className="mt-10 w-full space-y-2">
                   <AnimatePresence mode="popLayout" initial={false}>
                     <motion.button key={ri} onClick={go} layout initial={reduce ? false : { opacity: 0, y: -24, scale: 0.96 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, scale: 0.96 }} transition={{ type: 'spring', stiffness: 380, damping: 28 }}

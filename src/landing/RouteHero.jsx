@@ -116,12 +116,12 @@ export function RouteMap() {
 
       <AnimatePresence mode="wait">
         {phase === 0 && !reduce && (
-          <motion.div key="a" className="absolute left-[3%] top-[70%] max-sm:left-auto max-sm:right-4 max-sm:top-auto max-sm:bottom-[4%]" initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.3 }}>
+          <motion.div key="a" className="absolute left-[3%] top-[70%] max-sm:left-4 max-sm:top-auto max-sm:bottom-[4%]" initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.3 }}>
             <p className="rounded-xl bg-surface px-2.5 py-1.5 text-[12px] leading-snug shadow-[0_8px_24px_-12px_rgba(17,40,30,0.4)] ring-1 ring-line md:px-3 md:py-2 md:text-sm">阿远在一教 17:50 下课<br />本来就要走回梅园</p>
           </motion.div>
         )}
         {(phase === 1 || phase === 2) && (
-          <motion.div key="b" className="absolute left-[3%] top-[70%] max-sm:left-auto max-sm:right-4 max-sm:top-auto max-sm:bottom-[4%]" initial={{ opacity: 0, y: 10, scale: 0.92 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: -6 }} transition={{ type: 'spring', stiffness: 420, damping: 26 }}>
+          <motion.div key="b" className="absolute left-[3%] top-[70%] max-sm:left-4 max-sm:top-auto max-sm:bottom-[4%]" initial={{ opacity: 0, y: 10, scale: 0.92 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: -6 }} transition={{ type: 'spring', stiffness: 420, damping: 26 }}>
             <div className="rounded-2xl bg-ink px-3 py-2 text-bg shadow-[0_14px_30px_-14px_rgba(17,40,30,0.6)] md:px-4 md:py-3">
               <p className="text-[13px] font-bold md:text-lg">顺路，只多走 1 分钟</p>
               <p className="text-[11px] opacity-80 md:text-sm">阿远接单 · 赏金 ¥5 托管中</p>
@@ -129,7 +129,7 @@ export function RouteMap() {
           </motion.div>
         )}
         {phase === 3 && (
-          <motion.div key="c" className="absolute left-[3%] top-[70%] max-sm:left-auto max-sm:right-4 max-sm:top-auto max-sm:bottom-[4%]" initial={reduce ? false : { opacity: 0, y: 10, scale: 0.92 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0 }} transition={{ type: 'spring', stiffness: 420, damping: 26 }}>
+          <motion.div key="c" className="absolute left-[3%] top-[70%] max-sm:left-4 max-sm:top-auto max-sm:bottom-[4%]" initial={reduce ? false : { opacity: 0, y: 10, scale: 0.92 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0 }} transition={{ type: 'spring', stiffness: 420, damping: 26 }}>
             <div className="rounded-2xl bg-accent px-3 py-2 text-on-accent shadow-[0_14px_30px_-14px_rgba(11,122,85,0.7)] md:px-4 md:py-3">
               <p className="text-[13px] font-bold md:text-lg">送到了</p>
               <p className="tnum text-[11px] opacity-90 md:text-sm">¥5 从托管放给阿远</p>
@@ -192,9 +192,9 @@ export default function RouteHero({ Cta, Anchor }) {
 const PX = (x) => 13 + ((x + 600) / 1580) * 74
 const PY = (y) => 7 + ((y + 380) / 1280) * 84
 export const ROUTES = [
-  { from: 'jiao1', to: 'mei5', label: '一教下课回梅园', short: '一教→梅园', verb: '下课顺手捎上' },
-  { from: 'tao2', to: 'jiao1', label: '桃园去上课', short: '桃园→一教', verb: '去上课顺手捎上' },
-  { from: 'market', to: 'mei5', label: '超市回梅园', short: '超市→梅园', verb: '买完东西顺手捎上' },
+  { from: 'jiao1', to: 'mei5', label: '一教下课回梅园', short: '一教→梅园', lock: '还有 5 分钟下课', time: '17:45', verb: '下课顺手捎上' },
+  { from: 'tao2', to: 'jiao1', label: '桃园去上课', short: '桃园→一教', lock: '还有 15 分钟上课', time: '07:45', verb: '去上课顺手捎上' },
+  { from: 'market', to: 'mei5', label: '超市回梅园', short: '超市→梅园', lock: '买完东西，准备回梅园', time: '20:10', verb: '买完东西顺手捎上' },
 ]
 
 // 这条路上多走不超过 5 分钟的单，按多走的分钟数排
