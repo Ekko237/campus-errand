@@ -47,6 +47,11 @@ export function dist(a, b) {
   if (!p || !q) return 0
   return Math.round(Math.hypot(p.x - q.x, p.y - q.y) / 10) * 10
 }
+// 顺路：按「我本来就要走的路」算这单让我多走几分钟（步行约 80 米/分钟）
+export const detourMin = (a, b, t) => {
+  const via = dist(a, t.from) + (t.from !== t.to ? dist(t.from, t.to) : 0) + dist(t.to, b) - dist(a, b)
+  return Math.max(1, Math.round(via / 80))
+}
 export const fmtDist = (m) => (m >= 1000 ? (m / 1000).toFixed(1) + ' km' : m + ' m')
 
 export const WINDOWS = [

@@ -3,13 +3,13 @@ import { Link, useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence, useReducedMotion } from 'motion/react'
 import { MapPin, Clock, LockSimple, MagnifyingGlass, WarningOctagon, ShieldCheck, ArrowRight, Lightning } from '@phosphor-icons/react'
 import { useStore } from '../store'
-import { TYPES, TYPE_KEYS, B, dist, fmtDist, RUNNER_HOME, levelOf, minCreditFor, POSTER_WARN } from '../data'
+import { TYPES, TYPE_KEYS, B, BUILDINGS, dist, fmtDist, detourMin, RUNNER_HOME, levelOf, minCreditFor, POSTER_WARN } from '../data'
 import { TypeTag, UrgentTag, Panel, Empty, Btn, left, spring } from '../ui'
 
-const SORTS = [['dist', '距离最近'], ['reward', '赏金最高'], ['deadline', '截止最早']]
+const SORTS = [['route', '顺我路'], ['dist', '距离最近'], ['reward', '赏金最高'], ['deadline', '截止最早']]
 let loadedOnce = false
 
-export function TaskCard({ t, me, role }) {
+export function TaskCard({ t, me, role, route }) {
   const d = dist(RUNNER_HOME, t.from)
   const need = minCreditFor(t.reward)
   const locked = role === 'runner' && me.verified && t.posterId !== 'poster' && (me.credit ?? 0) < need
@@ -27,7 +27,10 @@ export function TaskCard({ t, me, role }) {
       </p>
       <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-muted">
         <span className="inline-flex items-center gap-1"><Clock size={16} />{left(t.deadline)}</span>
-        <span className="tnum">距你 {fmtDist(d)}</span>
+        {route ? (() => {
+          const m = detourMin(route.from, route.to, t)
+          return <span className={`tnum rounded-full px-2 py-0.5 font-semibold ${m <= 5 ? 'bg-accent-soft text-accent' : 'bg-sunken text-ink'}`}>{m <= 5 ? '顺路 · ' : ''}多走 {m} 分钟</span>
+        })() : <span className="tnum">距你 {fmtDist(d)}</span>}
         <span>{t.posterId === 'poster' ? '我发布的' : `${t.posterName} · 信用 ${t.posterCredit}`}</span>
       </div>
       {t.posterId !== 'poster' && t.posterCredit < POSTER_WARN && (
@@ -93,7 +96,16 @@ export default function Hall() {
   const { state, act, loadError } = useStore()
   const reduce = useReducedMotion()
   const [type, setType] = useState('all')
-  const [sort, setSort] = useState('dist')
+  const [sort, setSort] = useState('route')
+  const [route, setRoute] = useState(() => {
+    try { const r = JSON.parse(localStorage.getItem('shunluxia:myroute')); if (B[r?.from] && B[r?.to]) return r } catch { /* 读不到就用默认路线 */ }
+    return { from: 'jiao1', to: 'mei5' }
+  })
+  const setLeg = (k) => (e) => setRoute((r) => {
+    const n = { ...r, [k]: e.target.value }
+    try { localStorage.setItem('shunluxia:myroute', JSON.stringify(n)) } catch { /* 存不了不影响使用 */ }
+    return n
+  })
   const [urgentOnly, setUrgentOnly] = useState(false)
   const [goodPoster, setGoodPoster] = useState(false)
   const [loading, setLoading] = useState(!loadedOnce)
@@ -110,10 +122,10 @@ export default function Hall() {
     if (type !== 'all') l = l.filter((t) => t.type === type)
     if (urgentOnly) l = l.filter((t) => t.urgent)
     if (goodPoster) l = l.filter((t) => t.posterId === 'poster' || t.posterCredit >= 85)
-    const key = { dist: (t) => dist(RUNNER_HOME, t.from), reward: (t) => -t.reward, deadline: (t) => t.deadline }[sort]
+    const key = { route: (t) => detourMin(route.from, route.to, t), dist: (t) => dist(RUNNER_HOME, t.from), reward: (t) => -t.reward, deadline: (t) => t.deadline }[sort]
     const t0 = Date.now()
     return [...l].sort((a, b) => (a.deadline < t0) - (b.deadline < t0) || key(a) - key(b))
-  }, [state.tasks, type, sort, urgentOnly, goodPoster])
+  }, [state.tasks, type, sort, urgentOnly, goodPoster, route])
 
   return (
     <div className="space-y-5">
@@ -147,7 +159,7 @@ export default function Hall() {
       </div>
 
       <div className="flex flex-wrap items-center gap-2">
-        <div className="grid min-w-0 flex-1 basis-full grid-cols-3 rounded-full bg-sunken p-1 sm:basis-0" role="group" aria-label="排序">
+        <div className="grid min-w-0 flex-1 basis-full grid-cols-4 rounded-full bg-sunken p-1 sm:basis-0" role="group" aria-label="排序">
           {SORTS.map(([k, label]) => (
             <button key={k} onClick={() => setSort(k)} aria-pressed={sort === k}
               className={`h-9 whitespace-nowrap rounded-full text-sm font-semibold transition ${sort === k ? 'bg-surface text-ink shadow-sm' : 'text-muted'}`}>{label}</button>
@@ -163,6 +175,23 @@ export default function Hall() {
         </button>
       </div>
 
+      {sort === 'route' && (
+        <div className="rounded-2xl bg-accent-soft p-4">
+          <p className="text-[15px] font-semibold">我正要走这段路，顺手捎一单</p>
+          <div className="mt-3 grid grid-cols-[auto_1fr] items-center gap-x-3 gap-y-2 text-[15px] sm:grid-cols-[auto_1fr_auto_1fr]">
+            <span className="text-muted">从</span>
+            <select aria-label="出发地" value={route.from} onChange={setLeg('from')} className="h-10 w-full rounded-full bg-surface px-4 text-[15px] font-semibold ring-1 ring-line">
+              {BUILDINGS.map((b) => <option key={b.id} value={b.id}>{b.name}</option>)}
+            </select>
+            <span className="text-muted">去</span>
+            <select aria-label="目的地" value={route.to} onChange={setLeg('to')} className="h-10 w-full rounded-full bg-surface px-4 text-[15px] font-semibold ring-1 ring-line">
+              {BUILDINGS.map((b) => <option key={b.id} value={b.id}>{b.name}</option>)}
+            </select>
+          </div>
+          <p className="mt-3 text-sm text-muted">按捎上每单要多走几分钟排序，5 分钟以内标为顺路。</p>
+        </div>
+      )}
+
       {loading ? <Skeleton /> : list.length === 0 ? (
         <Empty img="empty-search" alt="空纸箱和放大镜" title="这个分类暂时没人发单" hint="换个分类看看，或者自己发一单，附近顺路的同学会看到。"
           action={<Btn variant="ghost" onClick={() => { setType('all'); setUrgentOnly(false); setGoodPoster(false) }}>看全部任务</Btn>} />
@@ -171,7 +200,7 @@ export default function Hall() {
           <AnimatePresence initial={false}>
             {list.map((t) => (
               <motion.div key={t.id} layout={!reduce} initial={reduce ? false : { opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={spring}>
-                <TaskCard t={t} me={me} role={state.role} />
+                <TaskCard t={t} me={me} role={state.role} route={sort === 'route' ? route : null} />
               </motion.div>
             ))}
           </AnimatePresence>
