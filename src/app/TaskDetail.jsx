@@ -240,7 +240,8 @@ function DeliverSheet({ t, open, onClose }) {
   const { act, state } = useStore()
   const [mode, setMode] = useState('code')
   // 跟着走一遍的时候，送达码替你填好
-  const [code, setCode] = useState(() => (state.tour.active && state.tour.taskId === t.id ? t.deliverCode : ''))
+  // 导览里先填好前两位，后两位让人自己对着发单人的码补上：「当面核验」这一下是自己做的
+  const [code, setCode] = useState(() => (state.tour.active && state.tour.taskId === t.id ? t.deliverCode.slice(0, 2) : ''))
   const [err, setErr] = useState(null)
   const [photo, setPhoto] = useState(false)
   const [shooting, setShooting] = useState(false)

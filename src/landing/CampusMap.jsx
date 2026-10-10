@@ -174,7 +174,7 @@ export default function CampusMap({ R, hits, reduce, pills = true, walker = true
       )}
     </div>
     {legend && (
-      <p className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-ink/70 md:text-[14px]">
+      <p className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-[13px] text-ink/80 md:text-[14px]">
         <span className="inline-flex items-center gap-1.5"><i className="h-1 w-5 rounded-full bg-ink/80" />你正要走的路</span>
         {/* 只有真有「取件到送达」那一段时才写这条图例（占座这类就地完成的单没有这段） */}
         {hits.some((t) => t.from !== t.to) && <span className="inline-flex items-center gap-1.5"><i className="h-1.5 w-5 rounded-full bg-accent ring-2 ring-surface" />顺手捎的那段（取件到送达）</span>}

@@ -131,6 +131,8 @@ function Nav({ page }) {
   const [cur, setCur] = useState(null)
   // 换页（首页 ↔ 产品思考）时目录一定先收起，不带到新页面
   useEffect(() => { setOpen(false) }, [page])
+  // 目录打开时按 Esc 收起
+  useEffect(() => { if (!open) return; const f = (e) => { if (e.key === 'Escape') setOpen(false) }; window.addEventListener('keydown', f); return () => window.removeEventListener('keydown', f) }, [open])
   // 桌面顶栏标出现在读到哪一节
   const [here, setHere] = useState(null)
   useMotionValueEvent(scrollY, 'change', (v) => {
@@ -381,7 +383,7 @@ function StageMap({ i, tall = false }) {
           initial={reduce ? false : { opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={sp}>{i === 4 ? '+¥5 给阿远' : '阿远信用 73'}</motion.span>
       )}
     </div>
-    <p className="mt-1.5 grid min-h-[2.5rem] grid-cols-2 content-start gap-x-3 gap-y-0.5 whitespace-nowrap text-[12px] text-ink/80 sm:flex sm:flex-wrap">
+    <p className="mt-1.5 grid min-h-[2.5rem] grid-cols-2 content-start gap-x-3 gap-y-0.5 whitespace-nowrap text-[13px] text-ink/80 sm:flex sm:flex-wrap">
       {/* 图例四项常驻，只换透明度：切步骤时行数不变，下面的按钮不跳 */}
       <span className={`inline-flex items-center gap-1 transition-opacity ${i === 0 ? 'opacity-40' : ''}`}><img src={icon('avatar-runner-v1')} width={16} height={16} alt="" className="size-4 rounded-full ring-2 ring-ink" />跑腿的阿远</span>
       <span className="inline-flex items-center gap-1"><i className="h-1 w-4 rounded-full bg-ink/80" />走过的路</span>
