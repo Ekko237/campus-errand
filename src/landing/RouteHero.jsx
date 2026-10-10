@@ -8,19 +8,19 @@ import CampusMap, { SHORT, along } from './CampusMap'
 const ease = [0.16, 1, 0.3, 1]
 const icon = (name) => `${import.meta.env.BASE_URL}icons/${name}.webp`
 // 首屏地图就是全校地图（campus-map-v2）的局部放大：同一张图、同一套坐标、同一个寻路，和下面的全景永远对得上
-const X0 = 40, Y0 = 50, VW = 1360, VH = 800
+const X0 = 40, Y0 = 72, VW = 1360, VH = 736
 const toD = (pts) => pts.map(([x, y], i) => `${i ? 'L' : 'M'}${x} ${y}`).join(' ')
-// 学弟下课的路：一教 → 沿主路往西 → 梅园；驿站门口就在这条路边
+// 阿远下课的路：一教 → 沿主路往西 → 梅园；驿站门口就在这条路边
 const RUN_PTS = routePath('jiao1', 'mei5').pts
 const RUN = toD(RUN_PTS)
 // 你的需求：驿站 → 梅园
 const NEED = toD(routePath('cainiao', 'mei5').pts)
 const STATION = [PLACES.cainiao.door[0], RUN_PTS[1][1]]
-// 学弟走到驿站门口那一刻，在整条路上的位置
+// 阿远走到驿站门口那一刻，在整条路上的位置
 const F = (() => { let acc = 0; for (let i = 1; i < RUN_PTS.length; i++) { const [ax, ay] = RUN_PTS[i - 1], [bx, by] = RUN_PTS[i]; const l = Math.hypot(bx - ax, by - ay); if (ay === STATION[1] && by === STATION[1] && (STATION[0] - ax) * (STATION[0] - bx) <= 0) return (acc + Math.abs(STATION[0] - ax)) / routePath('jiao1', 'mei5').len; acc += l } return 0.2 })()
 const pct = (x, y) => ({ left: `${((x - X0) / VW) * 100}%`, top: `${((y - Y0) / VH) * 100}%` })
 const MEI = [260, 438] // 「你」在梅园 5 号楼里
-const ICHI = [1160, 250] // 一教的名牌：在起点左上，学弟头像出发时不压住它
+const ICHI = [1160, 250] // 一教的名牌：在起点左上，阿远头像出发时不压住它
 
 function Node({ x, y, children, className = '' }) {
   return <div className={`absolute -translate-x-1/2 -translate-y-1/2 ${className}`} style={pct(x, y)}>{children}</div>
@@ -29,7 +29,7 @@ function Tag({ children, strong }) {
   return <span className={`block whitespace-nowrap rounded-full px-2 py-0.5 text-[12px] font-semibold shadow-sm ring-1 md:px-2.5 md:py-1 md:text-[13px] ${strong ? 'bg-ink text-bg ring-ink' : 'bg-surface text-ink ring-line'}`}>{children}</span>
 }
 
-// 首屏记忆点：学弟的路经过驿站，交汇点亮起，订单成立
+// 首屏记忆点：阿远的路经过驿站，交汇点亮起，订单成立
 export function RouteMap() {
   const reduce = useReducedMotion()
   const box = useRef(null)
@@ -58,8 +58,8 @@ export function RouteMap() {
 
   const lit = phase >= 1
   return (
-    <div ref={box} className="relative -mx-4 aspect-[17/10] w-[calc(100%+2rem)] overflow-hidden bg-surface sm:mx-0 sm:w-full sm:rounded-[28px] sm:ring-1 sm:ring-line"
-      role="img" aria-label="示意地图：你的快递在菜鸟驿站，学弟从一教走回梅园正好经过驿站门口，顺手捎上，只多走 1 分钟">
+    <div ref={box} className="relative -mx-4 aspect-[85/46] w-[calc(100%+2rem)] overflow-hidden bg-surface sm:mx-0 sm:w-full sm:rounded-[28px] sm:ring-1 sm:ring-line"
+      role="img" aria-label="示意地图：你的快递在菜鸟驿站，阿远从一教走回梅园正好经过驿站门口，顺手捎上，只多走 1 分钟">
       <svg viewBox={`${X0} ${Y0} ${VW} ${VH}`} preserveAspectRatio="xMidYMid slice" className="absolute inset-0 size-full" aria-hidden="true">
         <image href={`${import.meta.env.BASE_URL}images/campus-map-v2.webp`} x="0" y="0" width="1600" height="900" />
         {/* 你的需求：驿站到梅园，绿色点线 */}
@@ -77,14 +77,14 @@ export function RouteMap() {
       </svg>
 
       <Node x={RUN_PTS[0][0]} y={RUN_PTS[0][1]}><span className="block size-3 rounded-full bg-ink ring-4 ring-surface md:size-4" /></Node>
-      <Node x={ICHI[0]} y={ICHI[1]}><Tag>一教 出发</Tag></Node>
+      <Node x={ICHI[0]} y={ICHI[1]} className="z-20"><Tag>一教 出发</Tag></Node>
       <Node x={PLACES.cainiao.door[0]} y={PLACES.cainiao.door[1] + 46}>
         <motion.div animate={{ scale: lit ? 1.08 : 1 }} transition={{ type: 'spring', stiffness: 400, damping: 18 }}
           className={`grid size-10 place-items-center rounded-full ring-[3px] transition-colors md:size-14 ${lit ? 'bg-accent-soft ring-accent' : 'bg-surface ring-line'}`}>
           <img src={icon('type-express-v1')} width={36} height={36} alt="" className={`size-6 transition-opacity md:size-9 ${phase >= 2 ? 'opacity-30' : ''}`} />
         </motion.div>
       </Node>
-      <Node x={PLACES.cainiao.door[0]} y={PLACES.cainiao.door[1] + 112}><Tag strong={lit}>菜鸟驿站</Tag></Node>
+      <Node x={PLACES.cainiao.door[0]} y={PLACES.cainiao.door[1] + 112} className="z-20"><Tag strong={lit}>菜鸟驿站</Tag></Node>
       <Node x={MEI[0]} y={MEI[1]}>
         <div className={`relative size-10 rounded-full bg-surface ring-[3px] transition-colors md:size-14 ${phase === 3 ? 'ring-accent' : 'ring-line'}`}>
           <img src={icon('avatar-poster-v1')} width={56} height={56} alt="" className="size-full rounded-full object-cover" />
@@ -107,14 +107,14 @@ export function RouteMap() {
       <AnimatePresence mode="wait">
         {phase === 0 && !reduce && (
           <motion.div key="a" className="absolute right-[3%] top-[68%]" initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.3 }}>
-            <p className="rounded-xl bg-surface px-2.5 py-1.5 text-[12px] leading-snug shadow-[0_8px_24px_-12px_rgba(17,40,30,0.4)] ring-1 ring-line md:px-3 md:py-2 md:text-sm">学弟在一教 17:50 下课<br />本来就要走回梅园</p>
+            <p className="rounded-xl bg-surface px-2.5 py-1.5 text-[12px] leading-snug shadow-[0_8px_24px_-12px_rgba(17,40,30,0.4)] ring-1 ring-line md:px-3 md:py-2 md:text-sm">阿远在一教 17:50 下课<br />本来就要走回梅园</p>
           </motion.div>
         )}
         {(phase === 1 || phase === 2) && (
           <motion.div key="b" className="absolute right-[3%] top-[68%]" initial={{ opacity: 0, y: 10, scale: 0.92 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: -6 }} transition={{ type: 'spring', stiffness: 420, damping: 26 }}>
             <div className="rounded-2xl bg-ink px-3 py-2 text-bg shadow-[0_14px_30px_-14px_rgba(17,40,30,0.6)] md:px-4 md:py-3">
               <p className="text-[13px] font-bold md:text-lg">顺路，只多走 1 分钟</p>
-              <p className="text-[11px] opacity-80 md:text-sm">学弟接单 · 赏金 ¥5 托管中</p>
+              <p className="text-[11px] opacity-80 md:text-sm">阿远接单 · 赏金 ¥5 托管中</p>
             </div>
           </motion.div>
         )}
@@ -122,7 +122,7 @@ export function RouteMap() {
           <motion.div key="c" className="absolute right-[3%] top-[68%]" initial={reduce ? false : { opacity: 0, y: 10, scale: 0.92 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0 }} transition={{ type: 'spring', stiffness: 420, damping: 26 }}>
             <div className="rounded-2xl bg-accent px-3 py-2 text-on-accent shadow-[0_14px_30px_-14px_rgba(11,122,85,0.7)] md:px-4 md:py-3">
               <p className="text-[13px] font-bold md:text-lg">送到了</p>
-              <p className="tnum text-[11px] opacity-90 md:text-sm">¥5 从托管放给学弟</p>
+              <p className="tnum text-[11px] opacity-90 md:text-sm">¥5 从托管放给阿远</p>
             </div>
           </motion.div>
         )}

@@ -486,6 +486,19 @@ function RouteFit({ t }) {
   )
 }
 
+function OnTheWay({ t }) {
+  const mine = onMyWay(t) ? myRoute() : null
+  const R = mine || { from: t.from, to: t.to }
+  if (!PLACES[R.from] || !PLACES[R.to] || R.from === R.to) return null
+  const hits = mine ? [{ ...t, m: detourMin(mine.from, mine.to, t), dm: detourMeters(mine.from, mine.to, t) }] : []
+  return (
+    <Panel className="p-3">
+      <p className="px-1 pb-2 text-sm font-semibold text-muted">{mine ? `顺路：${B[mine.from]?.name.replace(/（.*?）/, '')} → ${B[mine.to]?.name.replace(/（.*?）/, '')}，这一单在路上` : '这一单的路线'}</p>
+      <CampusMap R={R} hits={hits} reduce pills={false} walker={false} />
+    </Panel>
+  )
+}
+
 // 这一单的收尾：路线、硬币从发单人滑到跑腿人、两边信用跟着涨；刚互评完会完整播一遍
 function Roll({ from, to, play }) {
   const mv = useMotionValue(play ? from : to)
@@ -580,6 +593,9 @@ export default function TaskDetail() {
       {!(t.status === 'completed' && t.ratingByPoster && t.ratingByRunner) && <Panel className="p-4"><Stepper t={t} /></Panel>}
 
       {pmode === 'open' && <><PickupCard t={t} /><div><Actions t={t} /></div></>}
+
+      {/* 进行中：这一单在校园地图上怎么走，顺路的单画跑腿人整条路、这一单那段亮绿 */}
+      {['ongoing', 'delivered'].includes(t.status) && <OnTheWay t={t} />}
 
       {own && state.role === 'poster' && ['ongoing', 'delivered'].includes(t.status) && (
         <div className="flex items-center gap-3 rounded-2xl bg-ink p-4 text-bg">

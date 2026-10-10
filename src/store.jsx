@@ -5,7 +5,7 @@ const KEY = 'shunluxia:v3'
 const Ctx = createContext(null)
 
 function fresh() {
-  return { role: 'poster', accounts: seedAccounts(), tasks: seedTasks(), onboarded: false, tour: { active: false, taskId: null, done: false }, toasts: [] }
+  return { role: 'runner', accounts: seedAccounts(), tasks: seedTasks(), onboarded: false, tour: { active: false, taskId: null, done: false }, toasts: [] }
 }
 
 function load() {

@@ -12,16 +12,16 @@ export function tourStep(state) {
   const { tour, accounts } = state
   if (!tour.active) return null
   const t = state.tasks.find((x) => x.id === tour.taskId)
-  if (!t) return { n: 1, who: 'poster', text: '用发单人身份发布一个任务', to: '/app/publish?tour=1', cta: '去发布' }
+  if (!t) return { n: 1, who: 'poster', text: '发布一个任务', to: '/app/publish?tour=1', cta: '去发布' }
   if (t.status === 'open') {
-    if (!accounts.runner.verified) return { n: 2, who: 'runner', text: '切到跑腿人：先做校园认证，才能接单', to: `/app/verify?back=/app/task/${t.id}`, cta: '去认证' }
-    return { n: 3, who: 'runner', text: '切到跑腿人，接下刚发布的这一单', to: `/app/task/${t.id}`, cta: '去接单' }
+    if (!accounts.runner.verified) return { n: 2, who: 'runner', text: '切到跑腿人：先做校园认证', to: `/app/verify?back=/app/task/${t.id}`, cta: '去认证' }
+    return { n: 3, who: 'runner', text: '切到跑腿人：接下这一单', to: `/app/task/${t.id}`, cta: '去接单' }
   }
-  if (t.status === 'ongoing' && !t.picked) return { n: 4, who: 'runner', text: `跑腿人：取件码 ${t.private?.code || '已解锁'}，取到后点「我已取到」`, to: `/app/task/${t.id}`, cta: '去取件' }
-  if (t.status === 'ongoing') return { n: 5, who: 'runner', text: '跑腿人：送到后核对发单人的送达码（演示里已代填），或拍照留证', to: `/app/task/${t.id}`, cta: '去送达' }
-  if (t.status === 'delivered') return { n: 6, who: 'poster', text: '切回发单人：确认送达，托管赏金放款', to: `/app/task/${t.id}`, cta: '去确认' }
-  if (t.status === 'completed' && !t.ratingByPoster) return { n: 7, who: 'poster', text: '发单人：给跑腿人打分，信用分会跟着变', to: `/app/task/${t.id}`, cta: '去评价' }
-  if (t.status === 'completed' && !t.ratingByRunner) return { n: 8, who: 'runner', text: '切到跑腿人：也给发单人打分，完成双向互评', to: `/app/task/${t.id}`, cta: '去互评' }
+  if (t.status === 'ongoing' && !t.picked) return { n: 4, who: 'runner', text: '跑腿人：取到后点「我已取到」', to: `/app/task/${t.id}`, cta: '去取件' }
+  if (t.status === 'ongoing') return { n: 5, who: 'runner', text: '跑腿人：送到后提交送达凭证', to: `/app/task/${t.id}`, cta: '去送达' }
+  if (t.status === 'delivered') return { n: 6, who: 'poster', text: '切回发单人：确认放款', to: `/app/task/${t.id}`, cta: '去确认' }
+  if (t.status === 'completed' && !t.ratingByPoster) return { n: 7, who: 'poster', text: '发单人：给跑腿人打分', to: `/app/task/${t.id}`, cta: '去评价' }
+  if (t.status === 'completed' && !t.ratingByRunner) return { n: 8, who: 'runner', text: '切到跑腿人：也给对方打分', to: `/app/task/${t.id}`, cta: '去互评' }
   if (t.status === 'completed') return { n: 9, who: 'runner', text: '去「我的」看看信用和收入', to: '/app/me', cta: '去看看', final: true }
   return { n: 9, who: null, text: '这单走了申诉或取消分支，演示结束', to: '/app/orders', cta: '看订单', final: true }
 }
