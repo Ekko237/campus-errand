@@ -123,7 +123,7 @@ function ScrollProgress() {
   return <motion.div aria-hidden="true" style={{ scaleX }} className="fixed inset-x-0 top-0 z-50 h-[3px] origin-left bg-accent" />
 }
 
-const NAV_LINKS = [['story', '一单怎么走'], ['routes', '顺路地图'], ['credit', '双向信用'], ['safety', '这些单发不出去'], ['final', '你常走的路']]
+const NAV_LINKS = [['story', '一单怎么走'], ['routes', '顺路地图'], ['credit', '双向信用'], ['safety', '发不出去'], ['final', '常走的路']]
 const SECTIONS = [...NAV_LINKS]
 function Nav({ page }) {
   const { scrollY } = useScroll()

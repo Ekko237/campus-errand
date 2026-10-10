@@ -190,7 +190,7 @@ function StoryMap({ i, pos, aspect, small = false }) {
         {/* 每一段在地图上冒一句 */}
         <AnimatePresence>
           {i === 2 && <Bubble key="b2" p={pp([ICHI[0] - 260, ICHI[1] - 95])} small={small} dark>17:50 下课，本来就走这条路</Bubble>}
-          {i === 3 && <Bubble key="b3" p={pp([STATION[0] - 170, STATION[1] + 110])} small={small} dark>报 6-2-3108 取件</Bubble>}
+          {i === 3 && <Bubble key="b3" p={pp([STATION[0] - 150, STATION[1] - 125])} small={small} dark>报 6-2-3108 取件</Bubble>}
           {i === 5 && <Bubble key="b5" p={pp([XM[0] + 280, XM[1] - 250])} small={small} green>+¥5 到阿远</Bubble>}
           {i === 6 && <Bubble key="b6" p={pp([XM[0] + 330, XM[1] - 250])} small={small} green>阿远 +3 · 小满 +2</Bubble>}
         </AnimatePresence>
@@ -272,7 +272,7 @@ function OrderCard({ i, go, small = false }) {
 function Chapter({ c, k, now, dark, flat, children }) {
   const reduce = useReducedMotion()
   return (
-    <article data-ch={k} className={`flex flex-col transition-opacity duration-500 ${flat ? 'py-2' : 'pb-10 pt-8 max-lg:min-h-[64svh] lg:min-h-[92svh] lg:justify-center lg:py-0'} ${now ? '' : 'lg:opacity-25'}`}>
+    <article data-ch={k} className={`flex flex-col transition-opacity duration-500 ${flat ? 'py-2' : 'pb-10 pt-8 max-lg:min-h-[64svh] lg:min-h-[74svh] lg:justify-center lg:py-0'} ${now ? '' : 'lg:opacity-45'}`}>
       <div className="flex items-end gap-4">
         {k > 0 && <span className={`tnum font-display text-[56px] leading-none md:text-[72px] ${dark ? 'text-on-accent/60' : 'text-accent/30'}`}>0{k}</span>}
         <p className={`flex items-center gap-2 pb-1 text-sm font-semibold ${dark ? 'text-on-accent' : 'text-accent'}`}>
@@ -286,11 +286,12 @@ function Chapter({ c, k, now, dark, flat, children }) {
             initial={false} animate={{ scaleX: now || reduce ? 1 : 0 }} transition={{ duration: reduce ? 0 : 0.45, delay: reduce ? 0 : 0.25, ease }} />
         </p>
       )}
-      {k === 0 ? (
-        <h2 className="mt-3 font-display text-balance text-[34px] leading-[1.12] md:text-[48px] xl:text-[54px]">{c.t}</h2>
-      ) : (
-        <h3 className="mt-2 font-display text-balance text-[32px] leading-[1.12] md:text-[48px] xl:text-[54px]">{c.t}</h3>
-      )}
+      {/* 标题只在逗号处换行，不把「下课」「阿远」这种词拆开 */}
+      {(() => { const parts = c.t.split('，'); const T = k === 0 ? 'h2' : 'h3'; return (
+        <T className={`${k === 0 ? 'mt-3' : 'mt-2'} font-display text-[32px] leading-[1.12] md:text-[44px] xl:text-[52px]`}>
+          {parts.map((x, n) => <span key={n} className="inline-block whitespace-nowrap">{x}{n < parts.length - 1 ? '，' : ''}</span>)}
+        </T>
+      ) })()}
       <p className="mt-4 max-w-[32ch] text-lg leading-relaxed opacity-85 md:text-xl">{c.d}</p>
       <div className={`mt-6 max-w-[40ch] border-l-[3px] pl-4 ${dark ? 'border-on-accent' : 'border-accent'}`}>
         <p className="text-[15px] font-bold">{c.note[0]}</p>
