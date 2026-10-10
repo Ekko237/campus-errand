@@ -62,7 +62,7 @@ function Anchor({ to, children, ...p }) {
 }
 
 const H2 = ({ children, className = '' }) => (
-  <h2 className={`text-balance text-[30px] font-bold leading-[1.1] tracking-[-0.02em] md:text-5xl lg:text-[56px] ${className}`}>{children}</h2>
+  <h2 className={`text-balance text-[30px] font-bold leading-[1.1] tracking-[-0.02em] md:text-5xl lg:text-[44px] xl:text-[56px] ${className}`}>{children}</h2>
 )
 const Br = () => <br className="hidden md:inline" />
 const Lead = ({ children, className = '' }) => <p className={`mt-5 max-w-[38ch] text-lg leading-relaxed text-muted md:text-xl ${className}`}>{children}</p>
