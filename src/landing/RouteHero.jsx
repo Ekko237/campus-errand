@@ -85,13 +85,13 @@ export function RouteMap() {
 
       <Node x={RUN_PTS[0][0]} y={RUN_PTS[0][1]}><span className="block size-3 rounded-full bg-ink ring-4 ring-surface md:size-4" /></Node>
       <Node x={ICHI[0]} y={ICHI[1]} className="z-20"><Tag>一教 出发</Tag></Node>
-      <Node x={PLACES.cainiao.door[0]} y={PLACES.cainiao.door[1] + 46}>
+      <Node x={PLACES.cainiao.door[0]} y={PLACES.cainiao.door[1] + 22}>
         <motion.div animate={{ scale: lit ? 1.08 : 1 }} transition={{ type: 'spring', stiffness: 400, damping: 18 }}
           className={`grid size-10 place-items-center rounded-full ring-[3px] transition-colors md:size-14 ${lit ? 'bg-accent-soft ring-accent' : 'bg-surface ring-line'}`}>
           <img src={icon('type-express-v1')} width={36} height={36} alt="" className={`size-6 transition-opacity md:size-9 ${phase >= 2 ? 'opacity-30' : ''}`} />
         </motion.div>
       </Node>
-      <Node x={PLACES.cainiao.door[0]} y={PLACES.cainiao.door[1] + 112} className="z-20"><Tag strong={lit}>菜鸟驿站</Tag></Node>
+      <Node x={PLACES.cainiao.door[0]} y={PLACES.cainiao.door[1] + 90} className="z-20"><Tag strong={lit}>菜鸟驿站</Tag></Node>
       <Node x={MEI[0]} y={MEI[1]}>
         <div className={`relative size-10 rounded-full bg-surface ring-[3px] transition-colors md:size-14 ${phase === 3 ? 'ring-accent' : 'ring-line'}`}>
           <img src={icon('avatar-poster-v1')} width={56} height={56} alt="" className="size-full rounded-full object-cover" />
