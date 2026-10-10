@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useRef } from 'react'
 import { Routes, Route, NavLink, Link, useNavigate, useLocation } from 'react-router-dom'
 import { motion, AnimatePresence, useReducedMotion } from 'motion/react'
 import { ListMagnifyingGlass, PlusCircle, Receipt, UserCircle, CheckCircle, WarningCircle, Path, Megaphone, PersonSimpleRun, SealCheck } from '@phosphor-icons/react'
@@ -110,8 +110,25 @@ const tabs = [
   ['/app/me', '我的', 'nav-me'],
 ]
 
+// 页面转场：往里走（详情、钱包）从右边推进来，往回走从左边；底部标签之间按左右顺序滑
+const TAB_ORDER = ['/app', '/app/publish', '/app/orders', '/app/me']
+const depthOf = (p) => (TAB_ORDER.includes(p.replace(/\/$/, '') || '/app') ? 0 : 1)
+function useDirection(pathname) {
+  const prev = useRef(pathname)
+  const dir = useRef(0)
+  if (prev.current !== pathname) {
+    const a = prev.current.replace(/\/$/, ''), b = pathname.replace(/\/$/, '')
+    const da = depthOf(a), db = depthOf(b)
+    dir.current = db !== da ? (db > da ? 1 : -1) : Math.sign(TAB_ORDER.indexOf(b) - TAB_ORDER.indexOf(a)) || 1
+    prev.current = pathname
+  }
+  return dir.current
+}
+
 function Shell() {
   const { pathname } = useLocation()
+  const reduce = useReducedMotion()
+  const dir = useDirection(pathname)
   useEffect(() => { window.scrollTo(0, 0) }, [pathname])
   return (
     <div className="min-h-[100dvh] bg-bg">
@@ -124,7 +141,9 @@ function Shell() {
           <RoleSwitch />
         </div>
       </header>
-      <main className="mx-auto max-w-xl px-4 pb-44 pt-4">
+      <main className="mx-auto max-w-xl overflow-x-clip px-4 pb-44 pt-4">
+        <motion.div key={pathname} initial={reduce || dir === 0 ? false : { opacity: 0.35, x: 28 * dir }} animate={{ opacity: 1, x: 0 }}
+          transition={{ type: 'spring', stiffness: 520, damping: 42, mass: 0.7 }}>
         <Routes>
           <Route index element={<Hall />} />
           <Route path="publish" element={<Publish />} />
@@ -136,14 +155,15 @@ function Shell() {
           <Route path="wallet" element={<Wallet />} />
           <Route path="*" element={<Hall />} />
         </Routes>
+        </motion.div>
       </main>
       <DemoPanel />
       <TourBar />
       <nav className="fixed inset-x-0 bottom-0 z-30 border-t border-line bg-surface/95 backdrop-blur" aria-label="主导航">
         <div className="mx-auto grid max-w-xl grid-cols-4 pb-[env(safe-area-inset-bottom)]">
           {tabs.map(([to, label, img, end]) => (
-            <NavLink key={to} to={to} end={end} className={({ isActive }) => `flex h-16 flex-col items-center justify-center gap-0.5 text-[13px] font-semibold ${isActive ? 'text-accent' : 'text-muted'}`}>
-              {({ isActive }) => (<><img src={`${import.meta.env.BASE_URL}icons/${img}-v1.webp`} width={28} height={28} alt="" aria-hidden="true" className={`size-7 object-contain transition ${isActive ? 'scale-110' : 'opacity-55 grayscale'}`} />{label}</>)}
+            <NavLink key={to} to={to} end={end} className={({ isActive }) => `relative flex h-16 flex-col items-center justify-center gap-0.5 text-[13px] font-semibold ${isActive ? 'text-accent' : 'text-muted'}`}>
+              {({ isActive }) => (<>{isActive && <motion.span layoutId="nav-dot" transition={{ type: 'spring', stiffness: 500, damping: 34 }} className="absolute top-0 h-[3px] w-10 rounded-b-full bg-accent" />}<img src={`${import.meta.env.BASE_URL}icons/${img}-v1.webp`} width={28} height={28} alt="" aria-hidden="true" className={`size-7 object-contain transition ${isActive ? 'scale-110' : 'opacity-55 grayscale'}`} />{label}</>)}
             </NavLink>
           ))}
         </div>
