@@ -22,10 +22,17 @@ export function TaskCard({ t, me, role, route }) {
         <span className="tnum ml-auto text-2xl font-bold tracking-tight">¥{t.reward}</span>
       </div>
       <h3 className="mt-3 text-[17px] font-semibold leading-snug">{t.title}</h3>
-      <p className="mt-2 flex items-start gap-1.5 text-[15px] text-muted">
-        <MapPin size={18} className="mt-0.5 shrink-0" />
-        <span>{B[t.from]?.name}{t.from !== t.to && <> 到 {B[t.to]?.name}</>}</span>
-      </p>
+      {t.from !== t.to ? (
+        <p className="mt-2.5 flex items-center gap-2 text-[15px] text-muted" aria-label={`${B[t.from]?.name} 到 ${B[t.to]?.name}`}>
+          <span className="size-2.5 shrink-0 rounded-full bg-ink" />
+          <span className="shrink-0 whitespace-nowrap">{B[t.from]?.name.replace(/（.*?）/, '')}</span>
+          <span aria-hidden="true" className="h-0 min-w-6 flex-1 border-t-2 border-dashed border-line" />
+          <span className="shrink-0 whitespace-nowrap">{B[t.to]?.name}</span>
+          <span className="size-2.5 shrink-0 rounded-full bg-accent" />
+        </p>
+      ) : (
+        <p className="mt-2.5 flex items-center gap-2 text-[15px] text-muted"><span className="size-2.5 shrink-0 rounded-full bg-accent ring-4 ring-accent-soft" />{B[t.from]?.name}</p>
+      )}
       <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-muted">
         <span className="inline-flex items-center gap-1"><Clock size={16} />{left(t.deadline)}</span>
         {route ? (() => {
