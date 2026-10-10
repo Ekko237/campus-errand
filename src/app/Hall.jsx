@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence, useReducedMotion } from 'motion/react'
 import { ROUTES } from '../landing/RouteHero'
@@ -128,6 +128,15 @@ export default function Hall() {
   const { state, act, loadError } = useStore()
   const reduce = useReducedMotion()
   const [type, setType] = useState('all')
+  // 筛选条：只有右边真的还有内容时才加渐隐，滚到头就去掉
+  const chips = useRef(null)
+  const [more, setMore] = useState(false)
+  useEffect(() => {
+    const el = chips.current; if (!el) return
+    const f = () => setMore(el.scrollWidth - el.clientWidth - el.scrollLeft > 4)
+    f(); el.addEventListener('scroll', f, { passive: true }); window.addEventListener('resize', f)
+    return () => { el.removeEventListener('scroll', f); window.removeEventListener('resize', f) }
+  }, [])
   const [sort, setSort] = useState('route')
   const [route, setRoute] = useState(() => {
     try { const r = JSON.parse(localStorage.getItem('shunluxia:myroute')); if (B[r?.from] && B[r?.to]) return r } catch { /* 读不到就用默认路线 */ }
@@ -183,7 +192,7 @@ export default function Hall() {
         <span className="text-sm text-muted">示例数据 · {list.filter((t) => t.deadline > Date.now()).length} 个待接</span>
       </div>
 
-      <div className="no-scrollbar -mx-4 flex gap-2 overflow-x-auto px-4 [mask-image:linear-gradient(to_right,black_85%,transparent)]" role="group" aria-label="按类型筛选">
+      <div ref={chips} className={`no-scrollbar -mx-4 flex gap-2 overflow-x-auto px-4 ${more ? '[mask-image:linear-gradient(to_right,black_85%,transparent)]' : ''}`} role="group" aria-label="按类型筛选">
         {[['all', '全部'], ...TYPE_KEYS.map((k) => [k, TYPES[k].label])].map(([k, label]) => {
           const Icon = TYPES[k]?.Icon
           return (

@@ -33,6 +33,7 @@ createRoot(document.getElementById('root')).render(
     <HashRouter>
       <Routes>
         <Route path="/" element={<Landing />} />
+        <Route path="/thinking" element={<Landing page="thinking" />} />
         <Route path="/app/*" element={<Suspense fallback={<AppLoading />}><AppRoot /></Suspense>} />
         <Route path="*" element={<Landing />} />
       </Routes>

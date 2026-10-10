@@ -147,7 +147,7 @@ export default function RouteHero({ Cta, Anchor }) {
   // 副标题和按钮第一帧就在，只做一点位移，不从透明开始
   const fade = (d) => ({ initial: reduce ? false : { y: 10 }, animate: { y: 0 }, transition: { duration: 0.5, delay: d * 0.3, ease } })
   return (
-    <section id="top" className="mx-auto grid max-w-7xl items-center gap-10 px-4 pb-20 pt-8 md:px-8 md:pb-28 md:pt-14 lg:min-h-[calc(100svh-64px)] lg:grid-cols-12 lg:gap-12 lg:py-10">
+    <section id="top" className="mx-auto grid max-w-7xl items-center gap-10 px-4 pb-20 pt-8 md:px-8 md:pb-28 md:pt-14 lg:grid-cols-12 lg:gap-10 lg:pb-14 lg:pt-10 xl:pt-14">
       <div className="lg:col-span-5">
         <h1 className="font-display text-[length:clamp(54px,4vw_+_20px,78px)] leading-[1.05]">
           <span className="block overflow-hidden pb-1"><motion.span className="block" {...line(0)}>本来就要经过，</motion.span></span>
@@ -158,8 +158,8 @@ export default function RouteHero({ Cta, Anchor }) {
         </motion.p>
         <motion.div {...fade(0.45)} className="mt-8 flex flex-wrap items-center gap-3">
           <Cta />
-          <Anchor to="scenes" className="group inline-flex h-14 items-center gap-2 whitespace-nowrap rounded-full px-5 text-[17px] font-semibold text-ink transition hover:bg-sunken">
-            看产品思考<ArrowDown size={18} weight="bold" className="transition-transform group-hover:translate-y-0.5" />
+          <Anchor to="routes" className="group inline-flex h-14 items-center gap-2 whitespace-nowrap rounded-full px-5 text-[17px] font-semibold text-ink transition hover:bg-sunken">
+            看看谁顺路<ArrowDown size={18} weight="bold" className="transition-transform group-hover:translate-y-0.5" />
           </Anchor>
         </motion.div>
       </div>
@@ -196,10 +196,10 @@ export function CampusRoutes() {
   const pick = (i) => { setTouched(true); setRi(i) }
   return (
     <div>
-      <div className="flex flex-wrap gap-2" role="group" aria-label="选一条你正要走的路">
+      <div className="no-scrollbar -mx-4 flex gap-2 overflow-x-auto px-4 max-md:[mask-image:linear-gradient(to_right,black_88%,transparent)] md:mx-0 md:flex-wrap md:overflow-visible md:px-0" role="group" aria-label="选一条你正要走的路">
         {ROUTES.map((x, i) => (
           <button key={x.label} onClick={() => pick(i)} aria-pressed={i === ri}
-            className={`relative h-10 whitespace-nowrap rounded-full px-4 text-[15px] font-semibold transition-colors ${i === ri ? 'text-bg' : 'bg-surface text-ink ring-1 ring-line'}`}>
+            className={`relative h-10 shrink-0 whitespace-nowrap rounded-full px-4 text-[15px] font-semibold transition-colors ${i === ri ? 'text-bg' : 'bg-surface text-ink ring-1 ring-line'}`}>
             {i === ri && <span className="absolute inset-0 rounded-full bg-ink" />}
             <span className="relative">{x.label}</span>
           </button>
@@ -236,7 +236,7 @@ function SubwayLine({ R, hits, reduce }) {
             <span className="z-10 ml-[3px] size-[18px] shrink-0 rounded-full bg-accent ring-4 ring-bg" />
             <span className="min-w-0 flex-1 rounded-2xl bg-accent-soft px-3 py-2">
               <span className="block text-[15px] font-semibold leading-snug">{t.title}</span>
-              <span className="tnum mt-0.5 block text-sm text-accent">{t.dm ? `多走 ${t.dm} 米` : '就在路上'} · 在{SHORT[t.from]}顺手{{ express: '取', buy: '买', seat: '占', food: '拿', other: '带' }[t.type] || '带'} · ¥{t.reward}</span>
+              <span className="tnum mt-0.5 block text-sm text-accent">{t.dm ? `多走 ${t.m} 分钟（${t.dm} 米）` : '就在路上'} · 在{SHORT[t.from]}顺手{{ express: '取', buy: '买', seat: '占', food: '拿', other: '带' }[t.type] || '带'} · ¥{t.reward}</span>
             </span>
           </motion.li>
         ))}

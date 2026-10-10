@@ -63,6 +63,11 @@ export default function CampusMap({ R, hits, reduce, pills = true, walker = true
       role="img" aria-label={`示意地图：从${SHORT[R.from]}到${SHORT[R.to]}，沿路有 ${hits.length} 个顺路的单`}>
       <img src={`${import.meta.env.BASE_URL}images/campus-map-v2.webp`} width={1600} height={900} alt="" aria-hidden="true" loading="lazy" className="absolute inset-0 size-full object-cover" />
       <svg viewBox={`0 0 ${MAP_W} ${MAP_H}`} className="absolute inset-0 size-full" aria-hidden="true">
+        {/* 捎这单要绕的路：从你的路拐去取件点、送到再回来，绿色虚线 */}
+        {marks.map(({ t }) => {
+          const via = [...routePath(R.from, t.from).pts, ...(t.from !== t.to ? routePath(t.from, t.to).pts : []), ...routePath(t.to, R.to).pts]
+          return <path key={`v${t.id}`} d={toD(via)} fill="none" stroke="var(--accent)" strokeOpacity="0.9" strokeWidth="11" strokeDasharray="1 18" strokeLinecap="round" strokeLinejoin="round" />
+        })}
         {/* 你的路：整条先淡淡画着，小人走过的部分描深 */}
         <path d={toD(mine)} fill="none" stroke="var(--ink)" strokeOpacity="0.3" strokeWidth="10" strokeDasharray="4 18" strokeLinecap="round" strokeLinejoin="round" />
         <motion.path key={`${R.from}${R.to}`} d={toD(mine)} fill="none" stroke="var(--ink)" strokeOpacity="0.88" strokeWidth="12" strokeLinecap="round" strokeLinejoin="round"
@@ -92,7 +97,7 @@ export default function CampusMap({ R, hits, reduce, pills = true, walker = true
           <span key={`${R.from}${R.to}${t.id}`} className="absolute z-30 hidden md:block" style={pct(markAt(t.from))}>
             <motion.span initial={reduce ? false : { opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0 }} transition={{ type: 'spring', stiffness: 420, damping: 24 }}
               className={`tnum absolute left-0 -translate-x-1/2 whitespace-nowrap rounded-full bg-accent px-3 py-1 text-sm font-bold text-on-accent shadow-[0_8px_18px_-8px_rgba(11,122,85,0.7)] ${outward(t.from) === 'up' ? 'bottom-10' : 'top-10'}`}>
-              ¥{t.reward} · {t.dm ? `多走 ${t.dm} 米` : '就在路上'}
+              ¥{t.reward} · {t.dm ? `多走 ${t.m ?? Math.max(1, Math.ceil(t.dm / 80))} 分钟` : '就在路上'}
             </motion.span>
           </span>
         ))}
@@ -106,7 +111,7 @@ export default function CampusMap({ R, hits, reduce, pills = true, walker = true
     {legend && (
       <p className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted md:text-sm">
         <span className="inline-flex items-center gap-1.5"><i className="h-1 w-5 rounded-full bg-ink/80" />你正要走的路</span>
-        <span className="inline-flex items-center gap-1.5"><i className="size-2.5 rounded-full bg-accent" />路上能顺手捎的 {hits.length} 单（绿线：从取件到送达那段路）</span>
+        <span className="inline-flex items-center gap-1.5"><i className="size-2.5 rounded-full bg-accent" />路上能顺手捎的 {hits.length} 单（绿虚线：捎上它要绕的路）</span>
       </p>
     )}
     </div>

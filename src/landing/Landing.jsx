@@ -57,22 +57,23 @@ function Cta({ size = 'lg', className = '' }) {
   )
 }
 
-function Anchor({ to, children, ...p }) {
+function Anchor({ to, children, onClick, ...p }) {
   const go = (e) => {
     e.preventDefault()
+    onClick?.()
     document.getElementById(to)?.scrollIntoView({ behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' })
   }
   return <a href="#/" onClick={go} {...p}>{children}</a>
 }
 
 const H2 = ({ children, className = '' }) => (
-  <h2 className={`font-display text-balance text-[30px] leading-[1.15] md:text-[38px] xl:text-[40px] ${className}`}>{children}</h2>
+  <h2 className={`font-display text-balance text-[34px] leading-[1.12] md:text-[44px] xl:text-[50px] ${className}`}>{children}</h2>
 )
 const Br = () => <br className="hidden md:inline" />
 const Lead = ({ children, className = '' }) => <p className={`mt-5 max-w-[38ch] text-lg leading-relaxed text-muted md:text-xl ${className}`}>{children}</p>
 
 // 贯穿全站的那条路：宽屏左边一条虚线，每一段是一个站，往下滚它就被走成绿色，小人跟着走
-const STOPS = [['top', '一条路'], ['routes', '整个校园'], ['scenes', '场景'], ['loop', '一单'], ['trust', '信任'], ['credit', '信用'], ['metrics', '指标'], ['roadmap', '下一步']]
+const STOPS = [['top', '一条路'], ['routes', '整个校园'], ['scenes', '场景'], ['loop', '一单'], ['trust', '信任'], ['credit', '信用'], ['safety', '底线']]
 function PageRoute() {
   const reduce = useReducedMotion()
   const { scrollYProgress } = useScroll()
@@ -119,26 +120,51 @@ function ScrollProgress() {
   return <motion.div aria-hidden="true" style={{ scaleX }} className="fixed inset-x-0 top-0 z-50 h-[3px] origin-left bg-accent" />
 }
 
-function Nav() {
+const NAV_LINKS = [['scenes', '场景'], ['loop', '一单怎么走'], ['trust', '信任机制'], ['credit', '双向信用']]
+function Nav({ page }) {
   const { scrollY } = useScroll()
   const [scrolled, setScrolled] = useState(false)
+  const [open, setOpen] = useState(false)
   useMotionValueEvent(scrollY, 'change', (v) => setScrolled(v > 420))
-  const links = [['scenes', '场景'], ['loop', '一单怎么走'], ['trust', '信任机制'], ['metrics', '核心指标']]
+  const home = page !== 'thinking'
+  const linkCls = 'group relative py-1 transition-colors hover:text-ink'
+  const under = <span className="absolute inset-x-0 -bottom-0.5 h-px origin-left scale-x-0 bg-ink transition-transform duration-300 group-hover:scale-x-100" />
   return (
-    <header className={`sticky top-0 z-30 transition-[background-color,border-color,box-shadow] duration-300 ${scrolled ? 'border-b border-line bg-bg shadow-[0_1px_0_rgba(0,0,0,0.02)]' : 'border-b border-transparent bg-bg'}`}>
+    <header className={`sticky top-0 z-30 transition-[background-color,border-color,box-shadow] duration-300 ${scrolled || !home ? 'border-b border-line bg-bg shadow-[0_1px_0_rgba(0,0,0,0.02)]' : 'border-b border-transparent bg-bg'}`}>
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-4 px-4 md:px-8">
-        <Anchor to="top" className="flex items-center gap-2.5 text-lg font-bold tracking-tight">
-          <img src={`${import.meta.env.BASE_URL}brand/logo-v2.png`} width={36} height={36} alt="顺路侠标志：背着书包、夹着包裹奔跑的小人" className="size-9" />顺路侠
-        </Anchor>
+        {home ? (
+          <Anchor to="top" className="flex items-center gap-2.5 text-lg font-bold tracking-tight">
+            <img src={`${import.meta.env.BASE_URL}brand/logo-v2.png`} width={36} height={36} alt="顺路侠标志：背着书包、夹着包裹奔跑的小人" className="size-9" />顺路侠
+          </Anchor>
+        ) : (
+          <Link to="/" className="flex items-center gap-2.5 text-lg font-bold tracking-tight">
+            <img src={`${import.meta.env.BASE_URL}brand/logo-v2.png`} width={36} height={36} alt="顺路侠标志：背着书包、夹着包裹奔跑的小人" className="size-9" />顺路侠
+          </Link>
+        )}
         <nav className="hidden items-center gap-8 text-[15px] font-medium text-muted lg:flex" aria-label="页面导航">
-          {links.map(([to, l]) => (
-            <Anchor key={to} to={to} className="group relative py-1 transition-colors hover:text-ink">
-              {l}<span className="absolute inset-x-0 -bottom-0.5 h-px origin-left scale-x-0 bg-ink transition-transform duration-300 group-hover:scale-x-100" />
-            </Anchor>
-          ))}
+          {home && NAV_LINKS.map(([to, l]) => <Anchor key={to} to={to} className={linkCls}>{l}{under}</Anchor>)}
+          {home ? <Link to="/thinking" className={linkCls}>产品思考{under}</Link> : <Link to="/" className={linkCls}>回首页{under}</Link>}
         </nav>
-        <div className={`transition-opacity duration-300 ${scrolled ? '' : 'max-md:pointer-events-none max-md:opacity-0'}`}><Cta size="sm" /></div>
+        <div className="flex items-center gap-2">
+          <div className={`transition-opacity duration-300 ${scrolled || !home ? '' : 'max-md:pointer-events-none max-md:opacity-0'}`}><Cta size="sm" /></div>
+          {home && (
+            <button onClick={() => setOpen((v) => !v)} aria-expanded={open} aria-controls="mnav" className="grid h-10 place-items-center rounded-full bg-sunken px-4 text-[15px] font-semibold active:scale-[0.97] lg:hidden">{open ? '收起' : '目录'}</button>
+          )}
+        </div>
       </div>
+      <AnimatePresence>
+        {open && (
+          <motion.nav id="mnav" aria-label="页面目录" initial={{ opacity: 0, y: -6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -6 }} transition={{ duration: 0.18 }}
+            className="absolute inset-x-0 top-16 border-b border-line bg-bg px-4 pb-4 shadow-[0_20px_30px_-24px_rgba(17,40,30,0.35)] lg:hidden">
+            <ol className="grid gap-1">
+              {[['routes', '整个校园的顺路'], ...NAV_LINKS, ['safety', '这些单发不出去']].map(([to, l], i) => (
+                <li key={to}><Anchor to={to} onClick={() => setOpen(false)} className="flex h-12 items-center gap-3 rounded-xl px-2 text-[17px] font-semibold active:bg-sunken"><span className="tnum w-5 text-sm text-muted">{i + 1}</span>{l}</Anchor></li>
+              ))}
+              <li><Link to="/thinking" className="flex h-12 items-center gap-3 rounded-xl px-2 text-[17px] font-semibold text-muted active:bg-sunken"><span className="w-5" />产品思考（写给评审）</Link></li>
+            </ol>
+          </motion.nav>
+        )}
+      </AnimatePresence>
     </header>
   )
 }
@@ -199,7 +225,7 @@ function Scenes() {
     <section id="scenes" className={`mx-auto max-w-7xl scroll-mt-16 ${SECTION}`}>
       <div className="grid gap-x-12 lg:grid-cols-12 lg:items-end">
         <Reveal className="lg:col-span-7"><H2>三个每天都在发生的<br />跑腿时刻</H2></Reveal>
-        <Reveal delay={0.05} className="lg:col-span-5 lg:pb-1"><Lead className="lg:mt-0">目标用户：时间被课表切碎、又在意隐私的在校生。需求小、频次高、怕被坑。</Lead></Reveal>
+        <Reveal delay={0.05} className="lg:col-span-5 lg:pb-1"><Lead className="lg:mt-0">课表把一天切成好几段，小事却天天有。总有同学刚好要走你那条路。</Lead></Reveal>
       </div>
       <div className="mt-12">
         <div className="grid grid-cols-3 gap-1 rounded-full bg-sunken p-1 md:inline-flex" role="tablist" aria-label="用户场景">
@@ -444,31 +470,51 @@ function TrustStop({ x, lit, reduce }) {
 
 // 隐私分级：同一张取件卡，接单前打码、接单后亮出、结束后收起，三秒换一次
 const PRIV = [
-  { k: '接单前', code: '•-•-••••', room: '梅园 * 号楼 ***', tone: 'muted' },
-  { k: '接单后', code: '6-2-3108', room: '梅园 5 号楼 412', tone: 'open' },
-  { k: '结束后', code: '已收起', room: '已收起', tone: 'muted' },
+  { k: '接单前', code: '•-•-••••', room: '梅园 * 号楼 ***', tone: 'muted', who: '大厅里谁都看不到，只看到「梅园」' },
+  { k: '接单后', code: '6-2-3108', room: '梅园 5 号楼 412', tone: 'open', who: '只有接下这单的同学看得到' },
+  { k: '结束后', code: '6-2-3108', room: '梅园 5 号楼 412', tone: 'closed', who: '送达那一刻收回，对方再也看不到' },
 ]
 function PrivacyDemo() {
   const reduce = useReducedMotion()
   const [i, setI] = useState(1)
-  useEffect(() => { if (reduce) return; const id = setInterval(() => setI((v) => (v + 1) % PRIV.length), 2600); return () => clearInterval(id) }, [reduce])
+  const [hold, setHold] = useState(0)
+  // 自己轮播；用户点了某一段，就停在那里 8 秒再继续
+  useEffect(() => {
+    if (reduce) return
+    const id = setTimeout(() => setI((v) => (v + 1) % PRIV.length), hold ? 8000 : 2600)
+    return () => clearTimeout(id)
+  }, [reduce, i, hold])
   const p = PRIV[i]
+  const pick = (k) => { setI(k); setHold((h) => h + 1) }
+  const val = (v) => (
+    <span className="relative inline-block">
+      <span className={p.tone === 'open' ? '' : 'opacity-40'}>{v}</span>
+      {p.tone === 'closed' && <motion.span aria-hidden="true" initial={reduce ? false : { scaleX: 0 }} animate={{ scaleX: 1 }} transition={{ duration: 0.35, delay: 0.1 }} className="absolute inset-x-0 top-1/2 h-0.5 origin-left rounded-full bg-bg" />}
+    </span>
+  )
   return (
-    <div className="rounded-[24px] bg-ink p-5 text-bg" aria-label="取件信息在三个阶段的样子">
-      <div className="grid grid-cols-3 gap-1 rounded-full bg-bg/10 p-1 text-sm font-semibold">
+    <div className="rounded-[24px] bg-ink p-5 text-bg">
+      <div role="tablist" aria-label="取件信息在三个阶段的样子" className="grid grid-cols-3 gap-1 rounded-full bg-bg/10 p-1 text-sm font-semibold">
         {PRIV.map((x, k) => (
-          <span key={x.k} className="relative grid h-8 place-items-center rounded-full">
+          <button key={x.k} role="tab" aria-selected={k === i} onClick={() => pick(k)} className="relative grid h-9 place-items-center rounded-full transition-opacity hover:opacity-100 active:scale-[0.97]">
             {k === i && <motion.span layoutId="priv-pill" transition={{ type: 'spring', stiffness: 420, damping: 34 }} className="absolute inset-0 rounded-full bg-bg" />}
             <span className={`relative ${k === i ? 'text-ink' : 'opacity-70'}`}>{x.k}</span>
-          </span>
+          </button>
         ))}
       </div>
-      <p className="mt-5 text-sm opacity-70">取件码</p>
-      <AnimatePresence mode="wait" initial={false}>
-        <motion.p key={p.code} initial={reduce ? false : { opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -6 }} transition={{ duration: 0.2 }}
-          className={`tnum text-4xl font-bold tracking-wide ${p.tone === 'open' ? '' : 'opacity-40'}`}>{p.code}</motion.p>
-      </AnimatePresence>
-      <div className="mt-4 flex justify-between border-t border-bg/15 pt-3 text-[15px]"><span className="opacity-70">送到</span><span className={`font-semibold ${p.tone === 'open' ? '' : 'opacity-50'}`}>{p.room}</span></div>
+      <div role="tabpanel" className="mt-5">
+        <div className="flex items-center justify-between">
+          <p className="text-sm opacity-70">取件码</p>
+          {p.tone === 'closed' && <span className="inline-flex items-center gap-1 rounded-full bg-bg/10 px-2 py-0.5 text-xs font-semibold"><img src={icon('ic-lock-v1')} width={14} height={14} alt="" className="size-3.5" />已收回</span>}
+        </div>
+        <AnimatePresence mode="wait" initial={false}>
+          <motion.div key={i} initial={reduce ? false : { opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -6 }} transition={{ duration: 0.2 }}>
+            <p className="tnum text-4xl font-bold tracking-wide">{val(p.code)}</p>
+            <div className="mt-4 flex justify-between border-t border-bg/15 pt-3 text-[15px]"><span className="opacity-70">送到</span><span className="font-semibold">{val(p.room)}</span></div>
+            <p className="mt-3 text-sm opacity-80">{p.who}</p>
+          </motion.div>
+        </AnimatePresence>
+      </div>
     </div>
   )
 }
@@ -529,6 +575,10 @@ function Credit() {
   const tiers = who === 'runner' ? LEVELS : POSTER_TIERS
   const tier = [...tiers].reverse().find((l) => score >= l.min)
   const [hist, setHist] = useState([])
+  // 手机上点规则时大分数卡已经滚出屏幕：这时底部浮出一个小分数条
+  const cardRef = useRef(null), listRef = useRef(null)
+  const cardOn = useInView(cardRef, { amount: 0.25 })
+  const listOn = useInView(listRef, { amount: 0.1 })
   const apply = (r) => {
     const to = Math.max(0, Math.min(100, score + r.delta))
     setScore(to); setLast(r)
@@ -543,7 +593,7 @@ function Credit() {
         </div>
         <div className="mt-14 grid gap-6 lg:grid-cols-12">
           <Reveal className="lg:col-span-5">
-            <div className="flex h-full flex-col rounded-2xl bg-accent p-6 text-on-accent md:p-8 lg:sticky lg:top-28">
+            <div ref={cardRef} className="flex h-full flex-col rounded-2xl bg-accent p-6 text-on-accent md:p-8 lg:sticky lg:top-28">
               <div className="flex items-center justify-between">
                 <div className="grid grid-cols-2 rounded-full bg-on-accent/15 p-1 text-sm font-semibold">
                   {[['runner', '跑腿人'], ['poster', '发单人']].map(([k, l]) => (
@@ -583,7 +633,20 @@ function Credit() {
             </div>
           </Reveal>
           <Reveal delay={0.05} className="lg:col-span-7">
-            <ol className="relative">
+            <AnimatePresence>
+              {listOn && !cardOn && (
+                <motion.div key="mini" initial={reduce ? false : { y: 24, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: 24, opacity: 0 }} transition={{ type: 'spring', stiffness: 420, damping: 32 }}
+                  className="fixed inset-x-4 bottom-4 z-30 flex items-center gap-3 rounded-full bg-accent py-2 pl-2 pr-5 text-on-accent shadow-[0_16px_30px_-12px_rgba(11,122,85,0.7)] lg:hidden" aria-hidden="true">
+                  <img src={icon(tier.badge + '-v1')} width={40} height={40} alt="" className="size-10 rounded-full bg-on-accent/90 object-contain p-0.5" />
+                  <span className="text-[15px] font-semibold">{who === 'runner' ? '跑腿人' : '发单人'}「{tier.name}」</span>
+                  <span className="ml-auto flex items-baseline gap-2">
+                    {last && <motion.span key={score + last.label} initial={reduce ? false : { opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} className="tnum text-[15px] font-bold opacity-90">{last.delta > 0 ? '+' : ''}{last.delta}</motion.span>}
+                    <motion.span className="tnum text-2xl font-bold">{shown}</motion.span>
+                  </span>
+                </motion.div>
+              )}
+            </AnimatePresence>
+            <ol ref={listRef} className="relative">
               <span aria-hidden="true" className="absolute bottom-6 left-[19px] top-6 border-l-2 border-dashed border-line" />
               {rules.map((r) => {
                 const here = last?.label === r.label
@@ -640,20 +703,25 @@ function BanDemo() {
       <div className={`mt-2 min-h-12 rounded-xl px-3.5 py-3 text-base ring-1 transition-colors ${hit ? 'bg-danger-soft ring-2 ring-danger' : 'bg-bg ring-line'}`}>
         {typed}<span aria-hidden="true" className="ml-0.5 inline-block h-5 w-0.5 translate-y-1 animate-pulse bg-ink" />
       </div>
-      <AnimatePresence initial={false}>
-        {hit && (
-          <motion.div key="ban" initial={reduce ? false : { opacity: 0, y: -6, height: 0 }} animate={{ opacity: 1, y: 0, height: 'auto' }} exit={{ opacity: 0, height: 0 }} transition={{ duration: 0.25 }} className="overflow-hidden">
-            <div className="mt-3 flex items-center gap-3 rounded-2xl bg-danger-soft p-3 ring-1 ring-danger/30">
+      {/* 提示区固定高度：拦截卡只淡入淡出，下面的按钮不跟着跳 */}
+      <div className="relative mt-3 h-[96px] md:h-[80px]">
+        <AnimatePresence initial={false} mode="wait">
+          {hit ? (
+            <motion.div key="ban" initial={reduce ? false : { opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.2 }}
+              className="absolute inset-0 flex items-center gap-3 rounded-2xl bg-danger-soft p-3 ring-1 ring-danger/30">
               <img src={icon('blocked-v1')} width={48} height={48} alt="" className="size-12 shrink-0 object-contain" />
-              <p className="text-[15px] font-semibold text-danger">检测到「{hit[0]}」。这类任务发不出去，顺路侠是互助，不帮人作弊。</p>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-      <div className={`mt-4 grid h-12 place-items-center rounded-full text-[15px] font-semibold transition-colors ${hit ? 'bg-sunken text-muted' : 'bg-accent text-on-accent'}`}>{hit ? '不能发布' : '冻结 ¥5 并发布'}</div>
+              <p className="text-[15px] font-semibold leading-snug text-danger">检测到「{hit[0]}」。这类任务发不出去，顺路侠是互助，不帮人作弊。</p>
+            </motion.div>
+          ) : (
+            <motion.p key="ok" initial={reduce ? false : { opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.2 }}
+              className="absolute inset-0 flex items-center rounded-2xl px-1 text-[15px] text-muted">一边打字一边检查，没问题就能发布。</motion.p>
+          )}
+        </AnimatePresence>
+      </div>
+      <div className={`mt-3 grid h-12 place-items-center rounded-full text-[15px] font-semibold transition-colors ${hit ? 'bg-sunken text-muted' : 'bg-accent text-on-accent'}`}>{hit ? '不能发布' : '冻结 ¥5 并发布'}</div>
       <p className="mt-4 text-xs font-semibold text-muted">会被拦下的词</p>
       <ul className="mt-2 flex flex-wrap gap-1.5">
-        {['代考', '替考', '代签到', '代点名', '代写作业', '代写论文', '代刷网课'].map((w) => (
+        {['代考', '替考', '代签到', '代点名', '代写作业', '代刷网课'].map((w) => (
           <li key={w} className={`rounded-full px-2.5 py-1 text-xs font-semibold line-through decoration-danger decoration-2 transition-colors ${hit && hit[0] === w ? 'bg-danger text-on-accent' : 'bg-sunken text-muted'}`}>{w}</li>
         ))}
       </ul>
@@ -665,7 +733,7 @@ function BanDemo() {
 function Safety() {
   const reduce = useReducedMotion()
   return (
-    <section className={`mx-auto max-w-7xl ${SECTION}`}>
+    <section id="safety" className={`mx-auto max-w-7xl scroll-mt-16 ${SECTION}`}>
       <Reveal className="relative overflow-hidden rounded-[32px] bg-ink md:rounded-[40px]">
         <div className="relative grid gap-10 px-6 py-14 text-bg md:px-14 md:py-20 lg:grid-cols-12 lg:items-center">
           <div className="lg:col-span-6">
@@ -796,40 +864,90 @@ function Final() {
   return (
     <section className="border-t border-line">
       <div className="mx-auto max-w-7xl px-4 py-20 text-center md:px-8 md:py-28 lg:py-32">
-        <Reveal><h2 className="font-display text-balance text-[40px] font-bold leading-[1.05] tracking-[-0.035em] md:text-7xl">自己走一遍，<br className="md:hidden" />大约两分钟</h2></Reveal>
+        <Reveal><h2 className="font-display text-balance text-[40px] font-bold leading-[1.05] tracking-[-0.035em] md:text-7xl">自己走一遍<br />大约两分钟</h2></Reveal>
         <Reveal delay={0.05}><p className="mx-auto mt-6 max-w-[32ch] text-lg text-muted md:text-xl">顶部一键切换发单人和跑腿人，一个人就能把一单从发布走到信用变化。</p></Reveal>
         <Reveal delay={0.1} className="mt-10"><Cta /></Reveal>
       </div>
       <footer className="border-t border-line">
-        <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-3 px-4 py-8 text-sm text-muted md:px-8">
-          <span className="flex items-center gap-2"><img src={`${import.meta.env.BASE_URL}brand/logo-v2.png`} width={24} height={24} alt="" aria-hidden="true" className="size-6" />顺路侠，校园跑腿互助平台产品原型</span>
-          <span>页面中的人名、任务、金额和指标均为示例</span>
+        <div className="mx-auto grid max-w-7xl gap-6 px-4 py-10 text-sm text-muted md:grid-cols-[1fr_auto] md:items-center md:px-8">
+          <div>
+            <span className="flex items-center gap-2 text-[15px] font-semibold text-ink"><img src={`${import.meta.env.BASE_URL}brand/logo-v2.png`} width={28} height={28} alt="" aria-hidden="true" className="size-7" />顺路侠 · 本来就要经过，顺手捎一下</span>
+            <p className="mt-2">校园跑腿互助平台产品原型。页面中的人名、任务、金额和指标均为示例。</p>
+          </div>
+          <div className="flex flex-wrap items-center gap-x-5 gap-y-2">
+            <Link to="/thinking" className="font-semibold text-ink underline-offset-4 hover:underline">产品思考</Link>
+            <span>演示数据只存在这台设备的浏览器里</span>
+            <button onClick={() => { if (window.confirm('把原型里的演示数据恢复成刚打开时的样子？')) { try { Object.keys(localStorage).filter((k) => k.startsWith('shunluxia:')).forEach((k) => localStorage.removeItem(k)) } catch {} } }}
+              className="font-semibold text-ink underline-offset-4 hover:underline">重置演示数据</button>
+          </div>
         </div>
       </footer>
     </section>
   )
 }
 
-export default function Landing() {
+function ThinkingIntro() {
+  return (
+    <section className="mx-auto max-w-7xl px-4 pb-4 pt-14 md:px-8 md:pt-20">
+      <Reveal><p className="text-[15px] font-semibold text-accent">产品思考 · 写给评审</p></Reveal>
+      <Reveal delay={0.05}><h1 className="mt-3 font-display text-balance text-[44px] leading-[1.08] md:text-7xl">为什么是「顺路」</h1></Reveal>
+      <div className="mt-10 grid gap-3 md:grid-cols-3">
+        {[
+          ['目标用户', '时间被课表切碎、又在意隐私的在校生。需求小、频次高、怕被坑。'],
+          ['为什么现在没人做好', '外卖平台不进宿舍楼，校园群接龙没有托管和信用，熟人才敢托付。'],
+          ['顺路解决什么', '跑腿人本来就要走这条路，多走不到 5 分钟，赏金低也愿意接，供给自然就有。'],
+        ].map(([t, d], i) => (
+          <Reveal key={t} delay={0.05 * i} className="rounded-2xl bg-surface p-6 ring-1 ring-line">
+            <p className="text-lg font-semibold">{t}</p>
+            <p className="mt-3 text-[15px] leading-relaxed text-muted">{d}</p>
+          </Reveal>
+        ))}
+      </div>
+    </section>
+  )
+}
+
+// 首页最后：给评审的入口，学生可以略过
+function ThinkingTeaser() {
+  return (
+    <section className="mx-auto max-w-7xl px-4 pb-4 md:px-8">
+      <Link to="/thinking" className="group flex items-center justify-between gap-4 rounded-2xl bg-surface p-5 ring-1 ring-line transition hover:ring-ink/30 md:p-6">
+        <span><span className="block text-[15px] font-semibold text-muted">写给评审</span><span className="mt-1 block text-lg font-semibold">目标用户、北极星指标、接下来做什么</span></span>
+        <ArrowRight size={20} weight="bold" className="shrink-0 transition-transform group-hover:translate-x-1" />
+      </Link>
+    </section>
+  )
+}
+
+export default function Landing({ page }) {
+  useEffect(() => { if (page === 'thinking') window.scrollTo(0, 0) }, [page])
   // 预加载原型分包：首页停一会儿就把原型的代码取下来，点「体验原型」不再先看骨架屏
   useEffect(() => { const id = setTimeout(() => { import('../app/AppRoot') }, 1500); return () => clearTimeout(id) }, [])
   return (
     <div className="min-h-[100dvh] bg-bg text-ink">
       <ScrollProgress />
-      <PageRoute />
-      <Nav />
-      <main>
-        <RouteHero Cta={Cta} Anchor={Anchor} />
-        <Routes />
-        <Scenes />
-        <Loop />
-        <Trust />
-        <Credit />
-        <Safety />
-        <Metrics />
-        <Roadmap />
-        <Final />
-      </main>
+      {page !== 'thinking' && <PageRoute />}
+      <Nav page={page} />
+      {page === 'thinking' ? (
+        <main>
+          <ThinkingIntro />
+          <Metrics />
+          <Roadmap />
+          <Final />
+        </main>
+      ) : (
+        <main>
+          <RouteHero Cta={Cta} Anchor={Anchor} />
+          <Routes />
+          <Scenes />
+          <Loop />
+          <Trust />
+          <Credit />
+          <Safety />
+          <ThinkingTeaser />
+          <Final />
+        </main>
+      )}
     </div>
   )
 }

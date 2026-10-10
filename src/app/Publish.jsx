@@ -78,10 +78,13 @@ export default function Publish() {
 
   if (state.role !== 'poster') {
     return (
-      <Panel className="p-5 text-center">
-        <p className="text-lg font-semibold">发布任务要用发单人身份</p>
-        <p className="mt-1 text-muted">你现在是跑腿人视角。</p>
-        <Btn className="mt-4" onClick={() => act('role', { role: 'poster' })}>切到发单人</Btn>
+      <Panel className="overflow-hidden text-center">
+        <img src={`${import.meta.env.BASE_URL}icons/step-publish-v1.webp`} width={96} height={96} alt="" className="mx-auto mt-8 size-24 object-contain" />
+        <div className="p-5 pt-3">
+          <p className="text-lg font-semibold">发单要用发单人身份</p>
+          <p className="mx-auto mt-1 max-w-[30ch] text-muted">你现在是跑腿人。切过去就能发一单：选类型、填取送地点、赏金先托管，大约 30 秒。</p>
+          <Btn className="mt-5" onClick={() => act('role', { role: 'poster' })}>切到发单人去发单</Btn>
+        </div>
       </Panel>
     )
   }
@@ -171,16 +174,15 @@ export default function Publish() {
         <p className="text-sm text-muted">手机号不会给对方，双方通话走平台虚拟号。</p>
       </Panel>
 
-      {errors.banned && (
-        <div role="alert" className="flex items-center gap-3 rounded-2xl bg-danger-soft p-4 ring-1 ring-danger/30">
-          <img src={`${import.meta.env.BASE_URL}icons/blocked-v1.webp`} width={64} height={64} alt="盖住试卷的禁止手势" className="size-16 shrink-0 object-contain" />
-          <p className="text-[15px] font-semibold text-danger">这类任务发不出去。顺路侠是互助，不帮人作弊。</p>
-        </div>
-      )}
-      <Field label="备注（选填）" error={errors.banned}>
-        <textarea className={`${inputCls} h-24 resize-none py-3`} value={f.note} onChange={(e) => set('note')(e.target.value)} maxLength={80} placeholder="比如：放门口就行 / 微辣不要香菜" />
+      <Field label="备注（选填）">
+        <textarea aria-label="备注（选填）" aria-invalid={!!errors.banned} className={`${inputCls} h-24 resize-none py-3 ${errors.banned ? 'bg-danger-soft ring-2 ring-danger focus:ring-danger' : ''}`} value={f.note} onChange={(e) => set('note')(e.target.value)} maxLength={80} placeholder="比如：放门口就行 / 微辣不要香菜" />
       </Field>
-      {!errors.banned && (
+      {errors.banned ? (
+        <div role="alert" className="-mt-3 flex items-center gap-3 rounded-2xl bg-danger-soft p-4 ring-1 ring-danger/30">
+          <img src={`${import.meta.env.BASE_URL}icons/blocked-v1.webp`} width={64} height={64} alt="盖住试卷的禁止手势" className="size-16 shrink-0 object-contain" />
+          <p className="text-[15px] font-semibold text-danger">检测到「{banned.join('、')}」。这类任务发不出去，顺路侠是互助，不帮人作弊。</p>
+        </div>
+      ) : (
         <p className="-mt-3 flex items-start gap-1.5 text-sm text-muted"><ProhibitInset size={16} className="mt-0.5 shrink-0" />代考、代签到、代写作业等任务会被拦截，不能发布。</p>
       )}
 

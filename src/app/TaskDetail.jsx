@@ -286,7 +286,7 @@ function RateBlock({ t, by }) {
   const opts = stars >= 4 ? tagsGood : stars <= 2 ? tagsBad : [...tagsGood.slice(0, 2), tagsBad[0]]
   const effect = !stars ? '-' : stars >= 4 ? '+1' : stars <= 2 ? '-4' : '不变'
   return (
-    <Panel className="p-4">
+    <Panel className="p-4" data-tour-target>
       <p className="text-[17px] font-semibold">{by === 'poster' ? '给跑腿人打分' : '给发单人打分'}</p>
       <p className="mt-0.5 truncate text-sm text-muted">{stars ? <>对方信用 <b className="tnum">{effect}</b> · </> : null}4 到 5 星 +1，1 到 2 星 -4</p>
       <div className="mt-3"><Stars value={stars} onChange={(n) => { setStars(n); setTags([]) }} /></div>
@@ -468,7 +468,7 @@ function RouteFit({ t }) {
   const name = (id) => B[id].name.replace(/（.*?）/, '')
   return (
     <span className={`tnum inline-flex items-center rounded-full px-3 py-1 text-sm font-semibold ${m <= 5 ? 'bg-accent-soft text-accent' : 'bg-sunken text-ink'}`}>
-      {m <= 5 ? '顺路 · ' : ''}你常走 {name(route.from)} → {name(route.to)} · 捎这单多走 {m} 分钟
+      {m <= 5 ? '顺路 · ' : ''}你常走 {name(route.from)} → {name(route.to)} · 捎这单<span className="whitespace-nowrap">多走 {m} 分钟</span>
     </span>
   )
 }
