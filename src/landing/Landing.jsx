@@ -135,11 +135,14 @@ function Nav({ page }) {
   useEffect(() => { if (!open) return; const f = (e) => { if (e.key === 'Escape') setOpen(false) }; window.addEventListener('keydown', f); return () => window.removeEventListener('keydown', f) }, [open])
   // 桌面顶栏标出现在读到哪一节
   const [here, setHere] = useState(null)
-  useMotionValueEvent(scrollY, 'change', (v) => {
-    setScrolled(v > 420)
-    // 没进顶栏的两节（拦截、结尾）滚到时不亮任何一项
-    setHere([...SECTIONS].reverse().find(([k]) => (document.getElementById(k)?.getBoundingClientRect().top ?? 1e9) < 160)?.[0] ?? null)
-  })
+  // 用原生滚动事件算（不依赖动画帧，后台标签页、低帧率时也准）；没进顶栏的两节（拦截、结尾）滚到时不亮任何一项
+  useEffect(() => {
+    const f = () => {
+      setScrolled(window.scrollY > 420)
+      setHere([...SECTIONS].reverse().find(([k]) => (document.getElementById(k)?.getBoundingClientRect().top ?? 1e9) < 160)?.[0] ?? null)
+    }
+    f(); window.addEventListener('scroll', f, { passive: true }); return () => window.removeEventListener('scroll', f)
+  }, [page])
   const home = page !== 'thinking'
   const linkCls = 'group relative py-1 transition-colors hover:text-ink'
   const under = (on) => <span className={`absolute inset-x-0 -bottom-0.5 h-px origin-left bg-ink transition-transform duration-300 group-hover:scale-x-100 ${on ? 'scale-x-100' : 'scale-x-0'}`} />
