@@ -1,6 +1,7 @@
 import { createPortal } from 'react-dom'
 import { useEffect, useMemo, useState } from 'react'
 import { Link, useNavigate, useLocation } from 'react-router-dom'
+import { useOpenTaskId } from './openTask'
 import { motion, AnimatePresence, useReducedMotion } from 'motion/react'
 import { ROUTES } from '../landing/RouteHero'
 import CampusMap, { along } from '../landing/CampusMap'
@@ -21,7 +22,8 @@ let loadedOnce = false
 
 export function TaskCard({ t, me, role, route, n = 0 }) {
   // 电脑版右边开着这一单时，列表里它亮起来
-  const here = useLocation().pathname === `/app/task/${t.id}`
+  const open = useOpenTaskId()
+  const here = useLocation().pathname === `/app/task/${t.id}` || open === t.id
   const d = dist(RUNNER_HOME, t.from)
   const need = minCreditFor(t.reward)
   const locked = role === 'runner' && me.verified && t.posterId !== 'poster' && (me.credit ?? 0) < need

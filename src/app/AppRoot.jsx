@@ -4,6 +4,7 @@ import { motion, AnimatePresence, useReducedMotion } from 'motion/react'
 import { ListMagnifyingGlass, PlusCircle, UserCircle } from '@phosphor-icons/react'
 import { StoreProvider, useStore } from '../store'
 import { ViewHost, ViewToggle, EMBED } from './ViewMode'
+import { OpenTaskCtx } from './openTask'
 import { Sheet, Btn, spring, gi } from '../ui'
 import Hall from './Hall'
 import Publish from './Publish'
@@ -201,7 +202,7 @@ function DeskShell({ sub, openTask }) {
           {taskOpen ? (
             // 右边开着一单：中间的列表自己滚，不跟着详情走，随时点另一单
             <div className={`sticky ${top} overflow-y-auto overscroll-contain pr-1`} style={{ maxHeight: `calc(100dvh - ${state.tour.active ? 148 : 96}px)` }}>
-              <Routes location={{ ...loc, pathname: listPath, search: '' }}>{LIST_ROUTES}</Routes>
+              <OpenTaskCtx.Provider value={pathname.split('/').pop()}><Routes location={{ ...loc, pathname: listPath, search: '' }}>{LIST_ROUTES}</Routes></OpenTaskCtx.Provider>
             </div>
           ) : (
             <div key={pathname} className={reduce ? '' : 'page-in'} style={{ '--dx': '8px' }}><Routes>{LIST_ROUTES}</Routes></div>

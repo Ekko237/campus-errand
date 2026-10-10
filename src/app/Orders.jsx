@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Link, useLocation } from 'react-router-dom'
+import { useOpenTaskId } from './openTask'
 import { ArrowRight } from '@phosphor-icons/react'
 import { useStore } from '../store'
 import { B } from '../data'
@@ -10,7 +11,9 @@ const ACTIVE = ['open', 'ongoing', 'delivered', 'disputed']
 const STATUS_TEXT = { open: '待接单', ongoing: '进行中', delivered: '待确认', completed: '已完成', disputed: '申诉中', refunded: '已退款', cancelled: '已取消' }
 
 export default function Orders() {
-  const here = useLocation().pathname
+  const open = useOpenTaskId()
+  const loc = useLocation().pathname
+  const here = open ? `/app/task/${open}` : loc
   const { state } = useStore()
   const poster = state.role === 'poster'
   const mine = state.tasks.filter((t) => (poster ? t.posterId === 'poster' : t.runnerId === 'runner'))

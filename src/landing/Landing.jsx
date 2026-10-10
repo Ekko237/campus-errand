@@ -1117,7 +1117,7 @@ function Final({ page }) {
             <p className="mt-2">校园跑腿互助平台产品原型。页面中的人名、任务、金额和指标均为示例。</p>
           </div>
           <div className="grid gap-2 md:justify-items-end">
-            {/* 「体验原型」直接按设备进合适的界面；想先挑手机版还是电脑版，从这里去选择页 */}<Link to="/app/start" className="font-semibold text-ink underline-offset-4 hover:underline">选手机版 / 电脑版</Link> · {page !== 'thinking' ? <Link to="/thinking" className="font-semibold text-ink underline-offset-4 hover:underline">产品思考</Link> : <Link to="/" className="font-semibold text-ink underline-offset-4 hover:underline">回首页</Link>}
+            {/* 「体验原型」直接按设备进合适的界面；想先挑手机版还是电脑版，从这里去选择页 */}<Link to="/app/start" className="mr-3 inline font-semibold text-ink underline-offset-4 hover:underline">选手机版 / 电脑版</Link>{page !== 'thinking' ? <Link to="/thinking" className="font-semibold text-ink underline-offset-4 hover:underline">产品思考</Link> : <Link to="/" className="font-semibold text-ink underline-offset-4 hover:underline">回首页</Link>}
             <p>演示数据只存在这台设备的浏览器里 · <button onClick={() => { if (window.confirm('把原型里的演示数据恢复成刚打开时的样子？')) { try { Object.keys(localStorage).filter((k) => k.startsWith('shunluxia:')).forEach((k) => localStorage.removeItem(k)) } catch { /* 无痕模式下没有本地存储 */ } } }}
               className="font-semibold text-ink underline-offset-4 hover:underline">重置演示数据</button></p>
           </div>

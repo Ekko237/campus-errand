@@ -118,13 +118,16 @@ function Framed({ view, src, frame }) {
   const [box, setBox] = useState({ w: window.innerWidth, h: window.innerHeight })
   useEffect(() => { const f = () => setBox({ w: window.innerWidth, h: window.innerHeight }); window.addEventListener('resize', f); return () => window.removeEventListener('resize', f) }, [])
   const phone = view === 'phone'
-  // 手机上看电脑版：不缩到看不清，按最小可读的比例（约 0.55）放，左右滑着看，高度铺满屏幕
+  // 手机上看电脑版：不缩到看不清，按最小可读的比例（约 0.68）放，左右滑着看，高度铺满屏幕
   const W = phone ? 390 : 1280
-  const s = phone ? Math.min(1, (box.h - 112) / (844 + 24)) : Math.min(1, Math.max(0.55, (box.w - 24) / W))
+  const s = phone ? Math.min(1, (box.h - 112) / (844 + 24)) : Math.min(1, Math.max(0.68, (box.w - 24) / W))
   const H = phone ? 844 : Math.max(820, Math.round((box.h - 72) / s))
   const pan = !phone && W * s > box.w - 24
   // 只在挂上的那一刻定地址：之后在框里点来点去，不让外层重新载入
   const [first] = useState(src)
+  // 正在看某一单时切过来：横向直接停在右边的详情栏，不让人先看到列表、再去找
+  const panBox = useRef(null)
+  useEffect(() => { if (pan && /#\/app\/task\//.test(first) && panBox.current) panBox.current.scrollLeft = panBox.current.scrollWidth }, []) // eslint-disable-line react-hooks/exhaustive-deps
   return (
     <div className="min-h-[100dvh] bg-sunken text-ink">
       <header className="flex h-14 items-center justify-between gap-3 px-4">
@@ -132,7 +135,7 @@ function Framed({ view, src, frame }) {
         {!phone && <p className="truncate text-[13px] text-muted">{pan ? '左右滑动看整页' : '电脑版在电脑上看效果更好'}</p>}
         <Ctx.Provider value={{ view, pick: (v) => { try { const h = frame.current.contentWindow.location.hash.slice(1) || '/app'; window.postMessage({ type: 'shunluxia:view', view: v, path: h }, window.location.origin) } catch { window.postMessage({ type: 'shunluxia:view', view: v }, window.location.origin) } } }}><ViewToggle /></Ctx.Provider>
       </header>
-      <div className={pan ? 'overflow-x-auto overscroll-x-contain px-3 pb-3' : 'flex justify-center pb-6'}>
+      <div ref={panBox} className={pan ? 'overflow-x-auto overscroll-x-contain px-3 pb-3' : 'flex justify-center pb-6'}>
         {phone ? (
           <div className="rounded-[52px] bg-ink p-3 shadow-[0_40px_80px_-40px_rgba(17,40,30,0.6)]" style={{ width: W * s + 24, height: H * s + 24 }}>
             <div className="relative overflow-hidden rounded-[40px] bg-bg" style={{ width: W * s, height: H * s }}>
