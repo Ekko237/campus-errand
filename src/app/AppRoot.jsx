@@ -1,8 +1,9 @@
-import { useEffect, useLayoutEffect, useRef } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { Routes, Route, NavLink, Link, useNavigate, useLocation } from 'react-router-dom'
 import { motion, AnimatePresence, useReducedMotion } from 'motion/react'
 import { ListMagnifyingGlass, PlusCircle, UserCircle } from '@phosphor-icons/react'
-import { StoreProvider, useStore } from '../store'
+import { StoreProvider, useStore, LOCK } from '../store'
+import DualStage from './DualStage'
 import { Sheet, Btn, spring, gi } from '../ui'
 import Hall from './Hall'
 import Publish from './Publish'
@@ -21,16 +22,32 @@ const Megaphone = gi('megaphone')
 const PersonSimpleRun = gi('runner')
 const SealCheck = gi('seal')
 
+// 电脑宽屏（≥1280）且不在手机框里：#/app 换成「双手机并排」演示台；手机、平板照常是一个 App
+function useDual() {
+  const q = '(min-width: 1280px)'
+  const ok = () => !LOCK && typeof window !== 'undefined' && window.self === window.top && window.matchMedia(q).matches
+  const [dual, setDual] = useState(ok)
+  useEffect(() => { const m = window.matchMedia(q); const f = () => setDual(ok()); m.addEventListener('change', f); return () => m.removeEventListener('change', f) }, []) // eslint-disable-line react-hooks/exhaustive-deps
+  return dual
+}
+
 export default function AppRoot() {
+  const dual = useDual()
   return (
-    <StoreProvider>
-      <Shell />
+    <StoreProvider key={dual ? 'dual' : 'one'} observer={dual}>
+      {dual ? <DualStage /> : <Shell />}
     </StoreProvider>
   )
 }
 
 function RoleSwitch() {
   const { state, act } = useStore()
+  // 双手机演示里每台手机身份固定：不放切换，只写明这台是谁
+  if (LOCK) return (
+    <span className="inline-flex h-10 items-center gap-2 rounded-full bg-accent-soft px-3 text-[15px] font-semibold text-accent">
+      <img src={`${import.meta.env.BASE_URL}icons/avatar-${LOCK}-v1.webp`} width={24} height={24} alt="" className="size-6 rounded-full" />{LOCK === 'poster' ? '发单人 · 小满' : '跑腿人 · 阿远'}
+    </span>
+  )
   const { pathname } = useLocation()
   // 订单页切身份：页面换成另一方能做的事，回到顶上，免得主按钮躲在吸顶栏后面
   const pick = (k) => { act('role', { role: k }); if (pathname.startsWith('/app/task/')) window.scrollTo({ top: 0, behavior: 'smooth' }) }
@@ -103,7 +120,7 @@ function Onboarding() {
     nav('/app/publish?tour=1')
   }
   return (
-    <Sheet open={!state.onboarded} onClose={() => act('onboarded')} title="顺路侠怎么用">
+    <Sheet open={!state.onboarded && !LOCK} onClose={() => act('onboarded')} title="顺路侠怎么用">
       <ol className="space-y-4">
         {steps.map((s, i) => (
           <li key={s.t} className="flex gap-3">

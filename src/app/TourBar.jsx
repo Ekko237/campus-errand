@@ -2,7 +2,7 @@ import { useEffect } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { motion, AnimatePresence, useReducedMotion } from 'motion/react'
 import { X, ArrowRight } from '@phosphor-icons/react'
-import { useStore } from '../store'
+import { useStore, LOCK } from '../store'
 import { gi } from '../ui'
 const Confetti = gi('confetti')
 
@@ -32,16 +32,18 @@ export default function TourBar() {
   const reduce = useReducedMotion()
   const loc = useLocation()
   const step = tourStep(state)
+  // 双手机演示：这一步该另一台手机做，就只告诉他看另一台，不放按钮
+  const other = !!(LOCK && step?.who && step.who !== state.role)
   // 订单页自己有「切到跑腿人 / 切回发单人去确认」这类按钮，导览条就不再放第二颗
   const samePage = step && loc.pathname === step.to.split('?')[0]
   const onTask = step && loc.pathname === `/app/task/${state.tour.taskId}`
   // 第 2 步在订单页上：页面自己有「切到跑腿人」和「认证后才能接单」，一路点下去就到认证页
-  const here = step && !step.final && ((samePage && (!step.who || step.who === state.role || (onTask && [3, 6, 8].includes(step.n)))) || (onTask && step.n === 2))
+  const here = step && !other && !step.final && ((samePage && (!step.who || step.who === state.role || (onTask && [3, 6, 8].includes(step.n)))) || (onTask && step.n === 2))
   // 已经是这个身份了，就不再说「切到跑腿人」
   const text0 = step && step.who === state.role ? step.text.replace(/^((切(到|回))?(跑腿人|发单人)(阿远)?|切换身份去互评)[，：]?/, '') : step?.text
   const arrived = step?.final && loc.pathname === step.to
   // 已经到了「我的」，就不再叫人「去我的看看」
-  const text = arrived ? '导览完成' : text0
+  const text = arrived ? '导览完成' : other ? `看${step.who === 'runner' ? '右边跑腿人' : '左边发单人'}的手机：${step.text.replace(/^((切(到|回))?(跑腿人|发单人)(阿远)?|切换身份去互评)[，：]?/, '')}` : text0
   // 每到一步：给该点的那个东西加一圈会呼吸的描边；它被顶栏或底部导航挡住时才滚动，只滚到刚好露出来
   useEffect(() => {
     if (!here) return
@@ -135,7 +137,7 @@ export default function TourBar() {
             {/* 文字和订单状态同一帧换，不等旧文字淡出 */}
             <motion.p key={text} initial={reduce ? false : { opacity: 0.4 }} animate={{ opacity: 1 }} transition={{ duration: 0.15 }}
               className="min-w-0 flex-1 text-[14px] font-semibold leading-snug md:text-[15px]">{text}</motion.p>
-            {!here && !arrived && !loc.pathname.startsWith('/app/verify') && <button onClick={go} className="inline-flex h-9 shrink-0 items-center gap-1 whitespace-nowrap rounded-full bg-accent px-3.5 text-[14px] font-semibold text-on-accent active:scale-[0.98]">
+            {!here && !other && !arrived && !loc.pathname.startsWith('/app/verify') && <button onClick={go} className="inline-flex h-9 shrink-0 items-center gap-1 whitespace-nowrap rounded-full bg-accent px-3.5 text-[14px] font-semibold text-on-accent active:scale-[0.98]">
               {step.cta}<ArrowRight size={14} weight="bold" />
             </button>}
             <button onClick={() => act('tour', { tour: { active: false } })} aria-label="退出演示" className="grid size-8 shrink-0 place-items-center rounded-full opacity-70 hover:opacity-100"><X size={16} weight="bold" /></button>

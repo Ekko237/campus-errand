@@ -2,6 +2,9 @@ import { createContext, useContext, useEffect, useReducer, useCallback, useState
 import { seedTasks, seedAccounts, CREDIT_INIT, levelOf, COMPENSATE } from './data'
 
 const KEY = 'shunluxia:v3'
+// 双手机演示：电脑宽屏上 #/app 放两台手机（两个 iframe），地址里带 ?as=poster / ?as=runner，各自锁定一个身份；
+// 两台手机共用同一份本地数据，一边改了，另一边通过 storage 事件马上跟上
+export const LOCK = (() => { try { const v = new URLSearchParams(window.location.search).get('as'); return v === 'poster' || v === 'runner' ? v : null } catch { return null } })()
 const Ctx = createContext(null)
 
 function fresh() {
@@ -56,7 +59,10 @@ function reducer(s, a) {
   const task = s.tasks.find((t) => t.id === a.id)
   switch (a.type) {
     case 'role':
-      return { ...s, role: a.role }
+      return LOCK ? s : { ...s, role: a.role }
+    case 'sync':
+      // 另一台手机改了数据：整份换成新的，但自己的身份和提示条不变
+      return { ...a.state, role: s.role, toasts: s.toasts }
     case 'onboarded':
       return { ...s, onboarded: true }
     case 'tour':
@@ -165,15 +171,31 @@ function reducer(s, a) {
   }
 }
 
-export function StoreProvider({ children }) {
-  const [init] = useState(load)
+export function StoreProvider({ children, observer = false }) {
+  // 锁定身份的手机、和外面那层演示台（observer）都不往共享数据里写自己的身份，免得两边来回覆盖
+  const shared = !!LOCK || observer
+  const [init] = useState(() => { const r = load(); return LOCK ? { ...r, state: { ...r.state, role: LOCK, onboarded: true } } : r })
   const [state, dispatch] = useReducer(reducer, init.state)
   useEffect(() => {
     try {
       const { toasts, ...rest } = state
-      localStorage.setItem(KEY, JSON.stringify(rest))
+      if (!shared) { localStorage.setItem(KEY, JSON.stringify(rest)); return }
+      const stored = localStorage.getItem(KEY)
+      let role = 'runner'
+      try { role = JSON.parse(stored)?.role || role } catch { /* 读不到就用默认 */ }
+      const out = JSON.stringify({ ...rest, role })
+      if (out !== stored) localStorage.setItem(KEY, out)
     } catch {}
-  }, [state])
+  }, [state, shared])
+  useEffect(() => {
+    if (!shared) return
+    const f = (e) => {
+      if (e.key !== KEY || !e.newValue) return
+      try { const st = JSON.parse(e.newValue); if (st?.tasks && st?.accounts) dispatch({ type: 'sync', state: st }) } catch { /* 坏数据不同步 */ }
+    }
+    window.addEventListener('storage', f)
+    return () => window.removeEventListener('storage', f)
+  }, [shared])
   const act = useCallback((type, payload = {}) => dispatch({ type, ...payload }), [])
   return <Ctx.Provider value={{ state, act, loadError: init.error }}>{children}</Ctx.Provider>
 }
