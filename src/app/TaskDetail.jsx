@@ -268,7 +268,7 @@ function DeliverSheet({ t, open, onClose }) {
       <div className="min-h-[10.5rem]">
       {mode === 'code' ? (
         <div className="mt-5">
-          <Field label="发单人的 4 位送达码" error={err} hint={code.length === 2 && t.deliverCode.startsWith(code) ? `对着发单人手机上的码，补上后两位（演示：${t.deliverCode}）` : `演示提示：发单人页面能看到送达码，这单是 ${t.deliverCode}`}>
+          <Field label="发单人的 4 位送达码" error={err} hint={code.length === 2 && t.deliverCode.startsWith(code) ? `对着发单人手机上的码，补上后两位（这单是 ${t.deliverCode}）` : `发单人页面上能看到这 4 位码，这单是 ${t.deliverCode}`}>
             {/* 四格送达码：真输入框透明盖在四个格子上，打一位亮一格，填满四位格子变绿 */}
             <div className="relative">
               <div className="grid grid-cols-4 gap-2" aria-hidden="true">
@@ -297,8 +297,8 @@ function DeliverSheet({ t, open, onClose }) {
       )}
       </div>
       <label className="mt-5 flex items-center gap-3 rounded-xl bg-sunken p-3 text-[15px]">
-        <input type="checkbox" aria-label="演示：模拟超时送达" checked={late} onChange={(e) => setLate(e.target.checked)} className="size-5 accent-[var(--accent)]" />
-        <span>演示：模拟这单超时送达（看信用 -3）</span>
+        <input type="checkbox" aria-label="试试超时送达会怎样" checked={late} onChange={(e) => setLate(e.target.checked)} className="size-5 accent-[var(--accent)]" />
+        <span>试试超时送达会怎样（信用 -3）</span>
       </label>
       <Btn size="lg" className="mt-5 w-full" onClick={submit}>提交凭证</Btn>
     </Sheet>
@@ -452,8 +452,8 @@ function Actions({ t }) {
       return (
         <div className="grid gap-2 text-center">
           <p className="text-[15px] text-muted">等待发单人 {t.posterName} 确认，2 小时内不确认将自动放款。</p>
-          <Btn variant="ghost" onClick={() => { act('confirm', { id: t.id, simulated: true }); toEscrow() }}>演示：模拟对方确认</Btn>
-          <Btn variant="plain" size="sm" onClick={() => act('confirm', { id: t.id, auto: true })}>演示：对方 2 小时未确认（发单人 -2）</Btn>
+          <Btn variant="ghost" onClick={() => { act('confirm', { id: t.id, simulated: true }); toEscrow() }}>试一下：对方确认收货</Btn>
+          <Btn variant="plain" size="sm" onClick={() => act('confirm', { id: t.id, auto: true })}>试一下：对方 2 小时没确认（发单人 -2）</Btn>
         </div>
       )
     }
@@ -461,7 +461,7 @@ function Actions({ t }) {
       <div className="grid gap-2 text-center">
         <p className="text-[15px] text-muted">已提交凭证，等发单人确认放款。2 小时不确认系统自动放款，发单人信用 -2。</p>
         <Btn onClick={() => act('role', { role: 'poster' })}>切回发单人去确认</Btn>
-        <Btn variant="plain" size="sm" onClick={() => act('confirm', { id: t.id, auto: true })}>演示：发单人 2 小时未确认</Btn>
+        <Btn variant="plain" size="sm" onClick={() => act('confirm', { id: t.id, auto: true })}>试一下：发单人 2 小时没确认</Btn>
       </div>
     )
   }
@@ -714,7 +714,7 @@ export default function TaskDetail() {
           <p className="text-[15px] font-semibold">送达凭证</p>
           {t.proof.kind === 'code' ? <p className="mt-1 flex items-center gap-1.5 text-[15px] text-muted"><Check size={18} className="text-accent" weight="bold" />送达码当面核验通过</p>
             : <img src={`${import.meta.env.BASE_URL}images/proof-v1.webp`} width={800} height={450} alt="送达照片（模拟）：宿舍门口放着的包裹" className="mt-2 h-32 w-auto rounded-xl bg-sunken object-cover" />}
-          {t.late && <p className="mt-2 flex items-center gap-1.5 text-sm font-medium text-danger"><Warning size={16} weight="fill" />超时送达（演示）</p>}
+          {t.late && <p className="mt-2 flex items-center gap-1.5 text-sm font-medium text-danger"><Warning size={16} weight="fill" />超时送达</p>}
         </Panel>
       )}
 

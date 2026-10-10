@@ -95,7 +95,7 @@ export default function Verify() {
       </div>
       {mode === 'id' ? (
         <div className="space-y-4">
-          <Field label="学号" error={err.sid} hint="示例：2023011456，演示环境不会上传">
+          <Field label="学号" error={err.sid} hint="示例：2023011456，只存在这台设备上">
             <input inputMode="numeric" className={inputCls} value={sid} onChange={(e) => setSid(e.target.value.replace(/\D/g, ''))} maxLength={12} placeholder="输入学号" />
           </Field>
           <Field label="学院" error={err.college}>
@@ -118,7 +118,7 @@ export default function Verify() {
             </div>
           </Field>
           {sent && (
-            <Field label="验证码" error={err.code} hint={`演示：真实环境会发到邮箱，这次的验证码是 ${sent}`}>
+            <Field label="验证码" error={err.code} hint={`会发到你的学校邮箱；这次的验证码是 ${sent}`}>
               <input inputMode="numeric" className={`${inputCls} tnum tracking-[0.3em]`} value={code} maxLength={4} onChange={(e) => setCode(e.target.value.replace(/\D/g, ''))} placeholder="4 位数字" />
             </Field>
           )}
