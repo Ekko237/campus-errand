@@ -212,18 +212,18 @@ function Scenes() {
           ))}
         </div>
       </div>
-      <div className="mt-8 grid gap-8 md:grid-cols-12 md:gap-12" role="tabpanel">
-        <div className="relative overflow-hidden rounded-2xl bg-sunken md:col-span-5">
+      <div className="mt-8 grid gap-8 lg:grid-cols-12 lg:gap-12" role="tabpanel">
+        <div className="relative overflow-hidden rounded-2xl bg-sunken lg:col-span-5">
           <AnimatePresence initial={false}>
             <motion.img key={s.img} src={img(s.img)} width={1100} height={825} alt={s.alt}
               initial={reduce ? false : { clipPath: 'inset(0 0 0 100%)' }} animate={{ clipPath: 'inset(0 0 0 0%)' }} exit={{ opacity: 0 }} transition={{ duration: 0.8, ease }}
-              className="aspect-[4/3] w-full object-cover md:absolute md:inset-0 md:aspect-auto md:h-full" />
+              className="aspect-[16/10] w-full object-cover lg:absolute lg:inset-0 lg:aspect-auto lg:h-full" />
           </AnimatePresence>
-          <div className="hidden md:block md:aspect-[5/4]" />
+          <div className="hidden lg:block lg:aspect-[5/4]" />
         </div>
         <AnimatePresence mode="wait">
           <motion.div key={s.key} initial={reduce ? false : { opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} exit={reduce ? { opacity: 0 } : { opacity: 0, y: -10 }} transition={{ duration: 0.45, ease }}
-            className="flex flex-col justify-start md:col-span-7 md:pt-2">
+            className="flex flex-col justify-start lg:col-span-7 lg:pt-2">
             <p className="text-[15px] font-semibold text-muted">{s.who}</p>
             <p className="mt-4 text-2xl font-medium leading-[1.55] tracking-[-0.01em] md:text-[28px]">「{s.pain}」</p>
             <div className="mt-8 flex gap-4 rounded-2xl bg-accent-soft p-5 md:p-6">

@@ -11,9 +11,9 @@ const STATUS_TEXT = { open: '待接单', ongoing: '进行中', delivered: '待�
 
 export default function Orders() {
   const { state } = useStore()
-  const [tab, setTab] = useState('active')
   const poster = state.role === 'poster'
   const mine = state.tasks.filter((t) => (poster ? t.posterId === 'poster' : t.runnerId === 'runner'))
+  const [tab, setTab] = useState(() => (mine.some((t) => ACTIVE.includes(t.status)) || !mine.length ? 'active' : 'done'))
   const list = mine.filter((t) => (tab === 'active' ? ACTIVE.includes(t.status) : !ACTIVE.includes(t.status)))
   return (
     <div className="space-y-5">

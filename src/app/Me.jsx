@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { motion, animate, useMotionValue, useTransform, useReducedMotion } from 'motion/react'
 import { CaretRight, ArrowRight, ArrowCounterClockwise, ListBullets } from '@phosphor-icons/react'
 import { useStore, useMe } from '../store'
-import { levelOf, nextLevel, iconUrl, posterTierOf, posterNextTier, B, detourMin } from '../data'
+import { levelOf, nextLevel, iconUrl, posterTierOf, posterNextTier, B, detourMin, onMyWay } from '../data'
 import { Avatar, VerifiedBadge, Panel, Btn, Empty, ago, gi } from '../ui'
 const Path = gi('path')
 const Wallet = gi('wallet')
@@ -122,7 +122,7 @@ export default function Me() {
           <Link to="/app" className="flex items-center gap-3 p-4 transition active:scale-[0.99]">
             <span className="grid size-11 shrink-0 place-items-center rounded-full bg-accent-soft text-accent"><Path size={22} weight="bold" /></span>
             <span className="min-w-0 flex-1">
-              <span className="block text-sm text-muted">我常走的路{(() => { const n = me.creditLog.filter((l) => l.label.startsWith('按时完成') && Date.now() - l.at < 7 * 864e5).length; return n ? ` · 本周顺路 ${n} 次` : '' })()}</span>
+              <span className="block text-sm text-muted">我常走的路{(() => { const n = state.tasks.filter((t) => t.runnerId === 'runner' && t.status === 'completed' && Date.now() - (t.completedAt || 0) < 7 * 864e5 && onMyWay(t)).length; return n ? ` · 本周顺路 ${n} 次` : '' })()}</span>
               <span className="block text-[15px] font-semibold leading-snug"><span className="whitespace-nowrap">{B[route.from].name.replace(/（.*?）/, '')}</span> → <span className="whitespace-nowrap">{B[route.to].name.replace(/（.*?）/, '')}</span></span>
             </span>
             <span className="shrink-0 text-right">

@@ -53,6 +53,12 @@ export const detourMin = (a, b, t) => {
   return Math.max(1, Math.round(via / 80))
 }
 export const detourMeters = (a, b, t) => Math.max(0, dist(a, t.from) + (t.from !== t.to ? dist(t.from, t.to) : 0) + dist(t.to, b) - dist(a, b))
+// 跑腿人常走的那条路（大厅里「换条路」会记住），没有就用示例路线
+export const myRoute = () => {
+  try { const r = JSON.parse(localStorage.getItem('shunluxia:myroute')); if (B[r?.from] && B[r?.to]) return r } catch { /* 用默认 */ }
+  return { from: 'jiao1', to: 'mei5' }
+}
+export const onMyWay = (t) => { const r = myRoute(); return detourMin(r.from, r.to, t) <= 5 }
 export const fmtDist = (m) => (m >= 1000 ? (m / 1000).toFixed(1) + ' km' : m + ' m')
 
 export const WINDOWS = [

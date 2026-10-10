@@ -182,7 +182,7 @@ export default function Hall() {
         <span className="text-sm text-muted">示例数据 · {list.filter((t) => t.deadline > Date.now()).length} 个待接</span>
       </div>
 
-      <div className="no-scrollbar -mx-4 flex gap-2 overflow-x-auto px-4 [mask-image:linear-gradient(to_right,black_85%,transparent)] md:mx-0 md:flex-wrap md:overflow-visible md:px-0 md:[mask-image:none]" role="group" aria-label="按类型筛选">
+      <div className="no-scrollbar -mx-4 flex gap-2 overflow-x-auto px-4 [mask-image:linear-gradient(to_right,black_85%,transparent)]" role="group" aria-label="按类型筛选">
         {[['all', '全部'], ...TYPE_KEYS.map((k) => [k, TYPES[k].label])].map(([k, label]) => {
           const Icon = TYPES[k]?.Icon
           return (
@@ -192,7 +192,7 @@ export default function Hall() {
             </button>
           )
         })}
-        <span aria-hidden="true" className="mx-1 w-px shrink-0 self-stretch bg-line md:hidden" />
+        <span aria-hidden="true" className="mx-1 w-px shrink-0 self-stretch bg-line" />
         <button onClick={() => setUrgentOnly((v) => !v)} aria-pressed={urgentOnly}
           className={`inline-flex h-10 shrink-0 items-center gap-1 rounded-full px-3.5 text-[15px] font-semibold transition ${urgentOnly ? 'bg-ink text-bg' : 'bg-surface text-ink ring-1 ring-line'}`}>
           <Lightning size={16} weight="fill" />加急
@@ -212,7 +212,7 @@ export default function Hall() {
 
       {sortBy === 'route' && (
         <div className="rounded-2xl bg-accent-soft p-2 pb-3">
-          <RouteZoom R={{ ...route, label: route.from + route.to }} reduce={reduce} ratio={2.2} pills={false} walker={false}
+          <RouteZoom R={{ ...route, label: route.from + route.to }} reduce={reduce} ratio={2.2} pills={false} walker={false} endsOnly
             hits={state.tasks.filter((t) => t.status === 'open' && t.deadline > Date.now() && detourMin(route.from, route.to, t) <= 5).map((t) => ({ ...t, dm: detourMeters(route.from, route.to, t) }))} />
           <div className="px-2 pt-3">
           <div className="flex items-center gap-3">

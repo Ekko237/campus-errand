@@ -1,9 +1,9 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
 import { motion, useReducedMotion, useMotionValue, useTransform, animate } from 'motion/react'
 import { ArrowLeft, Check, ArrowClockwise } from '@phosphor-icons/react'
 import { useStore } from '../store'
-import { B, dist, fmtDist, RUNNER_HOME, minCreditFor, levelOf, detourMin } from '../data'
+import { B, dist, fmtDist, RUNNER_HOME, minCreditFor, levelOf, detourMin, myRoute, onMyWay } from '../data'
 import { Btn, Panel, TypeTag, UrgentTag, VerifiedBadge, Sheet, Stars, Empty, Field, inputCls, left, clock, spring, gi } from '../ui'
 const MapPin = gi('pin')
 const Clock = gi('clock')
@@ -130,7 +130,7 @@ function PickupCard({ t }) {
   }
   return (
     <motion.section aria-label="取件信息" className="relative overflow-hidden rounded-2xl bg-ink p-4 text-bg"
-      initial={fresh ? { clipPath: 'inset(0 0 100% 0 round 16px)', y: -8 } : false} animate={{ clipPath: 'inset(0 0 0% 0 round 16px)', y: 0 }} transition={{ type: 'spring', stiffness: 260, damping: 30 }}>
+      initial={fresh ? { opacity: 0.4, scale: 0.98 } : false} animate={{ opacity: 1, scale: 1 }} transition={{ type: 'spring', stiffness: 260, damping: 30 }}>
       {t.private?.code ? (
         <>
           <div className="flex items-start justify-between gap-2">
@@ -287,7 +287,7 @@ function RateBlock({ t, by }) {
   return (
     <Panel className="p-4">
       <p className="text-[17px] font-semibold">{by === 'poster' ? '给跑腿人打分' : '给发单人打分'}</p>
-      <p className="mt-0.5 truncate text-sm text-muted">对方信用 <b className="tnum">{effect}</b> · 4 到 5 星 +1，1 到 2 星 -4</p>
+      <p className="mt-0.5 truncate text-sm text-muted">{stars ? <>对方信用 <b className="tnum">{effect}</b> · </> : null}4 到 5 星 +1，1 到 2 星 -4</p>
       <div className="mt-3"><Stars value={stars} onChange={(n) => { setStars(n); setTags([]) }} /></div>
       <div className="mt-3 flex flex-wrap gap-2">
         {stars > 0 && opts.map((x) => (
@@ -312,6 +312,7 @@ function Actions({ t }) {
   const [reason, setReason] = useState('没收到东西')
   const [pCancel, setPCancel] = useState(false)
   const [mismatch, setMismatch] = useState(false)
+  const pickedAt = useRef(0)
   const role = state.role
   const runner = state.accounts.runner
   const own = t.posterId === 'poster'
@@ -346,8 +347,8 @@ function Actions({ t }) {
     if (role === 'runner' && mine) {
       return (
         <div className="grid gap-2">
-          {!t.picked ? <Btn size="lg" className="w-full" onClick={() => act('pick', { id: t.id })}>我已取到，出发送达</Btn>
-            : <Btn size="lg" className="w-full" onClick={() => setDeliver(true)}>提交送达凭证</Btn>}
+          {!t.picked ? <Btn size="lg" className="w-full" onClick={() => { pickedAt.current = Date.now(); act('pick', { id: t.id }) }}>我已取到，出发送达</Btn>
+            : <Btn size="lg" className="w-full" onClick={() => { if (Date.now() - pickedAt.current > 700) setDeliver(true) }}>提交送达凭证</Btn>}
           <div className="flex flex-wrap justify-center gap-x-4">
             {!t.picked && <Btn variant="plain" size="sm" onClick={() => setAbandon(true)}>放弃这单（信用 -5）</Btn>}
             <Btn variant="plain" size="sm" onClick={() => setMismatch(true)}>与描述不符，申诉</Btn>
@@ -461,13 +462,12 @@ function Actions({ t }) {
 
 // 跑腿人决定接不接时，直接看到这单顺不顺「我常走的路」
 function RouteFit({ t }) {
-  let route = { from: 'jiao1', to: 'mei5' }
-  try { const r = JSON.parse(localStorage.getItem('shunluxia:myroute')); if (B[r?.from] && B[r?.to]) route = r } catch { /* 用默认路线 */ }
+  const route = myRoute()
   const m = detourMin(route.from, route.to, t)
   const name = (id) => B[id].name.replace(/（.*?）/, '')
   return (
     <span className={`tnum inline-flex items-center rounded-full px-3 py-1 text-sm font-semibold ${m <= 5 ? 'bg-accent-soft text-accent' : 'bg-sunken text-ink'}`}>
-      {m <= 5 ? '顺路 · ' : ''}{name(route.from)}到{name(route.to)}，多走 {m} 分钟
+      {m <= 5 ? '顺路 · ' : ''}你常走 {name(route.from)} → {name(route.to)} · 捎这单多走 {m} 分钟
     </span>
   )
 }
@@ -486,7 +486,7 @@ function WrapUp({ t }) {
   const { poster, runner } = state.accounts
   const lastAt = Math.max(...t.timeline.map((x) => x.at))
   const [play] = useState(() => !reduce && Date.now() - lastAt < 8000)
-  const sum = (acc) => acc.creditLog.filter((l) => l.label.includes(t.title)).reduce((n, l) => n + l.delta, 0)
+  const sum = (acc) => acc.creditLog.filter((l) => l.label.includes(t.title) && l.at >= (t.completedAt || 0) - 1000).reduce((n, l) => n + l.delta, 0)
   const rows = [
     t.runnerId === 'runner' && { who: runner, d: sum(runner), avatar: 'avatar-runner-v1' },
     t.posterId === 'poster' && { who: poster, d: sum(poster), avatar: 'avatar-poster-v1' },
@@ -509,7 +509,7 @@ function WrapUp({ t }) {
         )}
       </div>
       <div className="flex justify-between text-sm font-semibold">
-        <span>{name(t.from)}</span><span className="opacity-75">{t.from === t.to ? '占座' : '顺路捎到'}</span><span>{name(t.to)}</span>
+        <span>{name(t.from)}</span><span className="opacity-75">{t.from === t.to ? '占座' : onMyWay(t) ? '顺路捎到' : '捎到'}</span><span>{name(t.to)}</span>
       </div>
       <dl className="mt-5 grid gap-2">
         {rows.map((x) => (

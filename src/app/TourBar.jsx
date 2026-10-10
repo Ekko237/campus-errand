@@ -1,3 +1,4 @@
+import { useEffect } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { motion, AnimatePresence, useReducedMotion } from 'motion/react'
 import { X, ArrowRight } from '@phosphor-icons/react'
@@ -33,6 +34,10 @@ export default function TourBar() {
   const loc = useLocation()
   const step = tourStep(state)
   const here = step && loc.pathname === step.to.split('?')[0] && (!step.who || step.who === state.role) && !step.final
+  // 已经是这个身份了，就不再说「切到跑腿人」
+  const text = step && step.who === state.role ? step.text.replace(/^切(到|回)(跑腿人|发单人)[，：]?/, '') : step?.text
+  const arrived = step?.final && loc.pathname === step.to
+  useEffect(() => { if (!arrived) return; const id = setTimeout(() => act('tour', { tour: { active: false, done: true } }), 3000); return () => clearTimeout(id) }, [arrived, act])
   const go = () => {
     if (step.who) act('role', { role: step.who })
     if (step.final) act('tour', { tour: { active: false, done: true } })
@@ -48,7 +53,7 @@ export default function TourBar() {
               <p className="text-[13px] font-semibold opacity-70">
                 {step.final ? <span className="inline-flex items-center gap-1"><Confetti size={14} weight="fill" />完整流程</span> : `完整流程 ${Math.min(step.n, TOTAL)}/${TOTAL}`}
               </p>
-              <p className="text-[15px] font-semibold leading-snug">{step.text}</p>
+              <p className="text-[15px] font-semibold leading-snug">{text}</p>
             </div>
             {!here && <button onClick={go} className="inline-flex h-11 shrink-0 items-center gap-1 whitespace-nowrap rounded-full bg-accent px-4 text-[15px] font-semibold text-on-accent active:scale-[0.98]">
               {step.cta}<ArrowRight size={16} weight="bold" />

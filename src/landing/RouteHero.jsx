@@ -7,9 +7,11 @@ const ease = [0.16, 1, 0.3, 1]
 const icon = (name) => `${import.meta.env.BASE_URL}icons/${name}.webp`
 const W = 600, H = 450
 // 学弟下课的路：一教 → 驿站 → 梅园。驿站正好在他的路上，走到一半（p = 0.5）
-const RUN = 'M71 44 L71 276 L484 276 L484 352'
+const RUN = 'M200 180 L200 276 L484 276 L484 340 L512 340'
 // 你的需求：驿站 → 梅园，和他后半程完全重合
-const NEED = 'M311 276 L484 276 L484 352'
+const NEED = 'M330 276 L484 276 L484 340 L512 340'
+// 学弟走到驿站时在整条路上的位置（路长 472，驿站在第 226 处）
+const F = 226 / 472
 const pct = (x, y) => ({ left: `${(x / W) * 100}%`, top: `${(y / H) * 100}%` })
 
 function Node({ x, y, children, className = '' }) {
@@ -37,12 +39,12 @@ export function RouteMap() {
   const runLen = useTransform(p, (v) => v)
   const rl = useTransform(rx, (v) => `${(v / W) * 100}%`)
   const rt = useTransform(ry, (v) => `${(v / H) * 100}%`)
-  const carry = useTransform(p, (v) => Math.max(0, Math.min(1, (v - 0.5) * 2)))
-  useMotionValueEvent(p, 'change', (v) => setPhase(v < 0.499 ? 0 : v < 0.501 ? 1 : v < 0.999 ? 2 : 3))
+  const carry = useTransform(p, (v) => Math.max(0, Math.min(1, (v - F) / (1 - F))))
+  useMotionValueEvent(p, 'change', (v) => setPhase(v < F - 0.001 ? 0 : v < F + 0.001 ? 1 : v < 0.999 ? 2 : 3))
 
   useEffect(() => {
     if (reduce || !inView) return
-    const c = animate(p, [0, 0, 0.5, 0.5, 1, 1], { duration: 9, times: [0, 0.1, 0.4, 0.58, 0.84, 1], ease: 'easeInOut', repeat: Infinity })
+    const c = animate(p, [0, 0, F, F, 1, 1], { duration: 9, times: [0, 0.1, 0.4, 0.58, 0.84, 1], ease: 'easeInOut', repeat: Infinity })
     return () => c.stop()
   }, [reduce, inView, p])
 
@@ -50,36 +52,39 @@ export function RouteMap() {
   return (
     <div ref={box} className="relative -mx-4 aspect-[600/450] w-[calc(100%+2rem)] overflow-hidden bg-surface sm:mx-0 sm:w-full sm:rounded-[28px] sm:ring-1 sm:ring-line"
       role="img" aria-label="示意地图：你的快递在菜鸟驿站，学弟从一教走回梅园正好经过驿站，顺手捎上，只多走 1 分钟">
-      <img src={`${import.meta.env.BASE_URL}images/campus-hero-v2.webp`} width={1200} height={900} alt="" aria-hidden="true" fetchPriority="high" className="absolute inset-0 size-full object-cover" />
+      <img src={`${import.meta.env.BASE_URL}images/campus-hero-v3.webp`} width={1200} height={900} alt="" aria-hidden="true" fetchPriority="high" className="absolute inset-0 size-full object-cover" />
       <svg viewBox={`0 0 ${W} ${H}`} className="absolute inset-0 size-full" aria-hidden="true">
         {/* 你的需求：虚线 */}
         <motion.path d={NEED} fill="none" stroke="var(--accent)" strokeWidth="5" strokeDasharray="1 10" strokeLinecap="round"
           initial={reduce ? false : { opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.6, delay: 0.6 }} />
         {/* 学弟走过的路 */}
         <path ref={path} d={RUN} fill="none" stroke="none" />
+        {/* 整条路一直淡淡地画着，动画只是把它描深，任何时刻都不像断了 */}
+        <path d={RUN} fill="none" stroke="var(--ink)" strokeOpacity="0.28" strokeWidth="5" strokeDasharray="2 9" strokeLinecap="round" strokeLinejoin="round" />
         <motion.path d={RUN} fill="none" stroke="var(--ink)" strokeOpacity="0.9" strokeWidth="6" strokeLinecap="round" strokeLinejoin="round" style={{ pathLength: runLen }} />
         {/* 交汇之后：带着你的快递走完，路线变成绿色实线 */}
         <motion.path d={NEED} fill="none" stroke="var(--accent)" strokeWidth="7" strokeLinecap="round" strokeLinejoin="round" style={{ pathLength: carry }} />
         {/* 交汇点 */}
-        <motion.circle cx="311" cy="276" r="34" fill="var(--accent)" initial={false}
+        <motion.circle cx="330" cy="276" r="34" fill="var(--accent)" initial={false}
           animate={lit && !reduce ? { opacity: [0.35, 0], scale: [0.6, 1.6] } : { opacity: 0 }}
-          transition={{ duration: 1.1, ease: 'easeOut' }} style={{ transformOrigin: '311px 276px' }} />
+          transition={{ duration: 1.1, ease: 'easeOut' }} style={{ transformOrigin: '330px 276px' }} />
       </svg>
 
-      <Node x={168} y={16}><Tag>一教</Tag></Node>
-      <Node x={311} y={276}>
+      <Node x={200} y={190}><span className="block size-3 rounded-full bg-ink ring-4 ring-surface" /></Node>
+      <Node x={130} y={84}><Tag>一教</Tag></Node>
+      <Node x={330} y={276}>
         <motion.div animate={{ scale: lit ? 1.08 : 1 }} transition={{ type: 'spring', stiffness: 400, damping: 18 }}
           className={`grid size-11 place-items-center rounded-full ring-[3px] transition-colors md:size-14 ${lit ? 'bg-accent-soft ring-accent' : 'bg-surface ring-line'}`}>
           <img src={icon('type-express-v1')} width={36} height={36} alt="" className={`size-7 transition-opacity md:size-9 ${phase >= 2 ? 'opacity-30' : ''}`} />
         </motion.div>
       </Node>
-      <Node x={311} y={330} className="pt-2 md:pt-3"><Tag strong={lit}>菜鸟驿站</Tag></Node>
-      <Node x={548} y={336}>
+      <Node x={286} y={312}><Tag strong={lit}>菜鸟驿站</Tag></Node>
+      <Node x={556} y={366}>
         <div className={`size-11 overflow-hidden rounded-full bg-surface ring-[3px] transition-colors md:size-14 ${phase === 3 ? 'ring-accent' : 'ring-line'}`}>
           <img src={icon('avatar-poster-v1')} width={56} height={56} alt="" className="size-full object-cover" />
         </div>
       </Node>
-      <div className="absolute right-2 -translate-y-1/2" style={{ top: `${(384 / H) * 100}%` }}><Tag>梅园 5 号楼 · 你</Tag></div>
+      <div className="absolute right-2 -translate-y-1/2" style={{ top: `${(394 / H) * 100}%` }}><Tag>梅园 5 号楼 · 你</Tag></div>
       <motion.div className="absolute z-10 -translate-x-1/2 -translate-y-1/2" style={{ left: rl, top: rt }}>
         <div className={`relative size-9 rounded-full bg-surface p-0.5 ring-[3px] shadow-[0_6px_16px_-6px_rgba(17,40,30,0.5)] transition-colors md:size-11 ${phase >= 1 ? 'ring-accent' : 'ring-ink'}`}>
           <img src={icon('avatar-runner-v1')} width={44} height={44} alt="" className="size-full rounded-full object-cover" />
@@ -92,14 +97,14 @@ export function RouteMap() {
         </div>
       </motion.div>
 
-      <AnimatePresence>
+      <AnimatePresence mode="wait">
         {phase === 0 && !reduce && (
-          <motion.div key="a" className="absolute left-[32%] top-[3%] md:top-[4%]" initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.3 }}>
+          <motion.div key="a" className="absolute left-[53%] top-[16%]" initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.3 }}>
             <p className="rounded-xl bg-surface px-2.5 py-1.5 text-[12px] leading-snug shadow-[0_8px_24px_-12px_rgba(17,40,30,0.4)] ring-1 ring-line md:px-3 md:py-2 md:text-sm">学弟在一教 17:50 下课<br />本来就要走回梅园</p>
           </motion.div>
         )}
         {(phase === 1 || phase === 2) && (
-          <motion.div key="b" className="absolute left-[54%] top-[6%] md:top-[8%]" initial={{ opacity: 0, y: 10, scale: 0.92 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: -6 }} transition={{ type: 'spring', stiffness: 420, damping: 26 }}>
+          <motion.div key="b" className="absolute left-[53%] top-[16%]" initial={{ opacity: 0, y: 10, scale: 0.92 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: -6 }} transition={{ type: 'spring', stiffness: 420, damping: 26 }}>
             <div className="rounded-2xl bg-ink px-3 py-2 text-bg shadow-[0_14px_30px_-14px_rgba(17,40,30,0.6)] md:px-4 md:py-3">
               <p className="text-[13px] font-bold md:text-lg">顺路，只多走 1 分钟</p>
               <p className="text-[11px] opacity-80 md:text-sm">学弟接单 · 赏金 ¥5 托管中</p>
@@ -107,7 +112,7 @@ export function RouteMap() {
           </motion.div>
         )}
         {phase === 3 && (
-          <motion.div key="c" className="absolute left-[3%] top-[74%] md:left-auto md:right-[24%] md:top-[70%]" initial={reduce ? false : { opacity: 0, y: 10, scale: 0.92 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0 }} transition={{ type: 'spring', stiffness: 420, damping: 26 }}>
+          <motion.div key="c" className="absolute left-[18%] top-[71%]" initial={reduce ? false : { opacity: 0, y: 10, scale: 0.92 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0 }} transition={{ type: 'spring', stiffness: 420, damping: 26 }}>
             <div className="rounded-2xl bg-accent px-3 py-2 text-on-accent shadow-[0_14px_30px_-14px_rgba(11,122,85,0.7)] md:px-4 md:py-3">
               <p className="text-[13px] font-bold md:text-lg">送到了</p>
               <p className="tnum text-[11px] opacity-90 md:text-sm">¥5 从托管放给学弟</p>
@@ -249,7 +254,7 @@ function SubwayLine({ R, hits, reduce }) {
 // 校园底图（生成图）在数据坐标里的位置：中心和宽高，跟着镜头一起缩放、旋转
 const CAMPUS_IMG = { cx: 260, cy: 260, w: 3300, h: 1856 }
 
-export function RouteZoom({ R, hits, reduce, ratio = 2.2, pills = true, vertical = false, walker = true }) {
+export function RouteZoom({ R, hits, reduce, ratio = 2.2, pills = true, vertical = false, walker = true, endsOnly = false }) {
   const uid = useId().replace(/:/g, '')
   // 坐标：你的路是一条直线 A→B；竖版（手机）把整张图转到 A 在上、B 在下
   const A0 = B[R.from], B0 = B[R.to]
@@ -362,7 +367,7 @@ export function RouteZoom({ R, hits, reduce, ratio = 2.2, pills = true, vertical
         return (
           <motion.span key={id} initial={false} animate={{ left: `${P(id)[0]}%`, top: `${P(id)[1]}%` }} transition={sp} className="absolute z-10">
             <span className={`absolute left-0 top-0 block size-3.5 -translate-x-1/2 -translate-y-1/2 rounded-full ring-4 ring-surface ${end ? 'bg-ink' : 'bg-accent'}`} />
-            {(vertical || labelSide[id] !== 0) && <span className={`absolute whitespace-nowrap rounded-full px-2 py-0.5 text-[11px] font-semibold shadow-sm md:px-2.5 md:text-[13px] ${end ? 'bg-ink text-bg' : 'bg-surface text-ink ring-1 ring-line'} ${vertical ? (id === R.from ? 'bottom-3 left-0 -translate-x-1/2' : id === R.to ? 'left-0 top-3 -translate-x-1/2' : 'left-3 top-0 -translate-y-1/2') : `left-0 -translate-x-1/2 ${side(id) < 0 ? 'bottom-3' : 'top-3'}`}`}>{SHORT[id]}</span>}
+            {(vertical || labelSide[id] !== 0) && (!endsOnly || end) && <span className={`absolute whitespace-nowrap rounded-full px-2 py-0.5 text-[11px] font-semibold shadow-sm md:px-2.5 md:text-[13px] ${end ? 'bg-ink text-bg' : 'bg-surface text-ink ring-1 ring-line'} ${vertical ? (id === R.from ? 'bottom-3 left-0 -translate-x-1/2' : id === R.to ? 'left-0 top-3 -translate-x-1/2' : 'left-3 top-0 -translate-y-1/2') : `left-0 -translate-x-1/2 ${side(id) < 0 ? 'bottom-3' : 'top-3'}`}`}>{SHORT[id]}</span>}
           </motion.span>
         )
       })}
