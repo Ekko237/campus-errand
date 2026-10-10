@@ -611,8 +611,18 @@ export default function TaskDetail() {
   }
   const own = t.posterId === 'poster'
   const pmode = privacyMode(t, state.role)
+  // 刚发布的那几秒：顶上落一张「已冻结托管」，让人看见钱被锁住了，而不是直接跳到详情
+  const justPosted = own && t.status === 'open' && Date.now() - t.createdAt < 6000
   return (
     <div className="space-y-5">
+      {justPosted && (
+        <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} transition={{ type: 'spring', stiffness: 380, damping: 28 }}
+          className="flex items-center gap-3 rounded-2xl bg-accent p-4 text-on-accent" role="status">
+          <motion.img src={`${import.meta.env.BASE_URL}icons/trust-escrow-v1.webp`} width={40} height={40} alt="" className="size-10 shrink-0 rounded-xl bg-on-accent/90 object-contain p-1"
+            initial={{ y: -16, rotate: -12, scale: 1.3 }} animate={{ y: 0, rotate: 0, scale: 1 }} transition={{ type: 'spring', stiffness: 500, damping: 14, delay: 0.15 }} />
+          <p className="min-w-0 flex-1 text-[15px] leading-snug"><b className="block text-lg">已发布</b>¥{t.reward} 已冻结托管，送达确认后才放给跑腿人</p>
+        </motion.div>
+      )}
       <div className="flex items-center gap-2">
         <button onClick={() => nav(-1)} aria-label="返回" className="grid size-10 place-items-center rounded-full bg-surface ring-1 ring-line"><ArrowLeft size={20} weight="bold" /></button>
         <span className={`min-w-0 truncate text-[15px] font-semibold text-muted`}>订单详情</span>

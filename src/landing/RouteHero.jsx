@@ -194,7 +194,7 @@ const PY = (y) => 7 + ((y + 380) / 1280) * 84
 export const ROUTES = [
   { from: 'jiao1', to: 'mei5', label: '一教下课回梅园', short: '一教→梅园', lock: '还有 5 分钟下课', time: '17:45', verb: '下课顺手捎上' },
   { from: 'tao2', to: 'jiao1', label: '桃园去上课', short: '桃园→一教', lock: '还有 15 分钟上课', time: '07:45', verb: '去上课顺手捎上' },
-  { from: 'market', to: 'mei5', label: '超市回梅园', short: '超市→梅园', lock: '买完东西，准备回梅园', time: '20:10', verb: '买完东西顺手捎上' },
+  { from: 'mei5', to: 'market', label: '梅园去超市', short: '梅园→超市', lock: '晚饭后，去超市', time: '19:30', verb: '去超市顺手捎上' },
 ]
 
 // 这条路上多走不超过 5 分钟的单，按多走的分钟数排

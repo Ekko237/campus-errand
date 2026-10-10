@@ -139,7 +139,7 @@ export default function CampusMap({ R, hits, reduce, pills = true, walker = true
         <span key={`d${t.id}`} aria-hidden="true" className="absolute z-10 size-3.5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-surface ring-[3px] ring-accent md:size-4" style={pct(PLACES[t.to].door)} />
       ))}
       {marks.map(({ t }) => (
-        <span key={`p${t.id}`} aria-hidden="true" className={`tnum absolute z-10 -translate-x-1/2 translate-y-[9px] whitespace-nowrap rounded-full bg-surface px-1 text-[12px] font-bold leading-4 text-accent shadow-sm md:hidden`} style={pct(markAt(t.from))}>{TINY[t.from] || SHORT[t.from]} ¥{t.reward}</span>
+        <span key={`p${t.id}`} aria-hidden="true" className={`tnum absolute z-10 -translate-x-1/2 translate-y-[9px] whitespace-nowrap rounded-full bg-surface px-1 text-[12px] font-bold leading-4 text-accent shadow-sm md:hidden`} style={pct(markAt(t.from))}>¥{t.reward}</span>
       ))}
       {/* 原型订单页：小人还在起点附近时起点不标，到了终点就不再标「到达」，免得和小人叠在一起 */}
       {ends.filter((id) => !((at != null || park) && ((id === R.from && p < 0.15) || (id === R.to && p >= 0.99)))).map((id) => (
