@@ -302,7 +302,21 @@ function RouteZoom({ R, hits, reduce, ratio = 2.2, pills = true }) {
   }, [R.label, reduce])
   const sp = { type: 'spring', stiffness: 150, damping: 26 }
   const me = at(p)
-  const side = (id) => (B[id].y <= (a.y + b.y) / 2 ? -1 : 1)
+  const side0 = (id) => (B[id].y <= (a.y + b.y) / 2 ? -1 : 1)
+  // 标签避让：起终点先占位，其余标签离已有标签太近就换到另一侧，两侧都挤就只留圆点
+  const placed = []
+  const labelSide = {}
+  const near = (q, s) => placed.some((o) => Math.abs(o.x - q[0]) < (ratio < 2 ? 22 : 11) && Math.abs(o.y - (q[1] + s * 7)) < (ratio < 2 ? 9 : 7))
+  ;[R.from, R.to, ...ids.filter((i) => i !== R.from && i !== R.to)].forEach((id) => {
+    if (labelSide[id] !== undefined) return
+    const q = [X(B[id].x), Y(B[id].y)]
+    let s = side0(id)
+    if (near(q, s)) s = -s
+    if (near(q, s) && id !== R.from && id !== R.to) { labelSide[id] = 0; return }
+    labelSide[id] = s
+    placed.push({ x: q[0], y: q[1] + s * 7 })
+  })
+  const side = (id) => labelSide[id] || side0(id)
   return (
     <div className="relative max-h-[560px] w-full overflow-hidden rounded-[24px] bg-surface ring-1 ring-line md:rounded-[28px]" style={{ aspectRatio: ratio }}
       role="img" aria-label={`示意地图：沿「${R.label}」这条路，${hits.length} 个示例单顺路`}>
@@ -337,7 +351,7 @@ function RouteZoom({ R, hits, reduce, ratio = 2.2, pills = true }) {
         return (
           <motion.span key={id} initial={false} animate={{ left: `${P(id)[0]}%`, top: `${P(id)[1]}%` }} transition={sp} className="absolute z-10">
             <span className={`absolute left-0 top-0 block size-3.5 -translate-x-1/2 -translate-y-1/2 rounded-full ring-4 ring-surface ${end ? 'bg-ink' : 'bg-accent'}`} />
-            <span className={`absolute left-0 -translate-x-1/2 whitespace-nowrap rounded-full px-2 py-0.5 text-[11px] font-semibold shadow-sm md:px-2.5 md:text-[13px] ${end ? 'bg-ink text-bg' : 'bg-surface text-ink ring-1 ring-line'} ${side(id) < 0 ? 'bottom-3' : 'top-3'}`}>{SHORT[id]}</span>
+            {labelSide[id] !== 0 && <span className={`absolute left-0 -translate-x-1/2 whitespace-nowrap rounded-full px-2 py-0.5 text-[11px] font-semibold shadow-sm md:px-2.5 md:text-[13px] ${end ? 'bg-ink text-bg' : 'bg-surface text-ink ring-1 ring-line'} ${side(id) < 0 ? 'bottom-3' : 'top-3'}`}>{SHORT[id]}</span>}
           </motion.span>
         )
       })}

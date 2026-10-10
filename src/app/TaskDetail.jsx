@@ -194,7 +194,7 @@ function Escrow({ t }) {
     cancelled: ['已退回', '任务取消，赏金退回发单人；接单后取消会先扣 30% 补偿跑腿人'],
   }[t.status]
   return (
-    <div className="rounded-2xl bg-accent-soft p-4">
+    <div id="escrow" className="scroll-mt-24 rounded-2xl bg-accent-soft p-4">
       <div className="flex items-center gap-3">
         <img src={`${import.meta.env.BASE_URL}icons/trust-escrow-v1.webp`} width={40} height={40} alt="护着硬币的盾牌" className="size-10 shrink-0 object-contain" />
         <div className="flex-1">
@@ -286,6 +286,9 @@ function RateBlock({ t, by }) {
   )
 }
 
+// 放款那一下要被看见：确认后把托管卡滚到屏幕中间，再播转账
+const toEscrow = () => setTimeout(() => document.getElementById('escrow')?.scrollIntoView({ block: 'center', behavior: 'smooth' }), 80)
+
 function Actions({ t }) {
   const { state, act } = useStore()
   const nav = useNavigate()
@@ -332,7 +335,7 @@ function Actions({ t }) {
           {!t.picked ? <Btn size="lg" className="w-full" onClick={() => act('pick', { id: t.id })}>我已取到，出发送达</Btn>
             : <Btn size="lg" className="w-full" onClick={() => setDeliver(true)}>提交送达凭证</Btn>}
           <div className="flex flex-wrap justify-center gap-x-4">
-            <Btn variant="plain" size="sm" onClick={() => setAbandon(true)}>放弃这单（信用 -5）</Btn>
+            {!t.picked && <Btn variant="plain" size="sm" onClick={() => setAbandon(true)}>放弃这单（信用 -5）</Btn>}
             <Btn variant="plain" size="sm" onClick={() => setMismatch(true)}>与描述不符，申诉</Btn>
           </div>
           <Sheet open={mismatch} onClose={() => setMismatch(false)} title="任务与描述不符">
@@ -374,7 +377,7 @@ function Actions({ t }) {
     if (role === 'poster' && own) {
       return (
         <div className="grid gap-2">
-          <Btn size="lg" className="w-full" onClick={() => act('confirm', { id: t.id })}>确认送达，放款 ¥{t.reward}</Btn>
+          <Btn size="lg" className="w-full" onClick={() => { act('confirm', { id: t.id }); toEscrow() }}>确认送达，放款 ¥{t.reward}</Btn>
           <Btn variant="plain" size="sm" onClick={() => setDisputeOpen(true)}>有问题，申诉</Btn>
           <Sheet open={disputeOpen} onClose={() => setDisputeOpen(false)} title="发起申诉">
             <p className="text-[15px] text-muted">申诉期间赏金继续冻结，平台会核对送达凭证。凭证有效、申诉被驳回时，你的信用 -5。</p>
@@ -392,7 +395,7 @@ function Actions({ t }) {
       return (
         <div className="grid gap-2 text-center">
           <p className="text-[15px] text-muted">等待发单人 {t.posterName} 确认，2 小时内不确认将自动放款。</p>
-          <Btn variant="ghost" onClick={() => act('confirm', { id: t.id, simulated: true })}>演示：模拟对方确认</Btn>
+          <Btn variant="ghost" onClick={() => { act('confirm', { id: t.id, simulated: true }); toEscrow() }}>演示：模拟对方确认</Btn>
           <Btn variant="plain" size="sm" onClick={() => act('confirm', { id: t.id, auto: true })}>演示：对方 2 小时未确认（发单人 -2）</Btn>
         </div>
       )
