@@ -47,6 +47,8 @@ export default function TourBar() {
     if (!here) return
     let el = null
     let wait = 0
+    // 停过「奖励时刻」之后那一下滚动用瞬移：滚动过程只有一帧，不会正好吞掉用户的点击
+    let late = false
     // 量两次：图片（比如送达照片）加载完会把按钮往下推，第一次量完 0.6 秒后再补一次
     const reveal = () => {
       if (!el || !(loc.pathname.startsWith('/app/task/') || loc.pathname.startsWith('/app/publish'))) return
@@ -60,7 +62,7 @@ export default function TourBar() {
       // 按钮已经完整看得见（哪怕离底部导航只差几像素）就不动：用户可能正伸手去点
       if ((r.top >= head && r.bottom <= hard) || (el.closest('.sticky') && r.bottom <= innerHeight)) return
       // 露了一部分：只挪刚好够的那一点，不大幅跳
-      if (r.bottom > head && r.top < hard) { window.scrollBy({ top: r.bottom > bottom ? r.bottom - bottom : r.top - top, behavior: reduce ? 'auto' : 'smooth' }); return }
+      if (r.bottom > head && r.top < hard) { window.scrollBy({ top: r.bottom > bottom ? r.bottom - bottom : r.top - top, behavior: reduce || late ? 'auto' : 'smooth' }); return }
       // 完全在屏幕外：把按钮所在的整块（卡片、段落）顶到导览条下面，块的标题不被切
       let dy = null
       for (let a = el.parentElement; a && a.tagName !== 'MAIN'; a = a.parentElement) {
@@ -70,7 +72,7 @@ export default function TourBar() {
       }
       // 块太高放不下：把按钮放到可见区中间，它下面的小字（申诉、放弃、说明）也一起露出来
       if (dy == null) dy = r.height < bottom - top ? r.top + r.height / 2 - (top + bottom) / 2 : r.top - top
-      window.scrollBy({ top: dy, behavior: reduce ? 'auto' : 'smooth' })
+      window.scrollBy({ top: dy, behavior: reduce || late ? 'auto' : 'smooth' })
     }
     // 刚发生的「奖励时刻」（取件码揭晓、托管放款）：先把那张卡停在视线里 1.6 秒，再去找下一个按钮
     const timers = []
@@ -81,13 +83,15 @@ export default function TourBar() {
     evs.forEach((e) => window.addEventListener(e, hands, { passive: true, capture: true }))
     const id = setTimeout(() => {
       // 只在刚发布（下一步认证）、刚接单（下一步取件）和刚放款（下一步打分）这三步停
-      const moment = [2, 4, 7].includes(step?.n) ? document.querySelector('main [data-tour-moment]') : null
+      // 跑腿人那几步（取件、送达）先把地图露出来，看得到阿远走到哪了；接单那一下先看地图和取件码
+      const moment = [4, 5].includes(step?.n) ? document.querySelector('main [data-tour-map]') : [2, 7].includes(step?.n) ? document.querySelector('main [data-tour-moment]') : null
       if (moment) {
         const head = document.querySelector('header')?.getBoundingClientRect().bottom ?? 64
         const mr = moment.getBoundingClientRect()
         if (!touched && (mr.top < head + 16 || mr.bottom > innerHeight - 80)) window.scrollBy({ top: mr.top - head - 16, behavior: reduce ? 'auto' : 'smooth' })
         // 放款那条「¥5 从小满流到阿远」要播约 2.3 秒，取件码揭晓短一些
-        wait = step.n === 7 ? 2600 : 1600
+        wait = step.n === 7 ? 2600 : step.n === 5 ? 1200 : 1600
+        late = true
       }
       timers.push(setTimeout(() => {
         el = document.querySelector('main [data-tour-target]') || [...document.querySelectorAll('main button')].find((x) => x.className.includes('bg-accent') && !x.disabled && x.offsetParent)

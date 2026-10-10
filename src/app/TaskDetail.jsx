@@ -526,10 +526,12 @@ function OnTheWay({ t }) {
   const name = (id) => B[id]?.name.replace(/（.*?）/, '')
   const cap = t.status === 'delivered' ? `已送到${name(t.to)}，等发单人确认` : t.picked ? `已取到，正往${name(t.to)}走` : `在去${name(t.from)}取件的路上`
   return (
+    <div data-tour-map="">
     <Panel className="p-3">
       <p className="px-1 pb-2 text-sm font-semibold"><span className="block text-accent">{cap}</span>{mine && <span className="block whitespace-nowrap font-normal text-muted">顺路：{name(mine.from)} → {name(mine.to)}</span>}</p>
       <CampusMap R={R} hits={hits} pills={false} walker={false} at={at} />
     </Panel>
+    </div>
   )
 }
 

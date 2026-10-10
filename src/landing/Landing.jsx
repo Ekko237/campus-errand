@@ -211,7 +211,7 @@ const SCENES = [
   {
     key: 'express', tab: '排长队的快递驿站', short: '驿站排队', route: ['菜鸟驿站', '梅园 5 号楼', '一教下课回梅园的同学，多走 1 分钟'], img: 'scene-express-v3', alt: '傍晚的校园快递驿站，货架上堆满包裹，门口排着长队',
     who: '大三，课排满的小禾',
-    pain: '驿站傍晚要排二十分钟，她 17:50 才下课，18:00 就关门。三个快递放了三天，找室友要欠人情，找陌生人又怕取件码被乱用。',
+    pain: '驿站傍晚要排二十分钟，我 17:50 才下课，18:00 就关门。三个快递放了三天，找室友要欠人情，找陌生人又怕取件码被乱用。',
     fix: '发一单 ¥5。取件码只在有人接单后才给对方看，送到后当面核验送达码，钱才放出去。',
   },
   {
@@ -381,9 +381,9 @@ function StageMap({ i, tall = false }) {
           initial={reduce ? false : { opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={sp}>{i === 4 ? '+¥5 给阿远' : '阿远信用 73'}</motion.span>
       )}
     </div>
-    <p className="mt-1.5 grid min-h-[2.5rem] grid-cols-2 content-start gap-x-3 gap-y-0.5 text-[12px] text-ink/80 sm:flex sm:flex-wrap">
+    <p className="mt-1.5 grid min-h-[2.5rem] grid-cols-2 content-start gap-x-3 gap-y-0.5 whitespace-nowrap text-[12px] text-ink/80 sm:flex sm:flex-wrap">
       {/* 图例四项常驻，只换透明度：切步骤时行数不变，下面的按钮不跳 */}
-      <span className={`inline-flex items-center gap-1 transition-opacity ${i === 0 ? 'opacity-40' : ''}`}><img src={icon('avatar-runner-v1')} width={16} height={16} alt="" className="size-4 rounded-full ring-2 ring-ink" />跑腿的阿远{i === 0 ? '（接单后出现）' : ''}</span>
+      <span className={`inline-flex items-center gap-1 transition-opacity ${i === 0 ? 'opacity-40' : ''}`}><img src={icon('avatar-runner-v1')} width={16} height={16} alt="" className="size-4 rounded-full ring-2 ring-ink" />跑腿的阿远</span>
       <span className="inline-flex items-center gap-1"><i className="h-1 w-4 rounded-full bg-ink/80" />走过的路</span>
       <span className="inline-flex items-center gap-1"><i className="w-4 border-t-2 border-dotted border-ink/50" />还没走的</span>
       <span className={`inline-flex items-center gap-1 transition-opacity ${i >= 3 ? '' : 'opacity-40'}`}><i className="h-1.5 w-4 rounded-full bg-accent" />捎着你快递的那段</span>
