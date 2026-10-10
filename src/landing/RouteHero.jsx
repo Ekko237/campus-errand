@@ -120,7 +120,7 @@ export function RouteMap() {
           </motion.div>
         )}
         {phase === 3 && (
-          <motion.div key="c" className="absolute right-[22%] top-[71%] md:right-[21%] md:top-[70%]" initial={reduce ? false : { opacity: 0, y: 10, scale: 0.92 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0 }} transition={{ type: 'spring', stiffness: 420, damping: 26 }}>
+          <motion.div key="c" className="absolute right-[31%] top-[71%] md:right-[24%] md:top-[70%]" initial={reduce ? false : { opacity: 0, y: 10, scale: 0.92 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0 }} transition={{ type: 'spring', stiffness: 420, damping: 26 }}>
             <div className="rounded-2xl bg-accent px-3 py-2 text-on-accent shadow-[0_14px_30px_-14px_rgba(11,122,85,0.7)] md:px-4 md:py-3">
               <p className="text-[13px] font-bold md:text-lg">送到了</p>
               <p className="tnum text-[11px] opacity-90 md:text-sm">¥5 从托管放给学弟</p>
