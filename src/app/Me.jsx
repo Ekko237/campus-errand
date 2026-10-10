@@ -202,7 +202,7 @@ export default function Me() {
       </dl>
 
       <section>
-        <h2 className="mb-3 text-lg font-bold">徽章</h2>
+        <h2 className="mb-3 flex items-baseline justify-between text-lg font-bold">徽章<span className="tnum text-sm font-semibold text-muted">已得 {badges.filter((b) => b.on).length} / {badges.length}<span className="md:hidden">，左右滑动</span></span></h2>
         <div className="no-scrollbar -mx-4 flex gap-3 overflow-x-auto px-4 [mask-image:linear-gradient(to_right,black_85%,transparent)]">
           {badges.map((b) => (
             <div key={b.name} className={`flex w-24 shrink-0 flex-col items-center gap-2 rounded-2xl p-3 text-center ${b.on ? 'bg-accent-soft' : 'bg-sunken opacity-60'}`}>

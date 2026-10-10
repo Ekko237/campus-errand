@@ -135,9 +135,8 @@ function Nav({ page }) {
   const [here, setHere] = useState(null)
   useMotionValueEvent(scrollY, 'change', (v) => {
     setScrolled(v > 420)
-    // 没进顶栏的两节（拦截、结尾）算在上一项「双向信用」里
-    const id = [...SECTIONS].reverse().find(([k]) => (document.getElementById(k)?.getBoundingClientRect().top ?? 1e9) < 160)?.[0] ?? null
-    setHere(id === 'safety' || id === 'final' ? 'credit' : id)
+    // 没进顶栏的两节（拦截、结尾）滚到时不亮任何一项
+    setHere([...SECTIONS].reverse().find(([k]) => (document.getElementById(k)?.getBoundingClientRect().top ?? 1e9) < 160)?.[0] ?? null)
   })
   const home = page !== 'thinking'
   const linkCls = 'group relative py-1 transition-colors hover:text-ink'
@@ -160,7 +159,7 @@ function Nav({ page }) {
         </nav>
         <div className="flex items-center gap-2">
           <div className={`transition-opacity duration-300 ${(scrolled || !home) && !open ? '' : 'max-md:pointer-events-none max-md:opacity-0'}`}><Cta size="sm" /></div>
-          {!home && <Link to="/" className="inline-flex h-10 items-center gap-1.5 rounded-full bg-sunken px-4 text-[15px] font-semibold active:scale-[0.97]"><ArrowLeft size={16} weight="bold" />回首页</Link>}
+          {!home && <Link to="/" aria-label="回首页" className="inline-flex h-10 items-center gap-1.5 rounded-full bg-sunken px-3 text-[15px] font-semibold active:scale-[0.97] md:px-4"><ArrowLeft size={16} weight="bold" /><span className="max-md:hidden">回首页</span></Link>}
           {home && (
             <button onClick={() => { setCur(scrollY + innerHeight >= document.documentElement.scrollHeight - 4 ? SECTIONS[SECTIONS.length - 1][0] : [...SECTIONS].reverse().find(([id]) => (document.getElementById(id)?.getBoundingClientRect().top ?? 1e9) < 140)?.[0]); setOpen((v) => !v) }} aria-expanded={open} aria-controls="mnav" className="grid h-10 place-items-center rounded-full bg-sunken px-4 text-[15px] font-semibold active:scale-[0.97] lg:hidden">{open ? '收起' : '目录'}</button>
           )}
@@ -363,7 +362,7 @@ function StageMap({ i, tall = false }) {
       {/* 驿站名牌放在路下面（驿站楼在路南），和路北的「一教」分开，也不压阿远 */}
       {tag('菜鸟驿站', [station[0], STAGE_PTS[1][1] + 130], false, 'z-20')}
       {/* 梅园名牌落在梅园那栋楼上（路南），和首屏、全校地图同一栋 */}
-      {tag('梅园', [PLACES.mei5.door[0], 505], false)}
+      {tag('梅园', [PLACES.mei5.door[0], tall ? 505 : 470], false)}
       {/* 包裹：先在驿站等着（发布时一闪），阿远走到驿站那步就收起（被他拿走了），不和头像叠 */}
       {i < 2 && (
         <motion.img src={icon('type-express-v1')} width={28} height={28} alt="" className="absolute size-7 -translate-x-1/2 -translate-y-1/2" style={spct(station)}
@@ -380,7 +379,13 @@ function StageMap({ i, tall = false }) {
           initial={reduce ? false : { opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={sp}>{i === 4 ? '+¥5 给阿远' : '阿远信用 73'}</motion.span>
       )}
     </div>
-    <p className="mt-1.5 flex flex-wrap gap-x-3 text-[12px] text-ink/80"><span className="inline-flex items-center gap-1"><img src={icon('avatar-runner-v1')} width={16} height={16} alt="" className="size-4 rounded-full ring-2 ring-ink" />{i === 0 ? '跑腿的阿远，接单后沿路走' : '跑腿的阿远'}</span><span className="inline-flex items-center gap-1"><i className="h-1 w-4 rounded-full bg-ink/80" />走过的路</span><span className="inline-flex items-center gap-1"><i className="w-4 border-t-2 border-dotted border-ink/50" />还没走的</span><span className={`inline-flex items-center gap-1 transition-opacity ${i >= 3 ? '' : 'opacity-60'}`}><i className="h-1.5 w-4 rounded-full bg-accent" />捎着你快递的那段{i < 3 && '（取到后出现）'}</span></p>
+    <p className="mt-1.5 grid min-h-[2.5rem] grid-cols-2 content-start gap-x-3 gap-y-0.5 text-[12px] text-ink/80 sm:flex sm:flex-wrap">
+      {/* 图例四项常驻，只换透明度：切步骤时行数不变，下面的按钮不跳 */}
+      <span className="inline-flex items-center gap-1"><img src={icon('avatar-runner-v1')} width={16} height={16} alt="" className="size-4 rounded-full ring-2 ring-ink" />跑腿的阿远</span>
+      <span className="inline-flex items-center gap-1"><i className="h-1 w-4 rounded-full bg-ink/80" />走过的路</span>
+      <span className="inline-flex items-center gap-1"><i className="w-4 border-t-2 border-dotted border-ink/50" />还没走的</span>
+      <span className={`inline-flex items-center gap-1 transition-opacity ${i >= 3 ? '' : 'opacity-40'}`}><i className="h-1.5 w-4 rounded-full bg-accent" />捎着你快递的那段</span>
+    </p>
     </div>
   )
 }
@@ -632,7 +637,7 @@ function PrivacyDemo() {
       <div role="tabpanel" className="mt-5">
         <div className="flex items-center justify-between">
           <p className="text-sm opacity-70">取件码</p>
-          {p.tone === 'closed' && <span className="inline-flex items-center gap-1 rounded-full bg-bg/10 px-2 py-0.5 text-xs font-semibold"><img src={icon('ic-lock-v1')} width={14} height={14} alt="" className="size-3.5" />已收回</span>}
+          
         </div>
         <AnimatePresence mode="wait" initial={false}>
           <motion.div key={i} initial={reduce ? false : { opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -6 }} transition={{ duration: 0.2 }}>
@@ -711,11 +716,7 @@ function Credit() {
   // 规则列表滚出屏幕（离开信用这一节）就不再浮小分数条
   const listRef = useRef(null)
   const listOn = useInView(listRef)
-  // 手机上点规则时，大分数卡如果不在屏幕里，就在顶栏下面弹 2 秒小分数条，然后自己收起
-  const [flash, setFlash] = useState(0)
-  useEffect(() => { if (!flash) return; const id = setTimeout(() => setFlash(0), 2200); return () => clearTimeout(id) }, [flash])
   const apply = (r) => {
-    if (!cardOn) setFlash(Date.now())
     const to = Math.max(0, Math.min(100, scoreRef.current + r.delta))
     scoreRef.current = to
     seq.current += 1
@@ -783,7 +784,7 @@ function Credit() {
           </Reveal>
           <Reveal delay={0.05} className="lg:col-span-7">
             <AnimatePresence>
-              {flash > 0 && !cardOn && listOn && (
+              {hist.length > 0 && !cardOn && listOn && (
                 <motion.div key="mini" initial={reduce ? false : { y: 16, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: 10, opacity: 0 }} transition={{ type: 'spring', stiffness: 420, damping: 32 }}
                   className="fixed inset-x-4 bottom-4 z-30 flex items-center gap-3 rounded-full bg-accent-deep py-2 pl-2 pr-5 text-on-accent shadow-[0_16px_30px_-12px_rgba(11,122,85,0.7)] lg:hidden" aria-hidden="true">
                   <img src={icon(tier.badge + '-v1')} width={40} height={40} alt="" className="size-10 rounded-full bg-on-accent/90 object-contain p-0.5" />
@@ -811,7 +812,7 @@ function Credit() {
                         )}
                       </span>
                       <span className={`tnum w-10 shrink-0 text-2xl font-bold ${r.delta > 0 ? 'text-accent' : 'text-danger'}`}>{r.delta > 0 ? '+' : ''}{r.delta}</span>
-                      <span className={`min-w-0 flex-1 ${here ? 'max-lg:pr-[5.5rem]' : ''}`}><span className="block text-lg font-semibold">{r.label}</span><span className="block text-[15px] text-muted">{r.note}</span>
+                      <span className={`min-w-0 flex-1 max-lg:pr-[5.5rem]`}><span className="block text-lg font-semibold">{r.label}</span><span className="block text-[15px] text-muted">{r.note}</span>
 </span>
                       {/* 浮在这一行右边，不往列表里插东西，下面的规则不会被推走 */}
                       {here && (
@@ -1061,7 +1062,7 @@ function Final({ page }) {
         </div>
         {/* 收尾是一块手机锁屏：17:45 下课，顺路提醒弹进来；选哪条路，推送就跟着换。点推送就进原型 */}
         <Reveal delay={0.1} className="flex justify-center lg:col-span-7">
-          <div className="relative aspect-[9/17] w-full max-w-[300px] overflow-hidden rounded-[44px] bg-ink p-2.5 shadow-[0_40px_80px_-40px_rgba(17,40,30,0.6)] md:max-w-[340px]">
+          <div className="relative aspect-[9/15] w-full max-w-[300px] overflow-hidden rounded-[44px] bg-ink p-2.5 shadow-[0_40px_80px_-40px_rgba(17,40,30,0.6)] md:max-w-[340px]">
             <div className="relative size-full overflow-hidden rounded-[36px]">
               <img src={`${import.meta.env.BASE_URL}images/campus-map-v2.webp`} width={1600} height={900} alt="" aria-hidden="true" loading="lazy" className="absolute inset-0 size-full scale-110 object-cover blur-[3px] brightness-[0.55]" />
               <div className="relative flex h-full flex-col items-center px-3 pt-12 text-bg">
@@ -1111,7 +1112,7 @@ function Final({ page }) {
 const COMPARE = [
   ['钱谁先拿', ['先转账', '平台扣', '托管到送达']],
   ['人靠不靠谱', ['看运气', '骑手不认识', '实名 + 信用分']],
-  ['进不进宿舍楼', ['进', '不进', '进']],
+  ['出了事找谁', ['自己找', '平台客服', '凭证 + 申诉']],
   ['一单多少钱', ['随口说', '¥8 起', '多数 ¥4 到 ¥12']],
   ['宿舍号谁能看', ['全群', '骑手', '接单后才看']],
 ]

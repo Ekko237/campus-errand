@@ -76,7 +76,8 @@ export default function TourBar() {
         const head = document.querySelector('header')?.getBoundingClientRect().bottom ?? 64
         const mr = moment.getBoundingClientRect()
         if (mr.top < head + 16 || mr.bottom > innerHeight - 80) window.scrollBy({ top: mr.top - head - 16, behavior: reduce ? 'auto' : 'smooth' })
-        wait = 1600
+        // 放款那条「¥5 从小满流到阿远」要播约 2.3 秒，取件码揭晓短一些
+        wait = step.n === 7 ? 2600 : 1600
       }
       timers.push(setTimeout(() => {
         el = document.querySelector('main [data-tour-target]') || [...document.querySelectorAll('main button')].find((x) => x.className.includes('bg-accent') && !x.disabled && x.offsetParent)
