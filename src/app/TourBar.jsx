@@ -83,8 +83,8 @@ export default function TourBar() {
     evs.forEach((e) => window.addEventListener(e, hands, { passive: true, capture: true }))
     const id = setTimeout(() => {
       // 只在刚发布（下一步认证）、刚接单（下一步取件）和刚放款（下一步打分）这三步停
-      // 跑腿人那几步（取件、送达）先把地图露出来，看得到阿远走到哪了；接单那一下先看地图和取件码
-      const moment = [4, 5].includes(step?.n) ? document.querySelector('main [data-tour-map]') : [2, 7].includes(step?.n) ? document.querySelector('main [data-tour-moment]') : null
+      // 接单那一下先把取件码卡停在视线里（接单后才看得到，是这一单的高光）；取件后先露地图，看得到阿远走到哪了
+      const moment = step?.n === 5 ? document.querySelector('main [data-tour-map]') : [2, 4, 7].includes(step?.n) ? document.querySelector('main [data-tour-moment]') : null
       if (moment) {
         const head = document.querySelector('header')?.getBoundingClientRect().bottom ?? 64
         const mr = moment.getBoundingClientRect()

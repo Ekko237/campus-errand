@@ -150,7 +150,9 @@ function Shell() {
   const { state } = useStore()
   const { pathname, search } = useLocation()
   // 子页面亮它的来源标签：订单详情、从订单来的认证亮「订单」；钱包、信用规则、其他认证亮「我的」
-  const openTask = pathname.startsWith('/app/task/') && state.tasks.find((x) => x.id === pathname.split('/').pop())
+  // 认证页从某个订单跳过来（back=/app/task/ID）时，按那一单算
+  const backId = pathname.startsWith('/app/verify') ? (search.match(/back=\/app\/task\/([^&]+)/) || [])[1] : null
+  const openTask = (pathname.startsWith('/app/task/') || backId) && state.tasks.find((x) => x.id === (backId || pathname.split('/').pop()))
   // 还没人接的单，是从大厅点进来的：亮「大厅」
   const sub = openTask && openTask.status === 'open' && openTask.posterId !== 'poster' ? '/app'
     : pathname.startsWith('/app/task') || (pathname.startsWith('/app/verify') && search.includes('back=/app/task')) ? '/app/orders'

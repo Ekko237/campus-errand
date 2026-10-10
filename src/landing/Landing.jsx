@@ -139,7 +139,7 @@ function Nav({ page }) {
   useEffect(() => {
     const f = () => {
       setScrolled(window.scrollY > 420)
-      setHere([...SECTIONS].reverse().find(([k]) => (document.getElementById(k)?.getBoundingClientRect().top ?? 1e9) < 160)?.[0] ?? null)
+      setHere([...SECTIONS].reverse().find(([k]) => (document.getElementById(k)?.getBoundingClientRect().top ?? 1e9) < window.innerHeight * 0.35)?.[0] ?? null)
     }
     f(); window.addEventListener('scroll', f, { passive: true }); return () => window.removeEventListener('scroll', f)
   }, [page])
@@ -303,7 +303,7 @@ const LOOP = [
   { icon: 'step-accept', alt: '接过包裹的手', t: '接单', d: '认证过、信用够的人才能接。', status: '已接单', escrow: '¥5 冻结中', code: 'open', credit: '跑腿人 70' },
   { icon: 'step-ongoing', alt: '打开的锁和包裹', t: '进行中', d: '接单后，取件码和宿舍号才对跑腿人可见，去驿站取件。', status: '取件中', escrow: '¥5 冻结中', code: 'open', credit: '跑腿人 70' },
   { icon: 'step-deliver', alt: '放在门口拍照的包裹', t: '送达', d: '当面核验送达码，或拍照留证。', status: '待确认', escrow: '¥5 冻结中', code: 'used', credit: '跑腿人 70' },
-  { icon: 'step-confirm', alt: '两只手传递硬币', t: '确认', d: '发单人确认，托管放款。', status: '已放款', escrow: '¥5 已放给跑腿人', code: 'hidden', credit: '跑腿人 70 → 72' },
+  { icon: 'step-confirm', alt: '两只手传递硬币', t: '确认', d: '发单人确认，托管放款。', status: '已放款', escrow: '¥5 已放给跑腿人', code: 'hidden', credit: '跑腿人 70 → 72，发单人 88 → 89' },
   { icon: 'step-rate', alt: '带星星的对话气泡', t: '互评', d: '双方互相打分，信用实时变化。', status: '已互评', escrow: '¥5 已放给跑腿人', code: 'hidden', credit: '好评各 +1：跑腿人 73，发单人 90' },
 ]
 
@@ -738,7 +738,8 @@ function Credit() {
   }
   return (
     <section id="credit" className="scroll-mt-16">
-      <div className={`mx-auto max-w-7xl ${SECTION}`}>
+      {/* 上一节（信任）底部已经留够空了，这一节顶上不再叠一整段大间距 */}
+      <div className="mx-auto max-w-7xl px-4 pb-10 pt-4 md:px-8 md:pb-14 md:pt-6 lg:pb-16 lg:pt-8">
         <div className="grid gap-x-12 lg:grid-cols-12 lg:items-end">
           <Reveal className="lg:col-span-7"><H2>双向信用：<br />谁不守约谁扣分</H2></Reveal>
           <Reveal delay={0.05} className="lg:col-span-5 lg:pb-1"><Lead className="lg:mt-0">满分 100，跑腿人认证后从 70 起步，发单人小满现在 88 分；不能充值也不能刷。点任意一条规则，看分数和等级怎么变。</Lead></Reveal>
@@ -1076,7 +1077,7 @@ function Final({ page }) {
           </Reveal>
         </div>
         {/* 收尾是一块手机锁屏：17:45 下课，顺路提醒弹进来；选哪条路，推送就跟着换。点推送就进原型 */}
-        <Reveal delay={0.1} className="flex justify-center lg:col-span-7">
+        <Reveal delay={0.1} className="flex justify-center lg:col-span-7 lg:justify-end">
           <div className="relative aspect-[9/15] w-full max-w-[300px] overflow-hidden rounded-[44px] bg-ink p-2.5 shadow-[0_40px_80px_-40px_rgba(17,40,30,0.6)] md:max-w-[340px]">
             <div className="relative size-full overflow-hidden rounded-[36px]">
               <img src={`${import.meta.env.BASE_URL}images/campus-map-v2.webp`} width={1600} height={900} alt="" aria-hidden="true" loading="lazy" className="absolute inset-0 size-full scale-110 object-cover blur-[3px] brightness-[0.55]" />
@@ -1136,7 +1137,7 @@ function ThinkingIntro() {
   return (
     <section className="mx-auto max-w-7xl px-4 pb-4 pt-14 md:px-8 md:pt-20">
       <Reveal><p className="text-[15px] font-semibold text-accent">产品思考</p></Reveal>
-      <Reveal delay={0.05}><h1 className="mt-3 font-display text-balance text-[44px] leading-[1.08] md:text-7xl">为什么是「顺路」</h1></Reveal>
+      <Reveal delay={0.05}><h1 className="mt-3 font-display text-balance text-[44px] leading-[1.08] md:text-7xl">为什么是<span className="whitespace-nowrap">「顺路」</span></h1></Reveal>
       <div className="mt-12 grid gap-12 lg:grid-cols-12 lg:gap-16">
       <div className="lg:col-span-7">
       {/* 一条推理，画成一段路：三站走下来，结论放大 */}

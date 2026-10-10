@@ -10,7 +10,7 @@ const icon = (name) => `${import.meta.env.BASE_URL}icons/${name}.webp`
 // 首屏地图就是全校地图（campus-map-v2）的局部放大：同一张图、同一套坐标、同一个寻路，和下面的全景永远对得上
 // 视窗：桌面裁成横幅，上下裁切线落在路上；手机屏窄，用整张图的高度，地图高一些、标签不挤
 const WIDE = { X0: 40, Y0: 72, VW: 1360, VH: 736 }
-const TALL = { X0: 100, Y0: 0, VW: 1300, VH: 900 }
+const TALL = { X0: 130, Y0: 0, VW: 1300, VH: 900 }
 let V = WIDE
 const toD = (pts) => pts.map(([x, y], i) => `${i ? 'L' : 'M'}${x} ${y}`).join(' ')
 // 阿远下课的路：一教 → 沿主路往西 → 梅园；驿站门口就在这条路边
@@ -116,12 +116,12 @@ export function RouteMap() {
 
       <AnimatePresence mode="wait">
         {phase === 0 && !reduce && (
-          <motion.div key="a" className="absolute bottom-[5%] left-[3%] max-sm:left-4 max-sm:bottom-[4%]" initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.3 }}>
+          <motion.div key="a" className="absolute bottom-[5%] left-[3%] max-sm:left-auto max-sm:right-4 max-sm:bottom-[4%]" initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.3 }}>
             <p className="rounded-xl bg-surface px-2.5 py-1.5 text-[12px] leading-snug shadow-[0_8px_24px_-12px_rgba(17,40,30,0.4)] ring-1 ring-line md:px-3 md:py-2 md:text-sm">阿远在一教 17:50 下课<br />本来就要走回梅园</p>
           </motion.div>
         )}
         {(phase === 1 || phase === 2) && (
-          <motion.div key="b" className="absolute bottom-[5%] left-[3%] max-sm:left-4 max-sm:bottom-[4%]" initial={{ opacity: 0, y: 10, scale: 0.92 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: -6 }} transition={{ type: 'spring', stiffness: 420, damping: 26 }}>
+          <motion.div key="b" className="absolute bottom-[5%] left-[3%] max-sm:left-auto max-sm:right-4 max-sm:bottom-[4%]" initial={{ opacity: 0, y: 10, scale: 0.92 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: -6 }} transition={{ type: 'spring', stiffness: 420, damping: 26 }}>
             <div className="rounded-2xl bg-ink px-3 py-2 text-bg shadow-[0_14px_30px_-14px_rgba(17,40,30,0.6)] md:px-4 md:py-3">
               <p className="text-[13px] font-bold md:text-lg">顺路，只多走 1 分钟</p>
               <p className="text-[11px] opacity-80 md:text-sm">阿远接单 · 赏金 ¥5 托管中</p>
@@ -129,7 +129,7 @@ export function RouteMap() {
           </motion.div>
         )}
         {phase === 3 && (
-          <motion.div key="c" className="absolute bottom-[5%] left-[3%] max-sm:left-4 max-sm:bottom-[4%]" initial={reduce ? false : { opacity: 0, y: 10, scale: 0.92 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0 }} transition={{ type: 'spring', stiffness: 420, damping: 26 }}>
+          <motion.div key="c" className="absolute bottom-[5%] left-[3%] max-sm:left-auto max-sm:right-4 max-sm:bottom-[4%]" initial={reduce ? false : { opacity: 0, y: 10, scale: 0.92 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0 }} transition={{ type: 'spring', stiffness: 420, damping: 26 }}>
             <div className="rounded-2xl bg-accent px-3 py-2 text-on-accent shadow-[0_14px_30px_-14px_rgba(11,122,85,0.7)] md:px-4 md:py-3">
               <p className="text-[13px] font-bold md:text-lg">送到了</p>
               <p className="tnum text-[11px] opacity-90 md:text-sm">¥5 从托管放给阿远</p>
@@ -161,7 +161,7 @@ export default function RouteHero({ Cta, Anchor }) {
   // 副标题和按钮第一帧就在，只做一点位移，不从透明开始
   const fade = (d) => ({ initial: reduce ? false : { y: 10 }, animate: { y: 0 }, transition: { duration: 0.5, delay: d * 0.3, ease } })
   return (
-    <section id="top" className="mx-auto grid max-w-7xl items-center gap-10 px-4 pb-12 pt-8 md:px-8 md:pb-20 md:pt-12 lg:grid-cols-12 lg:gap-10 lg:pb-4 lg:pt-10 xl:pt-14">
+    <section id="top" className="mx-auto grid max-w-7xl items-center gap-10 px-4 pb-12 pt-8 md:px-8 md:pb-20 md:pt-12 lg:grid-cols-12 lg:gap-10 lg:min-h-[calc(100svh-64px)] lg:pb-10 lg:pt-6 xl:pt-8">
       <div className="lg:col-span-5">
         <h1 className="font-display text-[54px] leading-[1.05] md:text-[80px] lg:text-[length:clamp(54px,4vw_+_20px,78px)]">
           <span className="block pb-1"><motion.span className="block" {...line(0)}>本来就要经过，</motion.span></span>
