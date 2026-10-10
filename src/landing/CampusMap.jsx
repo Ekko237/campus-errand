@@ -106,7 +106,7 @@ export default function CampusMap({ R, hits, reduce, pills = true, walker = true
     {legend && (
       <p className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted md:text-sm">
         <span className="inline-flex items-center gap-1.5"><i className="h-1 w-5 rounded-full bg-ink/80" />你正要走的路</span>
-        <span className="inline-flex items-center gap-1.5"><i className="size-2.5 rounded-full bg-accent" />路上能顺手捎的 {hits.length} 单（绿线是这单要送的那段）</span>
+        <span className="inline-flex items-center gap-1.5"><i className="size-2.5 rounded-full bg-accent" />路上能顺手捎的 {hits.length} 单（绿线：从取件到送达那段路）</span>
       </p>
     )}
     </div>
