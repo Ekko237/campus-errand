@@ -1057,7 +1057,7 @@ function Final({ page }) {
           <Reveal delay={0.1} className="mt-8"><Cta /></Reveal>
         </div>
       ) : (
-      <div className="mx-auto grid max-w-7xl gap-10 px-4 py-20 md:px-8 md:py-28 lg:grid-cols-12 lg:items-center lg:gap-12 lg:py-32">
+      <div className="mx-auto grid max-w-7xl gap-10 px-4 py-16 md:px-8 md:py-24 lg:grid-cols-12 lg:items-center lg:gap-12 lg:py-24">
         <div className="lg:col-span-5">
           <Reveal><h2 className="font-display text-balance text-[40px] font-bold leading-[1.08] tracking-[-0.035em] md:text-7xl">你下课<br />常走哪条路？</h2></Reveal>
           <Reveal delay={0.05}>
