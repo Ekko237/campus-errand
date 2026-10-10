@@ -76,7 +76,7 @@ const Br = () => <br className="hidden md:inline" />
 const Lead = ({ children, className = '' }) => <p className={`mt-5 max-w-[38ch] text-lg leading-relaxed text-muted md:text-xl ${className}`}>{children}</p>
 
 // 贯穿全站的那条路：宽屏左边一条虚线，每一段是一个站，往下滚它就被走成绿色，小人跟着走
-const STOPS = [['top', '一条路'], ['story', '一单'], ['routes', '整个校园'], ['safety', '底线'], ['final', '你的路']]
+const STOPS = [['top', '一条路'], ['story', '一单'], ['routes', '整个校园'], ['credit', '信用'], ['safety', '底线'], ['final', '你的路']]
 function PageRoute() {
   const reduce = useReducedMotion()
   const { scrollYProgress } = useScroll()
@@ -123,7 +123,7 @@ function ScrollProgress() {
   return <motion.div aria-hidden="true" style={{ scaleX }} className="fixed inset-x-0 top-0 z-50 h-[3px] origin-left bg-accent" />
 }
 
-const NAV_LINKS = [['story', '一单怎么走'], ['routes', '顺路地图'], ['safety', '这些单发不出去'], ['final', '你常走的路']]
+const NAV_LINKS = [['story', '一单怎么走'], ['routes', '顺路地图'], ['credit', '双向信用'], ['safety', '这些单发不出去'], ['final', '你常走的路']]
 const SECTIONS = [...NAV_LINKS]
 function Nav({ page }) {
   const { scrollY } = useScroll()
@@ -1198,6 +1198,31 @@ function ThinkingIntro() {
 }
 
 
+// 一单讲完以后：同一套规则，不止取快递（占座、楼下交接两张场景图）
+function MoreScenes() {
+  return (
+    <section className="mx-auto max-w-7xl px-4 py-16 md:px-8 md:py-24">
+      <Reveal><H2>不止取快递</H2></Reveal>
+      <Reveal delay={0.05}><Lead>同一套托管、隐私和信用，换成早八占座、楼下交接，也是同一条顺路。</Lead></Reveal>
+      <div className="mt-10 grid gap-6 md:grid-cols-2">
+        {SCENES.filter((x) => x.key !== 'express').map((x, k) => (
+          <Reveal key={x.key} delay={0.05 * k}>
+            <figure className="overflow-hidden rounded-[24px] bg-surface ring-1 ring-line">
+              <img src={img(x.img)} width={840} height={560} alt={x.alt} loading="lazy" className="aspect-[3/2] w-full object-cover" />
+              <figcaption className="p-5 md:p-6">
+                <p className="text-sm font-semibold text-accent">{x.route[0]} → {x.route[1]} · {x.who}</p>
+                <p className="mt-2 text-xl font-bold md:text-2xl">{x.tab}</p>
+                <p className="mt-2 text-[15px] leading-relaxed text-muted md:text-base">{x.pain}</p>
+                <p className="mt-3 border-l-[3px] border-accent pl-3 text-[15px] leading-relaxed md:text-base">{x.fix}</p>
+              </figcaption>
+            </figure>
+          </Reveal>
+        ))}
+      </div>
+    </section>
+  )
+}
+
 // 叙事讲完以后：背后的产品思考（为什么是顺路、看哪三个数、接下来做什么）放在单独一页，这里给个入口
 function ThinkTeaser() {
   return (
@@ -1234,7 +1259,9 @@ export default function Landing({ page }) {
         <main>
           <RouteHero Cta={Cta} Anchor={Anchor} />
           <Story />
+          <MoreScenes />
           <Routes />
+          <Credit />
           <Safety />
           <ThinkTeaser />
           <Final />
