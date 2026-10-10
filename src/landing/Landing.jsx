@@ -67,6 +67,48 @@ const H2 = ({ children, className = '' }) => (
 const Br = () => <br className="hidden md:inline" />
 const Lead = ({ children, className = '' }) => <p className={`mt-5 max-w-[38ch] text-lg leading-relaxed text-muted md:text-xl ${className}`}>{children}</p>
 
+// 贯穿全站的那条路：宽屏左边一条虚线，每一段是一个站，往下滚它就被走成绿色，小人跟着走
+const STOPS = [['top', '一条路'], ['routes', '整个校园'], ['scenes', '场景'], ['loop', '一单'], ['trust', '信任'], ['credit', '信用'], ['metrics', '指标'], ['roadmap', '下一步']]
+function PageRoute() {
+  const reduce = useReducedMotion()
+  const { scrollYProgress } = useScroll()
+  const fill = useSpring(scrollYProgress, { stiffness: 140, damping: 26 })
+  const top = useTransform(fill, (v) => `${v * 100}%`)
+  const [stops, setStops] = useState([])
+  const [prog, setProg] = useState(0)
+  useMotionValueEvent(scrollYProgress, 'change', setProg)
+  useEffect(() => {
+    const measure = () => {
+      const max = document.documentElement.scrollHeight - window.innerHeight || 1
+      setStops(STOPS.map(([id, label]) => {
+        const el = document.getElementById(id)
+        return el ? { id, label, f: Math.min(1, Math.max(0, (el.getBoundingClientRect().top + window.scrollY - 80) / max)) } : null
+      }).filter(Boolean))
+    }
+    measure()
+    const t = setTimeout(measure, 1200)
+    window.addEventListener('resize', measure)
+    return () => { clearTimeout(t); window.removeEventListener('resize', measure) }
+  }, [])
+  return (
+    <nav aria-label="页面路线" className="fixed bottom-10 left-6 top-24 z-20 hidden w-28 min-[1400px]:block">
+      <span aria-hidden="true" className="absolute bottom-0 left-[7px] top-0 border-l-2 border-dashed border-line" />
+      <motion.span aria-hidden="true" style={{ scaleY: fill }} className="absolute bottom-0 left-[6px] top-0 w-[4px] origin-top rounded-full bg-accent" />
+      {stops.map((s) => (
+        <Anchor key={s.id} to={s.id} className="group absolute left-0 flex -translate-y-1/2 items-center gap-2" style={{ top: `${s.f * 100}%` }}>
+          <span className={`size-4 rounded-full ring-4 ring-bg transition-colors ${prog >= s.f - 0.002 ? 'bg-accent' : 'bg-surface [box-shadow:inset_0_0_0_2px_var(--line)]'}`} />
+          <span className="whitespace-nowrap text-xs font-semibold text-muted opacity-0 transition-opacity group-hover:opacity-100">{s.label}</span>
+        </Anchor>
+      ))}
+      {!reduce && (
+        <motion.span aria-hidden="true" style={{ top }} className="absolute left-[-9px] grid size-8 -translate-y-1/2 place-items-center rounded-full bg-surface shadow-[0_6px_16px_-6px_rgba(17,40,30,0.5)] ring-[3px] ring-ink">
+          <img src={icon('avatar-runner-v1')} width={24} height={24} alt="" className="size-6 rounded-full" />
+        </motion.span>
+      )}
+    </nav>
+  )
+}
+
 function ScrollProgress() {
   const { scrollYProgress } = useScroll()
   const scaleX = useSpring(scrollYProgress, { stiffness: 140, damping: 26 })
@@ -489,7 +531,7 @@ function Credit() {
     setHist((h) => [{ id: Date.now(), label: r.label, delta: r.delta, to }, ...h].slice(0, 3))
   }
   return (
-    <section className="border-y border-line bg-surface">
+    <section id="credit" className="scroll-mt-16 border-y border-line bg-surface">
       <div className={`mx-auto max-w-7xl ${SECTION}`}>
         <div className="grid gap-x-12 lg:grid-cols-12 lg:items-end">
           <Reveal className="lg:col-span-7"><H2>双向信用：<br />谁不守约谁扣分</H2></Reveal>
@@ -763,6 +805,7 @@ export default function Landing() {
   return (
     <div className="min-h-[100dvh] bg-bg text-ink">
       <ScrollProgress />
+      <PageRoute />
       <Nav />
       <main>
         <RouteHero Cta={Cta} Anchor={Anchor} />
