@@ -220,7 +220,7 @@ export function CampusRoutes() {
         ))}
       </div>
       <p className="mt-4 max-w-[40ch] text-lg leading-relaxed text-muted md:text-xl" aria-live="polite">
-        此刻 {seedTasks().length} 个单里，有 <b className="text-accent">{hits.length} 个</b>顺路，{!hits.length ? '' : '每单'}多走 {!hits.length ? 0 : hits[0].m === hits[hits.length - 1].m ? hits[0].m : `${hits[0].m} 到 ${hits[hits.length - 1].m}`} 分钟。
+        此刻 {seedTasks().length} 个单里，有 <b className="text-accent">{hits.length} 个</b>顺路，{!hits.length ? '' : '每单'}<span className="whitespace-nowrap">多走 {!hits.length ? 0 : hits[0].m === hits[hits.length - 1].m ? hits[0].m : `${hits[0].m} 到 ${hits[hits.length - 1].m}`} 分钟</span>。
       </p>
       <div className="mt-6 lg:grid lg:grid-cols-12 lg:items-start lg:gap-8">
         <div ref={box} className="lg:col-span-8"><CampusMap R={R} hits={hits} reduce={reduce} legend /></div>

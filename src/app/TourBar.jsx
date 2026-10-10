@@ -14,14 +14,14 @@ export function tourStep(state) {
   const t = state.tasks.find((x) => x.id === tour.taskId)
   if (!t) return { n: 1, who: 'poster', text: '发布一个任务', to: '/app/publish?tour=1', cta: '去发布' }
   if (t.status === 'open') {
-    if (!accounts.runner.verified) return { n: 2, who: 'runner', text: '切到跑腿人：你现在是阿远，先做校园认证', to: `/app/verify?back=/app/task/${t.id}`, cta: '去认证' }
+    if (!accounts.runner.verified) return { n: 2, who: 'runner', text: '切到跑腿人阿远：先做校园认证', to: `/app/verify?back=/app/task/${t.id}`, cta: '去认证' }
     return { n: 3, who: 'runner', text: '切到跑腿人：接下这一单', to: `/app/task/${t.id}`, cta: '去接单' }
   }
   if (t.status === 'ongoing' && !t.picked) return { n: 4, who: 'runner', text: '跑腿人：取到后点「我已取到」', to: `/app/task/${t.id}`, cta: '去取件' }
   if (t.status === 'ongoing') return { n: 5, who: 'runner', text: '跑腿人：送到后提交送达凭证', to: `/app/task/${t.id}`, cta: '去送达' }
   if (t.status === 'delivered') return { n: 6, who: 'poster', text: '切回发单人：确认放款', to: `/app/task/${t.id}`, cta: '去确认' }
   if (t.status === 'completed' && !t.ratingByPoster) return { n: 7, who: 'poster', text: '发单人：给跑腿人打分', to: `/app/task/${t.id}`, cta: '去评价' }
-  if (t.status === 'completed' && !t.ratingByRunner) return { n: 8, who: 'runner', text: '切到跑腿人：也给对方打分', to: `/app/task/${t.id}`, cta: '去互评' }
+  if (t.status === 'completed' && !t.ratingByRunner) return { n: 8, who: 'runner', text: '切换身份去互评：也给对方打分', to: `/app/task/${t.id}`, cta: '去互评' }
   if (t.status === 'completed') return { n: 9, who: 'runner', text: '看信用和收入', to: '/app/me', cta: '去看看', final: true }
   return { n: 9, who: null, text: '这单走了申诉或取消分支，演示结束', to: '/app/orders', cta: '看订单', final: true }
 }
@@ -38,7 +38,7 @@ export default function TourBar() {
   // 第 2 步在订单页上：页面自己有「切到跑腿人」和「认证后才能接单」，一路点下去就到认证页
   const here = step && !step.final && ((samePage && (!step.who || step.who === state.role || (onTask && [3, 6, 8].includes(step.n)))) || (onTask && step.n === 2))
   // 已经是这个身份了，就不再说「切到跑腿人」
-  const text0 = step && step.who === state.role ? step.text.replace(/^(切(到|回))?(跑腿人|发单人)[，：]?/, '') : step?.text
+  const text0 = step && step.who === state.role ? step.text.replace(/^((切(到|回))?(跑腿人|发单人)(阿远)?|切换身份去互评)[，：]?/, '') : step?.text
   const arrived = step?.final && loc.pathname === step.to
   // 已经到了「我的」，就不再叫人「去我的看看」
   const text = arrived ? '导览完成' : text0
@@ -55,7 +55,7 @@ export default function TourBar() {
       const head = document.querySelector('header')?.getBoundingClientRect().bottom ?? 64
       const navTop = document.querySelector('nav[aria-label="主导航"]')?.getBoundingClientRect().top ?? innerHeight
       const r = el.getBoundingClientRect()
-      const top = head + 16, bottom = (navTop > innerHeight / 2 ? navTop : innerHeight) - 24
+      const top = head + 16, bottom = (navTop > innerHeight / 2 ? navTop : innerHeight) - 64
       // 贴底常驻的按钮（发布页）本来就看得见，不滚，让人从表单顶上看起
       if (touched) return
       const hard = (navTop > innerHeight / 2 ? navTop : innerHeight) - 4

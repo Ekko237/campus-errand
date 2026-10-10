@@ -123,10 +123,10 @@ export default function CampusMap({ R, hits, reduce, pills = true, walker = true
         <motion.path key={`${R.from}${R.to}`} d={toD(mine)} fill="none" stroke="var(--ink)" strokeOpacity="0.88" className="[stroke-width:18] md:[stroke-width:12]" strokeLinecap="round" strokeLinejoin="round"
           initial={false} style={{ pathLength: p }} />
         {/* 顺路的单：取件到送达那段路，小人经过取件点时亮起 */}
-        {marks.map(({ t, f }) => (
+        {marks.filter(({ t }) => t.from !== t.to).map(({ t, f }) => (
           <path key={`c${R.from}${R.to}${t.id}`} d={toD(routePath(t.from, t.to).pts)} fill="none" stroke="var(--surface)" className="[stroke-width:28] md:[stroke-width:12]" strokeLinecap="round" strokeLinejoin="round" />
         ))}
-        {marks.map(({ t, f }) => (
+        {marks.filter(({ t }) => t.from !== t.to).map(({ t, f }) => (
           <motion.path key={`${R.from}${R.to}${t.id}`} d={toD(routePath(t.from, t.to).pts)} fill="none" stroke="var(--accent)" className="[stroke-width:8] md:[stroke-width:5]" strokeLinecap="round" strokeLinejoin="round"
             initial={false} animate={{ opacity: p >= f ? 0.95 : 0.25 }} transition={{ duration: 0.3 }} />
         ))}
@@ -176,7 +176,8 @@ export default function CampusMap({ R, hits, reduce, pills = true, walker = true
     {legend && (
       <p className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-ink/70 md:text-[14px]">
         <span className="inline-flex items-center gap-1.5"><i className="h-1 w-5 rounded-full bg-ink/80" />你正要走的路</span>
-        <span className="inline-flex items-center gap-1.5"><i className="h-1.5 w-5 rounded-full bg-accent ring-2 ring-surface" />顺手捎的那段（取件到送达）</span>
+        {/* 只有真有「取件到送达」那一段时才写这条图例（占座这类就地完成的单没有这段） */}
+        {hits.some((t) => t.from !== t.to) && <span className="inline-flex items-center gap-1.5"><i className="h-1.5 w-5 rounded-full bg-accent ring-2 ring-surface" />顺手捎的那段（取件到送达）</span>}
         <span className="inline-flex items-center gap-1.5 max-md:hidden"><i className="w-5 border-t-[3px] border-dotted border-accent" />拐进楼里取件（多走的路）</span>
         {hits.some((t) => t.from !== t.to && PLACES[t.to] && t.to !== R.from && t.to !== R.to) && <span className="inline-flex items-center gap-1.5"><i className="size-2.5 rounded-full bg-surface ring-2 ring-accent" />送达点</span>}
         <span className="inline-flex items-center gap-1.5"><i className="size-2.5 rounded-full bg-accent" /><span>取件点，按路上先后编号，走到就变绿，共 {hits.length} 单</span></span>
