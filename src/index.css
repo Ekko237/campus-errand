@@ -52,6 +52,6 @@ body {
 p, li, dd { text-wrap: pretty; }
 h1, h2, h3 { text-wrap: balance; }
 
-/* 标题字：阿里妈妈数黑体（阿里妈妈免费商用字体），只截取首页标题用到的字，自托管一个小文件 */
-@font-face { font-family: "Alimama ShuHeiTi"; src: url("/fonts/shuhei-v1/shuhei.woff2") format("woff2"); font-weight: 700; font-display: swap; }
-.font-display { font-family: "Alimama ShuHeiTi", "Geist Variable", "PingFang SC", "Noto Sans SC", sans-serif; font-weight: 700; letter-spacing: -0.01em; }
+/* 标题字：得意黑（Smiley Sans Oblique，SIL OFL 1.1），按字切片自托管，只下载页面用到的那几片。
+   字体由独立小评审在四个候选里选定（见 ITERATION_LOG 第 72 轮），自带前倾，像「路过、顺手」的动势 */
+.font-display { font-family: "Smiley Sans Oblique", "Geist Variable", "PingFang SC", "Noto Sans SC", sans-serif; font-weight: 400; letter-spacing: 0; margin-left: 0.04em; }

@@ -159,11 +159,11 @@ export default function RouteHero({ Cta, Anchor }) {
   return (
     <section id="top" className="mx-auto grid max-w-7xl items-center gap-10 px-4 pb-20 pt-8 md:px-8 md:pb-28 md:pt-14 lg:min-h-[calc(100svh-64px)] lg:grid-cols-12 lg:gap-12 lg:py-10">
       <div className="lg:col-span-5">
-        <h1 className="font-display text-[42px] font-bold leading-[1.12] tracking-[-0.02em] md:text-[clamp(52px,6vw,72px)] lg:text-[clamp(44px,4.2vw,62px)]">
+        <h1 className="font-display text-[length:clamp(54px,4vw_+_20px,78px)] leading-[1.05]">
           <span className="block overflow-hidden pb-1"><motion.span className="block" {...line(0)}>本来就要经过，</motion.span></span>
           <span className="block overflow-hidden pb-[0.3em]"><motion.span className="block" {...line(1)}><DashUnder>顺手</DashUnder>捎一下</motion.span></span>
         </h1>
-        <motion.p {...fade(0.35)} className="mt-4 max-w-[30ch] text-lg leading-relaxed text-muted md:text-xl">
+        <motion.p {...fade(0.35)} className="mt-6 max-w-[30ch] lg:mt-8 text-lg leading-relaxed text-muted md:text-xl">
           快递在驿站，你在宿舍。总有同学下课正好从驿站走回去，顺手帮你带上。校内实名，赏金先托管。
         </motion.p>
         <motion.div {...fade(0.45)} className="mt-8 flex flex-wrap items-center gap-3">
