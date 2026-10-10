@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useLayoutEffect, useRef } from 'react'
 import { Routes, Route, NavLink, Link, useNavigate, useLocation } from 'react-router-dom'
 import { motion, AnimatePresence, useReducedMotion } from 'motion/react'
 import { ListMagnifyingGlass, PlusCircle, Receipt, UserCircle, CheckCircle, WarningCircle, Path, Megaphone, PersonSimpleRun, SealCheck } from '@phosphor-icons/react'
@@ -135,7 +135,7 @@ function Shell() {
   const { pathname } = useLocation()
   const reduce = useReducedMotion()
   const dir = useDirection(pathname)
-  useEffect(() => { window.scrollTo(0, 0) }, [pathname])
+  useLayoutEffect(() => { window.scrollTo(0, 0) }, [pathname])
   return (
     <div className="min-h-[100dvh] bg-bg">
       <header className="sticky top-0 z-30 border-b border-line bg-bg/95 backdrop-blur">

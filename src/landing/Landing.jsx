@@ -13,11 +13,11 @@ const icon = (name) => `${import.meta.env.BASE_URL}icons/${name}.webp`
 // 段落间距：手机 py-20，平板 py-28，桌面 py-32（第二阶段间距规范）
 const SECTION = 'px-4 py-20 md:px-8 md:py-28 lg:py-32'
 
-function Reveal({ children, className = '', delay = 0, as = 'div', y = 28 }) {
+function Reveal({ children, className = '', delay = 0, as = 'div', y = 12 }) {
   const reduce = useReducedMotion()
   const M = motion[as]
   return (
-    <M className={className} initial={reduce ? false : { opacity: 0, y }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, amount: 0.1, margin: '0px 0px -8% 0px' }} transition={{ duration: 0.5, delay: Math.min(delay, 0.1), ease }}>
+    <M className={className} initial={reduce ? false : { opacity: 0, y }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, amount: 0, margin: '0px 0px 25% 0px' }} transition={{ duration: 0.3, delay: Math.min(delay, 0.05), ease }}>
       {children}
     </M>
   )

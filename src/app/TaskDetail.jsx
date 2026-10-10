@@ -281,7 +281,7 @@ function RateBlock({ t, by }) {
             className={`h-10 rounded-full px-4 text-[15px] font-semibold ${tags.includes(x) ? 'bg-ink text-bg' : 'bg-sunken text-ink'}`}>{x}</button>
         ))}
       </div>
-      <Btn className="mt-4 w-full" onClick={() => { act('rate', { id: t.id, by, stars, tags }); if (by === 'poster' ? t.ratingByRunner : t.ratingByPoster) setTimeout(() => window.scrollTo({ top: 0, behavior: 'smooth' }), 60) }}>提交评价</Btn>
+      <Btn className="mt-4 w-full" onClick={() => { act('rate', { id: t.id, by, stars, tags }); setTimeout(() => window.scrollTo({ top: 0, behavior: 'smooth' }), 60) }}>提交评价</Btn>
     </Panel>
   )
 }

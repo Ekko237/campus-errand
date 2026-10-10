@@ -211,7 +211,7 @@ export function CampusRoutes() {
         {ROUTES.map((x, i) => (
           <button key={x.label} onClick={() => pick(i)} aria-pressed={i === ri}
             className={`relative h-10 whitespace-nowrap rounded-full px-4 text-[15px] font-semibold transition-colors ${i === ri ? 'text-bg' : 'bg-surface text-ink ring-1 ring-line'}`}>
-            {i === ri && <motion.span layoutId="route-chip" transition={{ type: 'spring', stiffness: 420, damping: 34 }} className="absolute inset-0 rounded-full bg-ink" />}
+            {i === ri && <span className="absolute inset-0 rounded-full bg-ink" />}
             <span className="relative">{x.label}</span>
           </button>
         ))}
@@ -391,7 +391,7 @@ export function RouteZoom({ R, hits, reduce, ratio = 2.2, pills = true, vertical
           )
         })}
       </svg>
-      {!vertical && LANDMARKS.filter((m) => m.name && !key.has(m.k)).map((m) => (
+      {!vertical && LANDMARKS.filter((m) => m.name && !key.has(m.k) && X(rot(m).x) > 6 && X(rot(m).x) < 94 && Y(rot(m).y) > 7 && Y(rot(m).y) < 93).map((m) => (
         <motion.span key={m.k} initial={false} animate={{ left: `${X(rot(m).x)}%`, top: `${Y(rot(m).y)}%` }} transition={sp}
           className="pointer-events-none absolute -translate-x-1/2 -translate-y-1/2 whitespace-nowrap text-[10px] font-semibold text-muted/70 md:text-xs">{m.name}</motion.span>
       ))}
@@ -413,11 +413,12 @@ export function RouteZoom({ R, hits, reduce, ratio = 2.2, pills = true, vertical
           const q = P(t.from)
           const s = -side(t.from)
           return (
-            <motion.span key={R.label + t.id} initial={reduce ? false : { opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1, left: `${q[0]}%`, top: `${q[1]}%` }} exit={{ opacity: 0 }}
-              transition={{ type: 'spring', stiffness: 420, damping: 24 }}
-              className={`tnum absolute z-20 whitespace-nowrap rounded-full bg-accent px-2 py-0.5 text-[11px] font-bold text-on-accent shadow-[0_8px_18px_-8px_rgba(11,122,85,0.7)] md:px-3 md:py-1 md:text-sm ${vertical ? { left: '-translate-x-[calc(100%+12px)] -translate-y-1/2', below: 'translate-x-2 translate-y-[12px]', above: 'translate-x-2 -translate-y-[calc(100%+12px)]' }[pillPos[t.id]] : `-translate-x-1/2 ${s < 0 ? '-translate-y-[calc(100%+12px)]' : 'translate-y-[12px]'}`}`}>
+            <span key={R.label + t.id} style={{ left: `${q[0]}%`, top: `${q[1]}%` }} className={`absolute z-20 ${vertical ? { left: '-translate-x-[calc(100%+12px)] -translate-y-1/2', below: 'translate-x-2 translate-y-[12px]', above: 'translate-x-2 -translate-y-[calc(100%+12px)]' }[pillPos[t.id]] : `-translate-x-1/2 ${s < 0 ? '-translate-y-[calc(100%+12px)]' : 'translate-y-[12px]'}`}`}>
+              <motion.span initial={reduce ? false : { opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ type: 'spring', stiffness: 420, damping: 24 }}
+                className="tnum block whitespace-nowrap rounded-full bg-accent px-2 py-0.5 text-[11px] font-bold text-on-accent shadow-[0_8px_18px_-8px_rgba(11,122,85,0.7)] md:px-3 md:py-1 md:text-sm">
               ¥{t.reward} · {t.dm ? `+${t.dm} 米` : '就在路上'}
             </motion.span>
+            </span>
           )
         })}
       </AnimatePresence>
