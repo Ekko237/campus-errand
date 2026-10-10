@@ -1,9 +1,9 @@
 import { useEffect, useLayoutEffect, useRef } from 'react'
 import { Routes, Route, NavLink, Link, useNavigate, useLocation } from 'react-router-dom'
 import { motion, AnimatePresence, useReducedMotion } from 'motion/react'
-import { ListMagnifyingGlass, PlusCircle, Receipt, UserCircle, CheckCircle, WarningCircle, Path, Megaphone, PersonSimpleRun, SealCheck } from '@phosphor-icons/react'
+import { ListMagnifyingGlass, PlusCircle, UserCircle } from '@phosphor-icons/react'
 import { StoreProvider, useStore } from '../store'
-import { Sheet, Btn, spring } from '../ui'
+import { Sheet, Btn, spring, gi } from '../ui'
 import Hall from './Hall'
 import Publish from './Publish'
 import TaskDetail from './TaskDetail'
@@ -14,6 +14,13 @@ import CreditRules from './CreditRules'
 import Wallet from './Wallet'
 import TourBar from './TourBar'
 import DemoPanel from './DemoPanel'
+const Receipt = gi('receipt')
+const CheckCircle = gi('check')
+const WarningCircle = gi('alert')
+const Path = gi('path')
+const Megaphone = gi('megaphone')
+const PersonSimpleRun = gi('runner')
+const SealCheck = gi('seal')
 
 export default function AppRoot() {
   return (

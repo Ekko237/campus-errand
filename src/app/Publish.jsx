@@ -1,10 +1,15 @@
 import { useMemo, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
-import { Minus, Plus, Timer, LockKey, ProhibitInset, Lightning, Wallet, CaretDown } from '@phosphor-icons/react'
+import { Minus, Plus, CaretDown } from '@phosphor-icons/react'
 import { useStore } from '../store'
 import { TYPES, TYPE_KEYS, BUILDINGS, B, WINDOWS, SIZES, suggestPrice, estimateMinutes, findBanned, nextId, code4, POSTER_LIMIT, detourMin } from '../data'
-import { Btn, Panel, Field, Sheet, inputCls } from '../ui'
+import { Btn, Panel, Field, Sheet, inputCls, gi } from '../ui'
 import { ROUTES } from '../landing/RouteHero'
+const Timer = gi('timer')
+const LockKey = gi('lock')
+const ProhibitInset = gi('ban')
+const Lightning = gi('bolt')
+const Wallet = gi('wallet')
 
 const groups = [...new Set(BUILDINGS.map((b) => b.group))]
 function BuildingSelect({ value, onChange, id }) {

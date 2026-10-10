@@ -1,9 +1,10 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { Receipt, ArrowRight } from '@phosphor-icons/react'
+import { ArrowRight } from '@phosphor-icons/react'
 import { useStore } from '../store'
 import { B } from '../data'
-import { TypeTag, Empty, Btn, ago } from '../ui'
+import { TypeTag, Empty, Btn, ago, gi } from '../ui'
+const Receipt = gi('receipt')
 
 const ACTIVE = ['open', 'ongoing', 'delivered', 'disputed']
 const STATUS_TEXT = { open: '待接单', ongoing: '进行中', delivered: '待确认', completed: '已完成', disputed: '申诉中', refunded: '已退款', cancelled: '已取消' }

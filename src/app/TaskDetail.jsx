@@ -1,10 +1,24 @@
 import { useEffect, useState } from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
 import { motion, useReducedMotion, useMotionValue, useTransform, animate } from 'motion/react'
-import { ArrowLeft, MapPin, Clock, LockKey, LockKeyOpen, EyeSlash, Phone, Package, House, ShieldCheck, Camera, Numpad, Check, Scales, Warning, FileX, ArrowClockwise } from '@phosphor-icons/react'
+import { ArrowLeft, Check, ArrowClockwise } from '@phosphor-icons/react'
 import { useStore } from '../store'
 import { B, dist, fmtDist, RUNNER_HOME, minCreditFor, levelOf, detourMin } from '../data'
-import { Btn, Panel, TypeTag, UrgentTag, VerifiedBadge, Sheet, Stars, Empty, Field, inputCls, left, clock, spring } from '../ui'
+import { Btn, Panel, TypeTag, UrgentTag, VerifiedBadge, Sheet, Stars, Empty, Field, inputCls, left, clock, spring, gi } from '../ui'
+const MapPin = gi('pin')
+const Clock = gi('clock')
+const LockKey = gi('lock')
+const LockKeyOpen = gi('lock-open')
+const EyeSlash = gi('eye-off')
+const Phone = gi('phone')
+const Package = gi('parcel')
+const House = gi('door')
+const ShieldCheck = gi('shield-check')
+const Camera = gi('camera')
+const Numpad = gi('keypad')
+const Scales = gi('scales')
+const Warning = gi('warning')
+const FileX = gi('doc-x')
 
 const STEPS = ['发布', '接单', '进行中', '送达', '确认', '互评']
 // 已完成的步数，也就是「当前该做的那一步」的下标：发布完等接单 = 1，双方互评完 = 6（全部打勾）
@@ -254,7 +268,7 @@ function DeliverSheet({ t, open, onClose }) {
         </div>
       )}
       <label className="mt-5 flex items-center gap-3 rounded-xl bg-sunken p-3 text-[15px]">
-        <input type="checkbox" checked={late} onChange={(e) => setLate(e.target.checked)} className="size-5 accent-[var(--accent)]" />
+        <input type="checkbox" aria-label="演示：模拟超时送达" checked={late} onChange={(e) => setLate(e.target.checked)} className="size-5 accent-[var(--accent)]" />
         <span>演示：模拟这单超时送达（看信用 -3）</span>
       </label>
       <Btn size="lg" className="mt-5 w-full" onClick={submit}>提交凭证</Btn>
@@ -264,24 +278,24 @@ function DeliverSheet({ t, open, onClose }) {
 
 function RateBlock({ t, by }) {
   const { act } = useStore()
-  const [stars, setStars] = useState(5)
+  const [stars, setStars] = useState(0)
   const tagsGood = by === 'poster' ? ['准时', '沟通顺畅', '物品完好'] : ['描述准确', '确认及时', '好说话']
   const tagsBad = by === 'poster' ? ['超时', '物品有损', '态度差'] : ['描述不符', '拖延确认', '态度差']
   const [tags, setTags] = useState([])
   const opts = stars >= 4 ? tagsGood : stars <= 2 ? tagsBad : [...tagsGood.slice(0, 2), tagsBad[0]]
-  const effect = stars >= 4 ? '+1' : stars <= 2 ? '-4' : '不变'
+  const effect = !stars ? '看你打几星' : stars >= 4 ? '+1' : stars <= 2 ? '-4' : '不变'
   return (
     <Panel className="p-4">
       <p className="text-[17px] font-semibold">{by === 'poster' ? '给跑腿人打分' : '给发单人打分'}</p>
       <p className="mt-0.5 text-sm text-muted">对方信用 {effect}（4 到 5 星 +1，1 到 2 星 -4）</p>
       <div className="mt-3"><Stars value={stars} onChange={(n) => { setStars(n); setTags([]) }} /></div>
       <div className="mt-3 flex flex-wrap gap-2">
-        {opts.map((x) => (
+        {stars > 0 && opts.map((x) => (
           <button key={x} onClick={() => setTags((v) => (v.includes(x) ? v.filter((y) => y !== x) : [...v, x]))} aria-pressed={tags.includes(x)}
             className={`h-10 rounded-full px-4 text-[15px] font-semibold ${tags.includes(x) ? 'bg-ink text-bg' : 'bg-sunken text-ink'}`}>{x}</button>
         ))}
       </div>
-      <Btn className="mt-4 w-full" onClick={() => { act('rate', { id: t.id, by, stars, tags }); setTimeout(() => window.scrollTo({ top: 0, behavior: 'smooth' }), 60) }}>提交评价</Btn>
+      <Btn className="mt-4 w-full" disabled={!stars} onClick={() => { act('rate', { id: t.id, by, stars, tags }); setTimeout(() => window.scrollTo({ top: 0, behavior: 'smooth' }), 60) }}>{stars ? '提交评价' : '先点星星打分'}</Btn>
     </Panel>
   )
 }
@@ -532,10 +546,12 @@ export default function TaskDetail() {
       <div className="flex items-center gap-2">
         <button onClick={() => nav(-1)} aria-label="返回" className="grid size-10 place-items-center rounded-full bg-surface ring-1 ring-line"><ArrowLeft size={20} weight="bold" /></button>
         <span className="text-[15px] font-semibold text-muted">订单详情</span>
-        <span className={`ml-auto rounded-full px-3 py-1 text-sm font-semibold ${['refunded', 'cancelled', 'disputed'].includes(t.status) ? 'bg-sunken text-ink' : 'bg-accent-soft text-accent'}`}>{STATUS_TEXT[t.status]}</span>
+        <span className={`ml-auto rounded-full px-3 py-1 text-sm font-semibold ${['refunded', 'cancelled', 'disputed'].includes(t.status) ? 'bg-sunken text-ink' : 'bg-accent-soft text-accent'}`}>{t.status === 'ongoing' && t.picked ? '送达中' : STATUS_TEXT[t.status]}</span>
       </div>
 
       {t.status === 'completed' && t.ratingByPoster && t.ratingByRunner && <WrapUp t={t} />}
+
+      <Panel className="p-4"><Stepper t={t} /></Panel>
 
       {pmode === 'open' && <><PickupCard t={t} /><div><Actions t={t} /></div></>}
 
@@ -547,7 +563,6 @@ export default function TaskDetail() {
         </div>
       )}
 
-      <Panel className="p-4"><Stepper t={t} /></Panel>
 
       <div>
         <div className="flex flex-wrap items-center gap-2"><TypeTag type={t.type} />{t.urgent && <UrgentTag />}{state.role === 'runner' && t.status === 'open' && <RouteFit t={t} />}</div>

@@ -2,10 +2,16 @@ import { useEffect, useMemo, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence, useReducedMotion } from 'motion/react'
 import { RouteZoom, ROUTES } from '../landing/RouteHero'
-import { CaretDown, MapPin, Clock, LockSimple, MagnifyingGlass, WarningOctagon, ShieldCheck, ArrowRight, Lightning } from '@phosphor-icons/react'
+import { CaretDown, MagnifyingGlass, ArrowRight } from '@phosphor-icons/react'
 import { useStore } from '../store'
 import { TYPES, TYPE_KEYS, B, BUILDINGS, dist, fmtDist, detourMin, detourMeters, RUNNER_HOME, levelOf, minCreditFor, POSTER_WARN } from '../data'
-import { TypeTag, UrgentTag, Panel, Empty, Btn, left, spring } from '../ui'
+import { TypeTag, UrgentTag, Panel, Empty, Btn, left, spring, gi } from '../ui'
+const MapPin = gi('pin')
+const Clock = gi('clock')
+const LockSimple = gi('lock')
+const WarningOctagon = gi('alert')
+const ShieldCheck = gi('shield-check')
+const Lightning = gi('bolt')
 
 const SORTS = [['route', '顺我路'], ['dist', '距离最近'], ['reward', '赏金最高'], ['deadline', '截止最早']]
 let loadedOnce = false
@@ -39,7 +45,7 @@ export function TaskCard({ t, me, role, route }) {
           const m = detourMin(route.from, route.to, t)
           return <span className={`tnum rounded-full px-2 py-0.5 font-semibold ${m <= 5 ? 'bg-accent-soft text-accent' : 'bg-sunken text-ink'}`}>{m <= 5 ? '顺路 · ' : ''}多走 {m} 分钟</span>
         })() : <span className="tnum">距你 {fmtDist(d)}</span>}
-        <span>{t.posterId === 'poster' ? '我发布的' : `${t.posterName} · 信用 ${t.posterCredit}`}</span>
+        <span className="basis-full">{t.posterId === 'poster' ? '我发布的' : `${t.posterName} · 信用 ${t.posterCredit}`}</span>
       </div>
       {t.posterId !== 'poster' && t.posterCredit < POSTER_WARN && (
         <p className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-danger-soft px-3 py-1.5 text-sm font-medium text-danger">
@@ -74,6 +80,7 @@ function RoleBanner() {
   const me = state.accounts.runner
   const nav = useNavigate()
   if (state.role === 'poster' && !state.tour.active && !state.tour.done) {
+    if (!state.onboarded) return null
     const start = () => { act('tour', { tour: { active: true, taskId: null, done: false } }); nav('/app/publish?tour=1') }
     return (
       <Panel className="flex items-center gap-3 p-4">
@@ -132,7 +139,7 @@ export default function Hall() {
   })
   const [urgentOnly, setUrgentOnly] = useState(false)
   const [goodPoster, setGoodPoster] = useState(false)
-  const [loading, setLoading] = useState(!loadedOnce)
+  const [loading, setLoading] = useState(false)
   const [errDismissed, setErrDismissed] = useState(false)
   useEffect(() => {
     if (!loading) return
@@ -204,7 +211,7 @@ export default function Hall() {
 
       {sortBy === 'route' && (
         <div className="rounded-2xl bg-accent-soft p-2 pb-3">
-          <RouteZoom R={{ ...route, label: route.from + route.to }} reduce={reduce} ratio={2.5} pills={false}
+          <RouteZoom R={{ ...route, label: route.from + route.to }} reduce={reduce} ratio={2.2} pills={false} walker={false}
             hits={state.tasks.filter((t) => t.status === 'open' && t.deadline > Date.now() && detourMin(route.from, route.to, t) <= 5).map((t) => ({ ...t, dm: detourMeters(route.from, route.to, t) }))} />
           <div className="px-2 pt-3">
           <div className="flex items-center gap-3">

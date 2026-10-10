@@ -1,9 +1,12 @@
 import { useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
-import { ArrowLeft, SealCheck, IdentificationCard, EnvelopeSimple, CaretDown } from '@phosphor-icons/react'
+import { ArrowLeft, CaretDown } from '@phosphor-icons/react'
 import { useStore } from '../store'
-import { Btn, Panel, Field, VerifiedBadge, inputCls } from '../ui'
+import { Btn, Panel, Field, VerifiedBadge, inputCls, gi } from '../ui'
 import { CREDIT_INIT, code4 } from '../data'
+const SealCheck = gi('seal')
+const IdentificationCard = gi('id-card')
+const EnvelopeSimple = gi('envelope')
 
 export default function Verify() {
   const { state, act } = useStore()
@@ -13,8 +16,8 @@ export default function Verify() {
   const who = state.role === 'poster' ? 'poster' : 'runner'
   const me = state.accounts[who]
   const [mode, setMode] = useState('id')
-  const [sid, setSid] = useState('')
-  const [college, setCollege] = useState('')
+  const [sid, setSid] = useState(() => (state.tour.active ? '2023011456' : ''))
+  const [college, setCollege] = useState(() => (state.tour.active ? '计算机学院' : ''))
   const [email, setEmail] = useState('')
   const [sent, setSent] = useState(null)
   const [code, setCode] = useState('')

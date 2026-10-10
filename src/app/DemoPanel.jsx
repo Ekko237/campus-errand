@@ -1,9 +1,10 @@
 import { useNavigate } from 'react-router-dom'
 import { motion, useReducedMotion } from 'motion/react'
-import { Check, Path, ArrowCounterClockwise } from '@phosphor-icons/react'
+import { Check, ArrowCounterClockwise } from '@phosphor-icons/react'
 import { useStore } from '../store'
 import { levelOf, posterTierOf } from '../data'
-import { Avatar } from '../ui'
+import { Avatar, gi } from '../ui'
+const Path = gi('path')
 
 const STEPS = ['发布托管', '认证接单', '取件送达', '提交凭证', '确认放款', '发单人评价', '跑腿人回评']
 function progress(t) {

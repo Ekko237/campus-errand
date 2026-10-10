@@ -4,8 +4,12 @@ import { Link } from 'react-router-dom'
 import {
   motion, AnimatePresence, useReducedMotion, useScroll, useTransform, useSpring, useMotionValue, useInView, animate, useMotionValueEvent,
 } from 'motion/react'
-import { ArrowRight, ArrowDown, CaretLeft, CaretRight, Plus, ArrowCounterClockwise, LockKey, LockKeyOpen, EyeSlash } from '@phosphor-icons/react'
+import { ArrowRight, ArrowDown, CaretLeft, CaretRight, Plus, ArrowCounterClockwise } from '@phosphor-icons/react'
 import { RULES_PLUS, RULES_MINUS, POSTER_RULES_PLUS, POSTER_RULES_MINUS, LEVELS, POSTER_TIERS, TYPES } from '../data'
+import { gi } from '../ui'
+const LockKey = gi('lock')
+const LockKeyOpen = gi('lock-open')
+const EyeSlash = gi('eye-off')
 
 const ease = [0.16, 1, 0.3, 1]
 const img = (name) => `${import.meta.env.BASE_URL}images/${name}.webp`
@@ -323,7 +327,7 @@ function OrderStage({ i }) {
 
 function LoopStep({ s, now, past }) {
   return (
-    <li className={`flex scroll-mt-40 gap-5 transition-opacity duration-300 lg:min-h-[min(20vh,200px)] lg:items-center ${now ? 'opacity-100' : past ? 'opacity-30 lg:opacity-70' : 'opacity-60'}`}>
+    <li className={`flex scroll-mt-40 gap-5 transition-opacity duration-300 lg:min-h-[min(20vh,200px)] lg:items-center ${now ? 'opacity-100' : past ? 'opacity-30 lg:opacity-70' : 'opacity-75'}`}>
       <span className="grid size-16 shrink-0 place-items-center rounded-2xl bg-bg">
         <img src={icon(s.icon + '-v1')} width={48} height={48} alt={s.alt} loading="lazy" className="size-12 object-contain" />
       </span>
@@ -485,7 +489,7 @@ function Trust() {
             <Reveal><H2>凭什么把取件码<br />交给一个陌生同学</H2></Reveal>
             <Reveal delay={0.05}><Lead>校园跑腿最大的成本不是钱，是对陌生人的不放心。信任拆成五道关，包裹每过一关，就少一种怕。</Lead></Reveal>
             <Reveal delay={0.1}>
-              <div className="mt-10 hidden lg:block"><PrivacyDemo /></div>
+              <div className="mt-8 lg:mt-10"><PrivacyDemo /></div>
             </Reveal>
           </div>
         </div>
@@ -781,7 +785,7 @@ function Roadmap() {
 // 首屏之后第二段：从「一条路」放大到「整个校园」
 function Routes() {
   return (
-    <section id="routes" className="mx-auto max-w-7xl scroll-mt-16 px-4 pb-20 pt-4 md:px-8 md:pb-28 md:pt-8 lg:pb-32">
+    <section id="routes" className="mx-auto max-w-7xl scroll-mt-16 px-4 pb-4 pt-4 md:px-8 md:pb-12 md:pt-8 lg:pb-16">
       <Reveal><H2>同一时间，<br />校园里到处是顺路</H2></Reveal>
       <div className="mt-5"><CampusRoutes /></div>
     </section>

@@ -165,7 +165,7 @@ export default function RouteHero({ Cta, Anchor }) {
 // 收尾：同一张校园图上，8 个示例单的路线；选一条「我正要走的路」，顺路的单变绿并标出多走几分钟（都是按数据实时算的）
 const PX = (x) => 13 + ((x + 600) / 1580) * 74
 const PY = (y) => 7 + ((y + 380) / 1280) * 84
-const SHORT = { cainiao: '菜鸟驿站', sf: '顺丰点', jd: '京东柜', canteen1: '一食堂', canteen2: '二食堂', market: '教育超市', gate: '北门', lib: '图书馆', jiao1: '一教', hall: '报告厅', gym: '体育馆', zhu3: '竹园', mei5: '梅园', tao2: '桃园', lan1: '兰园', yan: '研究生公寓' }
+const SHORT = { cainiao: '菜鸟驿站', sf: '顺丰点', jd: '京东柜', canteen1: '一食堂', canteen2: '二食堂', market: '教育超市', gate: '北门', lib: '图书馆', jiao1: '一教', hall: '学术报告厅', gym: '体育馆', zhu3: '竹园', mei5: '梅园', tao2: '桃园', lan1: '兰园', yan: '研究生公寓' }
 export const ROUTES = [
   { from: 'jiao1', to: 'mei5', label: '一教下课回梅园' },
   { from: 'jiao1', to: 'lan1', label: '一教去兰园' },
@@ -249,7 +249,7 @@ function SubwayLine({ R, hits, reduce }) {
 // 校园底图（生成图）在数据坐标里的位置：中心和宽高，跟着镜头一起缩放、旋转
 const CAMPUS_IMG = { cx: 260, cy: 260, w: 3300, h: 1856 }
 
-export function RouteZoom({ R, hits, reduce, ratio = 2.2, pills = true, vertical = false }) {
+export function RouteZoom({ R, hits, reduce, ratio = 2.2, pills = true, vertical = false, walker = true }) {
   const uid = useId().replace(/:/g, '')
   // 坐标：你的路是一条直线 A→B；竖版（手机）把整张图转到 A 在上、B 在下
   const A0 = B[R.from], B0 = B[R.to]
@@ -334,7 +334,6 @@ export function RouteZoom({ R, hits, reduce, ratio = 2.2, pills = true, vertical
       <motion.img src={`${import.meta.env.BASE_URL}images/campus-wide-v1.webp`} width={1600} height={900} alt="" aria-hidden="true" loading="lazy"
         className="pointer-events-none absolute max-w-none select-none" style={{ x: '-50%', y: '-50%' }} initial={false}
         animate={{ left: `${X(imgC.x)}%`, top: `${Y(imgC.y)}%`, width: `${(CAMPUS_IMG.w / (x1 - x0)) * 100}%`, height: `${(CAMPUS_IMG.h / (y1 - y0)) * 100}%`, rotate: (ang * 180) / Math.PI }} transition={sp} />
-      <span aria-hidden="true" className="pointer-events-none absolute inset-0 bg-surface/25" />
       <svg viewBox="0 0 100 100" preserveAspectRatio="none" className="absolute inset-0 size-full" aria-hidden="true">
         {/* 你的路：一条直线 */}
         <motion.line initial={false} animate={{ x1: X(a.x), y1: Y(a.y), x2: X(b.x), y2: Y(b.y) }} transition={sp}
@@ -380,7 +379,7 @@ export function RouteZoom({ R, hits, reduce, ratio = 2.2, pills = true, vertical
           )
         })}
       </AnimatePresence>
-      {!reduce && p > 0 && p < 1 && (
+      {walker && !reduce && p > 0 && p < 1 && (
         <span aria-hidden="true" className="absolute z-30 grid size-8 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full bg-surface shadow-[0_6px_16px_-6px_rgba(17,40,30,0.5)] ring-[3px] ring-ink md:size-10"
           style={{ left: `${X(me.x)}%`, top: `${Y(me.y)}%` }}>
           <img src={icon('avatar-runner-v1')} width={32} height={32} alt="" className="size-6 rounded-full md:size-8" />

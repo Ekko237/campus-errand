@@ -1,8 +1,9 @@
 import { useNavigate, useLocation } from 'react-router-dom'
 import { motion, AnimatePresence, useReducedMotion } from 'motion/react'
-import { X, ArrowRight, Confetti } from '@phosphor-icons/react'
+import { X, ArrowRight } from '@phosphor-icons/react'
 import { useStore } from '../store'
-import { spring } from '../ui'
+import { spring, gi } from '../ui'
+const Confetti = gi('confetti')
 
 const TOTAL = 7
 
