@@ -50,7 +50,7 @@ export function RouteMap() {
   return (
     <div ref={box} className="relative -mx-4 aspect-[600/450] w-[calc(100%+2rem)] overflow-hidden bg-surface sm:mx-0 sm:w-full sm:rounded-[28px] sm:ring-1 sm:ring-line"
       role="img" aria-label="示意地图：你的快递在菜鸟驿站，学弟从一教走回梅园正好经过驿站，顺手捎上，只多走 1 分钟">
-      <img src={`${import.meta.env.BASE_URL}images/campus-hero-v1.webp`} width={1200} height={900} alt="" aria-hidden="true" fetchPriority="high" className="absolute inset-0 size-full object-cover" />
+      <img src={`${import.meta.env.BASE_URL}images/campus-hero-v2.webp`} width={1200} height={900} alt="" aria-hidden="true" fetchPriority="high" className="absolute inset-0 size-full object-cover" />
       <svg viewBox={`0 0 ${W} ${H}`} className="absolute inset-0 size-full" aria-hidden="true">
         {/* 你的需求：虚线 */}
         <motion.path d={NEED} fill="none" stroke="var(--accent)" strokeWidth="5" strokeDasharray="1 10" strokeLinecap="round"
@@ -66,21 +66,21 @@ export function RouteMap() {
           transition={{ duration: 1.1, ease: 'easeOut' }} style={{ transformOrigin: '311px 276px' }} />
       </svg>
 
-      <Node x={128} y={44}><Tag>一教</Tag></Node>
+      <Node x={168} y={16}><Tag>一教</Tag></Node>
       <Node x={311} y={276}>
         <motion.div animate={{ scale: lit ? 1.08 : 1 }} transition={{ type: 'spring', stiffness: 400, damping: 18 }}
           className={`grid size-11 place-items-center rounded-full ring-[3px] transition-colors md:size-14 ${lit ? 'bg-accent-soft ring-accent' : 'bg-surface ring-line'}`}>
           <img src={icon('type-express-v1')} width={36} height={36} alt="" className={`size-7 transition-opacity md:size-9 ${phase >= 2 ? 'opacity-30' : ''}`} />
         </motion.div>
       </Node>
-      <Node x={311} y={324} className="pt-2 md:pt-3"><Tag strong={lit}>菜鸟驿站</Tag></Node>
-      <Node x={524} y={352}>
+      <Node x={311} y={330} className="pt-2 md:pt-3"><Tag strong={lit}>菜鸟驿站</Tag></Node>
+      <Node x={548} y={336}>
         <div className={`size-11 overflow-hidden rounded-full bg-surface ring-[3px] transition-colors md:size-14 ${phase === 3 ? 'ring-accent' : 'ring-line'}`}>
           <img src={icon('avatar-poster-v1')} width={56} height={56} alt="" className="size-full object-cover" />
         </div>
       </Node>
-      <Node x={500} y={402}><Tag>梅园 5 号楼 · 你</Tag></Node>
-      <motion.div className="absolute z-10 -translate-x-1/2 -translate-y-[calc(50%+30px)] md:-translate-y-[calc(50%+46px)]" style={{ left: rl, top: rt }}>
+      <Node x={548} y={384}><Tag>梅园 5 号楼 · 你</Tag></Node>
+      <motion.div className="absolute z-10 -translate-x-1/2 -translate-y-1/2" style={{ left: rl, top: rt }}>
         <div className={`relative size-9 rounded-full bg-surface p-0.5 ring-[3px] shadow-[0_6px_16px_-6px_rgba(17,40,30,0.5)] transition-colors md:size-11 ${phase >= 1 ? 'ring-accent' : 'ring-ink'}`}>
           <img src={icon('avatar-runner-v1')} width={44} height={44} alt="" className="size-full rounded-full object-cover" />
           <AnimatePresence>
