@@ -93,15 +93,19 @@ export default function CampusMap({ R, hits, reduce, pills = true, walker = true
           initial={false} style={{ pathLength: p }} />
         {/* 顺路的单：取件到送达那段路，小人经过取件点时亮起 */}
         {marks.map(({ t, f }) => (
-          <path key={`c${R.from}${R.to}${t.id}`} d={toD(routePath(t.from, t.to).pts)} fill="none" stroke="var(--surface)" className="[stroke-width:22] md:[stroke-width:12]" strokeLinecap="round" strokeLinejoin="round" />
+          <path key={`c${R.from}${R.to}${t.id}`} d={toD(routePath(t.from, t.to).pts)} fill="none" stroke="var(--surface)" className="[stroke-width:28] md:[stroke-width:12]" strokeLinecap="round" strokeLinejoin="round" />
         ))}
         {marks.map(({ t, f }) => (
-          <motion.path key={`${R.from}${R.to}${t.id}`} d={toD(routePath(t.from, t.to).pts)} fill="none" stroke="var(--accent)" className="[stroke-width:12] md:[stroke-width:7]" strokeLinecap="round" strokeLinejoin="round"
+          <motion.path key={`${R.from}${R.to}${t.id}`} d={toD(routePath(t.from, t.to).pts)} fill="none" stroke="var(--accent)" className="[stroke-width:16] md:[stroke-width:7]" strokeLinecap="round" strokeLinejoin="round"
             initial={false} animate={{ opacity: p >= f ? 0.95 : 0.25 }} transition={{ duration: 0.3 }} />
         ))}
       </svg>
       {marks.map(({ t, f }, i) => (
         <span key={t.id} aria-hidden="true" className={`tnum absolute z-10 grid size-5 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full text-[11px] font-bold text-on-accent ring-[3px] ring-surface transition-colors md:size-7 md:text-[13px] ${p >= f ? 'bg-accent' : 'bg-muted'}`} style={pct(markAt(t.from))}>{i + 1}</span>
+      ))}
+      {/* 送达点：空心圈，和取件点的实心编号对应，看得出「取件到送达」是哪一段 */}
+      {marks.filter(({ t }) => t.from !== t.to && PLACES[t.to] && !ends.includes(t.to)).map(({ t }) => (
+        <span key={`d${t.id}`} aria-hidden="true" className="absolute z-10 size-3.5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-surface ring-[3px] ring-accent md:size-4" style={pct(PLACES[t.to].door)} />
       ))}
       {marks.map(({ t }) => (
         <span key={`p${t.id}`} aria-hidden="true" className="tnum absolute z-10 -translate-x-1/2 translate-y-[9px] rounded-full bg-surface px-1 text-[10px] font-bold leading-4 text-accent shadow-sm md:hidden" style={pct(markAt(t.from))}>¥{t.reward}</span>
@@ -140,6 +144,7 @@ export default function CampusMap({ R, hits, reduce, pills = true, walker = true
         <span className="inline-flex items-center gap-1.5"><i className="h-1 w-5 rounded-full bg-ink/80" />你正要走的路</span>
         <span className="inline-flex items-center gap-1.5"><i className="h-1.5 w-5 rounded-full bg-accent ring-2 ring-surface" />顺手捎的那段（取件到送达）</span>
         <span className="inline-flex items-center gap-1.5 max-md:hidden"><i className="w-5 border-t-[3px] border-dotted border-accent" />拐进楼里取件（多走的路）</span>
+        {hits.some((t) => t.from !== t.to) && <span className="inline-flex items-center gap-1.5"><i className="size-2.5 rounded-full bg-surface ring-2 ring-accent" />送达点</span>}
         <span className="inline-flex items-center gap-1.5"><i className="size-2.5 rounded-full bg-accent" /><span>取件点，<span className="md:hidden">按路上先后编号，</span>共 {hits.length} 单</span></span>
       </p>
     )}
