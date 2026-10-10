@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
 import { motion, useReducedMotion } from 'motion/react'
 import { ArrowLeft, MapPin, Clock, LockKey, LockKeyOpen, EyeSlash, Phone, Package, House, ShieldCheck, Camera, Numpad, Check, Scales, Warning, FileX, ArrowClockwise } from '@phosphor-icons/react'
@@ -79,8 +79,34 @@ function PrivateInfo({ t, role }) {
   )
 }
 
-// 接单后最要紧的信息：取件码放大、置顶，带复制按钮
+// 取件码揭晓：每一位先快速跳数，再从左到右依次定下来
+function CodeReveal({ code, play }) {
+  const [shown, setShown] = useState(play ? code.replace(/\d/g, '0') : code)
+  useEffect(() => {
+    if (!play) return
+    const t0 = performance.now()
+    const id = setInterval(() => {
+      const el = performance.now() - t0
+      let k = 0
+      const next = code.split('').map((ch) => {
+        if (!/\d/.test(ch)) return ch
+        const settled = el > 380 + k++ * 110
+        return settled ? ch : String(Math.floor(Math.random() * 10))
+      }).join('')
+      setShown(next)
+      if (next === code) clearInterval(id)
+    }, 45)
+    return () => clearInterval(id)
+  }, [code, play])
+  return <span aria-label={code}>{shown}</span>
+}
+
+// 接单后最要紧的信息：取件码放大、置顶，带复制按钮；刚接单的那一下锁打开、码一位位揭晓
 function PickupCard({ t }) {
+  const reduce = useReducedMotion()
+  const [fresh] = useState(() => !reduce && t.acceptedAt && Date.now() - t.acceptedAt < 4000)
+  const [open, setOpen] = useState(!fresh)
+  useEffect(() => { if (!fresh) return; const id = setTimeout(() => setOpen(true), 350); return () => clearTimeout(id) }, [fresh])
   const [copied, setCopied] = useState(false)
   const copy = async () => {
     try { await navigator.clipboard.writeText(t.private.code) } catch {}
@@ -88,12 +114,23 @@ function PickupCard({ t }) {
     setTimeout(() => setCopied(false), 1500)
   }
   return (
-    <section aria-label="取件信息" className="rounded-2xl bg-ink p-4 text-bg">
+    <motion.section aria-label="取件信息" className="relative overflow-hidden rounded-2xl bg-ink p-4 text-bg"
+      initial={fresh ? { clipPath: 'inset(0 0 100% 0 round 16px)', y: -8 } : false} animate={{ clipPath: 'inset(0 0 0% 0 round 16px)', y: 0 }} transition={{ type: 'spring', stiffness: 260, damping: 30 }}>
       {t.private?.code ? (
         <>
-          <p className="flex items-center gap-1.5 text-sm font-semibold opacity-75"><LockKeyOpen size={16} weight="bold" />取件码，到{B[t.from]?.name}报这个码</p>
+          <div className="flex items-start justify-between gap-2">
+          <p className="flex items-center gap-1.5 text-sm font-semibold opacity-75">
+            <motion.span key={open ? 'o' : 'c'} initial={fresh ? { rotate: -20, scale: 0.6 } : false} animate={{ rotate: 0, scale: 1 }} transition={{ type: 'spring', stiffness: 500, damping: 14 }} className="inline-flex">
+              {open ? <LockKeyOpen size={16} weight="bold" /> : <LockKey size={16} weight="bold" />}
+            </motion.span>取件码，到{B[t.from]?.name}报这个码
+          </p>
+          {fresh && (
+            <motion.span className="shrink-0 whitespace-nowrap rounded-full bg-accent px-2.5 py-0.5 text-xs font-bold text-on-accent"
+              initial={{ scale: 0, rotate: -12 }} animate={{ scale: 1, rotate: 0 }} transition={{ type: 'spring', stiffness: 500, damping: 16, delay: 0.25 }}>刚刚接单</motion.span>
+          )}
+          </div>
           <div className="mt-1 flex items-center justify-between gap-3">
-            <p className="tnum text-4xl font-bold tracking-wide">{t.private.code}</p>
+            <p className="tnum text-4xl font-bold tracking-wide"><CodeReveal code={t.private.code} play={fresh} /></p>
             <button onClick={copy} className="h-10 shrink-0 whitespace-nowrap rounded-full bg-bg/15 px-4 text-sm font-semibold transition active:scale-95">{copied ? '已复制' : '复制'}</button>
           </div>
         </>
@@ -105,7 +142,7 @@ function PickupCard({ t }) {
         <div className="flex gap-3"><dt className="w-10 shrink-0 opacity-70">电话</dt><dd className="tnum font-semibold">{t.private?.phone}（虚拟号）</dd></div>
       </dl>
       <p className="mt-2 text-xs opacity-60">只在接单期间可见，订单结束后自动隐藏</p>
-    </section>
+    </motion.section>
   )
 }
 

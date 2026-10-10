@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { motion, animate, useMotionValue, useTransform, useReducedMotion } from 'motion/react'
 import { Wallet, CaretRight, ArrowRight, ArrowCounterClockwise, ShieldWarning, ListBullets } from '@phosphor-icons/react'
@@ -6,13 +6,13 @@ import { useStore, useMe } from '../store'
 import { levelOf, nextLevel, iconUrl, posterTierOf, posterNextTier } from '../data'
 import { Avatar, VerifiedBadge, Panel, Btn, Empty, ago } from '../ui'
 
-function CountUp({ value }) {
+function CountUp({ value, from = value }) {
   const reduce = useReducedMotion()
-  const mv = useMotionValue(value)
+  const mv = useMotionValue(reduce ? value : from)
   const out = useTransform(mv, (v) => Math.round(v))
   useEffect(() => {
     if (reduce) { mv.set(value); return }
-    const c = animate(mv, value, { duration: 0.9, ease: [0.16, 1, 0.3, 1] })
+    const c = animate(mv, value, { duration: from !== value ? 1.4 : 0.9, delay: from !== value ? 0.3 : 0, ease: [0.16, 1, 0.3, 1] })
     return () => c.stop()
   }, [value, reduce, mv])
   return <motion.span>{out}</motion.span>
@@ -27,6 +27,15 @@ export default function Me() {
   const posted = state.tasks.filter((t) => t.posterId === 'poster').length + me.ledger.filter((l) => l.sample && l.label.startsWith('发布')).length
   const good = me.ratings.filter((r) => r >= 4).length
   const rate = me.ratings.length ? Math.round((good / me.ratings.length) * 100) + '%' : '暂无'
+  // 刚发生的信用变化（10 秒内）：进「我的」页时从旧分数滚到新分数，跨档就弹出升级
+  const [recent] = useState(() => {
+    if (me.credit == null) return null
+    const fresh = me.creditLog.filter((l) => Date.now() - l.at < 10000)
+    const delta = fresh.reduce((a, l) => a + l.delta, 0)
+    return delta ? { from: me.credit - delta, delta } : null
+  })
+  const tierOf = (c) => (me.id === 'poster' ? posterTierOf(c) : levelOf(c))
+  const leveled = recent && tierOf(recent.from).name !== tierOf(me.credit).name && recent.delta > 0
   const lv = me.credit != null ? (me.id === 'poster' ? posterTierOf(me.credit) : levelOf(me.credit)) : null
   const nx = me.credit != null ? (me.id === 'poster' ? posterNextTier(me.credit) : nextLevel(me.credit)) : null
   const badges = [
@@ -52,13 +61,20 @@ export default function Me() {
           <div className="flex items-end justify-between">
             <div>
               <p className="whitespace-nowrap text-[15px] font-semibold">{me.id === 'poster' ? '发单人信用' : '跑腿人信用'}</p>
-              <p className="tnum text-6xl font-bold leading-none tracking-tight text-accent"><CountUp value={me.credit} /></p>
+              <p className="tnum flex items-start gap-2 text-6xl font-bold leading-none tracking-tight text-accent"><CountUp value={me.credit} from={recent?.from} />
+                {recent && <motion.span initial={reduce ? false : { opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4, type: 'spring', stiffness: 400, damping: 22 }}
+                  className={`tnum mt-1 rounded-full px-2 py-0.5 text-base font-bold tracking-normal ${recent.delta > 0 ? 'bg-surface text-accent' : 'bg-danger-soft text-danger'}`}>{recent.delta > 0 ? '+' : ''}{recent.delta}</motion.span>}</p>
             </div>
             <div className="flex shrink-0 flex-col items-end text-right">
-              <img src={iconUrl(lv.badge)} width={48} height={48} alt={lv.alt} className="mb-1 size-12 object-contain" />
+              <motion.img key={lv.name} src={iconUrl(lv.badge)} width={48} height={48} alt={lv.alt} className="mb-1 size-12 object-contain"
+                initial={leveled && !reduce ? { scale: 0.3, rotate: -25, opacity: 0 } : false} animate={{ scale: 1, rotate: 0, opacity: 1 }} transition={{ type: 'spring', stiffness: 380, damping: 12, delay: 1.5 }} />
               <p className="whitespace-nowrap text-xl font-bold">「{lv.name}」</p>
             </div>
           </div>
+          {leveled && (
+            <motion.p initial={reduce ? false : { opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ type: 'spring', stiffness: 420, damping: 20, delay: 1.6 }}
+              className="mt-3 inline-flex rounded-full bg-accent px-3 py-1 text-sm font-bold text-on-accent">升级到「{lv.name}」</motion.p>
+          )}
           <p className="mt-2 text-sm text-muted">{lv.desc}</p>
           <div className="mt-4 h-2 overflow-hidden rounded-full bg-surface" role="progressbar" aria-label="距下一等级" aria-valuemin={lv.min} aria-valuemax={nx ? nx.min : 100} aria-valuenow={me.credit}>
             <motion.div className="h-full rounded-full bg-accent" initial={reduce ? false : { width: 0 }} animate={{ width: `${nx ? Math.max(6, ((me.credit - lv.min) / (nx.min - lv.min)) * 100) : 100}%` }} transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1] }} />
