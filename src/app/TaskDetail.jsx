@@ -3,6 +3,8 @@ import { useParams, useNavigate, Link } from 'react-router-dom'
 import { motion, useReducedMotion, useMotionValue, useTransform, animate } from 'motion/react'
 import { ArrowLeft, Check, ArrowClockwise } from '@phosphor-icons/react'
 import { useStore } from '../store'
+import CampusMap from '../landing/CampusMap'
+import { PLACES } from '../campusMap'
 import { B, dist, fmtDist, RUNNER_HOME, minCreditFor, levelOf, detourMin, myRoute, onMyWay } from '../data'
 import { Btn, Panel, TypeTag, UrgentTag, VerifiedBadge, Sheet, Stars, Empty, Field, inputCls, left, clock, spring, gi } from '../ui'
 const MapPin = gi('pin')
@@ -499,7 +501,11 @@ function WrapUp({ t }) {
     <motion.section initial={play ? { opacity: 0, y: 16, scale: 0.98 } : false} animate={{ opacity: 1, y: 0, scale: 1 }} transition={{ type: 'spring', stiffness: 260, damping: 26 }}
       className="overflow-hidden rounded-[24px] bg-accent-deep p-5 text-on-accent" aria-label="这一单的收尾">
       <p className="text-sm font-semibold opacity-75">这一单走完了</p>
-      <p className="mt-1 text-balance text-2xl font-bold">顺路一趟，¥{t.reward} 到账，{rows.every((x) => x.d >= 0) ? '信用都涨了' : '信用有涨有跌'}</p>
+      <p className="mt-1 text-balance text-2xl font-bold"><span className="whitespace-nowrap">顺路一趟，¥{t.reward} 到账，</span><span className="whitespace-nowrap">{rows.every((x) => x.d >= 0) ? '信用都涨了' : '信用有涨有跌'}</span></p>
+      {PLACES[t.from] && PLACES[t.to] && t.from !== t.to ? (
+        // 这一单在校园地图上真正走过的那段路，小人从取件点走到送达点
+        <div className="mt-4 overflow-hidden rounded-2xl ring-1 ring-on-accent/20"><CampusMap R={{ from: t.from, to: t.to }} hits={[]} reduce={!play} pills={false} walker={play} /></div>
+      ) : (
       <div className="relative mt-5 h-12" aria-hidden="true">
         <span className="absolute left-0 right-0 top-1/2 h-[3px] -translate-y-1/2 rounded-full bg-on-accent/25" />
         <motion.span className="absolute left-0 top-1/2 h-[3px] -translate-y-1/2 rounded-full bg-on-accent" initial={play ? { width: '0%' } : false} animate={{ width: '100%' }} transition={{ duration: 1, delay: 0.3, ease }} />
@@ -510,7 +516,8 @@ function WrapUp({ t }) {
             initial={{ left: '0%', x: '-50%', opacity: 0 }} animate={{ left: '100%', opacity: [0, 1, 1, 0] }} transition={{ duration: 1, delay: 0.3, ease }}>¥</motion.span>
         )}
       </div>
-      <div className="flex justify-between text-sm font-semibold">
+      )}
+      <div className="mt-2 flex justify-between text-sm font-semibold">
         <span>{name(t.from)}</span><span className="opacity-75">{t.from === t.to ? '占座' : onMyWay(t) ? '顺路捎到' : '捎到'}</span><span>{name(t.to)}</span>
       </div>
       <dl className="mt-5 grid gap-2">
@@ -553,7 +560,7 @@ export default function TaskDetail() {
 
       {t.status === 'completed' && t.ratingByPoster && t.ratingByRunner && <WrapUp t={t} />}
 
-      <Panel className="p-4"><Stepper t={t} /></Panel>
+      {!(t.status === 'completed' && t.ratingByPoster && t.ratingByRunner) && <Panel className="p-4"><Stepper t={t} /></Panel>}
 
       {pmode === 'open' && <><PickupCard t={t} /><div><Actions t={t} /></div></>}
 
@@ -571,7 +578,7 @@ export default function TaskDetail() {
         <h1 className="mt-3 text-2xl font-bold leading-snug tracking-tight">{t.title}</h1>
         <div className="mt-3 space-y-1.5 text-[15px] text-muted">
           <p className="flex items-start gap-1.5"><MapPin size={18} className="mt-0.5 shrink-0" /><span>{B[t.from]?.name}{t.from !== t.to && <> 到 {B[t.to]?.name}</>}</span></p>
-          <p className="flex items-center gap-1.5"><Clock size={18} />{['open', 'ongoing'].includes(t.status) ? `截止：${left(t.deadline)}` : t.status === 'delivered' || t.status === 'disputed' ? '已送达，等确认' : t.completedAt ? `完成于 ${clock(t.completedAt)}` : STATUS_TEXT[t.status]}</p>
+          <p className="flex items-center gap-1.5"><Clock size={18} />{['open', 'ongoing'].includes(t.status) ? `截止：${left(t.deadline)}` : t.status === 'delivered' || t.status === 'disputed' ? '已送达，等确认' : t.completedAt ? (Date.now() - t.completedAt < 60 * 60 * 1000 ? (Date.now() - t.completedAt < 2 * 60 * 1000 ? '刚刚完成' : `${Math.round((Date.now() - t.completedAt) / 60000)} 分钟前完成`) : `完成于 ${clock(t.completedAt)}`) : STATUS_TEXT[t.status]}</p>
         </div>
         {t.note && <p className="mt-3 rounded-xl bg-sunken p-3 text-[15px]">备注：{t.note}</p>}
       </div>

@@ -86,7 +86,12 @@ export function routePath(a, b) {
 }
 
 // 捎上一单要多走的米数：A → 取件 → 送达 → B，减去 A → B（1 个单位 = 1 米）
+// 进楼取件 / 送进楼里要多走的路（进出一趟）：驿站找货架、图书馆上三楼、宿舍爬楼……亭子和校门在路边，不用进去
+const INSIDE = { station: 50, library: 120, hall: 90, canteen: 80, shop: 60, teach: 60, gym: 60, dorm: 40, gate: 0, kiosk: 0 }
 export function detourMetersMap(A, Bid, t) {
   const via = routePath(A, t.from).len + (t.from !== t.to ? routePath(t.from, t.to).len : 0) + routePath(t.to, Bid).len
-  return Math.max(0, Math.round((via - routePath(A, Bid).len) / 10) * 10)
+  // 送到的地方就是自己要去的楼，送进去不算多走
+  const inside = INSIDE[PLACES[t.from]?.kind] ?? 0
+  const drop = t.to !== Bid && t.to !== t.from ? INSIDE[PLACES[t.to]?.kind] ?? 0 : 0
+  return Math.max(0, Math.round((via - routePath(A, Bid).len + inside + drop) / 10) * 10)
 }

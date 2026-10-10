@@ -23,7 +23,7 @@ const outward = (id) => {
 }
 
 // 一条折线上，离某点最近的位置在整条线里占多少（0 到 1）
-function along(pts, p) {
+export function along(pts, p) {
   let total = 0
   const seg = pts.slice(1).map((q, i) => { const l = Math.hypot(q[0] - pts[i][0], q[1] - pts[i][1]); total += l; return l })
   let best = Infinity, at = 0, acc = 0
@@ -91,12 +91,12 @@ export default function CampusMap({ R, hits, reduce, pills = true, walker = true
       {ends.map((id) => (
         <span key={id} className="absolute z-20" style={pct(PLACES[id].door)}>
           <span className="absolute left-0 top-0 block size-3 -translate-x-1/2 -translate-y-1/2 rounded-full bg-ink ring-[3px] ring-surface md:size-4" />
-          <span className={`absolute left-0 -translate-x-1/2 whitespace-nowrap rounded-full bg-ink px-2 py-0.5 text-[12px] font-semibold text-bg shadow-sm md:px-2.5 md:text-[13px] ${outward(id) === 'up' ? 'bottom-2.5' : 'top-2.5'}`}>{SHORT[id]} {id === R.from ? '出发' : '到达'}</span>
+          <span className={`absolute left-0 -translate-x-1/2 whitespace-nowrap rounded-full bg-ink px-2 py-0.5 text-[12px] font-semibold text-bg shadow-sm md:px-2.5 md:text-[13px] ${outward(id) === 'up' ? 'bottom-3.5' : 'top-3.5'}`}>{SHORT[id]} {id === R.from ? '出发' : '到达'}</span>
         </span>
       ))}
       {!endsOnly && marks.filter(({ t }) => !ends.includes(t.from)).map(({ t }) => (
         <span key={`l${t.id}`} className="absolute z-10" style={pct(markAt(t.from))}>
-          <span className={`absolute left-0 -translate-x-1/2 whitespace-nowrap rounded-full bg-surface px-1.5 py-0.5 text-[12px] font-semibold md:px-2.5 md:text-[13px] text-ink shadow-sm ring-1 ring-line ${outward(t.from) === 'up' ? 'bottom-2.5' : 'top-2.5'}`}>
+          <span className={`absolute left-0 -translate-x-1/2 whitespace-nowrap rounded-full bg-surface px-1.5 py-0.5 text-[12px] font-semibold md:px-2.5 md:text-[13px] text-ink shadow-sm ring-1 ring-line ${outward(t.from) === 'up' ? 'bottom-3.5' : 'top-3.5'}`}>
             <span className="hidden md:inline">{SHORT[t.from]}</span>
             <span className="tnum md:hidden">{TINY[t.from]} ¥{t.reward}</span>
           </span>

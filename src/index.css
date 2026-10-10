@@ -60,3 +60,8 @@ h1, h2, h3 { text-wrap: balance; }
 @keyframes dash-flow { to { stroke-dashoffset: -38; } }
 .dash-flow { animation: dash-flow 1.6s linear infinite; }
 @media (prefers-reduced-motion: reduce) { .dash-flow { animation: none; } }
+
+/* 导览：当前这一步要点的东西，外面一圈呼吸的绿描边 */
+@keyframes tour-ring { 0%, 100% { box-shadow: 0 0 0 3px var(--bg), 0 0 0 5px var(--accent); } 50% { box-shadow: 0 0 0 3px var(--bg), 0 0 0 9px color-mix(in srgb, var(--accent) 35%, transparent); } }
+.tour-focus { animation: tour-ring 1.6s ease-in-out infinite; }
+@media (prefers-reduced-motion: reduce) { .tour-focus { animation: none; box-shadow: 0 0 0 3px var(--bg), 0 0 0 5px var(--accent); } }

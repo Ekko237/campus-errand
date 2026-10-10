@@ -4,7 +4,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom'
 import { ArrowLeft, CaretDown } from '@phosphor-icons/react'
 import { useStore } from '../store'
 import { Btn, Panel, Field, VerifiedBadge, inputCls, gi } from '../ui'
-import { CREDIT_INIT, code4 } from '../data'
+import { CREDIT_INIT, code4, levelOf } from '../data'
 const SealCheck = gi('seal')
 const IdentificationCard = gi('id-card')
 const EnvelopeSimple = gi('envelope')
@@ -31,12 +31,15 @@ export default function Verify() {
 
   if (done) {
     return (
-      <Panel className="p-8 text-center">
+      <Panel className="px-6 py-7 text-center">
         <motion.img initial={reduce ? false : { scale: 0.4, rotate: -12, opacity: 0 }} animate={{ scale: 1, rotate: 0, opacity: 1 }} transition={{ type: 'spring', stiffness: 380, damping: 14 }}
           src={`${import.meta.env.BASE_URL}icons/trust-verify-v1.webp`} width={88} height={88} alt="带对勾的学生证" className="mx-auto size-22 object-contain" />
         <motion.p initial={reduce ? false : { opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }} className="mt-4 text-2xl font-bold">认证通过</motion.p>
-        <motion.p initial={reduce ? false : { opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.3 }} className="mt-1 text-muted">获得校园认证徽章 · 信用从 {CREDIT_INIT} 分起步，现在可以接单了</motion.p>
-        <div className="mt-3 flex justify-center"><VerifiedBadge /></div>
+        <motion.p initial={reduce ? false : { opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.3 }} className="mt-1 text-muted">获得校园认证徽章，现在可以接单了</motion.p>
+        <motion.div initial={reduce ? false : { opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.45 }} className="mt-4 flex items-center justify-center gap-2">
+          <VerifiedBadge />
+          <span className="tnum rounded-full bg-accent-soft px-3 py-1 text-sm font-bold text-accent">信用 {CREDIT_INIT} ·「{levelOf(CREDIT_INIT).name}」</span>
+        </motion.div>
         <p className="mt-5 text-sm text-muted">{back.startsWith('/app/task') ? '马上回到刚才的订单…' : '马上回到你的页面…'}</p>
       </Panel>
     )

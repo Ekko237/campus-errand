@@ -22,7 +22,7 @@ function Reveal({ children, className = '', delay = 0, as = 'div', y = 12 }) {
   const reduce = useReducedMotion()
   const M = motion[as]
   return (
-    <M className={className} initial={reduce ? false : { opacity: 0, y }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, amount: 0, margin: '0px 0px 25% 0px' }} transition={{ duration: 0.3, delay: Math.min(delay, 0.05), ease }}>
+    <M className={className} initial={reduce ? false : { opacity: 0.4, y }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, amount: 0, margin: '0px 0px 40% 0px' }} transition={{ duration: 0.3, delay: Math.min(delay, 0.05), ease }}>
       {children}
     </M>
   )
@@ -348,7 +348,6 @@ function OrderStage({ i }) {
         <StateRow k="取件码" v={code} />
         <StateRow k="信用" v={s.credit} />
       </div>
-      <p className="mt-3 text-xs text-muted">示例订单</p>
     </div>
   )
 }
@@ -457,7 +456,7 @@ function TrustStop({ x, lit, reduce }) {
     <li className="relative flex gap-5 pb-10 last:pb-0 md:gap-6">
       <motion.span animate={{ scale: lit ? 1 : 0.92 }} transition={{ type: 'spring', stiffness: 400, damping: 22 }}
         className={`relative z-10 grid size-14 shrink-0 place-items-center rounded-2xl ring-4 ring-bg transition-colors duration-300 ${lit ? 'bg-accent-soft' : 'bg-sunken'}`}>
-        <img src={icon(x.icon)} width={44} height={44} alt={x.alt} loading="lazy" className={`size-11 object-contain transition duration-300 ${lit ? '' : 'opacity-50 grayscale'}`} />
+        <img src={icon(x.icon)} width={44} height={44} alt={x.alt} loading="lazy" className={`size-11 object-contain transition duration-300 ${lit ? '' : 'opacity-60'}`} />
       </motion.span>
       <div className="min-w-0 pt-1">
         <p className="relative inline-block text-[15px] font-semibold text-muted">
@@ -498,11 +497,12 @@ function PrivacyDemo() {
   )
   return (
     <div className="rounded-[24px] bg-ink p-5 text-bg">
-      <div role="tablist" aria-label="取件信息在三个阶段的样子" className="grid grid-cols-3 gap-1 rounded-full bg-bg/10 p-1 text-sm font-semibold">
+      <div role="tablist" aria-label="取件信息在三个阶段的样子" className="relative grid grid-cols-3 gap-1 rounded-full bg-bg/10 p-1 text-sm font-semibold">
+        {/* 滑块和文字颜色同一时长、同一缓动，切换时不会有一帧白底白字 */}
+        <span aria-hidden="true" className="absolute inset-y-1 left-1 w-[calc((100%-16px)/3)] rounded-full bg-bg transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]" style={{ transform: `translateX(calc(${i} * (100% + 4px)))` }} />
         {PRIV.map((x, k) => (
-          <button key={x.k} role="tab" aria-selected={k === i} onClick={() => pick(k)} className="relative grid h-9 place-items-center rounded-full transition-opacity hover:opacity-100 active:scale-[0.97]">
-            {k === i && <motion.span layoutId="priv-pill" transition={{ type: 'spring', stiffness: 420, damping: 34 }} className="absolute inset-0 rounded-full bg-bg" />}
-            <span className={`relative ${k === i ? 'text-ink' : 'opacity-70'}`}>{x.k}</span>
+          <button key={x.k} role="tab" aria-selected={k === i} onClick={() => pick(k)} className="relative grid h-9 place-items-center rounded-full active:scale-[0.97]">
+            <span className={`relative transition-colors duration-300 ${k === i ? 'text-ink' : 'text-bg/70'}`}>{x.k}</span>
           </button>
         ))}
       </div>
@@ -596,7 +596,7 @@ function Credit() {
       <div className={`mx-auto max-w-7xl ${SECTION}`}>
         <div className="grid gap-x-12 lg:grid-cols-12 lg:items-end">
           <Reveal className="lg:col-span-7"><H2>双向信用：<br />谁不守约谁扣分</H2></Reveal>
-          <Reveal delay={0.05} className="lg:col-span-5 lg:pb-1"><Lead className="lg:mt-0">满分 100，跑腿人认证后从 70 起步，发单人示例账号现在 88 分；不能充值也不能刷。点任意一条规则，看分数和等级怎么变。</Lead></Reveal>
+          <Reveal delay={0.05} className="lg:col-span-5 lg:pb-1"><Lead className="lg:mt-0">满分 100，跑腿人认证后从 70 起步，发单人小满现在 88 分；不能充值也不能刷。点任意一条规则，看分数和等级怎么变。</Lead></Reveal>
         </div>
         <div className="mt-14 grid gap-6 lg:grid-cols-12">
           <Reveal className="lg:col-span-5">
@@ -806,7 +806,7 @@ function Metrics() {
                 <div>
                   <p className="text-7xl font-bold tracking-[-0.04em] md:text-[112px] md:leading-none">97%</p>
                   <p className="mt-2 text-lg font-semibold">每 100 趟顺路，至少 97 趟按时送到</p>
-                  <p className="mt-1 text-[15px] font-medium opacity-60">示例目标值</p>
+                  <p className="mt-1 text-[15px] font-medium opacity-60">目标值</p>
                 </div>
               </div>
             </div>
@@ -815,13 +815,13 @@ function Metrics() {
           <Reveal delay={0.05} className="rounded-2xl bg-bg p-6 ring-1 ring-line">
             <p className="text-lg font-semibold">接单率</p>
             <p className="mt-1 text-5xl font-bold tracking-tight text-accent"><span className="mr-2 align-middle text-base font-semibold tracking-normal opacity-80">至少</span>85%</p>
-            <p className="mt-4 text-[15px] leading-relaxed text-muted">24 小时内被接的单 ÷ 发布的单。低了说明供给不够或定价偏低。示例目标。</p>
+            <p className="mt-4 text-[15px] leading-relaxed text-muted">24 小时内被接的单 ÷ 发布的单。低了说明供给不够或定价偏低。目标值。</p>
           </Reveal>
           <Reveal delay={0.1} className="rounded-2xl bg-bg p-6 ring-1 ring-line">
             <div>
               <p className="text-lg font-semibold">平均接单时长</p>
               <p className="mt-1 text-5xl font-bold tracking-tight text-accent"><span className="mr-2 align-middle text-base font-semibold tracking-normal opacity-80">不超过</span>10 分钟</p>
-              <p className="mt-4 text-[15px] leading-relaxed text-muted">发布到被接的中位时间。跑腿要的是快，超过 10 分钟用户就会自己去。示例目标。</p>
+              <p className="mt-4 text-[15px] leading-relaxed text-muted">发布到被接的中位时间。跑腿要的是快，超过 10 分钟用户就会自己去。目标值。</p>
             </div>
           </Reveal>
         </div>
@@ -831,8 +831,8 @@ function Metrics() {
 }
 
 const ROADMAP = [
-  { when: '现在', t: '顺路接单', d: '说一句「我正要从一教回梅园」，大厅就按捎上每单要多走几分钟排序，5 分钟以内标为顺路。' },
-  { when: '下个月', t: '课表顺路推送', d: '记住常走路线和课表空档，下课前一分钟推送路上的单，不用自己翻大厅。' },
+  { when: '现在', t: '顺路接单 + 下课提醒', d: '说一句「我正要从一教回梅园」，大厅就按捎上每单要多走几分钟排序，5 分钟以内标为顺路；下课前 5 分钟把这条路上的单推给你。' },
+  { when: '下个月', t: '课表自动认路', d: '导入课表，自动认出你每天几点、从哪栋楼走回哪栋楼，不用自己设常走的路。' },
   { when: '下学期', t: '楼长担保', d: '宿舍楼长、社团负责人做担保人，新人起步更快；上线小程序。' },
   { when: '一年内', t: '多校区', d: '同城多校共享信用，开放二手互助和拼单。' },
 ]
@@ -860,7 +860,7 @@ function Roadmap() {
 // 首屏之后第二段：从「一条路」放大到「整个校园」
 function Routes() {
   return (
-    <section id="routes" className="mx-auto max-w-7xl scroll-mt-16 px-4 pb-4 pt-4 md:px-8 md:pb-12 md:pt-8 lg:pb-16">
+    <section id="routes" className="mx-auto max-w-7xl scroll-mt-16 px-4 pb-4 pt-4 md:px-8 md:pb-10 md:pt-8 lg:pb-6">
       <Reveal><H2>同一时间，<br />校园里到处是顺路</H2></Reveal>
       <div className="mt-5"><CampusRoutes /></div>
     </section>
@@ -888,7 +888,7 @@ function Final({ page }) {
             </div>
           </Reveal>
           <Reveal delay={0.1}>
-            <p className="mt-8 text-lg text-muted md:text-xl" aria-live="polite">此刻路上有 <AnimatePresence mode="wait" initial={false}><motion.b key={n} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.18 }} className="tnum inline-block text-3xl text-accent md:text-4xl">{n}</motion.b></AnimatePresence> 单顺路，捎上都不超过 5 分钟</p>
+            <p className="mt-8 text-lg text-muted md:text-xl" aria-live="polite">此刻路上有 <AnimatePresence mode="wait" initial={false}><motion.b key={n} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.18 }} className="tnum inline-block text-3xl text-accent md:text-4xl">{n}</motion.b></AnimatePresence> 单顺路，<span className="whitespace-nowrap">捎上都不超过 5 分钟</span></p>
             <p className="mx-auto mt-3 max-w-[34ch] text-[15px] text-muted">在原型「我的」里打开下课提醒，下课前 5 分钟把这条路上的单推给你。</p>
           </Reveal>
           <Reveal delay={0.15} className="mt-10 flex justify-center">

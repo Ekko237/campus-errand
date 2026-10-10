@@ -29,7 +29,7 @@ function RemindToggle() {
     <button onClick={flip} role="switch" aria-checked={on} aria-label="下课前 5 分钟提醒我路上的单" className="flex w-full items-center gap-3 border-t border-line px-4 py-3 text-left">
       <span className="min-w-0 flex-1">
         <span className="block text-[15px] font-semibold">下课前 5 分钟提醒我路上的单</span>
-        <span className="block text-sm text-muted">{on ? '已开启：每天 17:45 推送这条路上的单（示例，原型不会真的发通知）' : '按课表在你要走这条路之前提醒，不用自己翻大厅'}</span>
+        <span className="block text-sm text-muted">{on ? '已开启：每天 17:45 推送这条路上的单（原型里不真发通知）' : '按课表在你要走这条路之前提醒，不用自己翻大厅'}</span>
       </span>
       <span className={`relative h-7 w-12 shrink-0 rounded-full transition-colors ${on ? 'bg-accent' : 'bg-sunken ring-1 ring-line'}`}>
         <motion.span layout transition={{ type: 'spring', stiffness: 500, damping: 32 }} className={`absolute top-1 size-5 rounded-full bg-surface shadow ${on ? 'right-1' : 'left-1'}`} />
@@ -70,7 +70,7 @@ export default function Me() {
       <div className="flex items-center gap-4">
         <Avatar who={me.id} name={me.name} size={64} />
         <div className="min-w-0">
-          <p className="text-sm text-muted">{me.role}账号（示例）</p>
+          <p className="text-sm text-muted">{me.role}账号</p>
           <p className="text-2xl font-bold">{me.name}</p>
           <div className="mt-1">{me.verified ? <VerifiedBadge /> : <span className="rounded-full bg-sunken px-2.5 py-1 text-sm font-medium text-muted">未认证，只能浏览</span>}</div>
         </div>

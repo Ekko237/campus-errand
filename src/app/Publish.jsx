@@ -194,8 +194,8 @@ export default function Publish() {
               {(passing.length ? passing : [0]).slice(0, 3).map((_, k) => <img key={k} src={`${import.meta.env.BASE_URL}icons/avatar-runner-v1.webp`} width={32} height={32} alt="" className={`size-8 rounded-full bg-surface ring-2 ring-accent-soft ${passing.length ? '' : 'opacity-40 grayscale'}`} />)}
             </span>
             <p className="text-[15px] leading-snug">{passing.length
-              ? <>示例：此刻有 <b className="text-accent">{passing.length} 条</b>同学常走的路经过这一单，比如「{passing[0].label}」</>
-              : <>示例：常走的路线里没有正好经过这里的，赏金高一点会更快有人接</>}</p>
+              ? <>此刻有 <b className="text-accent">{passing.length} 条</b>同学常走的路经过这一单，比如「{passing[0].label}」</>
+              : <>常走的路线里没有正好经过这里的，赏金高一点会更快有人接</>}</p>
           </div>
         )
       })()}
@@ -214,9 +214,9 @@ export default function Publish() {
         </div>
         <div className="mt-4 flex items-center gap-3 rounded-xl bg-accent-soft p-3">
           <Timer size={26} className="shrink-0 text-accent" />
-          <p className="text-[15px] leading-snug">预计 <b className="tnum">{eLo} 到 {eHi} 分钟</b>有人接单<span className="text-muted">（示例估算）</span>{reward < sLo && <span className="block text-sm text-muted">低于建议价，接单会慢一些</span>}</p>
+          <p className="text-[15px] leading-snug">预计 <b className="tnum">{eLo} 到 {eHi} 分钟</b>有人接单{reward < sLo && <span className="block text-sm text-muted">低于建议价，接单会慢一些</span>}</p>
         </div>
-        <p className="mt-3 flex items-center gap-1.5 text-sm text-muted"><Wallet size={16} />发布后从钱包冻结 ¥{reward}，当前余额 ¥{poster.balance}（示例）</p>
+        <p className="mt-3 flex items-center gap-1.5 text-sm text-muted"><Wallet size={16} />发布后从钱包冻结 ¥{reward}，当前余额 ¥{poster.balance}</p>
         {touched && errors.money && <p role="alert" className="mt-2 text-sm font-medium text-danger">{errors.money}</p>}
       </Panel>
 

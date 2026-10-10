@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence, useReducedMotion } from 'motion/react'
 import { ROUTES } from '../landing/RouteHero'
@@ -100,7 +100,7 @@ function RoleBanner() {
         <span className="flex shrink-0 -space-x-2" aria-hidden="true">
           {(passing.length ? passing : [0]).slice(0, 3).map((_, k) => <img key={k} src={`${import.meta.env.BASE_URL}icons/avatar-runner-v1.webp`} width={30} height={30} alt="" className={`size-[30px] rounded-full bg-surface ring-2 ring-surface ${passing.length ? '' : 'opacity-40 grayscale'}`} />)}
         </span>
-        <p className="flex-1 text-[15px] leading-snug text-muted">示例：从<b className="whitespace-nowrap text-ink">{B[from].name.replace(/（.*?）/, '')}</b>到<b className="whitespace-nowrap text-ink">{B[to].name}</b>，有 <b className="text-accent">{passing.length} 条</b>同学常走的路正好经过</p>
+        <p className="flex-1 text-[15px] leading-snug text-muted">从<b className="whitespace-nowrap text-ink">{B[from].name.replace(/（.*?）/, '')}</b>到<b className="whitespace-nowrap text-ink">{B[to].name}</b>，有 <b className="text-accent">{passing.length} 条</b>同学常走的路正好经过</p>
         <Btn size="sm" onClick={() => nav('/app/publish')}>发一单</Btn>
       </Panel>
     )
@@ -128,15 +128,6 @@ export default function Hall() {
   const { state, act, loadError } = useStore()
   const reduce = useReducedMotion()
   const [type, setType] = useState('all')
-  // 筛选条：只有右边真的还有内容时才加渐隐，滚到头就去掉
-  const chips = useRef(null)
-  const [more, setMore] = useState(false)
-  useEffect(() => {
-    const el = chips.current; if (!el) return
-    const f = () => setMore(el.scrollWidth - el.clientWidth - el.scrollLeft > 4)
-    f(); el.addEventListener('scroll', f, { passive: true }); window.addEventListener('resize', f)
-    return () => { el.removeEventListener('scroll', f); window.removeEventListener('resize', f) }
-  }, [])
   const [sort, setSort] = useState('route')
   const [route, setRoute] = useState(() => {
     try { const r = JSON.parse(localStorage.getItem('shunluxia:myroute')); if (B[r?.from] && B[r?.to]) return r } catch { /* 读不到就用默认路线 */ }
@@ -189,10 +180,10 @@ export default function Hall() {
 
       <div className="flex items-end justify-between">
         <h1 className="text-2xl font-bold tracking-tight">任务大厅</h1>
-        <span className="text-sm text-muted">示例数据 · {list.filter((t) => t.deadline > Date.now()).length} 个待接</span>
+        <span className="text-sm text-muted">{list.filter((t) => t.deadline > Date.now()).length} 个待接</span>
       </div>
 
-      <div ref={chips} className={`no-scrollbar -mx-4 flex gap-2 overflow-x-auto px-4 ${more ? '[mask-image:linear-gradient(to_right,black_85%,transparent)]' : ''}`} role="group" aria-label="按类型筛选">
+      <div className="flex flex-wrap gap-2" role="group" aria-label="按类型筛选">
         {[['all', '全部'], ...TYPE_KEYS.map((k) => [k, TYPES[k].label])].map(([k, label]) => {
           const Icon = TYPES[k]?.Icon
           return (
@@ -202,7 +193,6 @@ export default function Hall() {
             </button>
           )
         })}
-        <span aria-hidden="true" className="mx-1 w-px shrink-0 self-stretch bg-line" />
         <button onClick={() => setUrgentOnly((v) => !v)} aria-pressed={urgentOnly}
           className={`inline-flex h-10 shrink-0 items-center gap-1 rounded-full px-3.5 text-[15px] font-semibold transition ${urgentOnly ? 'bg-ink text-bg' : 'bg-surface text-ink ring-1 ring-line'}`}>
           <Lightning size={16} weight="fill" />加急
