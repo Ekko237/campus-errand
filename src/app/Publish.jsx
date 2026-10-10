@@ -227,7 +227,7 @@ export default function Publish() {
 
       <Sheet open={confirm} onClose={() => setConfirm(false)} title="确认发布">
         <dl className="space-y-3 text-[15px]">
-          {[['任务', title], ['路线', `${B[f.from].name} 到 ${B[f.to].name}`], ['时间窗', win.label + (f.urgent ? '，加急' : '')], ['托管赏金', `¥${reward}，确认送达后放款`], ['预估接单', `${eLo} 到 ${eHi} 分钟（示例）`]].map(([k, v]) => (
+          {[['任务', title], ['路线', `${B[f.from].name} 到 ${B[f.to].name}`], ['时间窗', win.label + (f.urgent ? '，加急' : '')], ['托管赏金', `¥${reward}，确认送达后放款`], ['预估接单', `${eLo} 到 ${eHi} 分钟`]].map(([k, v]) => (
             <div key={k} className="flex gap-3"><dt className="w-20 shrink-0 text-muted">{k}</dt><dd className="font-medium">{v}</dd></div>
           ))}
         </dl>

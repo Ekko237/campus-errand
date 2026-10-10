@@ -38,8 +38,10 @@ export default function TourBar() {
   // 第 2 步在订单页上：页面自己有「切到跑腿人」和「认证后才能接单」，一路点下去就到认证页
   const here = step && !step.final && ((samePage && (!step.who || step.who === state.role || (onTask && [3, 6, 8].includes(step.n)))) || (onTask && step.n === 2))
   // 已经是这个身份了，就不再说「切到跑腿人」
-  const text = step && step.who === state.role ? step.text.replace(/^(切(到|回))?(跑腿人|发单人)[，：]?/, '') : step?.text
+  const text0 = step && step.who === state.role ? step.text.replace(/^(切(到|回))?(跑腿人|发单人)[，：]?/, '') : step?.text
   const arrived = step?.final && loc.pathname === step.to
+  // 已经到了「我的」，就不再叫人「去我的看看」
+  const text = arrived ? '这里就是跑腿人的信用和收入，导览完成' : text0
   // 每到一步：给该点的那个东西加一圈会呼吸的描边；它被顶栏或底部导航挡住时才滚动，只滚到刚好露出来
   useEffect(() => {
     if (!here) return
@@ -52,7 +54,7 @@ export default function TourBar() {
       const head = document.querySelector('header')?.getBoundingClientRect().bottom ?? 64
       const navTop = document.querySelector('nav[aria-label="主导航"]')?.getBoundingClientRect().top ?? innerHeight
       const r = el.getBoundingClientRect()
-      const top = head + 12, bottom = (navTop > innerHeight / 2 ? navTop : innerHeight) - 16
+      const top = head + 16, bottom = (navTop > innerHeight / 2 ? navTop : innerHeight) - 24
       if (r.top >= top && r.bottom <= bottom) return
       const dy = r.bottom > bottom && r.height < bottom - top ? r.bottom - bottom : r.top - top
       window.scrollBy({ top: dy, behavior: reduce ? 'auto' : 'smooth' })

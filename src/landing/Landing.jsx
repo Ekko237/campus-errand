@@ -122,10 +122,12 @@ function ScrollProgress() {
 }
 
 const NAV_LINKS = [['scenes', '场景'], ['loop', '一单怎么走'], ['trust', '信任机制'], ['credit', '双向信用']]
+const SECTIONS = [['routes', '整个校园的顺路'], ...NAV_LINKS, ['safety', '这些单发不出去']]
 function Nav({ page }) {
   const { scrollY } = useScroll()
   const [scrolled, setScrolled] = useState(false)
   const [open, setOpen] = useState(false)
+  const [cur, setCur] = useState(null)
   useMotionValueEvent(scrollY, 'change', (v) => setScrolled(v > 420))
   const home = page !== 'thinking'
   const linkCls = 'group relative py-1 transition-colors hover:text-ink'
@@ -150,18 +152,18 @@ function Nav({ page }) {
           <div className={`transition-opacity duration-300 ${scrolled || !home ? '' : 'max-md:pointer-events-none max-md:opacity-0'}`}><Cta size="sm" /></div>
           {!home && <Link to="/" className="grid h-10 place-items-center rounded-full bg-sunken px-4 text-[15px] font-semibold active:scale-[0.97] lg:hidden">回首页</Link>}
           {home && (
-            <button onClick={() => setOpen((v) => !v)} aria-expanded={open} aria-controls="mnav" className="grid h-10 place-items-center rounded-full bg-sunken px-4 text-[15px] font-semibold active:scale-[0.97] lg:hidden">{open ? '收起' : '目录'}</button>
+            <button onClick={() => { setCur([...SECTIONS].reverse().find(([id]) => (document.getElementById(id)?.getBoundingClientRect().top ?? 1e9) < 140)?.[0]); setOpen((v) => !v) }} aria-expanded={open} aria-controls="mnav" className="grid h-10 place-items-center rounded-full bg-sunken px-4 text-[15px] font-semibold active:scale-[0.97] lg:hidden">{open ? '收起' : '目录'}</button>
           )}
         </div>
       </div>
       <AnimatePresence>
-        {open && <motion.button key="scrim" aria-label="关闭目录" onClick={() => setOpen(false)} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-x-0 bottom-0 top-16 bg-ink/25 lg:hidden" />}
+        {open && <motion.button key="scrim" aria-label="关闭目录" onClick={() => setOpen(false)} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-x-0 bottom-0 top-16 bg-ink/40 lg:hidden" />}
         {open && (
           <motion.nav key="menu" id="mnav" aria-label="页面目录" initial={{ opacity: 0, y: -6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -6 }} transition={{ duration: 0.18 }}
             className="absolute inset-x-0 top-16 border-b border-line bg-bg px-4 pb-4 shadow-[0_20px_30px_-24px_rgba(17,40,30,0.35)] lg:hidden">
             <ol className="grid gap-1">
-              {[['routes', '整个校园的顺路'], ...NAV_LINKS, ['safety', '这些单发不出去']].map(([to, l], i) => (
-                <li key={to}><Anchor to={to} onClick={() => setOpen(false)} className="flex h-12 items-center gap-3 rounded-xl px-2 text-[17px] font-semibold active:bg-sunken"><span className="tnum w-5 text-sm text-muted">{i + 1}</span>{l}</Anchor></li>
+              {SECTIONS.map(([to, l], i) => (
+                <li key={to}><Anchor to={to} onClick={() => setOpen(false)} aria-current={cur === to ? 'location' : undefined} className={`flex h-12 items-center gap-3 rounded-xl px-2 text-[17px] active:bg-sunken ${cur === to ? 'bg-accent-soft font-bold text-accent' : 'font-semibold'}`}><span className="tnum w-5 text-sm opacity-60">{i + 1}</span>{l}{cur === to && <span className="ml-auto text-sm font-semibold">你在这里</span>}</Anchor></li>
               ))}
               <li><Link to="/thinking" className="flex h-12 items-center gap-3 rounded-xl px-2 text-[17px] font-semibold text-muted active:bg-sunken"><span className="w-5" />产品思考（写给评审）</Link></li>
             </ol>
@@ -502,10 +504,15 @@ function PrivacyDemo() {
         {/* 滑块和文字颜色同一时长、同一缓动，切换时不会有一帧白底白字 */}
         <span aria-hidden="true" className="absolute inset-y-1 left-1 w-[calc((100%-16px)/3)] rounded-full bg-bg transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]" style={{ transform: `translateX(calc(${i} * (100% + 4px)))` }} />
         {PRIV.map((x, k) => (
-          <button key={x.k} role="tab" aria-selected={k === i} onClick={() => pick(k)} className="relative grid h-9 place-items-center rounded-full active:scale-[0.97]">
-            <span className={`relative transition-colors duration-300 ${k === i ? 'text-ink' : 'text-bg/70'}`}>{x.k}</span>
+          <button key={x.k} role="tab" aria-selected={k === i} onClick={() => pick(k)} className="relative grid h-9 place-items-center rounded-full text-bg/70 active:scale-[0.97]">
+            <span className="relative">{x.k}</span>
           </button>
         ))}
+        {/* 深色字一层，只在白滑块范围内露出来：滑块走到哪，哪里的字就是深色，任何一帧都看得清 */}
+        <span aria-hidden="true" className="pointer-events-none absolute inset-1 grid grid-cols-3 gap-1 text-ink transition-[clip-path] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]"
+          style={{ clipPath: `inset(0 calc(${2 - i} * (100% + 4px) / 3) 0 calc(${i} * (100% + 4px) / 3) round 999px)` }}>
+          {PRIV.map((x) => <span key={x.k} className="grid h-9 place-items-center">{x.k}</span>)}
+        </span>
       </div>
       <div role="tabpanel" className="mt-5">
         <div className="flex items-center justify-between">
@@ -549,7 +556,7 @@ function Trust() {
           {!reduce && (
             <>
               <motion.span aria-hidden="true" style={{ scaleY: fill }} className="absolute bottom-7 left-[27px] top-7 w-[3px] origin-top -translate-x-1/2 rounded-full bg-accent" />
-              <motion.span aria-hidden="true" style={{ top }} className="absolute left-[27px] z-0 -ml-[15px] grid size-[30px] -translate-y-1/2 place-items-center rounded-full bg-surface shadow-[0_6px_16px_-6px_rgba(11,122,85,0.6)] ring-2 ring-accent">
+              <motion.span aria-hidden="true" style={{ top }} className="absolute left-[27px] z-20 -ml-[15px] grid size-[30px] -translate-y-1/2 place-items-center rounded-full bg-surface shadow-[0_6px_16px_-6px_rgba(11,122,85,0.6)] ring-2 ring-accent">
                 <img src={icon('type-express-v1')} width={20} height={20} alt="" className="size-5" />
               </motion.span>
             </>
@@ -731,7 +738,7 @@ function BanDemo() {
           )}
         </AnimatePresence>
       </div>
-      <div className={`mt-3 grid h-12 place-items-center rounded-full text-[15px] font-semibold transition-colors ${hit ? 'bg-sunken text-muted' : 'bg-accent text-on-accent'}`}>{hit ? '不能发布' : '冻结 ¥5 并发布'}</div>
+      <div className={`mt-3 grid h-12 place-items-center rounded-full text-[15px] font-semibold ${hit ? 'bg-sunken text-muted' : 'bg-accent text-on-accent'}`}>{hit ? '不能发布' : '冻结 ¥5 并发布'}</div>
       <p className="mt-4 text-xs font-semibold text-muted">会被拦下的词</p>
       <ul className="mt-2 flex flex-wrap gap-1.5">
         {['代考', '替考', '代签到', '代点名', '代写作业', '代刷网课'].map((w) => (
@@ -867,7 +874,7 @@ function Roadmap() {
 function Routes() {
   return (
     <section id="routes" className="mx-auto max-w-7xl scroll-mt-16 px-4 pb-4 pt-4 md:px-8 md:pb-10 md:pt-8 lg:pb-6">
-      <Reveal><H2>同一时间，<br />校园里到处是顺路</H2></Reveal>
+      <Reveal><H2>同一时间<br />校园里到处是顺路</H2></Reveal>
       <div className="mt-5"><CampusRoutes /></div>
     </section>
   )
@@ -884,7 +891,7 @@ function Final({ page }) {
     <section className="border-t border-line">
       {page === 'thinking' ? (
         <div className="mx-auto max-w-3xl px-4 py-20 text-center md:py-28">
-          <Reveal><h2 className="font-display text-balance text-[40px] leading-[1.08] md:text-6xl">想法讲完了，<br />点一遍看看</h2></Reveal>
+          <Reveal><h2 className="font-display text-balance text-[40px] leading-[1.08] md:text-6xl">想法讲完了<br />点一遍看看</h2></Reveal>
           <Reveal delay={0.05}><p className="mx-auto mt-5 max-w-[32ch] text-lg text-muted">原型里一个人就能分别扮演发单人和跑腿人，大约两分钟走完一单。</p></Reveal>
           <Reveal delay={0.1} className="mt-8"><Cta /></Reveal>
         </div>
@@ -936,18 +943,24 @@ function ThinkingIntro() {
     <section className="mx-auto max-w-7xl px-4 pb-4 pt-14 md:px-8 md:pt-20">
       <Reveal><p className="text-[15px] font-semibold text-accent">产品思考 · 写给评审</p></Reveal>
       <Reveal delay={0.05}><h1 className="mt-3 font-display text-balance text-[44px] leading-[1.08] md:text-7xl">为什么是「顺路」</h1></Reveal>
-      <div className="mt-10 grid gap-3 md:grid-cols-3">
+      {/* 一条推理，画成一段路：三站走下来，结论放大 */}
+      <ol className="relative mt-12 max-w-3xl space-y-10">
+        <span aria-hidden="true" className="absolute bottom-3 left-[7px] top-3 border-l-2 border-dashed border-line" />
         {[
-          ['目标用户', '时间被课表切碎、又在意隐私的在校生。需求小、频次高、怕被坑。'],
+          ['谁在用', '时间被课表切碎、又在意隐私的在校生。需求小、频次高、怕被坑。'],
           ['为什么现在没人做好', '外卖平台不进宿舍楼，校园群接龙没有托管和信用，熟人才敢托付。'],
           ['顺路解决什么', '跑腿人本来就要走这条路，多走不到 5 分钟，赏金低也愿意接，供给自然就有。'],
         ].map(([t, d], i) => (
-          <Reveal key={t} delay={0.05 * i} className="rounded-2xl bg-surface p-6 ring-1 ring-line">
-            <p className="text-lg font-semibold">{t}</p>
-            <p className="mt-3 text-[15px] leading-relaxed text-muted">{d}</p>
+          <Reveal as="li" key={t} delay={0.05 * i} className="relative pl-10">
+            <span aria-hidden="true" className={`absolute left-0 top-1.5 size-4 rounded-full ring-4 ring-bg ${i === 2 ? 'bg-accent' : 'bg-ink'}`} />
+            <p className="text-[15px] font-semibold text-muted">{t}</p>
+            <p className="mt-1.5 text-xl leading-relaxed md:text-2xl">{d}</p>
           </Reveal>
         ))}
-      </div>
+      </ol>
+      <Reveal className="mt-14 max-w-3xl border-l-4 border-accent pl-6">
+        <p className="font-display text-[30px] leading-[1.2] md:text-[44px]">不是多找人跑腿，<br />是让本来就要走的人顺手。</p>
+      </Reveal>
     </section>
   )
 }

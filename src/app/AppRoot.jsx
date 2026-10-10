@@ -54,7 +54,7 @@ function Toasts() {
   const { state, act } = useStore()
   const { pathname } = useLocation()
   // 订单页上每一步的结果都直接画在页面里（进度、托管卡、收尾卡），不再弹提示条压内容
-  const quiet = pathname.startsWith('/app/task/')
+  const quiet = pathname.startsWith('/app/task/') || pathname.startsWith('/app/verify')
   // 换页就清掉上一页的提示，别把旧事实带到新页面
   useEffect(() => { state.toasts.forEach((t) => act('dismissToast', { tid: t.id })) }, [pathname]) // eslint-disable-line react-hooks/exhaustive-deps
   const reduce = useReducedMotion()

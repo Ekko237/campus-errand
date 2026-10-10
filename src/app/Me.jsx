@@ -121,6 +121,8 @@ export default function Me() {
           <div className="mt-4 h-2 overflow-hidden rounded-full bg-surface" role="progressbar" aria-label="距下一等级" aria-valuemin={lv.min} aria-valuemax={nx ? nx.min : 100} aria-valuenow={me.credit}>
             <motion.div className="h-full rounded-full bg-accent" initial={reduce ? false : { width: 0 }} animate={{ width: `${nx ? Math.max(6, ((me.credit - lv.min) / (nx.min - lv.min)) * 100) : 100}%` }} transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1] }} />
           </div>
+          {/* 进度条两头标上这一级和下一级的起点，读得出「73 在 72 到 85 之间」 */}
+          {nx && <p className="tnum mt-1.5 flex justify-between text-xs font-semibold text-muted"><span>{lv.min}「{lv.name}」</span><span className="text-accent">现在 {me.credit}</span><span>{nx.min}「{nx.name}」</span></p>}
           <p className="mt-3 flex items-center justify-between gap-3 text-[15px]">
             <span>{nx ? `再 +${nx.min - me.credit} 分升到「${nx.name}」，${nx.desc}` : '已是最高等级'}</span>
             <ArrowRight size={18} className="shrink-0 text-accent" />

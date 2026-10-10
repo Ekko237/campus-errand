@@ -18,12 +18,9 @@ const AppRoot = lazy(() =>
   ),
 )
 
+// 原型分包一般在首页就预加载好了；真没加载完时只留底色，不放假的骨架屏
 function AppLoading() {
-  return (
-    <div className="mx-auto max-w-xl space-y-3 px-4 pt-24" aria-label="加载中">
-      {[0, 1, 2].map((i) => <div key={i} className="h-32 animate-pulse rounded-2xl bg-sunken" />)}
-    </div>
-  )
+  return <div className="min-h-[100dvh] bg-bg" aria-label="加载中" />
 }
 
 try { sessionStorage.removeItem('stale-reload') } catch {}

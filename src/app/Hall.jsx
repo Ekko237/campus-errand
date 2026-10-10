@@ -2,7 +2,8 @@ import { useEffect, useMemo, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence, useReducedMotion } from 'motion/react'
 import { ROUTES } from '../landing/RouteHero'
-import CampusMap from '../landing/CampusMap'
+import CampusMap, { along } from '../landing/CampusMap'
+import { routePath, PLACES } from '../campusMap'
 import { CaretDown, MagnifyingGlass, ArrowRight } from '@phosphor-icons/react'
 import { useStore } from '../store'
 import { TYPES, TYPE_KEYS, B, BUILDINGS, dist, fmtDist, detourMin, detourMeters, RUNNER_HOME, levelOf, minCreditFor, POSTER_WARN } from '../data'
@@ -17,7 +18,7 @@ const Lightning = gi('bolt')
 const SORTS = [['route', '顺我路'], ['dist', '距离最近'], ['reward', '赏金最高'], ['deadline', '截止最早']]
 let loadedOnce = false
 
-export function TaskCard({ t, me, role, route }) {
+export function TaskCard({ t, me, role, route, n = 0 }) {
   const d = dist(RUNNER_HOME, t.from)
   const need = minCreditFor(t.reward)
   const locked = role === 'runner' && me.verified && t.posterId !== 'poster' && (me.credit ?? 0) < need
@@ -44,7 +45,7 @@ export function TaskCard({ t, me, role, route }) {
         <span className="inline-flex items-center gap-1"><Clock size={16} />{left(t.deadline)}</span>
         {route ? (() => {
           const m = detourMin(route.from, route.to, t)
-          return <span className={`tnum rounded-full px-2 py-0.5 font-semibold ${m <= 5 ? 'bg-accent-soft text-accent' : 'bg-sunken text-ink'}`}>{m <= 5 ? '顺路 · ' : ''}多走 {m} 分钟</span>
+          return <span className={`tnum inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 font-semibold ${m <= 5 ? 'bg-accent-soft text-accent' : 'bg-sunken text-ink'}`}>{n > 0 && <span className="grid size-[18px] place-items-center rounded-full bg-accent text-[11px] font-bold text-on-accent">{n}</span>}{m <= 5 ? '顺路 · ' : ''}多走 {m} 分钟</span>
         })() : (role === 'runner' ? <span className="tnum">距你 {fmtDist(d)}</span> : null)}
         <span className="basis-full">{t.posterId === 'poster' ? '我发布的' : `${t.posterName} · 信用 ${t.posterCredit}`}</span>
       </div>
@@ -159,10 +160,15 @@ export default function Hall() {
     if (type !== 'all') l = l.filter((t) => t.type === type)
     if (urgentOnly) l = l.filter((t) => t.urgent)
     if (goodPoster) l = l.filter((t) => t.posterId === 'poster' || t.posterCredit >= 85)
-    const key = { route: (t) => detourMin(route.from, route.to, t), dist: (t) => dist(RUNNER_HOME, t.from), reward: (t) => -t.reward, deadline: (t) => t.deadline }[sortBy]
+    // 顺我路：顺路的单按路上经过的先后排（和地图上的 1、2、3 一致），不顺路的按多走的米数排在后面
+    const mine = routePath(route.from, route.to).pts
+    const routeKey = (t) => (detourMin(route.from, route.to, t) <= 5 && PLACES[t.from] ? along(mine, PLACES[t.from].door) : 10 + detourMeters(route.from, route.to, t))
+    const key = { route: routeKey, dist: (t) => dist(RUNNER_HOME, t.from), reward: (t) => -t.reward, deadline: (t) => t.deadline }[sortBy]
     const t0 = Date.now()
     return [...l].sort((a, b) => (a.deadline < t0) - (b.deadline < t0) || key(a) - key(b))
   }, [state.tasks, type, sortBy, urgentOnly, goodPoster, route])
+  // 和地图上一样的编号：没过期、顺路的单按路上先后 1、2、3
+  const numbered = list.filter((t) => t.deadline > Date.now() && detourMin(route.from, route.to, t) <= 5).map((t) => t.id)
 
   return (
     <div className="space-y-5">
@@ -249,7 +255,7 @@ export default function Hall() {
           <AnimatePresence initial={false}>
             {list.map((t) => (
               <motion.div key={t.id} layout={!reduce} initial={reduce ? false : { opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={spring}>
-                <TaskCard t={t} me={me} role={state.role} route={sortBy === 'route' ? route : null} />
+                <TaskCard t={t} me={me} role={state.role} route={sortBy === 'route' ? route : null} n={sortBy === 'route' ? numbered.indexOf(t.id) + 1 : 0} />
               </motion.div>
             ))}
           </AnimatePresence>

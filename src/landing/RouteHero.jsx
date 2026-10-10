@@ -20,7 +20,7 @@ const STATION = [PLACES.cainiao.door[0], RUN_PTS[1][1]]
 const F = (() => { let acc = 0; for (let i = 1; i < RUN_PTS.length; i++) { const [ax, ay] = RUN_PTS[i - 1], [bx, by] = RUN_PTS[i]; const l = Math.hypot(bx - ax, by - ay); if (ay === STATION[1] && by === STATION[1] && (STATION[0] - ax) * (STATION[0] - bx) <= 0) return (acc + Math.abs(STATION[0] - ax)) / routePath('jiao1', 'mei5').len; acc += l } return 0.2 })()
 const pct = (x, y) => ({ left: `${((x - X0) / VW) * 100}%`, top: `${((y - Y0) / VH) * 100}%` })
 const MEI = [260, 438] // 「你」在梅园 5 号楼里
-const ICHI = [1236, 262] // 一教的名牌：挨着起点，在门口左上
+const ICHI = [1160, 250] // 一教的名牌：在起点左上，学弟头像出发时不压住它
 
 function Node({ x, y, children, className = '' }) {
   return <div className={`absolute -translate-x-1/2 -translate-y-1/2 ${className}`} style={pct(x, y)}>{children}</div>
@@ -210,7 +210,7 @@ export function CampusRoutes() {
         ))}
       </div>
       <p className="mt-4 max-w-[40ch] text-lg leading-relaxed text-muted md:text-xl" aria-live="polite">
-        此刻 {tasks.length} 个单里，有 <b className="text-accent">{hits.length} 个</b>顺路，捎上多走 {!hits.length ? 0 : hits[0].m === hits[hits.length - 1].m ? hits[0].m : `${hits[0].m} 到 ${hits[hits.length - 1].m}`} 分钟。
+        此刻 {tasks.length} 个单里，有 <b className="text-accent">{hits.length} 个</b>顺路，{!hits.length ? '' : '每单'}多走 {!hits.length ? 0 : hits[0].m === hits[hits.length - 1].m ? hits[0].m : `${hits[0].m} 到 ${hits[hits.length - 1].m}`} 分钟。
       </p>
       <div className="mt-6 lg:grid lg:grid-cols-12 lg:items-start lg:gap-8">
         <div ref={box} className="lg:col-span-8"><CampusMap R={R} hits={hits} reduce={reduce} legend /></div>
@@ -241,8 +241,8 @@ function SubwayLine({ R, hits, reduce }) {
             className="relative flex items-center gap-3">
             <span className="tnum z-10 -ml-px grid size-[26px] shrink-0 place-items-center rounded-full bg-accent text-[13px] font-bold text-on-accent ring-4 ring-bg">{i + 1}</span>
             <span className="min-w-0 flex-1 rounded-2xl bg-accent-soft px-3 py-2">
-              <span className="block text-[15px] font-semibold leading-snug">{t.title}</span>
-              <span className="tnum mt-0.5 flex flex-wrap gap-x-2 text-sm text-accent"><span className="whitespace-nowrap">{t.dm ? `多走 ${t.m} 分钟（${t.dm} 米）` : '就在路上'}</span><span className="whitespace-nowrap">在{SHORT[t.from]}顺手{{ express: '取', buy: '买', seat: '占', food: '拿', other: '带' }[t.type] || '带'}</span><span className="whitespace-nowrap font-bold">¥{t.reward}</span></span>
+              <span className="flex items-start justify-between gap-2"><span className="text-[15px] font-semibold leading-snug">{t.title}</span><span className="tnum shrink-0 font-bold text-accent">¥{t.reward}</span></span>
+              <span className="tnum mt-0.5 flex flex-wrap gap-x-2 text-sm text-accent"><span className="whitespace-nowrap">{t.dm ? `多走 ${t.m} 分钟（${t.dm} 米）` : '就在路上'}</span><span className="whitespace-nowrap">在{SHORT[t.from]}顺手{{ express: '取', buy: '买', seat: '占', food: '拿', other: '带' }[t.type] || '带'}</span></span>
             </span>
           </motion.li>
         ))}

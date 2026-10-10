@@ -109,7 +109,7 @@ export default function CampusMap({ R, hits, reduce, pills = true, walker = true
           <span key={`${R.from}${R.to}${t.id}`} className="absolute z-30 hidden md:block" style={pct(markAt(t.from))}>
             <motion.span initial={reduce ? false : { opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0 }} transition={{ type: 'spring', stiffness: 420, damping: 24 }}
               className={`tnum absolute left-0 -translate-x-1/2 whitespace-nowrap rounded-full bg-accent px-3 py-1 text-sm font-bold text-on-accent shadow-[0_8px_18px_-8px_rgba(11,122,85,0.7)] ${outward(t.from) === 'up' ? 'bottom-10' : 'top-10'}`}>
-              ¥{t.reward} · {t.dm ? `多走 ${t.m ?? Math.max(1, Math.ceil(t.dm / 80))} 分钟` : '就在路上'}
+              ¥{t.reward} · {t.dm ? `+${t.m ?? Math.max(1, Math.ceil(t.dm / 80))} 分钟` : '就在路上'}
             </motion.span>
           </span>
         ))}
@@ -124,7 +124,7 @@ export default function CampusMap({ R, hits, reduce, pills = true, walker = true
       <p className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted md:text-sm">
         <span className="inline-flex items-center gap-1.5"><i className="h-1 w-5 rounded-full bg-ink/80" />你正要走的路</span>
         <span className="inline-flex items-center gap-1.5 max-md:hidden"><i className="h-1.5 w-5 rounded-full bg-accent" />顺手捎的那段（取件到送达）</span>
-        <span className="inline-flex items-center gap-1.5"><i className="w-5 border-t-[3px] border-dotted border-accent" />拐进楼里取件（多走的路）</span>
+        <span className="inline-flex items-center gap-1.5 max-md:hidden"><i className="w-5 border-t-[3px] border-dotted border-accent" />拐进楼里取件（多走的路）</span>
         <span className="inline-flex items-center gap-1.5"><i className="size-2.5 rounded-full bg-accent" /><span>取件点，<span className="md:hidden">按路上先后编号，</span>共 {hits.length} 单</span></span>
       </p>
     )}

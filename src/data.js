@@ -84,7 +84,8 @@ export function suggestPrice({ type, from, to, urgent, size }) {
 // 预估接单时长（示例模型）：出价越接近/高于建议价越快，加急和长时间窗更快
 export function estimateMinutes({ reward, suggested, urgent, windowMin }) {
   const ratio = Math.max(0.3, reward / suggested)
-  let m = 14 / Math.pow(ratio, 1.6)
+  // 建议价时约 6 到 10 分钟有人接，和「平均接单时长不超过 10 分钟」的目标一致
+  let m = 8 / Math.pow(ratio, 1.6)
   if (urgent) m *= 0.75
   if (windowMin >= 360) m *= 0.85
   const lo = Math.max(2, Math.round(m * 0.7))

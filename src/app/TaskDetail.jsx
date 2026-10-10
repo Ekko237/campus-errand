@@ -287,7 +287,7 @@ function RateBlock({ t, by }) {
   const revealSubmit = () => setTimeout(() => {
     const b = submitRef.current; if (!b) return
     const navTop = document.querySelector('nav[aria-label="主导航"]')?.getBoundingClientRect().top ?? innerHeight
-    const limit = (navTop > innerHeight / 2 ? navTop : innerHeight) - 16
+    const limit = (navTop > innerHeight / 2 ? navTop : innerHeight) - 24
     const r = b.getBoundingClientRect()
     if (r.bottom > limit) window.scrollBy({ top: r.bottom - limit, behavior: 'smooth' })
   }, 80)
@@ -529,9 +529,13 @@ function WrapUp({ t }) {
         )}
       </div>
       )}
-      <div className="mt-2 flex justify-between text-sm font-semibold">
-        <span>{name(t.from)}</span><span className="opacity-75">{t.from === t.to ? '占座' : onMyWay(t) ? '顺路捎到' : '捎到'}</span><span>{name(t.to)}</span>
-      </div>
+      {mine ? (
+        <p className="mt-2 text-sm font-semibold"><span className="opacity-75">{name(mine.from)}出发</span> → 在{name(t.from)}{t.from === t.to ? '占座' : '取件'}{t.from !== t.to && <> → {name(t.to)}送达</>}<span className="opacity-75"> · 顺路</span></p>
+      ) : (
+        <div className="mt-2 flex justify-between text-sm font-semibold">
+          <span>{name(t.from)}</span><span className="opacity-75">{t.from === t.to ? '占座' : '捎到'}</span><span>{name(t.to)}</span>
+        </div>
+      )}
       <dl className="mt-5 grid gap-2">
         {rows.map((x) => (
           <div key={x.who.id} className="flex items-center gap-3 rounded-2xl bg-on-accent/10 px-3 py-2.5">
