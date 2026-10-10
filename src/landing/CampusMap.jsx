@@ -136,7 +136,10 @@ export default function CampusMap({ R, hits, reduce, pills = true, walker = true
       ))}
       {/* 送达点：空心圈，和取件点的实心编号对应，看得出「取件到送达」是哪一段 */}
       {marks.filter(({ t }) => t.from !== t.to && PLACES[t.to] && !ends.includes(t.to)).map(({ t }) => (
-        <span key={`d${t.id}`} aria-hidden="true" className="absolute z-10 size-3.5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-surface ring-[3px] ring-accent md:size-4" style={pct(PLACES[t.to].door)} />
+        // 送达点也写上是哪儿，不然读的人看不出绿线最后拐去了哪
+        <span key={`d${t.id}`} aria-hidden="true" className="absolute z-10 size-3.5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-surface ring-[3px] ring-accent md:size-4" style={pct(PLACES[t.to].door)}>
+          <span className="absolute bottom-[calc(100%+6px)] left-1/2 -translate-x-1/2 whitespace-nowrap rounded-full bg-surface px-1.5 max-md:bottom-auto max-md:left-auto max-md:right-0 max-md:top-[calc(100%+6px)] max-md:translate-x-0 text-[12px] font-bold leading-5 text-accent shadow-sm ring-1 ring-accent/40 md:px-2 md:text-[13px]">{TINY[t.to] || SHORT[t.to]} 送达</span>
+        </span>
       ))}
       {marks.map(({ t }) => (
         <span key={`p${t.id}`} aria-hidden="true" className={`tnum absolute z-10 -translate-x-1/2 translate-y-[9px] whitespace-nowrap rounded-full bg-surface px-1 text-[12px] font-bold leading-4 text-accent shadow-sm md:hidden`} style={pct(markAt(t.from))}>{t.type === 'express' ? `${TINY[t.from] || SHORT[t.from]} ` : ''}¥{t.reward}</span>
