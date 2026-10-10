@@ -105,7 +105,7 @@ export default function CampusMap({ R, hits, reduce, pills = true, walker = true
   const pillUp = (t) => { const id = nearId(t); return id && !side(id) ? !labelUp(id) : outward(t.from) === 'up' }
   return (
     <div>
-    <div style={{ aspectRatio: `${V.VW} / ${V.VH}` }} className="relative w-full overflow-hidden rounded-[20px] bg-surface ring-1 ring-line md:rounded-[28px]"
+    <div style={{ aspectRatio: `${V.VW} / ${V.VH}` }} className="relative isolate w-full overflow-hidden rounded-[20px] bg-surface ring-1 ring-line md:rounded-[28px]"
       role="img" aria-label={`示意地图：从${SHORT[R.from]}到${SHORT[R.to]}，沿路有 ${hits.length} 个顺路的单`}>
       <svg viewBox={`${V.X0} ${V.Y0} ${V.VW} ${V.VH}`} className="absolute inset-0 size-full" aria-hidden="true">
         <image href={`${import.meta.env.BASE_URL}images/campus-map-v2.webp`} x="0" y="0" width={MAP_W} height={MAP_H} />

@@ -39,7 +39,7 @@ export const CH = [
   {
     k: 'scene', icon: 'type-express-v1', alt: '纸箱快递', kicker: '跟着一单往下走',
     t: '快递在驿站，你在宿舍',
-    d: '小满三个快递在菜鸟驿站放了三天，驿站 18:00 关门。找室友要欠人情，找陌生人又怕取件码被乱用。',
+    d: '小满两个快递在菜鸟驿站放了三天，驿站 18:00 关门。找室友要欠人情，找陌生人又怕取件码被乱用。',
     note: ['为什么叫「顺路」', '不是多找一个跑腿的人，是让本来就要经过驿站的同学，顺手带上。'],
   },
   {
@@ -247,7 +247,7 @@ function OrderCard({ i, go, small = false }) {
     <div className="relative z-10 mt-2 rounded-2xl bg-surface p-4 text-ink lg:mx-5 lg:-mt-14 shadow-[0_24px_50px_-28px_rgba(17,40,30,0.55)] ring-1 ring-line">
       <div className="flex items-center gap-2">
         <img src={icon('type-express-v1')} width={28} height={28} alt="" aria-hidden="true" className="size-7" />
-        <p className="min-w-0 flex-1 truncate text-[15px] font-semibold">{i === 0 ? '小满的快递，还在驿站' : '菜鸟驿站取 3 个小件快递 · 送梅园'}</p>
+        <p className="min-w-0 flex-1 truncate text-[15px] font-semibold">{i === 0 ? '小满的快递，还在驿站' : '菜鸟驿站取 2 个小件快递 · 送梅园'}</p>
         {status('text-sm')}
       </div>
       <div className="mt-3 grid grid-cols-6 gap-1">
@@ -383,7 +383,7 @@ export default function Story() {
   return (
     <section id="story" className="scroll-mt-16 px-2 md:px-4">
       <div className={`rounded-[32px] transition-colors duration-700 md:rounded-[48px] ${dark ? 'bg-accent-deep text-on-accent' : 'bg-bg text-ink'}`}>
-        <div className="mx-auto max-w-7xl px-2 pb-10 md:px-4 lg:grid lg:grid-cols-12 lg:gap-12 lg:px-4 lg:pb-[12svh] xl:max-w-[calc(80rem-32px)] xl:px-0">
+        <div className="mx-auto max-w-7xl px-2 pb-10 md:px-4 lg:grid lg:grid-cols-12 lg:gap-12 lg:px-4 lg:pb-[12svh] xl:max-w-[1216px] xl:px-0">
           {/* 手机：吸在顶栏下面的地图 + 一行订单，下面一段段文字滚过去；顶栏的「体验原型」和「目录」一直在 */}
           <div data-story-mini className={`sticky top-16 z-20 -mx-2 px-3 pb-1 pt-2 transition-colors duration-700 lg:hidden ${dark ? 'bg-accent-deep' : 'bg-bg'}`}>
             <div className="relative"><StoryMap i={i} pos={pos} aspect={1.75} small /><div className="absolute inset-x-1.5 bottom-1.5 z-10"><OrderCard i={i} go={go} small /></div></div>

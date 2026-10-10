@@ -83,7 +83,8 @@ function RoleBanner() {
   const nav = useNavigate()
   // 没走过导览的，两种身份都在大厅顶上给一个入口（手机上没有侧栏，点了「先自己逛逛」也找得回来）
   if (!state.tour.active && !state.tour.done) {
-    if (!state.onboarded) return null
+    // 双手机演示里，「跟着走一遍」只在中间面板放一个入口
+    if (!state.onboarded || LOCK) return null
     const start = () => { act('tour', { tour: { active: true, taskId: null, done: false } }); act('role', { role: 'poster' }); if (!LOCK || LOCK === 'poster') nav('/app/publish?tour=1') }
     return (
       <Panel className="flex items-center gap-3 p-4">
@@ -112,7 +113,7 @@ function RoleBanner() {
       <Panel className="flex items-center gap-3 p-4">
         <ShieldCheck size={28} className="shrink-0 text-accent" />
         <p className="flex-1 text-[15px] leading-snug">未认证只能浏览。用学号或校园邮箱认证后才能接单。</p>
-        <Btn size="sm" onClick={() => nav('/app/verify')}>去认证</Btn>
+        <Btn size="sm" onClick={() => nav(state.tour.active && state.tour.taskId ? `/app/verify?back=/app/task/${state.tour.taskId}` : '/app/verify')}>去认证</Btn>
       </Panel>
     )
   }
