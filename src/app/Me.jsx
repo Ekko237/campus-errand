@@ -1,7 +1,7 @@
 import { useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { motion, animate, useMotionValue, useTransform, useReducedMotion } from 'motion/react'
-import { Wallet, ArrowRight, ArrowCounterClockwise, ShieldWarning, ListBullets } from '@phosphor-icons/react'
+import { Wallet, CaretRight, ArrowRight, ArrowCounterClockwise, ShieldWarning, ListBullets } from '@phosphor-icons/react'
 import { useStore, useMe } from '../store'
 import { levelOf, nextLevel, iconUrl, posterTierOf, posterNextTier } from '../data'
 import { Avatar, VerifiedBadge, Panel, Btn, Empty, ago } from '../ui'
@@ -74,10 +74,17 @@ export default function Me() {
 
       <dl className="grid grid-cols-3 divide-x divide-line rounded-2xl bg-surface py-4 ring-1 ring-line">
         {[[isPoster ? '发布单数' : '完成单数', isPoster ? posted : me.done], ['好评率', rate], [me.role === '跑腿人' ? '累计收入' : '托管中', me.role === '跑腿人' ? `¥${me.ledger.filter((l) => l.amount > 0).reduce((a, l) => a + l.amount, 0)}` : `¥${me.frozen}`]].map(([k, v]) => (
-          <div key={k} className="text-center">
-            <dd className="tnum text-2xl font-bold">{v}</dd>
-            <dt className="mt-0.5 text-sm text-muted">{k}</dt>
-          </div>
+          k === '累计收入' || k === '托管中' ? (
+            <Link key={k} to="/app/wallet" className="group text-center transition active:scale-[0.97]">
+              <dd className="tnum text-2xl font-bold">{v}</dd>
+              <dt className="mt-0.5 inline-flex items-center gap-0.5 text-sm text-accent">{k}<CaretRight size={12} weight="bold" className="transition-transform group-hover:translate-x-0.5" /></dt>
+            </Link>
+          ) : (
+            <div key={k} className="text-center">
+              <dd className="tnum text-2xl font-bold">{v}</dd>
+              <dt className="mt-0.5 text-sm text-muted">{k}</dt>
+            </div>
+          )
         ))}
       </dl>
 
@@ -96,18 +103,22 @@ export default function Me() {
       <section>
         <div className="mb-3 flex items-center justify-between">
           <h2 className="text-lg font-bold">{me.role === '跑腿人' ? '收入流水' : '钱包流水'}</h2>
-          <span className="flex items-center gap-1 text-sm text-muted"><Wallet size={16} />可用 ¥{me.balance}{me.frozen ? ` · 冻结 ¥${me.frozen}` : ''}</span>
+          <Link to="/app/wallet" className="inline-flex items-center gap-1 text-sm font-semibold text-accent">按月 / 按年查看<CaretRight size={14} weight="bold" /></Link>
         </div>
         {me.ledger.length === 0 ? (
           <Panel><Empty img="empty-wallet" alt="只有一枚硬币的钱包" title="还没有流水" hint="完成第一单后，赏金会从托管放到这里。" /></Panel>
         ) : (
           <Panel className="divide-y divide-line">
-            {me.ledger.slice(0, 8).map((l, i) => (
+            {[...me.ledger].sort((a, b) => b.at - a.at).slice(0, 3).map((l, i) => (
               <div key={i} className="flex items-center gap-3 p-4">
                 <div className="min-w-0 flex-1"><p className="truncate text-[15px] font-medium">{l.label}</p><p className="text-sm text-muted">{ago(l.at)}</p></div>
                 <span className={`tnum text-lg font-bold ${l.amount > 0 ? 'text-accent' : ''}`}>{l.amount > 0 ? '+' : ''}{l.amount}</span>
               </div>
             ))}
+            <Link to="/app/wallet" className="flex items-center justify-between p-4 text-[15px] font-semibold text-accent">
+              <span className="inline-flex items-center gap-1.5"><Wallet size={18} />全部 {me.ledger.length} 条，可用 ¥{me.balance}</span>
+              <CaretRight size={16} weight="bold" />
+            </Link>
           </Panel>
         )}
       </section>

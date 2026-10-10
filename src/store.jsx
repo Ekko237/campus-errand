@@ -1,7 +1,7 @@
 import { createContext, useContext, useEffect, useReducer, useCallback, useState } from 'react'
 import { seedTasks, seedAccounts, CREDIT_INIT, levelOf, COMPENSATE } from './data'
 
-const KEY = 'shunluxia:v2'
+const KEY = 'shunluxia:v3'
 const Ctx = createContext(null)
 
 function fresh() {

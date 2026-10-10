@@ -11,6 +11,7 @@ import Orders from './Orders'
 import Me from './Me'
 import Verify from './Verify'
 import CreditRules from './CreditRules'
+import Wallet from './Wallet'
 import TourBar from './TourBar'
 import DemoPanel from './DemoPanel'
 
@@ -132,6 +133,7 @@ function Shell() {
           <Route path="me" element={<Me />} />
           <Route path="verify" element={<Verify />} />
           <Route path="credit" element={<CreditRules />} />
+          <Route path="wallet" element={<Wallet />} />
           <Route path="*" element={<Hall />} />
         </Routes>
       </main>
