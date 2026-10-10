@@ -53,10 +53,49 @@ export function ViewHost({ children }) {
     window.addEventListener('message', f)
     return () => window.removeEventListener('message', f)
   }) // eslint-disable-line react-hooks/exhaustive-deps
+  // #/app/phone、#/app/desk：可以单独分享的入口，进来就按这个界面打开大厅
+  const entry = loc.pathname === '/app/phone' ? 'phone' : loc.pathname === '/app/desk' ? 'desk' : null
+  useEffect(() => { if (entry) pick(entry, '/app') }, [entry]) // eslint-disable-line react-hooks/exhaustive-deps
+  if (loc.pathname === '/app/start') return <Choose pick={(v) => pick(v, '/app')} />
+  if (entry) return null
   const direct = (view === 'phone' && !roomy) || (view === 'desk' && wide)
   if (direct) return <Ctx.Provider value={{ view, pick: (v) => pick(v) }}>{children}</Ctx.Provider>
   const src = `${BASE}?embed=${view}#${loc.pathname}${loc.search}`
   return <Framed view={view} src={src} frame={frame} />
+}
+
+// 点「体验原型」先到这里：同一个 App 的两种界面，选一种进去；进去以后顶部还能随时换
+function Choose({ pick }) {
+  const cards = [
+    ['phone', '手机版', '像用 App 一样走一单', 'preview-phone-v1', 390, 844, '手机版顺路侠的任务大厅截图', DeviceMobile],
+    ['desk', '电脑版', '在电脑上用网页版走一单', 'preview-desk-v1', 1200, 750, '电脑版顺路侠的任务大厅截图：左侧导航、中间大厅和地图、右侧演示面板', Desktop],
+  ]
+  return (
+    <div className="min-h-[100dvh] bg-bg px-4 pb-12 text-ink md:px-8">
+      <header className="mx-auto flex h-16 max-w-5xl items-center">
+        <Link to="/" className="inline-flex items-center gap-1.5 text-[15px] font-semibold text-muted hover:text-ink"><ArrowLeft size={16} weight="bold" />回首页</Link>
+      </header>
+      <main className="mx-auto max-w-5xl">
+        <h1 className="font-display text-[34px] leading-tight md:text-[48px]">用哪种界面走一单？</h1>
+        <p className="mt-3 max-w-[40ch] text-lg leading-relaxed text-muted">同一个 App、同一份示例数据。进去以后顶部随时能换，发单人和跑腿人也随时能切。</p>
+        <div className="mt-8 grid gap-5 md:grid-cols-[1fr_1.6fr]">
+          {cards.map(([k, t, d, im, w, h, alt, I]) => (
+            <button key={k} onClick={() => pick(k)} className="group flex flex-col overflow-hidden rounded-[28px] bg-surface text-left ring-1 ring-line transition hover:-translate-y-0.5 hover:shadow-[0_24px_50px_-30px_rgba(17,40,30,0.5)] hover:ring-accent active:scale-[0.99]">
+              <div className="flex flex-1 items-end justify-center overflow-hidden bg-sunken px-6 pt-6">
+                <img src={`${BASE}images/${im}.webp`} width={w} height={h} alt={alt} className={`h-auto rounded-t-2xl shadow-[0_12px_30px_-18px_rgba(17,40,30,0.5)] ring-1 ring-line ${k === 'phone' ? 'max-h-[300px] w-auto' : 'w-full'}`} />
+              </div>
+              <div className="flex items-center gap-3 p-5">
+                <span className="grid size-11 shrink-0 place-items-center rounded-full bg-accent-soft text-accent"><I size={22} weight="fill" /></span>
+                <span className="min-w-0 flex-1"><span className="block text-xl font-bold">{t}</span><span className="block text-[15px] text-muted">{d}</span></span>
+                <span className="shrink-0 rounded-full bg-accent px-4 py-2 text-[15px] font-semibold text-on-accent">进入</span>
+              </div>
+            </button>
+          ))}
+        </div>
+        <p className="mt-5 text-sm text-muted">在手机上选电脑版，会把整页缩小显示；电脑上看效果更好。</p>
+      </main>
+    </div>
+  )
 }
 
 // 在框里时：顶栏的切换不能自己换，告诉外面那层，并带上当前页面

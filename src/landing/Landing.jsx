@@ -51,7 +51,7 @@ function Cta({ size = 'lg', className = '' }) {
   const big = size === 'lg'
   return (
     <Magnetic strength={big ? 0.28 : 0.15}>
-      <Link to="/app" className={`group relative inline-flex items-center justify-center gap-2 overflow-hidden whitespace-nowrap rounded-full bg-accent font-semibold text-on-accent shadow-[0_10px_30px_-12px_rgba(11,122,85,0.7)] transition active:scale-[0.97] ${big ? 'h-14 px-7 text-[17px]' : 'h-10 px-4 text-[15px]'} ${className}`}>
+      <Link to="/app/start" className={`group relative inline-flex items-center justify-center gap-2 overflow-hidden whitespace-nowrap rounded-full bg-accent font-semibold text-on-accent shadow-[0_10px_30px_-12px_rgba(11,122,85,0.7)] transition active:scale-[0.97] ${big ? 'h-14 px-7 text-[17px]' : 'h-10 px-4 text-[15px]'} ${className}`}>
         <span aria-hidden="true" className="absolute inset-0 -translate-x-full bg-ink/15 transition-transform duration-500 ease-out group-hover:translate-x-0" />
         <span className="relative">体验原型</span>
         <ArrowRight size={big ? 20 : 16} weight="bold" className="relative transition-transform duration-300 group-hover:translate-x-1" />
@@ -181,7 +181,7 @@ function Nav({ page }) {
                 <li key={to}><Anchor to={to} onClick={() => setOpen(false)} aria-current={cur === to ? 'location' : undefined} className={`flex h-12 items-center gap-3 rounded-xl px-2 text-[17px] active:bg-sunken ${cur === to ? 'bg-accent-soft font-bold text-accent' : 'font-semibold'}`}><span className="tnum w-5 text-sm opacity-60">{i + 1}</span>{l}{cur === to && <span className="ml-auto text-sm font-semibold">你在这里</span>}</Anchor></li>
               ))}
               <li className="mt-1 border-t border-line pt-1"><Link to="/thinking" onClick={() => setOpen(false)} className="flex h-12 items-center gap-3 rounded-xl px-2 text-[17px] font-semibold active:bg-sunken"><span className="w-5" />产品思考<ArrowRight size={16} weight="bold" className="ml-auto text-muted" /></Link></li>
-              <li className="pt-2"><Link to="/app" onClick={() => setOpen(false)} className="flex h-12 items-center justify-center gap-2 rounded-full bg-accent text-[17px] font-semibold text-on-accent active:scale-[0.98]">体验原型<ArrowRight size={18} weight="bold" /></Link></li>
+              <li className="pt-2"><Link to="/app/start" onClick={() => setOpen(false)} className="flex h-12 items-center justify-center gap-2 rounded-full bg-accent text-[17px] font-semibold text-on-accent active:scale-[0.98]">体验原型<ArrowRight size={18} weight="bold" /></Link></li>
             </ol>
           </motion.nav>
         )}
