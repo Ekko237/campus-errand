@@ -62,7 +62,7 @@ function Anchor({ to, children, ...p }) {
 }
 
 const H2 = ({ children, className = '' }) => (
-  <h2 className={`text-balance text-[30px] font-bold leading-[1.1] tracking-[-0.02em] md:text-5xl lg:text-[44px] xl:text-[56px] ${className}`}>{children}</h2>
+  <h2 className={`font-display text-balance text-[34px] font-bold leading-[1.1] tracking-[-0.02em] md:text-[54px] lg:text-[50px] xl:text-[64px] ${className}`}>{children}</h2>
 )
 const Br = () => <br className="hidden md:inline" />
 const Lead = ({ children, className = '' }) => <p className={`mt-5 max-w-[38ch] text-lg leading-relaxed text-muted md:text-xl ${className}`}>{children}</p>
@@ -492,7 +492,7 @@ function Safety() {
         <div className="absolute inset-0 bg-[#0e1110]/80" />
         <div className="relative px-6 py-16 text-[#eceeed] md:px-16 md:py-24">
           <img src={icon('blocked-v1')} width={80} height={80} alt="盖住试卷的禁止手势" loading="lazy" className="size-20 object-contain" />
-          <h2 className="mt-6 text-[40px] font-bold leading-[1.05] tracking-[-0.03em] md:text-7xl">这些单，<br className="md:hidden" />发不出去</h2>
+          <h2 className="font-display mt-6 text-[40px] font-bold leading-[1.05] tracking-[-0.03em] md:text-7xl">这些单，<br className="md:hidden" />发不出去</h2>
           <p className="mt-5 max-w-[34ch] text-lg leading-relaxed opacity-90 md:text-xl">互助不等于帮人作弊。发布时自动识别关键词并拦截，被举报核实的账号直接封禁。</p>
           <ul className="mt-10 flex flex-wrap gap-2.5">
             {words.map((w, i) => (
@@ -617,7 +617,7 @@ function Final() {
   return (
     <section className="border-t border-line">
       <div className="mx-auto max-w-7xl px-4 py-20 text-center md:px-8 md:py-28 lg:py-32">
-        <Reveal><h2 className="text-balance text-[40px] font-bold leading-[1.05] tracking-[-0.035em] md:text-7xl">自己走一遍，<br className="md:hidden" />大约两分钟</h2></Reveal>
+        <Reveal><h2 className="font-display text-balance text-[40px] font-bold leading-[1.05] tracking-[-0.035em] md:text-7xl">自己走一遍，<br className="md:hidden" />大约两分钟</h2></Reveal>
         <Reveal delay={0.05}><p className="mx-auto mt-6 max-w-[32ch] text-lg text-muted md:text-xl">顶部一键切换发单人和跑腿人，一个人就能把一单从发布走到信用变化。</p></Reveal>
         <Reveal delay={0.1} className="mt-10"><Cta /></Reveal>
       </div>

@@ -159,7 +159,7 @@ export default function RouteHero({ Cta, Anchor }) {
   return (
     <section id="top" className="mx-auto grid max-w-7xl items-center gap-10 px-4 pb-20 pt-8 md:px-8 md:pb-28 md:pt-14 lg:min-h-[calc(100svh-64px)] lg:grid-cols-12 lg:gap-12 lg:py-10">
       <div className="lg:col-span-5">
-        <h1 className="text-[46px] font-bold leading-[1.08] tracking-[-0.035em] md:text-[clamp(56px,6.4vw,76px)] lg:text-[clamp(48px,4.6vw,68px)]">
+        <h1 className="font-display text-[54px] font-bold leading-[1.08] tracking-[-0.035em] md:text-[clamp(62px,7vw,84px)] lg:text-[clamp(56px,5.4vw,80px)]">
           <span className="block overflow-hidden pb-1"><motion.span className="block" {...line(0)}>本来就要经过，</motion.span></span>
           <span className="block overflow-hidden pb-[0.3em]"><motion.span className="block" {...line(1)}><DashUnder>顺手</DashUnder>捎一下</motion.span></span>
         </h1>
