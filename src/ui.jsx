@@ -78,12 +78,13 @@ export function Sheet({ open, onClose, title, children }) {
   return createPortal(
     <AnimatePresence>
       {open && (
-        <motion.div className="fixed inset-0 z-50 flex items-end justify-center sm:items-center" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-          <div className="absolute inset-0 bg-ink/50" onClick={onClose} />
+        // 只让遮罩淡入淡出，弹层本身一直不透明、只做上滑：下面的表单字不会从弹层里透上来
+        <motion.div className="fixed inset-0 z-50 flex items-end justify-center sm:items-center" initial={false} exit={{ opacity: 1, transition: { duration: 0.25 } }}>
+          <motion.div className="absolute inset-0 bg-ink/50" onClick={onClose} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.2 }} />
           <motion.div
             role="dialog" aria-modal="true" aria-label={title}
             className="relative max-h-[88dvh] w-full max-w-lg overflow-y-auto rounded-t-2xl bg-surface p-5 pb-8 sm:rounded-2xl"
-            initial={reduce ? false : { y: 60, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={reduce ? { opacity: 0 } : { y: 60, opacity: 0 }} transition={spring}
+            initial={reduce ? false : { y: '100%' }} animate={{ y: 0 }} exit={reduce ? { opacity: 0 } : { y: '100%' }} transition={spring}
           >
             <div className="mb-4 flex items-center justify-between gap-3">
               <h2 className="text-xl font-bold">{title}</h2>
@@ -148,8 +149,9 @@ export const left = (t) => {
   const h = Math.floor(m / 60)
   // 一小时以上统一写「约 N 小时内」，不和「1 小时 28 分钟内」混着用；超过 8 小时（占座、讲座）写具体到几点
   if (h < 8) return `约 ${Math.max(1, Math.round(m / 60))} 小时内`
-  const d = new Date(t), today = new Date()
+  // 超过 8 小时的截止取整到半点，不出现「09:17」这种按当前时间推出来的分钟数
+  const d = new Date(Math.round(t / 1800000) * 1800000), today = new Date()
   const days = Math.round((new Date(d.getFullYear(), d.getMonth(), d.getDate()) - new Date(today.getFullYear(), today.getMonth(), today.getDate())) / 86400000)
-  return `${['今天', '明天', '后天'][days] ?? `${days} 天后`} ${clock(t)} 前`
+  return `${['今天', '明天', '后天'][days] ?? `${days} 天后`} ${clock(d)} 前`
 }
 export const clock = (t) => new Date(t).toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' })

@@ -84,7 +84,7 @@ export function suggestPrice({ type, from, to, urgent, size }) {
 // 预估接单时长（示例模型）：出价越接近/高于建议价越快，加急和长时间窗更快
 export function estimateMinutes({ reward, suggested, urgent, windowMin }) {
   const ratio = Math.max(0.3, reward / suggested)
-  // 建议价时约 6 到 10 分钟有人接，和「平均接单时长不超过 10 分钟」的目标一致
+  // 建议价时约 6 到 10 分钟有人接，和「接单时长中位数不超过 10 分钟」的目标一致
   let m = 8 / Math.pow(ratio, 1.6)
   if (urgent) m *= 0.75
   if (windowMin >= 360) m *= 0.85
@@ -177,7 +177,7 @@ export function seedTasks() {
     mk({ id: 's5', type: 'express', title: '顺丰大件显示器，需要力气', from: 'sf', to: 'yan', reward: 15, windowMin: 180, urgent: false, size: 'l', note: '箱子大约 8 斤，有提手', room: '研究生公寓 B 栋 1103', posterName: '程立', posterCredit: 97, ago: 15 }),
     mk({ id: 's6', type: 'buy', title: '二食堂带一份黄焖鸡米饭', from: 'canteen2', to: 'jiao1', reward: 4, windowMin: 35, urgent: true, size: 's', note: '微辣，不要香菜', room: '一教 204 教室后排', posterName: '于小渔', posterCredit: 68, ago: 4 }),
     mk({ id: 's7', type: 'other', title: '把雨伞送到体育馆门口', from: 'lan1', to: 'gym', reward: 5, windowMin: 45, urgent: false, size: 's', note: '伞在宿管阿姨那里，报我名字', room: '兰园 1 号楼宿管室', posterName: '乐知行', posterCredit: 86, ago: 9 }),
-    mk({ id: 's8', type: 'seat', title: '周五讲座帮占前排两个位', from: 'hall', to: 'hall', reward: 12, windowMin: 1440, urgent: false, size: 's', note: '13:30 开始，13:00 前到', room: '学术报告厅前三排', posterName: '社团 王一凡', posterCredit: 90, ago: 55 }),
+    mk({ id: 's8', type: 'seat', title: '明天讲座帮占前排两个位', from: 'hall', to: 'hall', reward: 12, windowMin: 1440, urgent: false, size: 's', note: '13:30 开始，13:00 前到', room: '学术报告厅前三排', posterName: '社团 王一凡', posterCredit: 90, ago: 55 }),
   ]
 }
 

@@ -56,6 +56,8 @@ h1, h2, h3 { text-wrap: balance; }
    字体由独立小评审在四个候选里选定（见 ITERATION_LOG 第 72 轮），自带前倾，像「路过、顺手」的动势 */
 /* 得意黑还没下载完时用的替身：系统黑体缩到 80%，和得意黑一样宽，标题不会先排三行再跳回两行 */
 @font-face { font-family: "Smiley Fallback"; src: local("PingFang SC"), local("PingFangSC-Regular"), local("Microsoft YaHei"), local("Noto Sans CJK SC"), local("Noto Sans SC"); size-adjust: 80%; }
+/* 得意黑还在路上时，替身字先斜过来，换字那一下不从直体跳成斜体 */
+.fl .font-display { font-style: oblique 9deg; }
 .font-display { font-family: "Smiley Sans Oblique", "Smiley Fallback", "Geist Variable", "PingFang SC", "Noto Sans SC", sans-serif; font-weight: 400; letter-spacing: 0; margin-left: 0.04em; }
 
 

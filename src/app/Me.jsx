@@ -42,7 +42,7 @@ function RemindToggle() {
       <button onClick={flip} role="switch" aria-checked={on} aria-label="下课前 5 分钟提醒我路上的单" className="flex w-full items-center gap-3 px-4 py-3 text-left">
         <span className="min-w-0 flex-1">
           <span className="block text-[15px] font-semibold">下课前 5 分钟提醒我路上的单</span>
-          <span className="block text-sm text-muted">{on ? '已开启：每天下课前推送这条路上的单（原型里不真发通知）' : '按课表在你要走这条路之前提醒，不用自己翻大厅'}</span>
+          <span className="block text-sm text-muted">{on ? '已开启：每天下课前推送这条路上的单（原型里不真发通知）' : '按你常走的路和下课时间提醒，不用自己翻大厅'}</span>
         </span>
         <span className={`relative h-7 w-12 shrink-0 rounded-full transition-colors ${on ? 'bg-accent' : 'bg-sunken ring-1 ring-line'}`}>
           <span className={`absolute left-1 top-1 size-5 rounded-full bg-surface shadow transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] ${on ? 'translate-x-5' : ''}`} />
@@ -225,7 +225,7 @@ export default function Me() {
       <section>
         <h2 className="mb-3 flex items-baseline justify-between text-lg font-bold">徽章<span className="tnum text-sm font-semibold text-muted">已得 {badges.filter((b) => b.on).length} / {badges.length}<span className="md:hidden">，左右滑动</span></span></h2>
         <div className="no-scrollbar -mx-4 flex gap-3 overflow-x-auto px-4 [mask-image:linear-gradient(to_right,black_85%,transparent)]">
-          {badges.map((b) => (
+          {[...badges].sort((a, b) => b.on - a.on).map((b) => (
             <div key={b.name} className={`flex w-24 shrink-0 flex-col items-center gap-2 rounded-2xl p-3 text-center ${b.on ? 'bg-accent-soft' : 'bg-sunken opacity-60'}`}>
               <img src={iconUrl(b.img)} width={44} height={44} alt={b.alt} className={`size-11 object-contain ${b.on ? '' : 'grayscale'}`} />
               <span className="text-sm font-semibold">{b.name}</span>

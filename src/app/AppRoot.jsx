@@ -91,7 +91,7 @@ function Onboarding() {
   const nav = useNavigate()
   // 从落地页的「顺路提醒」推送点进来：说好看这条路上的单，就直接以跑腿人身份进大厅，不先弹说明
   const fromPush = useLocation().search.includes('from=remind')
-  useEffect(() => { if (fromPush) { act('role', { role: 'runner' }); if (!state.onboarded) act('onboarded') } }, [fromPush]) // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => { if (fromPush) { act('role', { role: 'runner' }); if (!state.onboarded) act('onboarded'); try { localStorage.setItem('shunluxia:remind', '1') } catch { /* 存不了不影响 */ } } }, [fromPush]) // eslint-disable-line react-hooks/exhaustive-deps
   const steps = [
     { src: 'brand/logo-v2.png', alt: '奔跑的顺路侠小人', t: '顶部一键切换身份', d: '一个人就能分别扮演发单人和跑腿人，把一单从头走到尾。' },
     { src: 'icons/step-publish-v1.webp', alt: '带硬币的喇叭', t: '发单先托管，接单先认证', d: '赏金发布时就冻结；没做校园认证的人只能看，不能接。' },

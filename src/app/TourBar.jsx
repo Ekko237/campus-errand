@@ -55,6 +55,7 @@ export default function TourBar() {
       const r = el.getBoundingClientRect()
       const top = head + 16, bottom = (navTop > innerHeight / 2 ? navTop : innerHeight) - 24
       // 贴底常驻的按钮（发布页）本来就看得见，不滚，让人从表单顶上看起
+      if (touched) return
       if ((r.top >= top && r.bottom <= bottom) || (el.closest('.sticky') && r.bottom <= innerHeight)) return
       // 先试着把按钮所在的整块（卡片、段落）顶到导览条下面：块的标题不被切，按钮也在屏幕里
       let dy = null
@@ -69,13 +70,18 @@ export default function TourBar() {
     }
     // 刚发生的「奖励时刻」（取件码揭晓、托管放款）：先把那张卡停在视线里 1.6 秒，再去找下一个按钮
     const timers = []
+    // 用户自己动了（点、滑、按键）就不再自动滚：免得他伸手去点按钮时页面被滚走、点空
+    let touched = false
+    const hands = () => { touched = true }
+    const evs = ['pointerdown', 'wheel', 'touchstart', 'keydown']
+    evs.forEach((e) => window.addEventListener(e, hands, { passive: true, capture: true }))
     const id = setTimeout(() => {
       // 只在刚接单（下一步取件）和刚放款（下一步打分）这两步停
       const moment = [4, 7].includes(step?.n) ? document.querySelector('main [data-tour-moment]') : null
       if (moment) {
         const head = document.querySelector('header')?.getBoundingClientRect().bottom ?? 64
         const mr = moment.getBoundingClientRect()
-        if (mr.top < head + 16 || mr.bottom > innerHeight - 80) window.scrollBy({ top: mr.top - head - 16, behavior: reduce ? 'auto' : 'smooth' })
+        if (!touched && (mr.top < head + 16 || mr.bottom > innerHeight - 80)) window.scrollBy({ top: mr.top - head - 16, behavior: reduce ? 'auto' : 'smooth' })
         // 放款那条「¥5 从小满流到阿远」要播约 2.3 秒，取件码揭晓短一些
         wait = step.n === 7 ? 2600 : 1600
       }
@@ -87,7 +93,7 @@ export default function TourBar() {
         timers.push(setTimeout(reveal, 600))
       }, moment ? wait : 0))
     }, 350)
-    return () => { clearTimeout(id); timers.forEach(clearTimeout); el?.classList.remove('tour-focus') }
+    return () => { clearTimeout(id); timers.forEach(clearTimeout); evs.forEach((e) => window.removeEventListener(e, hands, { capture: true })); el?.classList.remove('tour-focus') }
   }, [here, step?.n, loc.pathname, reduce, state.role])
   useEffect(() => { if (!arrived) return; const id = setTimeout(() => act('tour', { tour: { active: false, done: true } }), 3000); return () => clearTimeout(id) }, [arrived, act])
   const go = () => {

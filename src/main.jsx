@@ -24,6 +24,17 @@ function AppLoading() {
 }
 
 try { sessionStorage.removeItem('stale-reload') } catch {}
+// 标题字加载期间给 <html> 挂 fl（index.css 里让替身字先斜过来），得意黑到了就摘掉
+{
+  const done = () => document.documentElement.classList.remove('fl')
+  // 字体样式表是异步挂上的，不能只等一次 load：每 100ms 看一眼有没有哪片得意黑真的加载完了
+  if (document.fonts) {
+    document.documentElement.classList.add('fl')
+    const t0 = Date.now()
+    const tick = () => ([...document.fonts].some((f) => f.family.includes('Smiley') && f.status === 'loaded') || Date.now() - t0 > 3000 ? done() : setTimeout(tick, 100))
+    tick()
+  }
+}
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>

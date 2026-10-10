@@ -262,12 +262,12 @@ function Scenes() {
               className="absolute inset-0 size-full object-cover" />
           </AnimatePresence>
         </div>
-        {/* 三个场景叠在同一个格子里，只切换显示：容器高度永远是最高那个，切换时下面的内容不会跳 */}
+        {/* 三个场景叠在同一个格子里，只切换显示：容器高度永远是最高那个，切换时下面的内容不会跳；旧的先快速淡出，新的稍后淡入，不叠字 */}
         <div className="grid lg:col-span-7 lg:pt-2">
           {SCENES.map((x) => {
             const on = x.key === s.key
             return (
-              <motion.div key={x.key} aria-hidden={!on} initial={false} animate={{ opacity: on ? 1 : 0, y: on ? 0 : 10 }} transition={{ duration: reduce ? 0 : 0.4, ease }}
+              <motion.div key={x.key} aria-hidden={!on} initial={false} animate={{ opacity: on ? 1 : 0, y: on ? 0 : 10 }} transition={{ duration: reduce ? 0 : on ? 0.3 : 0.12, delay: reduce || !on ? 0 : 0.12, ease }}
                 className={`col-start-1 row-start-1 flex flex-col justify-start ${on ? '' : 'pointer-events-none'}`}>
                 <p className="text-[15px] font-semibold text-muted">{x.who}</p>
                 <p className="mt-4 -indent-[0.5em] text-2xl font-medium leading-[1.55] tracking-[-0.01em] md:text-[28px]">「{x.pain}」</p>
@@ -495,7 +495,7 @@ function MobileLoop() {
       <div className="mt-4 grid">
         {LOOP.map((x, k) => (
           <motion.div key={x.t} aria-hidden={k !== i} initial={false} animate={{ opacity: k === i ? 1 : 0, y: k === i ? 0 : 6 }}
-            transition={{ duration: reduce ? 0 : 0.18 }}
+            transition={{ duration: reduce ? 0 : k === i ? 0.2 : 0.1, delay: reduce || k !== i ? 0 : 0.1 }}
             className={`col-start-1 row-start-1 flex gap-3 ${k === i ? '' : 'pointer-events-none'}`}>
             <img src={icon(x.icon + '-v1')} width={44} height={44} alt={x.alt} className="size-11 shrink-0 object-contain" />
             <div className="min-w-0">
@@ -977,7 +977,7 @@ function Metrics() {
           </Reveal>
           <Reveal delay={0.1} className="rounded-2xl bg-bg p-6 ring-1 ring-line">
             <div>
-              <p className="flex items-center gap-2 text-lg font-semibold">平均接单时长<span className="rounded-full bg-sunken px-2 py-0.5 text-xs text-muted">目标</span></p>
+              <p className="flex items-center gap-2 text-lg font-semibold">接单时长中位数<span className="rounded-full bg-sunken px-2 py-0.5 text-xs text-muted">目标</span></p>
               <p className="mt-1 text-5xl font-bold tracking-tight text-accent"><span className="mr-2 align-middle text-base font-semibold tracking-normal opacity-80">不超过</span> 10 分钟</p>
               <p className="mt-4 text-[15px] leading-relaxed text-muted">发布到被接的中位时间。跑腿要的是快，超过 10 分钟用户就会自己去。</p>
             </div>
@@ -1192,7 +1192,7 @@ export default function Landing({ page }) {
   // 首页和产品思考页之间切换：都从顶上开始看
   useEffect(() => { window.scrollTo(0, 0) }, [page])
   // 预加载原型分包：首页停一会儿就把原型的代码取下来，点「体验原型」不再先看骨架屏
-  useEffect(() => { const id = setTimeout(() => { import('../app/AppRoot') }, 1500); return () => clearTimeout(id) }, [])
+  useEffect(() => { const id = setTimeout(() => { import('../app/AppRoot') }, 400); return () => clearTimeout(id) }, [])
   return (
     <div className="min-h-[100dvh] bg-bg text-ink">
       <ScrollProgress />
