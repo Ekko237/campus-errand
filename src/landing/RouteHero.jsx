@@ -33,7 +33,7 @@ function Tag({ children, strong }) {
 }
 
 // 首屏记忆点：阿远的路经过驿站，交汇点亮起，订单成立
-export function RouteMap() {
+export function RouteMap({ full = false }) {
   const reduce = useReducedMotion()
   // 手机和桌面用不同视窗；渲染前定好，子组件 Node 都按它算位置
   const [small, setSmall] = useState(() => typeof window !== 'undefined' && window.matchMedia('(max-width: 639px)').matches)
@@ -65,7 +65,7 @@ export function RouteMap() {
 
   const lit = phase >= 1
   return (
-    <div ref={box} className="relative -mx-4 aspect-[1300/900] w-[calc(100%+2rem)] sm:aspect-[85/46] overflow-hidden bg-surface sm:mx-0 sm:w-full sm:rounded-[28px] sm:ring-1 sm:ring-line"
+    <div ref={box} className={full ? 'relative aspect-[1300/900] w-full overflow-hidden bg-surface sm:aspect-[85/46] lg:max-h-[86vh]' : 'relative -mx-4 aspect-[1300/900] w-[calc(100%+2rem)] sm:aspect-[85/46] overflow-hidden bg-surface sm:mx-0 sm:w-full sm:rounded-[28px] sm:ring-1 sm:ring-line'}
       role="img" aria-label="示意地图：你的快递在菜鸟驿站，阿远从一教走回梅园正好经过驿站门口，顺手捎上，只多走 1 分钟">
       <svg viewBox={`${V.X0} ${V.Y0} ${V.VW} ${V.VH}`} preserveAspectRatio="xMidYMid slice" className="absolute inset-0 size-full" aria-hidden="true">
         <image href={`${import.meta.env.BASE_URL}images/campus-map-v2.webp`} x="0" y="0" width="1600" height="900" />
@@ -116,12 +116,12 @@ export function RouteMap() {
 
       <AnimatePresence mode="wait">
         {phase === 0 && !reduce && (
-          <motion.div key="a" className="absolute bottom-[5%] left-[3%] max-sm:left-4 max-sm:bottom-[4%]" initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.3 }}>
+          <motion.div key="a" className="absolute bottom-[5%] right-[3%] max-sm:right-4 max-sm:bottom-[8%]" initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.3 }}>
             <p className="rounded-xl bg-surface px-2.5 py-1.5 text-[12px] leading-snug shadow-[0_8px_24px_-12px_rgba(17,40,30,0.4)] ring-1 ring-line md:px-3 md:py-2 md:text-sm">阿远在一教 17:50 下课<br />本来就要走回梅园</p>
           </motion.div>
         )}
         {(phase === 1 || phase === 2) && (
-          <motion.div key="b" className="absolute bottom-[5%] left-[3%] max-sm:left-4 max-sm:bottom-[4%]" initial={{ opacity: 0, y: 10, scale: 0.92 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: -6 }} transition={{ type: 'spring', stiffness: 420, damping: 26 }}>
+          <motion.div key="b" className="absolute bottom-[5%] right-[3%] max-sm:right-4 max-sm:bottom-[8%]" initial={{ opacity: 0, y: 10, scale: 0.92 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: -6 }} transition={{ type: 'spring', stiffness: 420, damping: 26 }}>
             <div className="rounded-2xl bg-ink px-3 py-2 text-bg shadow-[0_14px_30px_-14px_rgba(17,40,30,0.6)] md:px-4 md:py-3">
               <p className="text-[13px] font-bold md:text-lg">顺路，只多走 1 分钟</p>
               <p className="text-[11px] opacity-80 md:text-sm">阿远接单 · 赏金 ¥5 托管中</p>
@@ -129,7 +129,7 @@ export function RouteMap() {
           </motion.div>
         )}
         {phase === 3 && (
-          <motion.div key="c" className="absolute bottom-[5%] left-[3%] max-sm:left-4 max-sm:bottom-[4%]" initial={reduce ? false : { opacity: 0, y: 10, scale: 0.92 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0 }} transition={{ type: 'spring', stiffness: 420, damping: 26 }}>
+          <motion.div key="c" className="absolute bottom-[5%] right-[3%] max-sm:right-4 max-sm:bottom-[8%]" initial={reduce ? false : { opacity: 0, y: 10, scale: 0.92 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0 }} transition={{ type: 'spring', stiffness: 420, damping: 26 }}>
             <div className="rounded-2xl bg-accent px-3 py-2 text-on-accent shadow-[0_14px_30px_-14px_rgba(11,122,85,0.7)] md:px-4 md:py-3">
               <p className="text-[13px] font-bold md:text-lg">送到了</p>
               <p className="tnum text-[11px] opacity-90 md:text-sm">¥5 从托管放给阿远</p>
@@ -161,29 +161,31 @@ export default function RouteHero({ Cta, Anchor }) {
   // 副标题和按钮第一帧就在，只做一点位移，不从透明开始
   const fade = (d) => ({ initial: reduce ? false : { y: 10 }, animate: { y: 0 }, transition: { duration: 0.5, delay: d * 0.3, ease } })
   return (
-    <section id="top" className="mx-auto grid max-w-7xl items-center gap-10 px-4 pb-12 pt-8 md:px-8 md:pb-20 md:pt-12 lg:grid-cols-12 lg:gap-10 lg:pb-4 lg:pt-10 xl:pt-14">
-      <div className="lg:col-span-5">
-        <h1 className="font-display text-[54px] leading-[1.05] md:text-[80px] lg:text-[length:clamp(54px,4vw_+_20px,78px)]">
-          <span className="block pb-1"><motion.span className="block" {...line(0)}>本来就要经过，</motion.span></span>
-          <span className="block pb-[0.3em]"><motion.span className="block" {...line(1)}><DashUnder>顺手</DashUnder>捎一下</motion.span></span>
-        </h1>
-        <motion.p {...fade(0.35)} className="mt-6 max-w-[30ch] md:max-w-[36ch] lg:mt-8 lg:max-w-[30ch] text-lg leading-relaxed text-muted md:text-[22px] lg:text-xl">
-          快递在驿站，你在宿舍。总有同学下课正好从驿站走回去，顺手帮你带上。校内实名，赏金先托管。
-        </motion.p>
-        <motion.div {...fade(0.45)} className="mt-8 flex flex-wrap items-center gap-3">
-          <Cta />
-          <Anchor to="routes" className="group inline-flex h-14 items-center gap-2 whitespace-nowrap rounded-full px-5 text-[17px] font-semibold text-ink transition hover:bg-sunken">
-            看看谁顺路<ArrowDown size={18} weight="bold" className="transition-transform group-hover:translate-y-0.5" />
-          </Anchor>
-        </motion.div>
-      </div>
-      <motion.div {...fade(0.2)} className="lg:col-span-7">
-        <RouteMap />
-        <p className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-[13px] text-ink/80 md:text-[14px]">
-          <span className="inline-flex items-center gap-1.5"><i className="h-1 w-5 rounded-full bg-ink/80" />阿远本来就要走的路</span>
-          <span className="inline-flex items-center gap-1.5"><i className="h-1.5 w-5 rounded-full bg-accent" />顺手捎上你的快递</span>
-        </p>
+    <section id="top" className="relative">
+      {/* 方向 A：首屏整屏就是那张校园地图，路牌挂在路边，往下滚就是沿路走 */}
+      <div className="relative">
+      <motion.div {...fade(0.1)} className="map-muted relative">
+        <RouteMap full />
       </motion.div>
+      <div className="relative mx-auto max-w-7xl px-4 md:absolute md:bottom-6 md:left-[27%] md:px-0">
+        <div className="relative z-10 -mt-6 max-w-[520px] rounded-[20px] bg-accent-deep p-6 text-on-accent shadow-[0_30px_60px_-30px_rgba(10,40,25,0.7)] ring-4 ring-bg md:mt-0 md:p-7">
+          <p className="font-clock inline-flex items-center gap-2 rounded-md bg-on-accent/15 px-2.5 py-1 text-[13px] font-bold">起点 · 一教　→　终点 · 梅园 5 号楼</p>
+          <h1 className="font-display mt-3 text-[44px] leading-[1.08] md:text-[52px]">
+            <motion.span className="block" {...line(0)}>本来就要经过，</motion.span>
+            <motion.span className="block" {...line(1)}>顺手捎一下</motion.span>
+          </h1>
+          <motion.p {...fade(0.35)} className="mt-3 max-w-[34ch] text-[17px] leading-relaxed opacity-90">
+            快递在驿站，你在宿舍。总有同学下课正好从驿站走回去，顺手帮你带上。校内实名，赏金先托管。
+          </motion.p>
+          <motion.div {...fade(0.45)} className="mt-5 flex flex-wrap items-center gap-3">
+            <Cta />
+            <Anchor to="routes" className="group inline-flex h-14 items-center gap-2 whitespace-nowrap rounded-full px-5 text-[17px] font-semibold text-on-accent ring-1 ring-on-accent/40 transition hover:bg-on-accent/10">
+              看看谁顺路<ArrowDown size={18} weight="bold" className="transition-transform group-hover:translate-y-0.5" />
+            </Anchor>
+          </motion.div>
+        </div>
+      </div>
+      </div>
     </section>
   )
 }

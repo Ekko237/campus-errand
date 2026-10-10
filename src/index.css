@@ -58,6 +58,10 @@ h1, h2, h3 { text-wrap: balance; }
 @font-face { font-family: "Smiley Fallback"; src: local("PingFang SC"), local("PingFangSC-Regular"), local("Microsoft YaHei"), local("Noto Sans CJK SC"), local("Noto Sans SC"); size-adjust: 80%; }
 /* 得意黑还在路上时，替身字先斜过来，换字那一下不从直体跳成斜体 */
 .fl .font-display { font-style: oblique 9deg; }
+/* 方向 A「一条路就是一整页」：标题像路牌一样立正、加粗（把得意黑的前倾扶正），数字用等宽 */
+h1.font-display, h2.font-display { transform: skewX(8deg); -webkit-text-stroke: 0.04em currentColor; }
+.font-clock { font-family: ui-monospace, "SF Mono", "Menlo", monospace; font-variant-numeric: tabular-nums; }
+.map-muted image, .map-muted img { filter: saturate(0.6) brightness(1.03); }
 .font-display { font-family: "Smiley Sans Oblique", "Smiley Fallback", "Geist Variable", "PingFang SC", "Noto Sans SC", sans-serif; font-weight: 400; letter-spacing: 0; margin-left: 0.04em; }
 
 

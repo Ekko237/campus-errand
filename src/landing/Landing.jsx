@@ -68,8 +68,12 @@ function Anchor({ to, children, onClick, ...p }) {
   return <a href="#/" onClick={go} {...p}>{children}</a>
 }
 
-const H2 = ({ children, className = '' }) => (
-  <h2 className={`font-display text-balance text-[34px] leading-[1.12] md:text-[44px] xl:text-[50px] ${className}`}>{children}</h2>
+// 方向 A：每一节是路上的一站，标题上挂一块小路牌
+const H2 = ({ children, className = '', station }) => (
+  <>
+    {station && <p className="font-clock mb-4 inline-flex items-center gap-2 rounded-md bg-accent px-2.5 py-1 text-[13px] font-bold text-on-accent"><span className="size-2 rounded-full bg-on-accent" />{station}</p>}
+    <h2 className={`font-display text-balance text-[34px] leading-[1.12] md:text-[44px] xl:text-[50px] ${className}`}>{children}</h2>
+  </>
 )
 const Br = () => <br className="hidden md:inline" />
 const Lead = ({ children, className = '' }) => <p className={`mt-5 max-w-[38ch] text-lg leading-relaxed text-muted md:text-xl ${className}`}>{children}</p>
@@ -241,7 +245,7 @@ function Scenes() {
   return (
     <section id="scenes" className={`mx-auto max-w-7xl scroll-mt-16 ${SECTION}`}>
       <div className="grid gap-x-12 lg:grid-cols-12 lg:items-end">
-        <Reveal className="lg:col-span-7"><H2>三个每天都在发生的<br />跑腿时刻</H2></Reveal>
+        <Reveal className="lg:col-span-7"><H2 station="第 1 站 · 驿站门口">三个每天都在发生的<br />跑腿时刻</H2></Reveal>
         <Reveal delay={0.05} className="lg:col-span-5 lg:pb-1"><Lead className="lg:mt-0">课表把一天切成好几段，小事却天天有。总有同学刚好要走你那条路。</Lead></Reveal>
       </div>
       <div className="mt-12">
@@ -540,7 +544,7 @@ function Loop() {
       <div className="rounded-[32px] bg-accent-deep text-on-accent md:rounded-[48px]">
       <div className={`mx-auto max-w-7xl ${SECTION}`}>
         <div className="grid gap-x-12 lg:grid-cols-12 lg:items-end">
-          <Reveal className="lg:col-span-7"><H2>一单从发布到信用变化，<br />六步走完</H2></Reveal>
+          <Reveal className="lg:col-span-7"><H2 station="第 3 站 · 这一单">一单从发布到信用变化，<br />六步走完</H2></Reveal>
           <Reveal delay={0.05} className="lg:col-span-5 lg:pb-1"><p className="mt-5 lg:mt-0 max-w-[38ch] text-lg leading-relaxed opacity-80 md:text-xl"><span className="lg:hidden">点着走一遍，</span><span className="hidden lg:inline">往下滚，左边这张订单会跟着走完一遍：</span>钱什么时候冻结、取件码什么时候出现、信用什么时候变。</p></Reveal>
         </div>
         <div className="mt-12 grid gap-12 lg:mt-14 lg:grid-cols-12">
@@ -668,7 +672,7 @@ function Trust() {
       <div className="grid gap-12 lg:grid-cols-12">
         <div className="lg:col-span-5">
           <div className="lg:sticky lg:top-28">
-            <Reveal><H2>凭什么把取件码<br />交给一个陌生同学</H2></Reveal>
+            <Reveal><H2 station="第 4 站 · 核验点">凭什么把取件码<br />交给一个陌生同学</H2></Reveal>
             <Reveal delay={0.05}><Lead>校园跑腿最大的成本不是钱，是对陌生人的不放心。信任拆成五道关，包裹每过一关，就少一种怕。</Lead></Reveal>
             <Reveal delay={0.1}>
               <div className="mt-8 lg:mt-10"><PrivacyDemo /></div>
@@ -737,7 +741,7 @@ function Credit() {
     <section id="credit" className="scroll-mt-16">
       <div className={`mx-auto max-w-7xl ${SECTION}`}>
         <div className="grid gap-x-12 lg:grid-cols-12 lg:items-end">
-          <Reveal className="lg:col-span-7"><H2>双向信用：<br />谁不守约谁扣分</H2></Reveal>
+          <Reveal className="lg:col-span-7"><H2 station="第 5 站 · 信用">双向信用：<br />谁不守约谁扣分</H2></Reveal>
           <Reveal delay={0.05} className="lg:col-span-5 lg:pb-1"><Lead className="lg:mt-0">满分 100，跑腿人认证后从 70 起步，发单人小满现在 88 分；不能充值也不能刷。点任意一条规则，看分数和等级怎么变。</Lead></Reveal>
         </div>
         <div className="mt-14 grid gap-6 lg:grid-cols-12">
@@ -1023,7 +1027,7 @@ function Roadmap() {
 function Routes() {
   return (
     <section id="routes" className="mx-auto max-w-7xl scroll-mt-16 px-4 pb-16 pt-2 md:px-8 md:pb-24 lg:pb-28">
-      <Reveal><H2>同一时间<br />校园里到处是顺路</H2></Reveal>
+      <Reveal><H2 station="第 2 站 · 路口">同一时间<br />校园里到处是顺路</H2></Reveal>
       <div className="mt-5"><CampusRoutes /></div>
     </section>
   )
@@ -1193,6 +1197,15 @@ function ThinkingIntro() {
 }
 
 
+// 节与节之间的一段路：虚线路面 + 绿色的路线，像沿路往下走
+function Road() {
+  return (
+    <div aria-hidden="true" className="mx-auto flex h-20 w-full max-w-7xl justify-start px-4 md:px-8">
+      <span className="relative ml-6 h-full w-3 rounded-full bg-[#d9dcd6]"><span className="absolute inset-x-[5px] inset-y-1 border-l-2 border-dashed border-surface" /><span className="absolute -bottom-1 left-1/2 size-4 -translate-x-1/2 rounded-full bg-accent ring-4 ring-bg" /></span>
+    </div>
+  )
+}
+
 export default function Landing({ page }) {
   // 首页和产品思考页之间切换：都从顶上开始看
   useEffect(() => { window.scrollTo(0, 0) }, [page])
@@ -1213,10 +1226,15 @@ export default function Landing({ page }) {
       ) : (
         <main>
           <RouteHero Cta={Cta} Anchor={Anchor} />
+          <Road />
           <Scenes />
+          <Road />
           <Routes />
+          <Road />
           <Loop />
+          <Road />
           <Trust />
+          <Road />
           <Credit />
           <Safety />
           <Final />
