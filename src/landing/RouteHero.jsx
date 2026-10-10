@@ -5,13 +5,11 @@ import { B, BUILDINGS, seedTasks, detourMin, detourMeters } from '../data'
 
 const ease = [0.16, 1, 0.3, 1]
 const icon = (name) => `${import.meta.env.BASE_URL}icons/${name}.webp`
-const W = 600, H = 440
+const W = 600, H = 450
 // 学弟下课的路：一教 → 驿站 → 梅园。驿站正好在他的路上，走到一半（p = 0.5）
-const RUN = 'M90 90 L90 220 L500 220 L500 326'
+const RUN = 'M71 44 L71 276 L484 276 L484 352'
 // 你的需求：驿站 → 梅园，和他后半程完全重合
-const NEED = 'M300 220 L500 220 L500 326'
-// 底图街区：楼（带窗）和绿地（几棵树）
-const BLOCKS = [[118, 114, 156, 80, 'b'], [326, 114, 148, 80, 'green'], [118, 246, 156, 88, 'green'], [326, 246, 148, 88, 'b'], [526, 114, 60, 80, 'b'], [14, 246, 50, 88, 'b']]
+const NEED = 'M311 276 L484 276 L484 352'
 const pct = (x, y) => ({ left: `${(x / W) * 100}%`, top: `${(y / H) * 100}%` })
 
 function Node({ x, y, children, className = '' }) {
@@ -50,26 +48,10 @@ export function RouteMap() {
 
   const lit = phase >= 1
   return (
-    <div ref={box} className="relative aspect-[600/440] w-full overflow-hidden rounded-[28px] bg-surface ring-1 ring-line"
+    <div ref={box} className="relative aspect-[600/450] w-full overflow-hidden rounded-[28px] bg-surface ring-1 ring-line"
       role="img" aria-label="示意地图：你的快递在菜鸟驿站，学弟从一教走回梅园正好经过驿站，顺手捎上，只多走 1 分钟">
+      <img src={`${import.meta.env.BASE_URL}images/campus-hero-v1.webp`} width={1200} height={900} alt="" aria-hidden="true" fetchPriority="high" className="absolute inset-0 size-full object-cover" />
       <svg viewBox={`0 0 ${W} ${H}`} className="absolute inset-0 size-full" aria-hidden="true">
-        {BLOCKS.map(([x, y, w, h, kind], i) => (
-          <g key={i}>
-            <rect x={x} y={y} width={w} height={h} rx="16" fill={kind === 'green' ? 'var(--accent-soft)' : '#dfe3df'} />
-            {kind === 'green'
-              ? [0.25, 0.6, 0.85].map((f, k) => <circle key={k} cx={x + w * f} cy={y + h * (k % 2 ? 0.35 : 0.62)} r="9" fill="var(--accent)" fillOpacity="0.28" />)
-              : Array.from({ length: Math.floor((w - 24) / 20) * Math.floor((h - 24) / 22) }, (_, k) => {
-                const cols = Math.floor((w - 24) / 20)
-                return <rect key={k} x={x + 14 + (k % cols) * 20} y={y + 14 + Math.floor(k / cols) * 22} width="9" height="11" rx="2" fill="var(--bg)" opacity="0.9" />
-              })}
-          </g>
-        ))}
-        <g stroke="var(--bg)" strokeWidth="22" strokeLinecap="round" fill="none">
-          <path d="M40 220 H560 M90 50 V400 M500 50 V400 M90 360 H500 M90 90 H500" />
-        </g>
-        <g stroke="var(--line)" strokeWidth="1.5" strokeDasharray="2 8" strokeLinecap="round" fill="none">
-          <path d="M40 220 H560 M90 50 V400 M500 50 V400 M90 360 H500 M90 90 H500" />
-        </g>
         {/* 你的需求：虚线 */}
         <motion.path d={NEED} fill="none" stroke="var(--accent)" strokeWidth="5" strokeDasharray="1 10" strokeLinecap="round"
           initial={reduce ? false : { opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.6, delay: 0.6 }} />
@@ -79,25 +61,25 @@ export function RouteMap() {
         {/* 交汇之后：带着你的快递走完，路线变成绿色实线 */}
         <motion.path d={NEED} fill="none" stroke="var(--accent)" strokeWidth="7" strokeLinecap="round" strokeLinejoin="round" style={{ pathLength: carry }} />
         {/* 交汇点 */}
-        <motion.circle cx="300" cy="220" r="34" fill="var(--accent)" initial={false}
+        <motion.circle cx="311" cy="276" r="34" fill="var(--accent)" initial={false}
           animate={lit && !reduce ? { opacity: [0.35, 0], scale: [0.6, 1.6] } : { opacity: 0 }}
-          transition={{ duration: 1.1, ease: 'easeOut' }} style={{ transformOrigin: '300px 220px' }} />
+          transition={{ duration: 1.1, ease: 'easeOut' }} style={{ transformOrigin: '311px 276px' }} />
       </svg>
 
-      <Node x={130} y={118}><Tag>一教</Tag></Node>
-      <Node x={300} y={220}>
+      <Node x={128} y={44}><Tag>一教</Tag></Node>
+      <Node x={311} y={276}>
         <motion.div animate={{ scale: lit ? 1.08 : 1 }} transition={{ type: 'spring', stiffness: 400, damping: 18 }}
           className={`grid size-11 place-items-center rounded-full ring-[3px] transition-colors md:size-14 ${lit ? 'bg-accent-soft ring-accent' : 'bg-surface ring-line'}`}>
           <img src={icon('type-express-v1')} width={36} height={36} alt="" className={`size-7 transition-opacity md:size-9 ${phase >= 2 ? 'opacity-30' : ''}`} />
         </motion.div>
       </Node>
-      <Node x={300} y={268} className="pt-2 md:pt-3"><Tag strong={lit}>菜鸟驿站</Tag></Node>
-      <Node x={500} y={360}>
+      <Node x={311} y={324} className="pt-2 md:pt-3"><Tag strong={lit}>菜鸟驿站</Tag></Node>
+      <Node x={524} y={352}>
         <div className={`size-11 overflow-hidden rounded-full bg-surface ring-[3px] transition-colors md:size-14 ${phase === 3 ? 'ring-accent' : 'ring-line'}`}>
           <img src={icon('avatar-poster-v1')} width={56} height={56} alt="" className="size-full object-cover" />
         </div>
       </Node>
-      <Node x={500} y={410}><Tag>梅园 5 号楼 · 你</Tag></Node>
+      <Node x={500} y={402}><Tag>梅园 5 号楼 · 你</Tag></Node>
       <motion.div className="absolute z-10 -translate-x-1/2 -translate-y-[calc(50%+30px)] md:-translate-y-[calc(50%+46px)]" style={{ left: rl, top: rt }}>
         <div className={`relative size-9 rounded-full bg-surface p-0.5 ring-[3px] shadow-[0_6px_16px_-6px_rgba(17,40,30,0.5)] transition-colors md:size-11 ${phase >= 1 ? 'ring-accent' : 'ring-ink'}`}>
           <img src={icon('avatar-runner-v1')} width={44} height={44} alt="" className="size-full rounded-full object-cover" />
@@ -112,7 +94,7 @@ export function RouteMap() {
 
       <AnimatePresence>
         {phase === 0 && !reduce && (
-          <motion.div key="a" className="absolute left-[21%] top-[4%] md:top-[5%]" initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.3 }}>
+          <motion.div key="a" className="absolute left-[32%] top-[3%] md:top-[4%]" initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.3 }}>
             <p className="rounded-xl bg-surface px-2.5 py-1.5 text-[11px] leading-snug shadow-[0_8px_24px_-12px_rgba(17,40,30,0.4)] ring-1 ring-line md:px-3 md:py-2 md:text-sm">学弟在一教 17:50 下课<br />本来就要走回梅园</p>
           </motion.div>
         )}
