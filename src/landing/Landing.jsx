@@ -1,4 +1,5 @@
 import RouteHero, { CampusRoutes, ROUTES, routeHits } from './RouteHero'
+import Story from './Story'
 import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import {
@@ -75,7 +76,7 @@ const Br = () => <br className="hidden md:inline" />
 const Lead = ({ children, className = '' }) => <p className={`mt-5 max-w-[38ch] text-lg leading-relaxed text-muted md:text-xl ${className}`}>{children}</p>
 
 // 贯穿全站的那条路：宽屏左边一条虚线，每一段是一个站，往下滚它就被走成绿色，小人跟着走
-const STOPS = [['top', '一条路'], ['scenes', '场景'], ['routes', '整个校园'], ['loop', '一单'], ['trust', '信任'], ['credit', '信用'], ['safety', '底线']]
+const STOPS = [['top', '一条路'], ['story', '一单'], ['routes', '整个校园'], ['safety', '底线'], ['final', '你的路']]
 function PageRoute() {
   const reduce = useReducedMotion()
   const { scrollYProgress } = useScroll()
@@ -122,8 +123,8 @@ function ScrollProgress() {
   return <motion.div aria-hidden="true" style={{ scaleX }} className="fixed inset-x-0 top-0 z-50 h-[3px] origin-left bg-accent" />
 }
 
-const NAV_LINKS = [['scenes', '场景'], ['routes', '顺路地图'], ['loop', '一单怎么走'], ['trust', '信任机制'], ['credit', '双向信用']]
-const SECTIONS = [...NAV_LINKS, ['safety', '这些单发不出去'], ['final', '你下课常走哪条路']]
+const NAV_LINKS = [['story', '一单怎么走'], ['routes', '顺路地图'], ['safety', '这些单发不出去'], ['final', '你常走的路']]
+const SECTIONS = [...NAV_LINKS]
 function Nav({ page }) {
   const { scrollY } = useScroll()
   const [scrolled, setScrolled] = useState(false)
@@ -1197,6 +1198,21 @@ function ThinkingIntro() {
 }
 
 
+// 叙事讲完以后：背后的产品思考（为什么是顺路、看哪三个数、接下来做什么）放在单独一页，这里给个入口
+function ThinkTeaser() {
+  return (
+    <section className="mx-auto max-w-7xl px-4 pb-16 md:px-8 md:pb-24">
+      <Link to="/thinking" className="group flex flex-col gap-4 rounded-[28px] bg-sunken p-6 transition-colors hover:bg-accent-soft md:flex-row md:items-center md:justify-between md:p-8">
+        <div>
+          <p className="text-sm font-semibold text-accent">产品思考</p>
+          <p className="mt-1 font-display text-[28px] leading-tight md:text-[34px]">为什么是「顺路」，看哪三个数，接下来做什么</p>
+        </div>
+        <span className="inline-flex h-12 shrink-0 items-center gap-2 self-start rounded-full bg-ink px-5 text-[15px] font-semibold text-bg md:self-auto">读产品思考<ArrowRight size={16} weight="bold" className="transition-transform group-hover:translate-x-0.5" /></span>
+      </Link>
+    </section>
+  )
+}
+
 export default function Landing({ page }) {
   // 首页和产品思考页之间切换：都从顶上开始看
   useEffect(() => { window.scrollTo(0, 0) }, [page])
@@ -1217,12 +1233,10 @@ export default function Landing({ page }) {
       ) : (
         <main>
           <RouteHero Cta={Cta} Anchor={Anchor} />
-          <Scenes />
+          <Story />
           <Routes />
-          <Loop />
-          <Trust />
-          <Credit />
           <Safety />
+          <ThinkTeaser />
           <Final />
         </main>
       )}
