@@ -54,8 +54,15 @@ export default function TourBar() {
       const r = el.getBoundingClientRect()
       const top = head + 16, bottom = (navTop > innerHeight / 2 ? navTop : innerHeight) - 24
       if (r.top >= top && r.bottom <= bottom) return
-      // 把按钮放到可见区中间：它下面的小字（申诉、放弃、说明）也一起露出来，不被底部导航挡
-      const dy = r.height < bottom - top ? r.top + r.height / 2 - (top + bottom) / 2 : r.top - top
+      // 先试着把按钮所在的整块（卡片、段落）顶到导览条下面：块的标题不被切，按钮也在屏幕里
+      let dy = null
+      for (let a = el.parentElement; a && a.tagName !== 'MAIN'; a = a.parentElement) {
+        const ar = a.getBoundingClientRect()
+        if (r.bottom - ar.top <= bottom - top) dy = ar.top - top
+        else break
+      }
+      // 块太高放不下：把按钮放到可见区中间，它下面的小字（申诉、放弃、说明）也一起露出来
+      if (dy == null) dy = r.height < bottom - top ? r.top + r.height / 2 - (top + bottom) / 2 : r.top - top
       window.scrollBy({ top: dy, behavior: reduce ? 'auto' : 'smooth' })
     }
     const id = setTimeout(() => {
