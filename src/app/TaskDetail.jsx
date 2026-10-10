@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
 import { motion, useReducedMotion } from 'motion/react'
-import { ArrowLeft, MapPin, Clock, LockKey, LockKeyOpen, EyeSlash, Phone, Package, House, ShieldCheck, Camera, Numpad, Check, Scales, Warning, FileX } from '@phosphor-icons/react'
+import { ArrowLeft, MapPin, Clock, LockKey, LockKeyOpen, EyeSlash, Phone, Package, House, ShieldCheck, Camera, Numpad, Check, Scales, Warning, FileX, ArrowClockwise } from '@phosphor-icons/react'
 import { useStore } from '../store'
 import { B, dist, fmtDist, RUNNER_HOME, minCreditFor, levelOf } from '../data'
 import { Btn, Panel, TypeTag, UrgentTag, VerifiedBadge, Sheet, Stars, Empty, Field, inputCls, left, clock, spring } from '../ui'
@@ -351,8 +351,12 @@ function Actions({ t }) {
         <p className="text-[15px] text-muted">订单已完成{t.ratingByPoster ? `，发单人评价 ${t.ratingByPoster.stars} 星` : ''}{t.ratingByRunner ? `，跑腿人评价 ${t.ratingByRunner.stars} 星` : ''}。</p>
         {otherPending && <Btn variant="ghost" onClick={() => act('role', { role: role === 'poster' ? 'runner' : 'poster' })}>切换身份去互评</Btn>}
         {mine && <Btn variant="ghost" onClick={() => { act('role', { role: 'runner' }); nav('/app/me') }}>看跑腿人信用变化</Btn>}
+        {own && role === 'poster' && <Btn onClick={() => nav(`/app/publish?again=${t.id}`)}><ArrowClockwise size={18} weight="bold" />同样的再来一单</Btn>}
       </div>
     )
+  }
+  if (['refunded', 'cancelled'].includes(t.status) && own && role === 'poster') {
+    return <Btn variant="ghost" className="w-full" onClick={() => nav(`/app/publish?again=${t.id}`)}><ArrowClockwise size={18} weight="bold" />按这单重新发布</Btn>
   }
   return null
 }

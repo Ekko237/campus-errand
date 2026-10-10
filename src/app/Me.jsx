@@ -22,6 +22,7 @@ export default function Me() {
   const { state, act } = useStore()
   const me = useMe()
   const nav = useNavigate()
+  const reduce = useReducedMotion()
   const isPoster = me.id === 'poster'
   const posted = state.tasks.filter((t) => t.posterId === 'poster').length
   const good = me.ratings.filter((r) => r >= 4).length
@@ -59,7 +60,10 @@ export default function Me() {
               <p className="text-sm text-muted">{lv.desc}</p>
             </div>
           </div>
-          <p className="mt-4 flex items-center justify-between text-[15px]">
+          <div className="mt-4 h-2 overflow-hidden rounded-full bg-surface" role="progressbar" aria-label="距下一等级" aria-valuemin={lv.min} aria-valuemax={nx ? nx.min : 100} aria-valuenow={me.credit}>
+            <motion.div className="h-full rounded-full bg-accent" initial={reduce ? false : { width: 0 }} animate={{ width: `${nx ? Math.max(6, ((me.credit - lv.min) / (nx.min - lv.min)) * 100) : 100}%` }} transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1] }} />
+          </div>
+          <p className="mt-3 flex items-center justify-between gap-3 text-[15px]">
             <span>{nx ? `再 +${nx.min - me.credit} 分升到「${nx.name}」，${nx.desc}` : '已是最高等级'}</span>
             <ArrowRight size={18} className="shrink-0 text-accent" />
           </p>

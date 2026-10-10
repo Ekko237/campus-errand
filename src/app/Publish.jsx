@@ -37,10 +37,19 @@ export default function Publish() {
   const [sp] = useSearchParams()
   const tour = sp.get('tour') === '1'
   const poster = state.accounts.poster
-  const [f, setF] = useState(() => ({
+  const again = state.tasks.find((t) => t.id === sp.get('again') && t.posterId === 'poster')
+  const [f, setF] = useState(() => again ? {
+    type: again.type, from: again.from, to: again.to, size: again.size || 's', windowId: (WINDOWS.find((w) => w.min === again.windowMin) || WINDOWS[1]).id, urgent: !!again.urgent,
+    title: again.title, note: again.note || '', room: again.private?.room || '', code: '', reward: again.reward,
+  } : {
     type: 'express', from: 'cainiao', to: 'mei5', size: 's', windowId: 'w60', urgent: false,
     title: '', note: tour ? '一个小件，衣服' : '', room: tour ? '梅园 5 号楼 412' : '', code: tour ? '6-2-3108' : '', reward: null,
-  }))
+  })
+  const usual = useMemo(() => {
+    const n = {}
+    for (const t of state.tasks) if (t.posterId === 'poster') n[t.to] = (n[t.to] || 0) + 1
+    return Object.entries(n).sort((a, b) => b[1] - a[1]).slice(0, 3).map(([id]) => id).filter((id) => B[id])
+  }, [state.tasks])
   const [touched, setTouched] = useState(false)
   const [confirm, setConfirm] = useState(false)
   const set = (k) => (v) => setF((x) => ({ ...x, [k]: v }))
@@ -90,7 +99,7 @@ export default function Publish() {
     <div className="space-y-5">
       <div>
         <h1 className="text-2xl font-bold tracking-tight">发布跑腿任务</h1>
-        <p className="mt-1 text-[15px] text-muted">选模板、选楼栋，赏金先冻结托管，送达确认后才放款。</p>
+        <p className="mt-1 text-[15px] text-muted">{again ? '已按上一单填好，取件码记得换成新的。' : '选模板、选楼栋，赏金先冻结托管，送达确认后才放款。'}</p>
       </div>
 
       <Field label="任务类型">
@@ -106,6 +115,15 @@ export default function Publish() {
         <Field label={f.type === 'seat' ? '占座地点' : '取件 / 购买地点'}><BuildingSelect value={f.from} onChange={(v) => setF((x) => ({ ...x, from: v, title: '' }))} /></Field>
         <Field label="送达楼栋" error={touched && errors.same}><BuildingSelect value={f.to} onChange={(v) => setF((x) => ({ ...x, to: v, title: '' }))} /></Field>
       </div>
+      {usual.length > 0 && (
+        <div className="-mt-2 flex flex-wrap items-center gap-2">
+          <span className="text-sm text-muted">常送到</span>
+          {usual.map((id) => (
+            <button key={id} type="button" onClick={() => setF((x) => ({ ...x, to: id, title: '' }))} aria-pressed={f.to === id}
+              className={`inline-flex h-9 items-center rounded-full px-3.5 text-sm font-semibold transition active:scale-[0.97] ${f.to === id ? 'bg-accent-soft text-accent' : 'bg-surface ring-1 ring-line'}`}>{B[id].name}</button>
+          ))}
+        </div>
+      )}
 
       <Field label="任务标题" hint="已按模板自动生成，可以改">
         <input className={inputCls} value={title} onChange={(e) => set('title')(e.target.value)} maxLength={30} />
