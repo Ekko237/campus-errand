@@ -88,7 +88,7 @@ const CODE = ['还没有', '••••', '••••', '6-2-3108', '已用�
 const RUNNER = [70, 70, 70, 70, 70, 72, 73]
 const POSTER = [88, 88, 88, 88, 88, 89, 90]
 // 每段地图镜头对准哪儿：[中心 x, 中心 y, 镜头宽]，最后一段拉远看整条路
-const CAM = [[720, 360, 1300], [1110, 330, 760], [1180, 300, 880], [1150, 330, 760], [700, 330, 1300], [470, 360, 960], [720, 420, 1440]]
+const CAM = [[720, 360, 1300], [1060, 330, 1020], [1120, 310, 1060], [1100, 330, 1020], [700, 330, 1300], [520, 360, 1150], [720, 420, 1440]]
 
 // 把镜头换算成「整张图在画框里的位置」：画框宽高比固定，镜头外的部分裁掉
 function camRect(c, aspect) {
@@ -173,7 +173,7 @@ function StoryMap({ i, pos, aspect, small = false }) {
           <span className={`grid place-items-center rounded-full bg-accent-soft ring-[3px] ring-accent ${small ? 'size-8' : 'size-12'}`}>
             <img src={icon('avatar-poster-v1')} width={40} height={40} alt="" className={`${small ? 'size-6' : 'size-10'} rounded-full`} />
           </span>
-          <span className={`absolute left-1/2 top-full mt-1 -translate-x-1/2 whitespace-nowrap rounded-full bg-surface px-2 py-0.5 font-semibold text-ink shadow-sm ring-1 ring-line ${small ? 'text-[11px]' : 'text-[13px]'}`}>梅园 · 小满</span>
+          <span className={`absolute whitespace-nowrap rounded-full bg-surface px-2 py-0.5 font-semibold text-ink shadow-sm ring-1 ring-line ${small ? 'left-full top-1/2 ml-1 -translate-x-0 -translate-y-1/2 text-[11px]' : 'left-1/2 top-full mt-1 -translate-x-1/2 text-[13px]'}`}>梅园 · 小满</span>
         </span>
         {/* 快递：在驿站等着，被阿远拿走以后跟着他走 */}
         <motion.span className="absolute z-10 -translate-x-1/2 -translate-y-1/2" style={{ ...pp(STATION), opacity: pkgAtStation }}>

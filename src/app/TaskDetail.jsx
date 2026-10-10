@@ -275,7 +275,7 @@ function DeliverSheet({ t, open, onClose }) {
             <div className="relative">
               <div className="grid grid-cols-4 gap-2" aria-hidden="true">
                 {[0, 1, 2, 3].map((k) => (
-                  <span key={k} className={`tnum grid h-14 place-items-center rounded-xl text-2xl font-bold ring-1 transition-colors ${err ? 'bg-danger-soft ring-2 ring-danger' : code.length === 4 ? 'bg-accent-soft ring-2 ring-accent text-accent' : k === code.length ? 'bg-surface ring-2 ring-ink' : 'bg-surface ring-line'}`}>
+                  <span key={k} className={`tnum grid h-14 place-items-center rounded-xl text-2xl font-bold ring-1 transition-colors ${err || (code.length === 4 && code !== t.deliverCode) ? 'bg-danger-soft ring-2 ring-danger' : code.length === 4 ? 'bg-accent-soft ring-2 ring-accent text-accent' : k === code.length ? 'bg-surface ring-2 ring-ink' : 'bg-surface ring-line'}`}>
                     {code[k] ? <motion.span key={code[k] + k} initial={{ y: 6, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ duration: 0.15 }}>{code[k]}</motion.span> : ''}
                   </span>
                 ))}
