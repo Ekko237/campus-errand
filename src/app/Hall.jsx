@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence, useReducedMotion } from 'motion/react'
-import { RouteZoom, ROUTES } from '../landing/RouteHero'
+import { ROUTES } from '../landing/RouteHero'
+import CampusMap from '../landing/CampusMap'
 import { CaretDown, MagnifyingGlass, ArrowRight } from '@phosphor-icons/react'
 import { useStore } from '../store'
 import { TYPES, TYPE_KEYS, B, BUILDINGS, dist, fmtDist, detourMin, detourMeters, RUNNER_HOME, levelOf, minCreditFor, POSTER_WARN } from '../data'
@@ -212,7 +213,7 @@ export default function Hall() {
 
       {sortBy === 'route' && (
         <div className="rounded-2xl bg-accent-soft p-2 pb-3">
-          <RouteZoom R={{ ...route, label: route.from + route.to }} reduce={reduce} ratio={2.2} pills={false} walker={false} endsOnly
+          <CampusMap R={route} reduce={reduce} pills={false} walker={false} endsOnly
             hits={state.tasks.filter((t) => t.status === 'open' && t.deadline > Date.now() && detourMin(route.from, route.to, t) <= 5).map((t) => ({ ...t, dm: detourMeters(route.from, route.to, t) }))} />
           <div className="px-2 pt-3">
           <div className="flex items-center gap-3">

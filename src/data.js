@@ -1,3 +1,4 @@
+import { detourMetersMap } from './campusMap.js'
 // 全部是演示用的示例数据，不代表真实统计。
 import { createElement } from 'react'
 
@@ -48,11 +49,9 @@ export function dist(a, b) {
   return Math.round(Math.hypot(p.x - q.x, p.y - q.y) / 10) * 10
 }
 // 顺路：按「我本来就要走的路」算这单让我多走几分钟（步行约 80 米/分钟）
-export const detourMin = (a, b, t) => {
-  const via = dist(a, t.from) + (t.from !== t.to ? dist(t.from, t.to) : 0) + dist(t.to, b) - dist(a, b)
-  return Math.max(1, Math.round(via / 80))
-}
-export const detourMeters = (a, b, t) => Math.max(0, dist(a, t.from) + (t.from !== t.to ? dist(t.from, t.to) : 0) + dist(t.to, b) - dist(a, b))
+// 顺路按真实路网算（src/campusMap.js 里沿路寻路），不是直线距离；步行约 80 米/分钟
+export const detourMin = (a, b, t) => Math.max(1, Math.round(detourMetersMap(a, b, t) / 80))
+export const detourMeters = (a, b, t) => detourMetersMap(a, b, t)
 // 跑腿人常走的那条路（大厅里「换条路」会记住），没有就用示例路线
 export const myRoute = () => {
   try { const r = JSON.parse(localStorage.getItem('shunluxia:myroute')); if (B[r?.from] && B[r?.to]) return r } catch { /* 用默认 */ }

@@ -1,7 +1,9 @@
-import { useEffect, useId, useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { motion, AnimatePresence, useReducedMotion, useMotionValue, useTransform, useMotionValueEvent, useInView, animate } from 'motion/react'
 import { ArrowDown } from '@phosphor-icons/react'
-import { B, BUILDINGS, seedTasks, detourMin, detourMeters } from '../data'
+import { seedTasks, detourMin, detourMeters } from '../data'
+import { routePath, PLACES } from '../campusMap'
+import CampusMap, { SHORT } from './CampusMap'
 
 const ease = [0.16, 1, 0.3, 1]
 const icon = (name) => `${import.meta.env.BASE_URL}icons/${name}.webp`
@@ -170,11 +172,10 @@ export default function RouteHero({ Cta, Anchor }) {
 // 收尾：同一张校园图上，8 个示例单的路线；选一条「我正要走的路」，顺路的单变绿并标出多走几分钟（都是按数据实时算的）
 const PX = (x) => 13 + ((x + 600) / 1580) * 74
 const PY = (y) => 7 + ((y + 380) / 1280) * 84
-const SHORT = { cainiao: '菜鸟驿站', sf: '顺丰点', jd: '京东柜', canteen1: '一食堂', canteen2: '二食堂', market: '教育超市', gate: '北门', lib: '图书馆', jiao1: '一教', hall: '学术报告厅', gym: '体育馆', zhu3: '竹园', mei5: '梅园', tao2: '桃园', lan1: '兰园', yan: '研究生公寓' }
 export const ROUTES = [
   { from: 'jiao1', to: 'mei5', label: '一教下课回梅园' },
-  { from: 'jiao1', to: 'lan1', label: '一教去兰园' },
-  { from: 'market', to: 'yan', label: '超市回研究生公寓' },
+  { from: 'jiao1', to: 'tao2', label: '一教去桃园' },
+  { from: 'gym', to: 'tao2', label: '体育馆回桃园' },
 ]
 
 export function CampusRoutes() {
@@ -206,8 +207,7 @@ export function CampusRoutes() {
       <p className="mt-4 max-w-[40ch] text-lg leading-relaxed text-muted md:text-xl" aria-live="polite">
         此刻 {tasks.length} 个示例单里，有 <b className="text-accent">{hits.length} 个</b>顺路，捎上多走 {!hits.length ? 0 : hits[0].m === hits[hits.length - 1].m ? hits[0].m : `${hits[0].m} 到 ${hits[hits.length - 1].m}`} 分钟。
       </p>
-      <div ref={box} className="mt-6 hidden md:block"><RouteZoom R={R} hits={hits} reduce={reduce} /></div>
-      <div className="mt-6 md:hidden"><RouteZoom R={R} hits={hits} reduce={reduce} ratio={0.82} vertical /></div>
+      <div ref={box} className="mt-6"><CampusMap R={R} hits={hits} reduce={reduce} /></div>
       <SubwayLine R={R} hits={hits} reduce={reduce} />
       <div className="mt-3 hidden flex-wrap gap-x-5 md:flex gap-y-1 text-sm text-muted">
         <span className="inline-flex items-center gap-1.5"><i className="h-1 w-5 rounded-full bg-ink/80" />你正要走的路</span>
@@ -219,10 +219,9 @@ export function CampusRoutes() {
 
 // 手机上的顺路：把你的路画成一根竖着的地铁线，顺路的单按在路上的先后挂成站点
 function SubwayLine({ R, hits, reduce }) {
-  const a = B[R.from], b = B[R.to]
-  const vx = b.x - a.x, vy = b.y - a.y, len2 = vx * vx + vy * vy || 1
-  const along = (id) => Math.max(0, Math.min(1, ((B[id].x - a.x) * vx + (B[id].y - a.y) * vy) / len2))
-  const stops = [...hits].sort((p, q) => along(p.from) - along(q.from))
+  const mine = routePath(R.from, R.to).pts
+  const at = (id) => { const d = PLACES[id].door; let best = Infinity, k = 0; mine.forEach((q, i) => { const v = Math.hypot(q[0] - d[0], q[1] - d[1]); if (v < best) { best = v; k = i } }); return k }
+  const stops = [...hits].sort((p, q) => at(p.from) - at(q.from))
   const end = (name, sub) => (
     <li className="relative flex items-center gap-3 py-1">
       <span className="z-10 grid size-6 shrink-0 place-items-center rounded-full bg-ink ring-4 ring-bg"><span className="size-2 rounded-full bg-bg" /></span>
@@ -246,151 +245,6 @@ function SubwayLine({ R, hits, reduce }) {
         ))}
         {end(SHORT[R.to], '到达')}
       </ol>
-    </div>
-  )
-}
-
-// 桌面：镜头缩放到「你的路 + 顺路的单」；底图是和首屏一样的街区，路线沿街走直角；一个小人沿你的路走，经过取件点时那一单弹出来
-// 校园底图（生成图）在数据坐标里的位置：中心和宽高，跟着镜头一起缩放、旋转
-const CAMPUS_IMG = { cx: 260, cy: 260, w: 3300, h: 1856 }
-
-export function RouteZoom({ R, hits, reduce, ratio = 2.2, pills = true, vertical = false, walker = true, endsOnly = false }) {
-  const uid = useId().replace(/:/g, '')
-  // 坐标：你的路是一条直线 A→B；竖版（手机）把整张图转到 A 在上、B 在下
-  const A0 = B[R.from], B0 = B[R.to]
-  const ang = vertical ? Math.PI / 2 - Math.atan2(B0.y - A0.y, B0.x - A0.x) : 0
-  const rot = (q) => {
-    const dx = q.x - A0.x, dy = q.y - A0.y
-    return { x: dx * Math.cos(ang) - dy * Math.sin(ang), y: dx * Math.sin(ang) + dy * Math.cos(ang) }
-  }
-  const at0 = (id) => rot(B[id])
-  const a = at0(R.from), b = at0(R.to)
-  const vx = b.x - a.x, vy = b.y - a.y, len2 = vx * vx + vy * vy || 1
-  const proj = (q) => Math.max(0, Math.min(1, ((q.x - a.x) * vx + (q.y - a.y) * vy) / len2))
-  const foot = (q) => { const t = proj(q); return { x: a.x + vx * t, y: a.y + vy * t } }
-  const along = (id) => Math.max(0.03, Math.min(0.97, proj(at0(id))))
-  const ids = [R.from, R.to, ...hits.flatMap((t) => [t.from, t.to])]
-  const pts = ids.map(at0)
-  let x0 = Math.min(...pts.map((q) => q.x)), x1 = Math.max(...pts.map((q) => q.x))
-  let y0 = Math.min(...pts.map((q) => q.y)), y1 = Math.max(...pts.map((q) => q.y))
-  const pw = Math.max(x1 - x0, 260) * 0.14 + 80, ph = Math.max(y1 - y0, 160) * 0.14 + 80
-  x0 -= pw; x1 += pw; y0 -= ph; y1 += ph
-  { const mw = 1400; if (x1 - x0 < mw) { const d = (mw - (x1 - x0)) / 2; x0 -= d; x1 += d } }
-  const w = x1 - x0, h = y1 - y0
-  if (w / h > ratio) { const d = (w / ratio - h) / 2; y0 -= d; y1 += d } else { const d = (h * ratio - w) / 2; x0 -= d; x1 += d }
-  const X = (x) => ((x - x0) / (x1 - x0)) * 100
-  const Y = (y) => ((y - y0) / (y1 - y0)) * 100
-  const PQ = (q) => [X(q.x), Y(q.y)]
-  const P = (id) => PQ(at0(id))
-  const key = new Set(ids)
-  const [p, setP] = useState(reduce ? 1 : 0)
-  useEffect(() => {
-    if (reduce) return
-    setP(0)
-    const c = animate(0, 1, { duration: 2.8, delay: 0.6, ease: 'easeInOut', onUpdate: setP })
-    return () => c.stop()
-  }, [R.label, reduce])
-  const sp = { type: 'spring', stiffness: 150, damping: 26 }
-  const imgC = rot({ x: CAMPUS_IMG.cx, y: CAMPUS_IMG.cy })
-  const me = { x: a.x + vx * p, y: a.y + vy * p }
-  // 标签放在离你的路更远的一侧；太挤就换边，两边都挤只留圆点
-  const sideOf = (q) => (((q.x - a.x) * vy - (q.y - a.y) * vx) >= 0 ? 1 : -1)
-  const placed = []
-  const labelSide = {}
-  const near = (q, s) => placed.some((o) => Math.abs(o.x - q[0]) < (ratio < 1.5 ? 26 : 11) && Math.abs(o.y - (q[1] + s * 7)) < (ratio < 1.5 ? 6 : 7))
-  ;[R.from, R.to, ...ids.filter((i) => i !== R.from && i !== R.to)].forEach((id) => {
-    if (labelSide[id] !== undefined) return
-    const q = P(id)
-    let s = id === R.from ? -1 : id === R.to ? 1 : (vertical ? sideOf(at0(id)) : (Y(at0(id).y) < Y(foot(at0(id)).y) ? -1 : 1))
-    if (near(q, s)) s = -s
-    if (near(q, s) && id !== R.from && id !== R.to) { labelSide[id] = 0; return }
-    labelSide[id] = s
-    placed.push({ x: q[0], y: q[1] + s * 7 })
-  })
-  const side = (id) => labelSide[id] || 1
-  // 竖版：价签挨个找空位（左边 / 右下 / 右上），和标签、别的价签都不重叠；实在放不下就不放，下面列表里有价格
-  const pillPos = {}
-  if (vertical) {
-    const boxes = []
-    const hit = (b) => b.x0 < 1 || b.x1 > 99 || boxes.some((o) => b.x0 < o.x1 && b.x1 > o.x0 && b.y0 < o.y1 && b.y1 > o.y0)
-    ;[...key].forEach((id) => {
-      const q = P(id)
-      const w2 = SHORT[id].length * 3.6 + 5
-      if (id === R.from) boxes.push({ x0: q[0] - w2 / 2, x1: q[0] + w2 / 2, y0: q[1] - 9, y1: q[1] - 2 })
-      else if (id === R.to) boxes.push({ x0: q[0] - w2 / 2, x1: q[0] + w2 / 2, y0: q[1] + 2, y1: q[1] + 9 })
-      else boxes.push({ x0: q[0] + 2, x1: q[0] + 2 + w2, y0: q[1] - 3, y1: q[1] + 3 })
-      boxes.push({ x0: q[0] - 3, x1: q[0] + 3, y0: q[1] - 3, y1: q[1] + 3 })
-    })
-    ;[...hits].sort((m, n) => P(m.from)[1] - P(n.from)[1]).forEach((t) => {
-      const q = P(t.from)
-      const pw2 = 30
-      const cands = [
-        ['left', { x0: q[0] - 3 - pw2, x1: q[0] - 3, y0: q[1] - 3, y1: q[1] + 3 }],
-        ['below', { x0: q[0] + 2, x1: q[0] + 2 + pw2, y0: q[1] + 3.5, y1: q[1] + 9.5 }],
-        ['above', { x0: q[0] + 2, x1: q[0] + 2 + pw2, y0: q[1] - 9.5, y1: q[1] - 3.5 }],
-      ]
-      const ok = cands.find(([, b]) => !hit(b))
-      if (ok) { pillPos[t.id] = ok[0]; boxes.push(ok[1]) }
-    })
-  }
-
-  return (
-    <div className="relative max-h-[560px] w-full overflow-hidden rounded-[24px] bg-surface ring-1 ring-line md:rounded-[28px]" style={{ aspectRatio: ratio }}
-      role="img" aria-label={`示意地图：沿「${R.label}」这条路，${hits.length} 个示例单顺路`}>
-      <motion.img src={`${import.meta.env.BASE_URL}images/campus-wide-v1.webp`} width={1600} height={900} alt="" aria-hidden="true" loading="lazy"
-        className="pointer-events-none absolute max-w-none select-none" style={{ x: '-50%', y: '-50%' }} initial={false}
-        animate={{ left: `${X(imgC.x)}%`, top: `${Y(imgC.y)}%`, width: `${(CAMPUS_IMG.w / (x1 - x0)) * 100}%`, height: `${(CAMPUS_IMG.h / (y1 - y0)) * 100}%`, rotate: (ang * 180) / Math.PI }} transition={sp} />
-      <svg viewBox="0 0 100 100" preserveAspectRatio="none" className="absolute inset-0 size-full" aria-hidden="true">
-        {/* 你的路：一条直线 */}
-        <motion.line initial={false} animate={{ x1: X(a.x), y1: Y(a.y), x2: X(b.x), y2: Y(b.y) }} transition={sp}
-          stroke="var(--ink)" strokeOpacity="0.85" strokeWidth="5" vectorEffect="non-scaling-stroke" strokeLinecap="round" />
-        {hits.map((t) => {
-          const P1 = at0(t.from), D1 = at0(t.to), F1 = foot(P1), F2 = foot(D1)
-          const lit = p >= along(t.from)
-          return (
-            <g key={t.id} opacity={lit ? 1 : 0.25}>
-              {/* 包裹跟着你走的那一段：压在你的路上 */}
-              <line x1={X(F1.x)} y1={Y(F1.y)} x2={X(F2.x)} y2={Y(F2.y)} stroke="var(--accent)" strokeWidth="8" vectorEffect="non-scaling-stroke" strokeLinecap="round" />
-              {/* 多走的那一点：从你的路岔出去再回来 */}
-              {Math.hypot(P1.x - F1.x, P1.y - F1.y) > 12 && <line x1={X(F1.x)} y1={Y(F1.y)} x2={X(P1.x)} y2={Y(P1.y)} stroke="var(--accent)" strokeWidth="4" strokeDasharray="1 7" vectorEffect="non-scaling-stroke" strokeLinecap="round" />}
-              {t.from !== t.to && Math.hypot(D1.x - F2.x, D1.y - F2.y) > 12 && <line x1={X(F2.x)} y1={Y(F2.y)} x2={X(D1.x)} y2={Y(D1.y)} stroke="var(--accent)" strokeWidth="4" strokeDasharray="1 7" vectorEffect="non-scaling-stroke" strokeLinecap="round" />}
-            </g>
-          )
-        })}
-      </svg>
-      {hits.filter((t) => t.from === t.to).map((t) => (
-        <motion.span key={t.id} aria-hidden="true" initial={false} animate={{ left: `${P(t.from)[0]}%`, top: `${P(t.from)[1]}%`, opacity: p >= along(t.from) ? 1 : 0.3 }} transition={sp}
-          className="absolute size-9 -translate-x-1/2 -translate-y-1/2 rounded-full bg-accent-soft/60 ring-4 ring-accent md:size-12 md:ring-[5px]" />
-      ))}
-      {[...key].map((id) => {
-        const end = id === R.from || id === R.to
-        return (
-          <motion.span key={id} initial={false} animate={{ left: `${P(id)[0]}%`, top: `${P(id)[1]}%` }} transition={sp} className="absolute z-10">
-            <span className={`absolute left-0 top-0 block size-3.5 -translate-x-1/2 -translate-y-1/2 rounded-full ring-4 ring-surface ${end ? 'bg-ink' : 'bg-accent'}`} />
-            {(vertical || labelSide[id] !== 0) && (!endsOnly || end) && <span className={`absolute whitespace-nowrap rounded-full px-2 py-0.5 text-[11px] font-semibold shadow-sm md:px-2.5 md:text-[13px] ${end ? 'bg-ink text-bg' : 'bg-surface text-ink ring-1 ring-line'} ${vertical ? (id === R.from ? 'bottom-3 left-0 -translate-x-1/2' : id === R.to ? 'left-0 top-3 -translate-x-1/2' : 'left-3 top-0 -translate-y-1/2') : `left-0 -translate-x-1/2 ${side(id) < 0 ? 'bottom-3' : 'top-3'}`}`}>{SHORT[id]}</span>}
-          </motion.span>
-        )
-      })}
-      <AnimatePresence>
-        {pills && hits.filter((t) => p >= along(t.from) && (!vertical || pillPos[t.id])).map((t) => {
-          const q = P(t.from)
-          const s = -side(t.from)
-          return (
-            <span key={R.label + t.id} style={{ left: `${q[0]}%`, top: `${q[1]}%` }} className={`absolute z-20 ${vertical ? { left: '-translate-x-[calc(100%+12px)] -translate-y-1/2', below: 'translate-x-2 translate-y-[12px]', above: 'translate-x-2 -translate-y-[calc(100%+12px)]' }[pillPos[t.id]] : `-translate-x-1/2 ${s < 0 ? '-translate-y-[calc(100%+12px)]' : 'translate-y-[12px]'}`}`}>
-              <motion.span initial={reduce ? false : { opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ type: 'spring', stiffness: 420, damping: 24 }}
-                className="tnum block whitespace-nowrap rounded-full bg-accent px-2 py-0.5 text-[11px] font-bold text-on-accent shadow-[0_8px_18px_-8px_rgba(11,122,85,0.7)] md:px-3 md:py-1 md:text-sm">
-              ¥{t.reward} · {t.dm ? `+${t.dm} 米` : '就在路上'}
-            </motion.span>
-            </span>
-          )
-        })}
-      </AnimatePresence>
-      {walker && !reduce && p > 0 && p < 1 && (
-        <span aria-hidden="true" className="absolute z-30 grid size-8 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full bg-surface shadow-[0_6px_16px_-6px_rgba(17,40,30,0.5)] ring-[3px] ring-ink md:size-10"
-          style={{ left: `${X(me.x)}%`, top: `${Y(me.y)}%` }}>
-          <img src={icon('avatar-runner-v1')} width={32} height={32} alt="" className="size-6 rounded-full md:size-8" />
-        </span>
-      )}
     </div>
   )
 }
