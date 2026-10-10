@@ -209,7 +209,7 @@ export default function Me() {
       <Panel className="flex items-center gap-3 p-4">
         <ShieldWarning size={24} className="shrink-0 text-muted" />
         <p className="flex-1 text-[15px] text-muted">演示数据存在本机浏览器，可随时恢复初始状态。</p>
-        <Btn size="sm" variant="ghost" onClick={() => { act('reset'); nav('/app') }}><ArrowCounterClockwise size={16} weight="bold" />重置</Btn>
+        <Btn size="sm" variant="ghost" onClick={() => { if (window.confirm('把演示数据恢复成初始示例？你走过的订单和信用变化都会清掉。')) { act('reset'); nav('/app') } }}><ArrowCounterClockwise size={16} weight="bold" />重置</Btn>
       </Panel>
     </div>
   )

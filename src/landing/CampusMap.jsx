@@ -5,6 +5,13 @@ import { MAP_W, MAP_H, PLACES, routePath } from '../campusMap'
 const icon = (name) => `${import.meta.env.BASE_URL}icons/${name}.webp`
 export const SHORT = { cainiao: '菜鸟驿站', sf: '顺丰点', jd: '京东柜', canteen1: '一食堂', canteen2: '二食堂', market: '教育超市', gate: '北门', lib: '图书馆', jiao1: '一教', hall: '学术报告厅', gym: '体育馆', zhu3: '竹园', mei5: '梅园', tao2: '桃园', lan1: '兰园', yan: '研究生公寓' }
 
+// 地图上标点的位置：小亭子、商铺标在房子正中，其他楼标在门口
+const markAt = (id) => {
+  const P = PLACES[id]
+  if (P.kind !== 'kiosk' && P.kind !== 'gate') return P.door
+  const [x0, y0, x1, y1] = P.box
+  return [(x0 + x1) / 2, (y0 + y1) / 2]
+}
 const toD = (pts) => pts.map(([x, y], i) => `${i ? 'L' : 'M'}${x} ${y}`).join(' ')
 const pct = ([x, y]) => ({ left: `${(x / MAP_W) * 100}%`, top: `${(y / MAP_H) * 100}%` })
 // 门口在路的上方还是下方：标签放在门口外侧，不压路
@@ -38,7 +45,7 @@ function pointAt(pts, f) {
 }
 
 // 底图是按路网画的生成图，路线全部沿路走（src/campusMap.js 里寻路）；不缩放不旋转，画框和底图一样比例，四边不会露白
-export default function CampusMap({ R, hits, reduce, pills = true, walker = true, endsOnly = false }) {
+export default function CampusMap({ R, hits, reduce, pills = true, walker = true, endsOnly = false, legend = false }) {
   const mine = routePath(R.from, R.to).pts
   const marks = useMemo(() => hits.map((t) => ({ t, f: along(mine, PLACES[t.from].door) })).sort((a, b) => a.f - b.f), [hits, mine])
   const [p, setP] = useState(reduce || !walker ? 1 : 0)
@@ -66,7 +73,7 @@ export default function CampusMap({ R, hits, reduce, pills = true, walker = true
         ))}
       </svg>
       {marks.map(({ t, f }) => (
-        <span key={t.id} aria-hidden="true" className={`absolute z-10 size-3 -translate-x-1/2 -translate-y-1/2 rounded-full ring-[3px] ring-surface transition-colors md:size-4 ${p >= f ? 'bg-accent' : 'bg-muted'}`} style={pct(PLACES[t.from].door)} />
+        <span key={t.id} aria-hidden="true" className={`absolute z-10 size-3 -translate-x-1/2 -translate-y-1/2 rounded-full ring-[3px] ring-surface transition-colors md:size-4 ${p >= f ? 'bg-accent' : 'bg-muted'}`} style={pct(markAt(t.from))} />
       ))}
       {ends.map((id) => (
         <span key={id} className="absolute z-20" style={pct(PLACES[id].door)}>
@@ -75,13 +82,13 @@ export default function CampusMap({ R, hits, reduce, pills = true, walker = true
         </span>
       ))}
       {!endsOnly && marks.filter(({ t }) => !ends.includes(t.from)).map(({ t }) => (
-        <span key={`l${t.id}`} className="absolute z-10 hidden md:block" style={pct(PLACES[t.from].door)}>
+        <span key={`l${t.id}`} className="absolute z-10 hidden md:block" style={pct(markAt(t.from))}>
           <span className={`absolute left-0 -translate-x-1/2 whitespace-nowrap rounded-full bg-surface px-2.5 py-0.5 text-[13px] font-semibold text-ink shadow-sm ring-1 ring-line ${outward(t.from) === 'up' ? 'bottom-2.5' : 'top-2.5'}`}>{SHORT[t.from]}</span>
         </span>
       ))}
       <AnimatePresence>
         {pills && marks.filter(({ f }) => p >= f).map(({ t }) => (
-          <span key={`${R.from}${R.to}${t.id}`} className="absolute z-30 hidden md:block" style={pct(PLACES[t.from].door)}>
+          <span key={`${R.from}${R.to}${t.id}`} className="absolute z-30 hidden md:block" style={pct(markAt(t.from))}>
             <motion.span initial={reduce ? false : { opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0 }} transition={{ type: 'spring', stiffness: 420, damping: 24 }}
               className={`tnum absolute left-0 -translate-x-1/2 whitespace-nowrap rounded-full bg-accent px-3 py-1 text-sm font-bold text-on-accent shadow-[0_8px_18px_-8px_rgba(11,122,85,0.7)] ${outward(t.from) === 'up' ? 'bottom-10' : 'top-10'}`}>
               ¥{t.reward} · {t.dm ? `多走 ${t.dm} 米` : '就在路上'}
@@ -92,6 +99,11 @@ export default function CampusMap({ R, hits, reduce, pills = true, walker = true
       {walker && !reduce && p > 0 && p < 1 && (
         <span aria-hidden="true" className="absolute z-40 grid size-7 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full bg-surface shadow-[0_6px_16px_-6px_rgba(17,40,30,0.5)] ring-[3px] ring-ink md:size-10" style={pct(me)}>
           <img src={icon('avatar-runner-v1')} width={32} height={32} alt="" className="size-5 rounded-full md:size-8" />
+        </span>
+      )}
+      {legend && (
+        <span className="absolute bottom-2 left-2 z-30 rounded-full bg-surface/95 px-2.5 py-1 text-[11px] font-semibold text-ink shadow-sm">
+          <i className="mr-1 inline-block size-2 rounded-full bg-accent align-middle" />绿点：你路上能顺手捎的 {hits.length} 单
         </span>
       )}
     </div>

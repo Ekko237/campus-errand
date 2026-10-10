@@ -701,14 +701,14 @@ function DotMatrix() {
   const on = useInView(ref, { once: true, amount: 0.5 })
   // 100 条小路线：97 条按时送到（实线），3 条没按时（红色虚线）
   return (
-    <div ref={ref} className="grid w-max grid-cols-10 gap-x-2 gap-y-2.5" aria-hidden="true">
+    <div ref={ref} className="grid w-full max-w-[260px] min-w-0 grid-cols-10 gap-x-1 gap-y-2.5 md:w-max md:max-w-none md:gap-x-2" aria-hidden="true">
       {Array.from({ length: 100 }, (_, i) => {
         const bad = i === 23 || i === 58 || i === 86
         return (
           <motion.span key={i} className="flex items-center" initial={reduce ? false : { opacity: 0.12 }} animate={on ? { opacity: 1 } : {}}
             transition={{ duration: 0.2, delay: reduce ? 0 : (i % 10) * 0.025 + Math.floor(i / 10) * 0.05 }}>
             <span className={`size-1.5 rounded-full ${bad ? 'bg-[#f07a6c]' : 'bg-on-accent'}`} />
-            <span className={`h-0 w-3 border-t-2 md:w-4 ${bad ? 'border-dashed border-[#f07a6c]' : 'border-on-accent/80'}`} />
+            <span className={`h-0 w-2 border-t-2 md:w-4 ${bad ? 'border-dashed border-[#f07a6c]' : 'border-on-accent/80'}`} />
             <span className={`size-1.5 rounded-full ${bad ? 'bg-[#f07a6c]' : 'bg-on-accent'}`} />
           </motion.span>
         )
@@ -722,7 +722,7 @@ function Metrics() {
     <section id="metrics" className="scroll-mt-16 border-y border-line bg-surface">
       <div className={`mx-auto max-w-7xl ${SECTION}`}>
         <div className="max-w-4xl"><Reveal><H2>看三个数，<br />就知道平台健不健康</H2></Reveal></div>
-        <div className="mt-14 grid gap-3 md:grid-cols-2 lg:grid-cols-3 lg:grid-rows-2">
+        <div className="mt-14 grid grid-cols-[minmax(0,1fr)] gap-3 md:grid-cols-2 lg:grid-cols-3 lg:grid-rows-2">
           <Reveal className="flex flex-col justify-between rounded-2xl bg-accent-deep p-6 text-on-accent md:col-span-2 md:p-10 lg:row-span-2">
             <div>
               <p className="text-lg font-semibold opacity-80">北极星指标：履约率</p>

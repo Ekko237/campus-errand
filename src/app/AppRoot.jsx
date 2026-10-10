@@ -52,6 +52,8 @@ function Toasts() {
   const { pathname } = useLocation()
   // 订单页上每一步的结果都直接画在页面里（进度、托管卡、收尾卡），不再弹提示条压内容
   const quiet = pathname.startsWith('/app/task/')
+  // 换页就清掉上一页的提示，别把旧事实带到新页面
+  useEffect(() => { state.toasts.forEach((t) => act('dismissToast', { tid: t.id })) }, [pathname]) // eslint-disable-line react-hooks/exhaustive-deps
   const reduce = useReducedMotion()
   const list = state.toasts.slice(-1)
   const last = list[list.length - 1]
@@ -109,7 +111,7 @@ function Onboarding() {
       </ol>
       <p className="mt-4 rounded-xl bg-sunken px-3 py-2 text-sm text-muted">页面里的人名、任务、金额都是示例数据，保存在你自己的浏览器里。</p>
       <div className="mt-5 grid gap-2">
-        <Btn size="lg" onClick={start}><Path size={20} weight="bold" />一键体验完整流程</Btn>
+        <Btn size="lg" onClick={start}><Path size={20} weight="bold" />跟着走一遍（约 2 分钟）</Btn>
         <Btn variant="ghost" onClick={() => act('onboarded')}>先自己逛逛</Btn>
       </div>
     </Sheet>
@@ -139,6 +141,7 @@ function useDirection(pathname) {
 }
 
 function Shell() {
+  const { state } = useStore()
   const { pathname } = useLocation()
   const reduce = useReducedMotion()
   const dir = useDirection(pathname)
@@ -154,7 +157,7 @@ function Shell() {
           <RoleSwitch />
         </div>
       </header>
-      <main className="mx-auto max-w-xl overflow-x-clip px-4 pb-44 pt-4 xl:-translate-x-20">
+      <main className={`mx-auto max-w-xl overflow-x-clip px-4 pt-4 xl:-translate-x-20 ${state.tour.active ? 'pb-64' : 'pb-44'}`}>
         <motion.div key={pathname} initial={reduce || dir === 0 ? false : { opacity: 0.35, x: 28 * dir }} animate={{ opacity: 1, x: 0 }}
           transition={{ type: 'spring', stiffness: 520, damping: 42, mass: 0.7 }}>
         <Routes>

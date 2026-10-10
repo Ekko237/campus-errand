@@ -11,7 +11,7 @@ export const PLACES = {
   zhu3: { door: [260, 306], road: ['h', 324], box: [150, 135, 370, 306], kind: 'dorm' },
   yan: { door: [580, 306], road: ['h', 324], box: [470, 135, 690, 306], kind: 'dorm' },
   canteen1: { door: [900, 306], road: ['h', 324], box: [790, 144, 1010, 306], kind: 'canteen' },
-  jiao1: { door: [1220, 306], road: ['h', 324], box: [1100, 126, 1340, 306], kind: 'teach' },
+  jiao1: { door: [1310, 306], road: ['h', 324], box: [1100, 126, 1340, 306], kind: 'teach' },
   mei5: { door: [260, 342], road: ['h', 324], box: [150, 342, 370, 513], kind: 'dorm' },
   lib: { door: [580, 342], road: ['h', 324], box: [460, 342, 700, 522], kind: 'library' },
   hall: { door: [900, 342], road: ['h', 324], box: [790, 342, 1010, 504], kind: 'hall' },

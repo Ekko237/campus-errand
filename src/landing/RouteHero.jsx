@@ -67,27 +67,28 @@ export function RouteMap() {
         {/* 交汇之后：带着你的快递走完，路线变成绿色实线 */}
         <motion.path d={NEED} fill="none" stroke="var(--accent)" strokeWidth="7" strokeLinecap="round" strokeLinejoin="round" style={{ pathLength: carry }} />
         {/* 交汇点 */}
-        <motion.circle cx="330" cy="276" r="34" fill="var(--accent)" initial={false}
+        <motion.circle cx="330" cy="292" r="34" fill="var(--accent)" initial={false}
           animate={lit && !reduce ? { opacity: [0.35, 0], scale: [0.6, 1.6] } : { opacity: 0 }}
-          transition={{ duration: 1.1, ease: 'easeOut' }} style={{ transformOrigin: '330px 276px' }} />
+          transition={{ duration: 1.1, ease: 'easeOut' }} style={{ transformOrigin: '330px 292px' }} />
       </svg>
 
       <Node x={200} y={190}><span className="block size-3 rounded-full bg-ink ring-4 ring-surface" /></Node>
       <Node x={130} y={84}><Tag>一教</Tag></Node>
-      <Node x={330} y={276}>
+      <Node x={330} y={298}>
         <motion.div animate={{ scale: lit ? 1.08 : 1 }} transition={{ type: 'spring', stiffness: 400, damping: 18 }}
           className={`grid size-11 place-items-center rounded-full ring-[3px] transition-colors md:size-14 ${lit ? 'bg-accent-soft ring-accent' : 'bg-surface ring-line'}`}>
           <img src={icon('type-express-v1')} width={36} height={36} alt="" className={`size-7 transition-opacity md:size-9 ${phase >= 2 ? 'opacity-30' : ''}`} />
         </motion.div>
       </Node>
-      <Node x={286} y={312}><Tag strong={lit}>菜鸟驿站</Tag></Node>
-      <Node x={556} y={366}>
-        <div className={`size-11 overflow-hidden rounded-full bg-surface ring-[3px] transition-colors md:size-14 ${phase === 3 ? 'ring-accent' : 'ring-line'}`}>
-          <img src={icon('avatar-poster-v1')} width={56} height={56} alt="" className="size-full object-cover" />
+      <Node x={330} y={340}><Tag strong={lit}>菜鸟驿站</Tag></Node>
+      <Node x={546} y={366}>
+        <div className={`relative size-11 rounded-full bg-surface ring-[3px] transition-colors md:size-14 ${phase === 3 ? 'ring-accent' : 'ring-line'}`}>
+          <img src={icon('avatar-poster-v1')} width={56} height={56} alt="" className="size-full rounded-full object-cover" />
+          {phase === 3 && <motion.img src={icon('type-express-v1')} width={28} height={28} alt="" initial={reduce ? false : { scale: 0 }} animate={{ scale: 1 }} transition={{ type: 'spring', stiffness: 500, damping: 18 }} className="absolute -left-3 -top-3 size-6 md:size-7" />}
         </div>
       </Node>
-      <div className="absolute right-2 -translate-y-1/2" style={{ top: `${(394 / H) * 100}%` }}><Tag>梅园 5 号楼 · 你</Tag></div>
-      <motion.div className="absolute z-10 -translate-x-1/2 -translate-y-1/2" style={{ left: rl, top: rt }}>
+      <div className="absolute right-2 -translate-y-1/2" style={{ top: `${(426 / H) * 100}%` }}><Tag>梅园 5 号楼 · 你</Tag></div>
+      <motion.div className="absolute z-10 -translate-x-1/2 -translate-y-1/2" style={{ left: rl, top: rt }} animate={{ opacity: phase === 3 ? 0 : 1 }} transition={{ duration: 0.25 }}>
         <div className={`relative size-9 rounded-full bg-surface p-0.5 ring-[3px] shadow-[0_6px_16px_-6px_rgba(17,40,30,0.5)] transition-colors md:size-11 ${phase >= 1 ? 'ring-accent' : 'ring-ink'}`}>
           <img src={icon('avatar-runner-v1')} width={44} height={44} alt="" className="size-full rounded-full object-cover" />
           <AnimatePresence>
@@ -114,7 +115,7 @@ export function RouteMap() {
           </motion.div>
         )}
         {phase === 3 && (
-          <motion.div key="c" className="absolute left-[18%] top-[71%]" initial={reduce ? false : { opacity: 0, y: 10, scale: 0.92 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0 }} transition={{ type: 'spring', stiffness: 420, damping: 26 }}>
+          <motion.div key="c" className="absolute left-[53%] top-[16%]" initial={reduce ? false : { opacity: 0, y: 10, scale: 0.92 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0 }} transition={{ type: 'spring', stiffness: 420, damping: 26 }}>
             <div className="rounded-2xl bg-accent px-3 py-2 text-on-accent shadow-[0_14px_30px_-14px_rgba(11,122,85,0.7)] md:px-4 md:py-3">
               <p className="text-[13px] font-bold md:text-lg">送到了</p>
               <p className="tnum text-[11px] opacity-90 md:text-sm">¥5 从托管放给学弟</p>
@@ -207,7 +208,7 @@ export function CampusRoutes() {
       <p className="mt-4 max-w-[40ch] text-lg leading-relaxed text-muted md:text-xl" aria-live="polite">
         此刻 {tasks.length} 个示例单里，有 <b className="text-accent">{hits.length} 个</b>顺路，捎上多走 {!hits.length ? 0 : hits[0].m === hits[hits.length - 1].m ? hits[0].m : `${hits[0].m} 到 ${hits[hits.length - 1].m}`} 分钟。
       </p>
-      <div ref={box} className="mt-6"><CampusMap R={R} hits={hits} reduce={reduce} /></div>
+      <div ref={box} className="mt-6"><CampusMap R={R} hits={hits} reduce={reduce} legend /></div>
       <SubwayLine R={R} hits={hits} reduce={reduce} />
       <div className="mt-3 hidden flex-wrap gap-x-5 md:flex gap-y-1 text-sm text-muted">
         <span className="inline-flex items-center gap-1.5"><i className="h-1 w-5 rounded-full bg-ink/80" />你正要走的路</span>

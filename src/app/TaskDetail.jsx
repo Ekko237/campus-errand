@@ -156,7 +156,7 @@ function PickupCard({ t }) {
         <div className="flex gap-3"><dt className="w-10 shrink-0 opacity-70">送到</dt><dd className="font-semibold">{t.private?.room}</dd></div>
         <div className="flex gap-3"><dt className="w-10 shrink-0 opacity-70">电话</dt><dd className="tnum font-semibold">{t.private?.phone}（虚拟号）</dd></div>
       </dl>
-      <p className="mt-2 text-xs opacity-60">只在接单期间可见，订单结束后自动隐藏</p>
+      <p className="mt-2 text-xs opacity-60">{sealed ? '订单已送达，宿舍号和电话订单结束后自动隐藏' : '只在接单期间可见，订单结束后自动隐藏'}</p>
     </motion.section>
   )
 }
@@ -223,9 +223,10 @@ function Escrow({ t }) {
 }
 
 function DeliverSheet({ t, open, onClose }) {
-  const { act } = useStore()
+  const { act, state } = useStore()
   const [mode, setMode] = useState('code')
-  const [code, setCode] = useState('')
+  // 跟着走一遍的时候，送达码替你填好
+  const [code, setCode] = useState(() => (state.tour.active && state.tour.taskId === t.id ? t.deliverCode : ''))
   const [err, setErr] = useState(null)
   const [photo, setPhoto] = useState(false)
   const [shooting, setShooting] = useState(false)
@@ -251,7 +252,7 @@ function DeliverSheet({ t, open, onClose }) {
       {mode === 'code' ? (
         <div className="mt-5">
           <Field label="发单人的 4 位送达码" error={err} hint={`演示提示：发单人页面能看到送达码，这单是 ${t.deliverCode}`}>
-            <input inputMode="numeric" maxLength={4} value={code} onChange={(e) => { setCode(e.target.value.replace(/\D/g, '')); setErr(null) }} className={`${inputCls} tnum text-center text-2xl tracking-[0.5em] ${err ? 'bg-danger-soft ring-2 ring-danger' : ''}`} placeholder="____" aria-label="送达码" aria-invalid={!!err} />
+            <input inputMode="numeric" maxLength={4} value={code} onChange={(e) => { setCode(e.target.value.replace(/\D/g, '')); setErr(null) }} className={`${inputCls} tnum text-center text-2xl tracking-[0.5em] ${err ? 'bg-danger-soft ring-2 ring-danger' : ''}`} placeholder="____" aria-label="4 位送达码" aria-invalid={!!err} />
           </Field>
         </div>
       ) : (

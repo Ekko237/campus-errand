@@ -37,6 +37,15 @@ export default function TourBar() {
   // 已经是这个身份了，就不再说「切到跑腿人」
   const text = step && step.who === state.role ? step.text.replace(/^切(到|回)(跑腿人|发单人)[，：]?/, '') : step?.text
   const arrived = step?.final && loc.pathname === step.to
+  // 每到一步，把页面里该点的那颗绿色按钮滚到屏幕中间
+  useEffect(() => {
+    if (!here) return
+    const id = setTimeout(() => {
+      const b = [...document.querySelectorAll('main button')].find((x) => x.className.includes('bg-accent') && !x.disabled && x.offsetParent)
+      b?.scrollIntoView({ block: 'center', behavior: 'smooth' })
+    }, 350)
+    return () => clearTimeout(id)
+  }, [here, step?.n, loc.pathname])
   useEffect(() => { if (!arrived) return; const id = setTimeout(() => act('tour', { tour: { active: false, done: true } }), 3000); return () => clearTimeout(id) }, [arrived, act])
   const go = () => {
     if (step.who) act('role', { role: step.who })
