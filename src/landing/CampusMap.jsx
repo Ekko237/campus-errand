@@ -72,6 +72,8 @@ export default function CampusMap({ R, hits, reduce, pills = true, walker = true
   }, [R.from, R.to, reduce, walker])
   const me = pointAt(mine, p)
   const ends = [R.from, R.to]
+  // 起终点旁边就有取件点时，名牌翻到另一边，不盖住编号
+  const flip = (id) => { const e = id === R.from ? mine[0] : mine[mine.length - 1]; return marks.some(({ t }) => { const [x, y] = markAt(t.from); return Math.abs(x - e[0]) < 160 && Math.abs(y - e[1]) < 160 }) }
   return (
     <div>
     <div className="relative aspect-[16/9] w-full overflow-hidden rounded-[20px] bg-surface ring-1 ring-line md:rounded-[28px]"
@@ -114,7 +116,7 @@ export default function CampusMap({ R, hits, reduce, pills = true, walker = true
       {ends.filter((id) => !(at != null && id === R.from)).map((id) => (
         <span key={id} className="absolute z-20" style={pct(id === R.from ? mine[0] : mine[mine.length - 1])}>
           <span className="absolute left-0 top-0 block size-3 -translate-x-1/2 -translate-y-1/2 rounded-full bg-ink ring-[3px] ring-surface md:size-4" />
-          <span className={`absolute left-0 -translate-x-1/2 whitespace-nowrap rounded-full bg-ink px-2 py-0.5 text-[12px] font-semibold text-bg shadow-sm md:px-2.5 md:text-[13px] ${outward(id) === 'up' ? 'bottom-3.5' : 'top-3.5'}`}>{SHORT[id]} {id === R.from ? '出发' : '到达'}</span>
+          <span className={`absolute left-0 -translate-x-1/2 whitespace-nowrap rounded-full bg-ink px-2 py-0.5 text-[12px] font-semibold text-bg shadow-sm md:px-2.5 md:text-[13px] ${(outward(id) === 'up') !== flip(id) ? 'bottom-3.5' : 'top-3.5'}`}>{SHORT[id]} {id === R.from ? '出发' : '到达'}</span>
         </span>
       ))}
       {!endsOnly && marks.filter(({ t }) => !ends.includes(t.from)).map(({ t }) => (

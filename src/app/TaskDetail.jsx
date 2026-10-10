@@ -647,7 +647,7 @@ export default function TaskDetail() {
 
       <div>
         <div className="flex flex-wrap items-center gap-2"><TypeTag type={t.type} />{t.urgent && <UrgentTag />}{state.role === 'runner' && t.status === 'open' && <RouteFit t={t} />}</div>
-        <h1 className="mt-3 text-2xl font-bold leading-snug tracking-tight">{t.title}</h1>
+        <h1 className="mt-3 font-display text-[28px] leading-snug">{t.title}</h1>
         <div className="mt-3 space-y-1.5 text-[15px] text-muted">
           <p className="flex items-start gap-1.5"><MapPin size={18} className="mt-0.5 shrink-0" /><span>{B[t.from]?.name}{t.from !== t.to && <> 到 {B[t.to]?.name}</>}</span></p>
           <p className="flex items-center gap-1.5"><Clock size={18} />{['open', 'ongoing'].includes(t.status) ? `截止：${left(t.deadline)}` : t.status === 'delivered' || t.status === 'disputed' ? '已送达，等确认' : t.completedAt ? (Date.now() - t.completedAt < 60 * 60 * 1000 ? (Date.now() - t.completedAt < 2 * 60 * 1000 ? '刚刚完成' : `${Math.round((Date.now() - t.completedAt) / 60000)} 分钟前完成`) : `完成于 ${clock(t.completedAt)}`) : STATUS_TEXT[t.status]}</p>

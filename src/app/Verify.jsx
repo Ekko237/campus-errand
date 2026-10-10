@@ -27,7 +27,7 @@ export default function Verify() {
   const [done, setDone] = useState(false)
   const reduce = useReducedMotion()
   // 刚认证完：徽章弹进来停 1.4 秒，再自动回到原来的页面
-  useEffect(() => { if (!done) return; const id = setTimeout(() => nav(back), 1400); return () => clearTimeout(id) }, [done, back, nav])
+  useEffect(() => { if (!done) return; const id = setTimeout(() => nav(back), 1800); return () => clearTimeout(id) }, [done, back, nav])
 
   if (done) {
     return (
@@ -82,7 +82,7 @@ export default function Verify() {
       <div>
         <div className="flex items-center gap-2">
           <button onClick={() => nav(-1)} aria-label="返回" className="grid size-10 shrink-0 place-items-center rounded-full bg-surface ring-1 ring-line"><ArrowLeft size={20} weight="bold" /></button>
-          <h1 className="text-2xl font-bold tracking-tight">校园身份认证</h1>
+          <h1 className="font-display text-[28px] leading-tight">校园身份认证</h1>
         </div>
         <p className="mt-1 text-[15px] leading-relaxed text-muted">只对本校学生开放。认证后获得徽章和初始信用 {CREDIT_INIT} 分，才能接单。未认证只能浏览。</p>
       </div>

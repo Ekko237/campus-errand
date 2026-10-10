@@ -120,7 +120,7 @@ export default function Publish() {
   return (
     <div className="space-y-5">
       <div>
-        <h1 className="text-2xl font-bold tracking-tight">发布跑腿任务</h1>
+        <h1 className="font-display text-[28px] leading-tight">发布跑腿任务</h1>
         <p className="mt-1 text-[15px] text-muted">{again ? '已按上一单填好，取件码记得换成新的。' : '选模板、选楼栋，赏金先冻结托管，送达确认后才放款。'}</p>
       </div>
 

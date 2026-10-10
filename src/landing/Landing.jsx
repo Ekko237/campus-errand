@@ -248,13 +248,13 @@ function Scenes() {
         </div>
       </div>
       <div className="mt-8 grid gap-8 lg:grid-cols-12 lg:gap-12" role="tabpanel">
-        <div className="relative overflow-hidden rounded-2xl bg-sunken lg:col-span-5">
+        {/* 图片框固定比例，新旧两张都叠在框里（绝对定位）：切换时框不变高，下面的内容不跳 */}
+        <div className="relative aspect-[16/10] overflow-hidden rounded-2xl bg-sunken lg:col-span-5 lg:aspect-[5/4]">
           <AnimatePresence initial={false}>
             <motion.img key={s.img} src={img(s.img)} width={1100} height={825} alt={s.alt}
               initial={reduce ? false : { clipPath: 'inset(0 0 0 100%)' }} animate={{ clipPath: 'inset(0 0 0 0%)' }} exit={{ opacity: 0 }} transition={{ duration: 0.8, ease }}
-              className="aspect-[16/10] w-full object-cover lg:absolute lg:inset-0 lg:aspect-auto lg:h-full" />
+              className="absolute inset-0 size-full object-cover" />
           </AnimatePresence>
-          <div className="hidden lg:block lg:aspect-[5/4]" />
         </div>
         {/* 三个场景叠在同一个格子里，只切换显示：容器高度永远是最高那个，切换时下面的内容不会跳 */}
         <div className="grid lg:col-span-7 lg:pt-2">
@@ -366,7 +366,7 @@ function StageMap({ i, tall = false }) {
         {i !== 2 && <span className="absolute left-1/2 top-full mt-0.5 -translate-x-1/2 whitespace-nowrap rounded-full bg-ink px-1.5 text-[10px] font-semibold leading-4 text-bg">阿远</span>}
       </motion.span>
       {i >= 4 && (
-        <motion.span key={`pay${i}`} className="tnum absolute z-20 -translate-x-1/2 rounded-full bg-accent px-2 py-0.5 text-xs font-bold text-on-accent" style={spct([mei[0] + 10, mei[1] - 262])}
+        <motion.span key={`pay${i}`} className="tnum absolute z-20 -translate-x-1/2 rounded-full bg-accent px-2 py-0.5 text-xs font-bold text-on-accent" style={spct([mei[0] + 200, mei[1] - 262])}
           initial={reduce ? false : { opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={sp}>{i === 4 ? '+¥5 给阿远' : '阿远信用 +3'}</motion.span>
       )}
     </div>
@@ -467,7 +467,7 @@ function MobileLoop() {
       <div className="[&>div]:mt-3"><StageMap i={i} tall /></div>
       <div className="mt-3 grid grid-cols-2 gap-2">
         <button onClick={() => go(i - 1)} disabled={i === 0} className="h-11 rounded-full bg-sunken text-[15px] font-semibold active:scale-[0.98] disabled:opacity-40">上一步</button>
-        <button onClick={() => go(i + 1)} disabled={i === LOOP.length - 1} className="h-11 rounded-full bg-accent text-[15px] font-semibold text-on-accent active:scale-[0.98] disabled:opacity-40">{i === LOOP.length - 1 ? '走完了' : '下一步'}</button>
+        <button onClick={() => go(i === LOOP.length - 1 ? 0 : i + 1)} className="h-11 rounded-full bg-accent text-[15px] font-semibold text-on-accent active:scale-[0.98]">{i === LOOP.length - 1 ? '再走一遍' : '下一步'}</button>
       </div>
       <div className="mt-3 grid grid-cols-6 gap-1" role="tablist" aria-label="一单的六步">
         {LOOP.map((x, k) => (
@@ -593,8 +593,8 @@ function PrivacyDemo() {
   const pick = (k) => { setI(k); setHold(true) }
   const val = (v) => (
     <span className="relative inline-block">
-      <span className={p.tone === 'open' ? '' : 'opacity-40'}>{v}</span>
-      {p.tone === 'closed' && <motion.span aria-hidden="true" initial={reduce ? false : { scaleX: 0 }} animate={{ scaleX: 1 }} transition={{ duration: 0.35, delay: 0.1 }} className="absolute inset-x-0 top-1/2 h-0.5 origin-left rounded-full bg-bg" />}
+      {/* 结束后真的收回：糊掉，看不清原来的码和门牌 */}
+      <span className={`transition-[filter,opacity] duration-500 ${p.tone === 'open' ? '' : p.tone === 'closed' ? 'opacity-50 blur-[6px] select-none' : 'opacity-40'}`}>{v}</span>
     </span>
   )
   return (
@@ -712,7 +712,7 @@ function Credit() {
         </div>
         <div className="mt-14 grid gap-6 lg:grid-cols-12">
           <Reveal className="lg:col-span-5">
-            <div ref={cardRef} className="flex flex-col rounded-2xl bg-accent p-6 text-on-accent md:p-8 lg:sticky lg:top-28 lg:h-full">
+            <div ref={cardRef} className={`flex flex-col rounded-2xl p-6 text-on-accent transition-colors duration-500 md:p-8 lg:sticky lg:top-28 lg:h-full ${shownScore < 60 ? 'bg-danger' : 'bg-accent'}`}>
               <div className="flex items-center justify-between">
                 <div className="grid grid-cols-2 rounded-full bg-on-accent/15 p-1 text-sm font-semibold">
                   {[['runner', '跑腿人'], ['poster', '发单人']].map(([k, l]) => (
@@ -792,7 +792,7 @@ function Credit() {
                         )}
                       </span>
                       <span className={`tnum w-10 shrink-0 text-2xl font-bold ${r.delta > 0 ? 'text-accent' : 'text-danger'}`}>{r.delta > 0 ? '+' : ''}{r.delta}</span>
-                      <span className="min-w-0 flex-1"><span className="block text-lg font-semibold">{r.label}</span><span className="block text-[15px] text-muted">{r.note}</span>
+                      <span className="min-w-0 flex-1 max-lg:pr-[4.5rem]"><span className="block text-lg font-semibold">{r.label}</span><span className="block text-[15px] text-muted">{r.note}</span>
 </span>
                       {/* 浮在这一行右边，不往列表里插东西，下面的规则不会被推走 */}
                       {here && (
@@ -862,7 +862,7 @@ function BanDemo() {
       <p className="mt-4 text-xs font-semibold text-muted">会被拦下的词</p>
       <ul className="mt-2 flex flex-wrap gap-1.5">
         {['代考', '替考', '代签到', '代点名', '代写作业', '代刷网课'].map((w) => (
-          <li key={w} className={`rounded-full px-2.5 py-1 text-xs font-semibold line-through decoration-danger decoration-2 transition-colors ${hit && hit[0] === w ? 'bg-danger text-on-accent' : 'bg-sunken text-muted'}`}>{w}</li>
+          <li key={w} className={`rounded-full px-2.5 py-1 text-xs font-semibold transition-colors ${hit && hit[0] === w ? 'bg-danger text-on-accent line-through decoration-2' : 'bg-sunken text-ink/75'}`}>{w}</li>
         ))}
       </ul>
     </div>
@@ -1028,10 +1028,10 @@ function Final({ page }) {
           <Reveal delay={0.1}>
             <p className="mt-8 text-lg text-muted md:text-xl" aria-live="polite">此刻路上有 <AnimatePresence mode="wait" initial={false}><motion.b key={n} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.18 }} className="tnum inline-block text-3xl text-accent md:text-4xl">{n}</motion.b></AnimatePresence> 单顺路，<span className="whitespace-nowrap">捎上都不超过 5 分钟</span></p>
             {/* 下课提醒长什么样：选了哪条路，这条推送就跟着变 */}
-            <div className="mx-auto mt-6 flex max-w-sm gap-3 rounded-2xl bg-surface p-3 text-left shadow-[0_16px_30px_-18px_rgba(17,40,30,0.45)] ring-1 ring-line">
+            <div className="mx-auto mt-6 flex min-h-[4.75rem] max-w-sm gap-3 rounded-2xl bg-surface p-3 text-left shadow-[0_16px_30px_-18px_rgba(17,40,30,0.45)] ring-1 ring-line">
               <img src={`${import.meta.env.BASE_URL}brand/logo-v2.png`} width={36} height={36} alt="" className="size-9 shrink-0 rounded-lg" />
               <div className="min-w-0 text-sm">
-                <p className="flex justify-between gap-2 font-semibold"><span>顺路侠 · 下课提醒</span><span className="tnum font-normal text-muted">17:45</span></p>
+                <p className="flex justify-between gap-2 font-semibold"><span>顺路侠 · 顺路提醒</span><span className="tnum font-normal text-muted">17:45</span></p>
                 <p className="mt-0.5 leading-snug">{R.short.replace('→', ' → ')} 上有 <b className="text-accent">{n} 单</b>顺路，{R.verb}</p>
               </div>
             </div>

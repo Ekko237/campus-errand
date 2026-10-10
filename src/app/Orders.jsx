@@ -17,7 +17,7 @@ export default function Orders() {
   const list = mine.filter((t) => (tab === 'active' ? ACTIVE.includes(t.status) : !ACTIVE.includes(t.status)))
   return (
     <div className="space-y-5">
-      <h1 className="text-2xl font-bold tracking-tight">{poster ? '我发布的' : '我接的单'}</h1>
+      <h1 className="font-display text-[28px] leading-tight">{poster ? '我发布的' : '我接的单'}</h1>
       <div className="grid grid-cols-2 rounded-full bg-sunken p-1">
         {[['active', '进行中'], ['done', '已结束']].map(([k, l]) => (
           <button key={k} onClick={() => setTab(k)} aria-pressed={tab === k} className={`h-10 rounded-full text-[15px] font-semibold ${tab === k ? 'bg-surface text-ink shadow-sm' : 'text-muted'}`}>

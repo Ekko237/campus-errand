@@ -190,7 +190,7 @@ export default function Hall() {
       <RoleBanner />
 
       <div className="flex items-end justify-between">
-        <h1 className="text-2xl font-bold tracking-tight">任务大厅</h1>
+        <h1 className="font-display text-[28px] leading-tight">任务大厅</h1>
         <span className="text-sm text-muted">{list.filter((t) => t.deadline > Date.now()).length} 个待接</span>
       </div>
 

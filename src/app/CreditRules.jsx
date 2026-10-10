@@ -17,7 +17,7 @@ export default function CreditRules() {
     <div className="space-y-5">
       <div className="flex items-center gap-2">
         <button onClick={() => nav(-1)} aria-label="返回" className="grid size-10 place-items-center rounded-full bg-surface ring-1 ring-line"><ArrowLeft size={20} weight="bold" /></button>
-        <h1 className="text-2xl font-bold tracking-tight">双向信用分怎么算</h1>
+        <h1 className="font-display text-[28px] leading-tight">双向信用分怎么算</h1>
       </div>
       <p className="text-[15px] leading-relaxed text-muted">满分 100，校园认证后初始 {CREDIT_INIT} 分。发单人和跑腿人都有信用分，只由履约和评价决定，不能花钱买。</p>
 
