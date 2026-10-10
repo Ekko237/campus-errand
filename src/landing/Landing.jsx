@@ -1,11 +1,12 @@
-import RouteHero, { CampusRoutes } from './RouteHero'
+import RouteHero, { CampusRoutes, ROUTES } from './RouteHero'
 import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import {
   motion, AnimatePresence, useReducedMotion, useScroll, useTransform, useSpring, useMotionValue, useInView, animate, useMotionValueEvent,
 } from 'motion/react'
-import { ArrowRight, ArrowDown, CaretLeft, CaretRight, Plus, ArrowCounterClockwise } from '@phosphor-icons/react'
-import { RULES_PLUS, RULES_MINUS, POSTER_RULES_PLUS, POSTER_RULES_MINUS, LEVELS, POSTER_TIERS, TYPES } from '../data'
+import { ArrowRight, ArrowLeft, ArrowDown, CaretLeft, CaretRight, Plus, ArrowCounterClockwise } from '@phosphor-icons/react'
+import { RULES_PLUS, RULES_MINUS, POSTER_RULES_PLUS, POSTER_RULES_MINUS, LEVELS, POSTER_TIERS, TYPES, seedTasks, detourMin } from '../data'
+import { useNavigate } from 'react-router-dom'
 import { gi } from '../ui'
 const LockKey = gi('lock')
 const LockKeyOpen = gi('lock-open')
@@ -137,13 +138,13 @@ function Nav({ page }) {
             <img src={`${import.meta.env.BASE_URL}brand/logo-v2.png`} width={36} height={36} alt="顺路侠标志：背着书包、夹着包裹奔跑的小人" className="size-9" />顺路侠
           </Anchor>
         ) : (
-          <Link to="/" className="flex items-center gap-2.5 text-lg font-bold tracking-tight">
-            <img src={`${import.meta.env.BASE_URL}brand/logo-v2.png`} width={36} height={36} alt="顺路侠标志：背着书包、夹着包裹奔跑的小人" className="size-9" />顺路侠
+          <Link to="/" className="group flex items-center gap-2 text-[17px] font-semibold">
+            <ArrowLeft size={18} weight="bold" className="transition-transform group-hover:-translate-x-0.5" />回首页
           </Link>
         )}
         <nav className="hidden items-center gap-8 text-[15px] font-medium text-muted lg:flex" aria-label="页面导航">
           {home && NAV_LINKS.map(([to, l]) => <Anchor key={to} to={to} className={linkCls}>{l}{under}</Anchor>)}
-          {home ? <Link to="/thinking" className={linkCls}>产品思考{under}</Link> : <Link to="/" className={linkCls}>回首页{under}</Link>}
+          {home && <Link to="/thinking" className={linkCls}>产品思考{under}</Link>}
         </nav>
         <div className="flex items-center gap-2">
           <div className={`transition-opacity duration-300 ${scrolled || !home ? '' : 'max-md:pointer-events-none max-md:opacity-0'}`}><Cta size="sm" /></div>
@@ -153,8 +154,9 @@ function Nav({ page }) {
         </div>
       </div>
       <AnimatePresence>
+        {open && <motion.button key="scrim" aria-label="关闭目录" onClick={() => setOpen(false)} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-x-0 bottom-0 top-16 bg-ink/25 lg:hidden" />}
         {open && (
-          <motion.nav id="mnav" aria-label="页面目录" initial={{ opacity: 0, y: -6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -6 }} transition={{ duration: 0.18 }}
+          <motion.nav key="menu" id="mnav" aria-label="页面目录" initial={{ opacity: 0, y: -6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -6 }} transition={{ duration: 0.18 }}
             className="absolute inset-x-0 top-16 border-b border-line bg-bg px-4 pb-4 shadow-[0_20px_30px_-24px_rgba(17,40,30,0.35)] lg:hidden">
             <ol className="grid gap-1">
               {[['routes', '整个校园的顺路'], ...NAV_LINKS, ['safety', '这些单发不出去']].map(([to, l], i) => (
@@ -353,14 +355,16 @@ function OrderStage({ i }) {
 
 function LoopStep({ s, now, past }) {
   return (
-    <li className={`flex scroll-mt-40 gap-5 transition-opacity duration-300 lg:min-h-[min(20vh,200px)] lg:items-center ${now ? 'opacity-100' : past ? 'opacity-100 lg:opacity-70' : 'opacity-100 lg:opacity-75'}`}>
+    <li className={`flex scroll-mt-40 gap-5 transition-opacity duration-300 lg:min-h-[min(16vh,150px)] lg:items-center ${now ? 'opacity-100' : past ? 'opacity-100 lg:opacity-70' : 'opacity-100 lg:opacity-75'}`}>
       <span className="grid size-16 shrink-0 place-items-center rounded-2xl bg-bg">
         <img src={icon(s.icon + '-v1')} width={48} height={48} alt={s.alt} loading="lazy" className="size-12 object-contain" />
       </span>
       <div>
         <p className="flex items-center gap-2 text-2xl font-bold md:text-3xl">{s.t}{now && <span className="rounded-full bg-on-accent px-2 py-0.5 text-xs font-bold text-accent-deep">现在</span>}</p>
         <p className="mt-2 max-w-[30ch] text-lg leading-relaxed opacity-75">{s.d}</p>
-        <p className="tnum mt-3 inline-flex flex-wrap items-center gap-x-2 rounded-xl bg-bg px-3 py-1.5 text-sm font-semibold text-ink lg:hidden"><span className="text-accent">{s.status}</span><span className="opacity-60">·</span>{s.escrow}<span className="opacity-60">·</span>{s.credit}</p>
+        <p className="tnum mt-3 flex flex-wrap gap-1.5 text-sm font-semibold lg:hidden">
+          {[s.status, s.escrow, s.credit].map((v, k) => <span key={k} className={`whitespace-nowrap rounded-lg bg-bg px-2.5 py-1 ${k === 0 ? 'text-accent' : 'text-ink'}`}>{v}</span>)}
+        </p>
       </div>
     </li>
   )
@@ -424,8 +428,8 @@ function Loop() {
           <Reveal delay={0.05} className="lg:col-span-5 lg:pb-1"><p className="mt-5 lg:mt-0 max-w-[38ch] text-lg leading-relaxed opacity-80 md:text-xl">往下滚，<span className="lg:hidden">每一步下面写着这单此刻的状态</span><span className="hidden lg:inline">左边这张订单会跟着走完一遍</span>：钱什么时候冻结、取件码什么时候出现、信用什么时候变。</p></Reveal>
         </div>
         <div className="mt-12 grid gap-12 lg:mt-14 lg:grid-cols-12">
-          <div className="hidden lg:col-span-5 lg:block">
-            <div className="sticky top-28"><OrderStage i={active} /></div>
+          <div className="hidden lg:col-span-6 lg:block xl:col-span-5 xl:col-start-1">
+            <div className="sticky top-28 xl:-mr-6"><OrderStage i={active} /></div>
           </div>
           <div className="lg:col-span-6 lg:col-start-7">
             <ol ref={ol} className="space-y-10 lg:space-y-0">
@@ -470,7 +474,7 @@ function TrustStop({ x, lit, reduce }) {
 
 // 隐私分级：同一张取件卡，接单前打码、接单后亮出、结束后收起，三秒换一次
 const PRIV = [
-  { k: '接单前', code: '•-•-••••', room: '梅园 * 号楼 ***', tone: 'muted', who: '大厅里谁都看不到，只看到「梅园」' },
+  { k: '接单前', code: '• • ••••', room: '梅园 * 号楼 ***', tone: 'muted', who: '大厅里谁都看不到，只看到「梅园」' },
   { k: '接单后', code: '6-2-3108', room: '梅园 5 号楼 412', tone: 'open', who: '只有接下这单的同学看得到' },
   { k: '结束后', code: '6-2-3108', room: '梅园 5 号楼 412', tone: 'closed', who: '送达那一刻收回，对方再也看不到' },
 ]
@@ -576,10 +580,13 @@ function Credit() {
   const tier = [...tiers].reverse().find((l) => score >= l.min)
   const [hist, setHist] = useState([])
   // 手机上点规则时大分数卡已经滚出屏幕：这时底部浮出一个小分数条
-  const cardRef = useRef(null), listRef = useRef(null)
+  const cardRef = useRef(null)
   const cardOn = useInView(cardRef, { amount: 0.25 })
-  const listOn = useInView(listRef, { amount: 0.1 })
+  // 手机上点规则时，大分数卡如果不在屏幕里，就在顶栏下面弹 2 秒小分数条，然后自己收起
+  const [flash, setFlash] = useState(0)
+  useEffect(() => { if (!flash) return; const id = setTimeout(() => setFlash(0), 2200); return () => clearTimeout(id) }, [flash])
   const apply = (r) => {
+    if (!cardOn) setFlash(Date.now())
     const to = Math.max(0, Math.min(100, score + r.delta))
     setScore(to); setLast(r)
     setHist((h) => [{ id: Date.now(), label: r.label, delta: r.delta, to }, ...h].slice(0, 3))
@@ -593,7 +600,7 @@ function Credit() {
         </div>
         <div className="mt-14 grid gap-6 lg:grid-cols-12">
           <Reveal className="lg:col-span-5">
-            <div ref={cardRef} className="flex h-full flex-col rounded-2xl bg-accent p-6 text-on-accent md:p-8 lg:sticky lg:top-28">
+            <div ref={cardRef} className="flex flex-col rounded-2xl bg-accent p-6 text-on-accent md:p-8 lg:sticky lg:top-28 lg:h-full">
               <div className="flex items-center justify-between">
                 <div className="grid grid-cols-2 rounded-full bg-on-accent/15 p-1 text-sm font-semibold">
                   {[['runner', '跑腿人'], ['poster', '发单人']].map(([k, l]) => (
@@ -602,7 +609,7 @@ function Credit() {
                 </div>
                 <button onClick={() => switchWho(who)} aria-label="重置分数" className="grid size-10 place-items-center rounded-full bg-on-accent/15 transition active:scale-90"><ArrowCounterClockwise size={18} weight="bold" /></button>
               </div>
-              <div className="mt-10 flex items-end gap-4">
+              <div className="mt-6 flex items-end gap-4 lg:mt-10">
                 <motion.span className="tnum text-[96px] font-bold leading-none tracking-[-0.04em] md:text-[120px]">{shown}</motion.span>
                 <AnimatePresence mode="wait">
                   {last && (
@@ -611,7 +618,7 @@ function Credit() {
                   )}
                 </AnimatePresence>
               </div>
-              <ul className="mt-6 min-h-[6.5rem] space-y-1.5 text-[15px]" aria-live="polite">
+              <ul className="mt-4 min-h-[3rem] space-y-1.5 text-[15px] lg:mt-6 lg:min-h-[6.5rem]" aria-live="polite">
                 {hist.length === 0 && <li className="opacity-75"><span className="lg:hidden">点下面</span><span className="hidden lg:inline">点右边</span>任意一条规则，分数会在这里记一笔。</li>}
                 <AnimatePresence initial={false}>
                   {hist.map((h) => (
@@ -634,9 +641,9 @@ function Credit() {
           </Reveal>
           <Reveal delay={0.05} className="lg:col-span-7">
             <AnimatePresence>
-              {listOn && !cardOn && (
-                <motion.div key="mini" initial={reduce ? false : { y: 24, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: 24, opacity: 0 }} transition={{ type: 'spring', stiffness: 420, damping: 32 }}
-                  className="fixed inset-x-4 bottom-4 z-30 flex items-center gap-3 rounded-full bg-accent py-2 pl-2 pr-5 text-on-accent shadow-[0_16px_30px_-12px_rgba(11,122,85,0.7)] lg:hidden" aria-hidden="true">
+              {flash > 0 && !cardOn && (
+                <motion.div key="mini" initial={reduce ? false : { y: -16, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: -10, opacity: 0 }} transition={{ type: 'spring', stiffness: 420, damping: 32 }}
+                  className="fixed inset-x-4 top-[76px] z-30 flex items-center gap-3 rounded-full bg-accent py-2 pl-2 pr-5 text-on-accent shadow-[0_16px_30px_-12px_rgba(11,122,85,0.7)] lg:hidden" aria-hidden="true">
                   <img src={icon(tier.badge + '-v1')} width={40} height={40} alt="" className="size-10 rounded-full bg-on-accent/90 object-contain p-0.5" />
                   <span className="text-[15px] font-semibold">{who === 'runner' ? '跑腿人' : '发单人'}「{tier.name}」</span>
                   <span className="ml-auto flex items-baseline gap-2">
@@ -646,7 +653,7 @@ function Credit() {
                 </motion.div>
               )}
             </AnimatePresence>
-            <ol ref={listRef} className="relative">
+            <ol className="relative">
               <span aria-hidden="true" className="absolute bottom-6 left-[19px] top-6 border-l-2 border-dashed border-line" />
               {rules.map((r) => {
                 const here = last?.label === r.label
@@ -860,13 +867,38 @@ function Routes() {
   )
 }
 
-function Final() {
+// 结尾：选你下课常走的路，当场算出此刻有几单顺路；带着这条路进原型（大厅按它排序）
+function Final({ page }) {
+  const nav = useNavigate()
+  const [ri, setRi] = useState(0)
+  const R = ROUTES[ri]
+  const n = seedTasks().filter((t) => detourMin(R.from, R.to, t) <= 5).length
+  const go = () => { try { localStorage.setItem('shunluxia:myroute', JSON.stringify({ from: R.from, to: R.to })) } catch { /* 存不了就用默认路线 */ } nav('/app') }
   return (
     <section className="border-t border-line">
-      <div className="mx-auto max-w-7xl px-4 py-20 text-center md:px-8 md:py-28 lg:py-32">
-        <Reveal><h2 className="font-display text-balance text-[40px] font-bold leading-[1.05] tracking-[-0.035em] md:text-7xl">自己走一遍<br />大约两分钟</h2></Reveal>
-        <Reveal delay={0.05}><p className="mx-auto mt-6 max-w-[32ch] text-lg text-muted md:text-xl">顶部一键切换发单人和跑腿人，一个人就能把一单从发布走到信用变化。</p></Reveal>
-        <Reveal delay={0.1} className="mt-10"><Cta /></Reveal>
+      <div className="mx-auto max-w-7xl px-4 py-20 md:px-8 md:py-28 lg:py-32">
+        <div className="mx-auto max-w-3xl text-center">
+          <Reveal><h2 className="font-display text-balance text-[40px] font-bold leading-[1.08] tracking-[-0.035em] md:text-7xl">你下课<br />常走哪条路？</h2></Reveal>
+          <Reveal delay={0.05}>
+            <div className="mt-8 flex flex-wrap justify-center gap-2" role="group" aria-label="选你常走的路">
+              {ROUTES.map((x, i) => (
+                <button key={x.label} onClick={() => setRi(i)} aria-pressed={i === ri}
+                  className={`h-11 whitespace-nowrap rounded-full px-4 text-[15px] font-semibold transition-colors active:scale-[0.97] ${i === ri ? 'bg-ink text-bg' : 'bg-surface text-ink ring-1 ring-line'}`}>{x.label}</button>
+              ))}
+            </div>
+          </Reveal>
+          <Reveal delay={0.1}>
+            <p className="mt-8 text-lg text-muted md:text-xl" aria-live="polite">此刻路上有 <AnimatePresence mode="wait" initial={false}><motion.b key={n} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.18 }} className="tnum inline-block text-3xl text-accent md:text-4xl">{n}</motion.b></AnimatePresence> 单顺路，捎上都不超过 5 分钟</p>
+            <p className="mx-auto mt-3 max-w-[34ch] text-[15px] text-muted">在原型「我的」里打开下课提醒，下课前 5 分钟把这条路上的单推给你。</p>
+          </Reveal>
+          <Reveal delay={0.15} className="mt-10 flex justify-center">
+            <Magnetic>
+              <button onClick={go} className="group relative inline-flex h-14 items-center gap-2 overflow-hidden whitespace-nowrap rounded-full bg-accent px-7 text-[17px] font-semibold text-on-accent shadow-[0_10px_30px_-12px_rgba(11,122,85,0.7)] transition active:scale-[0.97]">
+                <span className="relative">带着这条路去看看</span><ArrowRight size={20} weight="bold" className="relative transition-transform duration-300 group-hover:translate-x-1" />
+              </button>
+            </Magnetic>
+          </Reveal>
+        </div>
       </div>
       <footer className="border-t border-line">
         <div className="mx-auto grid max-w-7xl gap-6 px-4 py-10 text-sm text-muted md:grid-cols-[1fr_auto] md:items-center md:px-8">
@@ -874,11 +906,10 @@ function Final() {
             <span className="flex items-center gap-2 text-[15px] font-semibold text-ink"><img src={`${import.meta.env.BASE_URL}brand/logo-v2.png`} width={28} height={28} alt="" aria-hidden="true" className="size-7" />顺路侠 · 本来就要经过，顺手捎一下</span>
             <p className="mt-2">校园跑腿互助平台产品原型。页面中的人名、任务、金额和指标均为示例。</p>
           </div>
-          <div className="flex flex-wrap items-center gap-x-5 gap-y-2">
-            <Link to="/thinking" className="font-semibold text-ink underline-offset-4 hover:underline">产品思考</Link>
-            <span>演示数据只存在这台设备的浏览器里</span>
-            <button onClick={() => { if (window.confirm('把原型里的演示数据恢复成刚打开时的样子？')) { try { Object.keys(localStorage).filter((k) => k.startsWith('shunluxia:')).forEach((k) => localStorage.removeItem(k)) } catch {} } }}
-              className="font-semibold text-ink underline-offset-4 hover:underline">重置演示数据</button>
+          <div className="grid gap-2 md:justify-items-end">
+            {page !== 'thinking' ? <Link to="/thinking" className="font-semibold text-ink underline-offset-4 hover:underline">产品思考（写给评审）</Link> : <Link to="/" className="font-semibold text-ink underline-offset-4 hover:underline">回首页</Link>}
+            <p>演示数据只存在这台设备的浏览器里 · <button onClick={() => { if (window.confirm('把原型里的演示数据恢复成刚打开时的样子？')) { try { Object.keys(localStorage).filter((k) => k.startsWith('shunluxia:')).forEach((k) => localStorage.removeItem(k)) } catch { /* 无痕模式下没有本地存储 */ } } }}
+              className="font-semibold text-ink underline-offset-4 hover:underline">重置演示数据</button></p>
           </div>
         </div>
       </footer>
@@ -933,7 +964,7 @@ export default function Landing({ page }) {
           <ThinkingIntro />
           <Metrics />
           <Roadmap />
-          <Final />
+          <Final page={page} />
         </main>
       ) : (
         <main>

@@ -4,7 +4,6 @@ import { Check, ArrowCounterClockwise } from '@phosphor-icons/react'
 import { useStore } from '../store'
 import { levelOf, posterTierOf } from '../data'
 import { Avatar, gi } from '../ui'
-const Path = gi('path')
 
 const STEPS = ['发布托管', '认证接单', '取件送达', '提交凭证', '确认放款', '发单人评价', '跑腿人回评']
 function progress(t) {
@@ -76,7 +75,7 @@ export default function DemoPanel() {
         {!runner.verified && <p className="mt-3 text-xs text-muted">跑腿人还没认证，接单前会先走认证</p>}
       </div>
       <div className="grid gap-2">
-        <button onClick={start} className="inline-flex h-11 items-center justify-center gap-2 whitespace-nowrap rounded-full bg-accent text-[15px] font-semibold text-on-accent active:scale-[0.98]"><Path size={18} weight="bold" />跟着走一遍（约 2 分钟）</button>
+        <button onClick={start} className="inline-flex h-11 items-center justify-center gap-2 whitespace-nowrap rounded-full bg-accent text-[15px] font-semibold text-on-accent active:scale-[0.98]">跟着走一遍（约 2 分钟）</button>
         <button onClick={() => { if (window.confirm('把演示数据恢复成初始示例？你走过的订单和信用变化都会清掉。')) { act('reset'); nav('/app') } }} className="inline-flex h-11 items-center justify-center gap-2 whitespace-nowrap rounded-full bg-surface text-[15px] font-semibold ring-1 ring-line active:scale-[0.98]"><ArrowCounterClockwise size={18} weight="bold" />重置演示数据</button>
       </div>
     </aside>

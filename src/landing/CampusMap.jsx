@@ -66,7 +66,12 @@ export default function CampusMap({ R, hits, reduce, pills = true, walker = true
         {/* 捎这单要绕的路：从你的路拐去取件点、送到再回来，绿色虚线 */}
         {marks.map(({ t }) => {
           const via = [...routePath(R.from, t.from).pts, ...(t.from !== t.to ? routePath(t.from, t.to).pts : []), ...routePath(t.to, R.to).pts]
-          return <path key={`v${t.id}`} d={toD(via)} fill="none" stroke="var(--accent)" strokeOpacity="0.9" strokeWidth="11" strokeDasharray="1 18" strokeLinecap="round" strokeLinejoin="round" />
+          return (
+            <g key={`v${t.id}`}>
+              <path d={toD(via)} fill="none" stroke="var(--surface)" strokeWidth="19" strokeDasharray="1 18" strokeLinecap="round" strokeLinejoin="round" className={reduce ? '' : 'dash-flow'} />
+              <path d={toD(via)} fill="none" stroke="var(--accent)" strokeWidth="12" strokeDasharray="1 18" strokeLinecap="round" strokeLinejoin="round" className={reduce ? '' : 'dash-flow'} />
+            </g>
+          )
         })}
         {/* 你的路：整条先淡淡画着，小人走过的部分描深 */}
         <path d={toD(mine)} fill="none" stroke="var(--ink)" strokeOpacity="0.3" strokeWidth="10" strokeDasharray="4 18" strokeLinecap="round" strokeLinejoin="round" />
@@ -84,12 +89,15 @@ export default function CampusMap({ R, hits, reduce, pills = true, walker = true
       {ends.map((id) => (
         <span key={id} className="absolute z-20" style={pct(PLACES[id].door)}>
           <span className="absolute left-0 top-0 block size-3 -translate-x-1/2 -translate-y-1/2 rounded-full bg-ink ring-[3px] ring-surface md:size-4" />
-          <span className={`absolute left-0 -translate-x-1/2 whitespace-nowrap rounded-full bg-ink px-2 py-0.5 text-[10px] font-semibold text-bg shadow-sm md:px-2.5 md:text-[13px] ${outward(id) === 'up' ? 'bottom-2.5' : 'top-2.5'}`}>{SHORT[id]} {id === R.from ? '出发' : '到达'}</span>
+          <span className={`absolute left-0 -translate-x-1/2 whitespace-nowrap rounded-full bg-ink px-2 py-0.5 text-[12px] font-semibold text-bg shadow-sm md:px-2.5 md:text-[13px] ${outward(id) === 'up' ? 'bottom-2.5' : 'top-2.5'}`}>{SHORT[id]} {id === R.from ? '出发' : '到达'}</span>
         </span>
       ))}
       {!endsOnly && marks.filter(({ t }) => !ends.includes(t.from)).map(({ t }) => (
         <span key={`l${t.id}`} className="absolute z-10" style={pct(markAt(t.from))}>
-          <span className={`absolute left-0 -translate-x-1/2 whitespace-nowrap rounded-full bg-surface px-1.5 py-0.5 text-[10px] font-semibold md:px-2.5 md:text-[13px] text-ink shadow-sm ring-1 ring-line ${outward(t.from) === 'up' ? 'bottom-2.5' : 'top-2.5'}`}>{SHORT[t.from]}</span>
+          <span className={`absolute left-0 -translate-x-1/2 whitespace-nowrap rounded-full bg-surface px-1.5 py-0.5 text-[12px] font-semibold md:px-2.5 md:text-[13px] text-ink shadow-sm ring-1 ring-line ${outward(t.from) === 'up' ? 'bottom-2.5' : 'top-2.5'}`}>
+            <span className="hidden md:inline">{SHORT[t.from]}</span>
+            <span className="tnum md:hidden">¥{t.reward}</span>
+          </span>
         </span>
       ))}
       <AnimatePresence>

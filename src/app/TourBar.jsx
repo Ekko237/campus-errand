@@ -1,7 +1,7 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { motion, AnimatePresence, useReducedMotion } from 'motion/react'
-import { X, ArrowRight } from '@phosphor-icons/react'
+import { X, ArrowRight, CaretDown, CaretUp } from '@phosphor-icons/react'
 import { useStore } from '../store'
 import { spring, gi } from '../ui'
 const Confetti = gi('confetti')
@@ -58,6 +58,9 @@ export default function TourBar() {
     return () => clearTimeout(id)
   }, [here, step?.n, loc.pathname, reduce])
   useEffect(() => { if (!arrived) return; const id = setTimeout(() => act('tour', { tour: { active: false, done: true } }), 3000); return () => clearTimeout(id) }, [arrived, act])
+  // 导览条可以收成右下角一颗小胶囊，不挡表单；到下一步自动展开
+  const [mini, setMini] = useState(false)
+  useEffect(() => { setMini(false) }, [step?.n])
   const go = () => {
     if (step.who) act('role', { role: step.who })
     if (step.final) act('tour', { tour: { active: false, done: true } })
@@ -68,6 +71,13 @@ export default function TourBar() {
       {step && (
         <motion.div key="bar" initial={reduce ? false : { y: 40, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: 40, opacity: 0 }} transition={spring}
           className="fixed inset-x-0 bottom-[calc(4rem+env(safe-area-inset-bottom))] z-20 px-3 pb-2 xl:bottom-4">
+          {mini ? (
+            <div className="mx-auto flex max-w-xl justify-end xl:-translate-x-20">
+              <button data-tour-bar onClick={() => setMini(false)} aria-label="展开导览" className="inline-flex h-11 items-center gap-1.5 rounded-full bg-ink px-4 text-[15px] font-semibold text-bg shadow-xl shadow-ink/20 active:scale-[0.97]">
+                <span className="tnum">完整流程 {Math.min(step.n, TOTAL)}/{TOTAL}</span><CaretUp size={16} weight="bold" />
+              </button>
+            </div>
+          ) : (
           <div data-tour-bar className="mx-auto flex max-w-xl items-center gap-3 rounded-2xl bg-ink xl:-translate-x-20 p-3 pl-4 text-bg shadow-xl shadow-ink/20">
             <div className="min-w-0 flex-1">
               <p className="text-[13px] font-semibold opacity-70">
@@ -78,8 +88,10 @@ export default function TourBar() {
             {!here && <button onClick={go} className="inline-flex h-11 shrink-0 items-center gap-1 whitespace-nowrap rounded-full bg-accent px-4 text-[15px] font-semibold text-on-accent active:scale-[0.98]">
               {step.cta}<ArrowRight size={16} weight="bold" />
             </button>}
+            {here && <button onClick={() => setMini(true)} aria-label="收起导览" className="grid size-9 shrink-0 place-items-center rounded-full opacity-70 hover:opacity-100"><CaretDown size={18} weight="bold" /></button>}
             <button onClick={() => act('tour', { tour: { active: false } })} aria-label="退出演示" className="grid size-9 shrink-0 place-items-center rounded-full opacity-70 hover:opacity-100"><X size={18} weight="bold" /></button>
           </div>
+          )}
         </motion.div>
       )}
     </AnimatePresence>

@@ -55,3 +55,8 @@ h1, h2, h3 { text-wrap: balance; }
 /* 标题字：得意黑（Smiley Sans Oblique，SIL OFL 1.1），按字切片自托管，只下载页面用到的那几片。
    字体由独立小评审在四个候选里选定（见 ITERATION_LOG 第 72 轮），自带前倾，像「路过、顺手」的动势 */
 .font-display { font-family: "Smiley Sans Oblique", "Geist Variable", "PingFang SC", "Noto Sans SC", sans-serif; font-weight: 400; letter-spacing: 0; margin-left: 0.04em; }
+
+/* 地图上「捎上它要绕的路」：虚线慢慢往前流，看得出是一条要走的路 */
+@keyframes dash-flow { to { stroke-dashoffset: -38; } }
+.dash-flow { animation: dash-flow 1.6s linear infinite; }
+@media (prefers-reduced-motion: reduce) { .dash-flow { animation: none; } }

@@ -8,10 +8,10 @@ import CampusMap, { SHORT } from './CampusMap'
 const ease = [0.16, 1, 0.3, 1]
 const icon = (name) => `${import.meta.env.BASE_URL}icons/${name}.webp`
 const W = 600, H = 450
-// 学弟下课的路：一教 → 驿站 → 梅园。驿站正好在他的路上，走到一半（p = 0.5）
-const RUN = 'M200 180 L200 276 L484 276 L484 340 L512 340'
+// 学弟下课的路：一教 → 驿站 → 梅园。方位和全校地图一致：一教在右上，梅园在左边（底图 v4 是 v3 的左右镜像）
+const RUN = 'M400 180 L400 276 L116 276 L116 340 L88 340'
 // 你的需求：驿站 → 梅园，和他后半程完全重合
-const NEED = 'M330 276 L484 276 L484 340 L512 340'
+const NEED = 'M270 276 L116 276 L116 340 L88 340'
 // 学弟走到驿站时在整条路上的位置（路长 472，驿站在第 226 处）
 const F = 226 / 472
 const pct = (x, y) => ({ left: `${(x / W) * 100}%`, top: `${(y / H) * 100}%` })
@@ -33,7 +33,7 @@ export function RouteMap() {
   const [phase, setPhase] = useState(reduce ? 3 : 0)
   const pt = (v) => {
     const el = path.current
-    if (!el) return { x: 90, y: 90 }
+    if (!el) return { x: 400, y: 180 }
     return el.getPointAtLength(v * el.getTotalLength())
   }
   const rx = useTransform(p, (v) => pt(v).x)
@@ -54,7 +54,7 @@ export function RouteMap() {
   return (
     <div ref={box} className="relative -mx-4 aspect-[600/450] w-[calc(100%+2rem)] overflow-hidden bg-surface sm:mx-0 sm:w-full sm:rounded-[28px] sm:ring-1 sm:ring-line"
       role="img" aria-label="示意地图：你的快递在菜鸟驿站，学弟从一教走回梅园正好经过驿站，顺手捎上，只多走 1 分钟">
-      <img src={`${import.meta.env.BASE_URL}images/campus-hero-v3.webp`} width={1200} height={900} alt="" aria-hidden="true" fetchPriority="high" className="absolute inset-0 size-full object-cover" />
+      <img src={`${import.meta.env.BASE_URL}images/campus-hero-v4.webp`} width={1200} height={900} alt="" aria-hidden="true" fetchPriority="high" className="absolute inset-0 size-full object-cover" />
       <svg viewBox={`0 0 ${W} ${H}`} className="absolute inset-0 size-full" aria-hidden="true">
         {/* 你的需求：虚线 */}
         <motion.path d={NEED} fill="none" stroke="var(--accent)" strokeWidth="5" strokeDasharray="1 10" strokeLinecap="round"
@@ -67,28 +67,28 @@ export function RouteMap() {
         {/* 交汇之后：带着你的快递走完，路线变成绿色实线 */}
         <motion.path d={NEED} fill="none" stroke="var(--accent)" strokeWidth="7" strokeLinecap="round" strokeLinejoin="round" style={{ pathLength: carry }} />
         {/* 交汇点 */}
-        <motion.circle cx="330" cy="292" r="34" fill="var(--accent)" initial={false}
+        <motion.circle cx="270" cy="292" r="34" fill="var(--accent)" initial={false}
           animate={lit && !reduce ? { opacity: [0.35, 0], scale: [0.6, 1.6] } : { opacity: 0 }}
-          transition={{ duration: 1.1, ease: 'easeOut' }} style={{ transformOrigin: '330px 292px' }} />
+          transition={{ duration: 1.1, ease: 'easeOut' }} style={{ transformOrigin: '270px 292px' }} />
       </svg>
 
-      <Node x={200} y={190}><span className="block size-3 rounded-full bg-ink ring-4 ring-surface" /></Node>
-      <Node x={130} y={84}><Tag>一教</Tag></Node>
-      <Node x={330} y={298}>
+      <Node x={400} y={190}><span className="block size-3 rounded-full bg-ink ring-4 ring-surface" /></Node>
+      <Node x={470} y={84}><Tag>一教</Tag></Node>
+      <Node x={270} y={298}>
         <motion.div animate={{ scale: lit ? 1.08 : 1 }} transition={{ type: 'spring', stiffness: 400, damping: 18 }}
           className={`grid size-11 place-items-center rounded-full ring-[3px] transition-colors md:size-14 ${lit ? 'bg-accent-soft ring-accent' : 'bg-surface ring-line'}`}>
           <img src={icon('type-express-v1')} width={36} height={36} alt="" className={`size-7 transition-opacity md:size-9 ${phase >= 2 ? 'opacity-30' : ''}`} />
         </motion.div>
       </Node>
-      <Node x={330} y={340}><Tag strong={lit}>菜鸟驿站</Tag></Node>
-      <Node x={546} y={366}>
+      <Node x={270} y={340}><Tag strong={lit}>菜鸟驿站</Tag></Node>
+      <Node x={54} y={366}>
         <div className={`relative size-11 rounded-full bg-surface ring-[3px] transition-colors md:size-14 ${phase === 3 ? 'ring-accent' : 'ring-line'}`}>
           <img src={icon('avatar-poster-v1')} width={56} height={56} alt="" className="size-full rounded-full object-cover" />
-          {phase === 3 && <motion.img src={icon('type-express-v1')} width={28} height={28} alt="" initial={reduce ? false : { scale: 0 }} animate={{ scale: 1 }} transition={{ type: 'spring', stiffness: 500, damping: 18 }} className="absolute -left-3 -top-3 size-6 md:size-7" />}
+          {phase === 3 && <motion.img src={icon('type-express-v1')} width={28} height={28} alt="" initial={reduce ? false : { scale: 0 }} animate={{ scale: 1 }} transition={{ type: 'spring', stiffness: 500, damping: 18 }} className="absolute -right-3 -top-3 size-6 md:size-7" />}
         </div>
       </Node>
-      <div className="absolute right-2 -translate-y-1/2" style={{ top: `${(414 / H) * 100}%` }}><Tag>梅园 5 号楼 · 你</Tag></div>
-      <motion.div className="absolute z-10 -translate-x-1/2 -translate-y-1/2" style={{ left: rl, top: rt }} animate={{ opacity: phase === 3 ? 0 : 1 }} transition={{ duration: 0.25 }}>
+      <div className="absolute left-2 -translate-y-1/2" style={{ top: `${(414 / H) * 100}%` }}><Tag>梅园 5 号楼 · 你</Tag></div>
+      <motion.div className="absolute z-10 -translate-x-1/2 -translate-y-[92%]" style={{ left: rl, top: rt }} animate={{ opacity: phase === 3 ? 0 : 1 }} transition={{ duration: 0.25 }}>
         <div className={`relative size-9 rounded-full bg-surface p-0.5 ring-[3px] shadow-[0_6px_16px_-6px_rgba(17,40,30,0.5)] transition-colors md:size-11 ${phase >= 1 ? 'ring-accent' : 'ring-ink'}`}>
           <img src={icon('avatar-runner-v1')} width={44} height={44} alt="" className="size-full rounded-full object-cover" />
           <AnimatePresence>
@@ -102,12 +102,12 @@ export function RouteMap() {
 
       <AnimatePresence mode="wait">
         {phase === 0 && !reduce && (
-          <motion.div key="a" className="absolute left-[53%] top-[16%]" initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.3 }}>
+          <motion.div key="a" className="absolute right-[53%] top-[16%]" initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.3 }}>
             <p className="rounded-xl bg-surface px-2.5 py-1.5 text-[12px] leading-snug shadow-[0_8px_24px_-12px_rgba(17,40,30,0.4)] ring-1 ring-line md:px-3 md:py-2 md:text-sm">学弟在一教 17:50 下课<br />本来就要走回梅园</p>
           </motion.div>
         )}
         {(phase === 1 || phase === 2) && (
-          <motion.div key="b" className="absolute left-[53%] top-[16%]" initial={{ opacity: 0, y: 10, scale: 0.92 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: -6 }} transition={{ type: 'spring', stiffness: 420, damping: 26 }}>
+          <motion.div key="b" className="absolute right-[53%] top-[16%]" initial={{ opacity: 0, y: 10, scale: 0.92 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: -6 }} transition={{ type: 'spring', stiffness: 420, damping: 26 }}>
             <div className="rounded-2xl bg-ink px-3 py-2 text-bg shadow-[0_14px_30px_-14px_rgba(17,40,30,0.6)] md:px-4 md:py-3">
               <p className="text-[13px] font-bold md:text-lg">顺路，只多走 1 分钟</p>
               <p className="text-[11px] opacity-80 md:text-sm">学弟接单 · 赏金 ¥5 托管中</p>
@@ -115,7 +115,7 @@ export function RouteMap() {
           </motion.div>
         )}
         {phase === 3 && (
-          <motion.div key="c" className="absolute left-[53%] top-[16%]" initial={reduce ? false : { opacity: 0, y: 10, scale: 0.92 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0 }} transition={{ type: 'spring', stiffness: 420, damping: 26 }}>
+          <motion.div key="c" className="absolute right-[53%] top-[16%]" initial={reduce ? false : { opacity: 0, y: 10, scale: 0.92 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0 }} transition={{ type: 'spring', stiffness: 420, damping: 26 }}>
             <div className="rounded-2xl bg-accent px-3 py-2 text-on-accent shadow-[0_14px_30px_-14px_rgba(11,122,85,0.7)] md:px-4 md:py-3">
               <p className="text-[13px] font-bold md:text-lg">送到了</p>
               <p className="tnum text-[11px] opacity-90 md:text-sm">¥5 从托管放给学弟</p>
@@ -143,15 +143,15 @@ function DashUnder({ children }) {
 
 export default function RouteHero({ Cta, Anchor }) {
   const reduce = useReducedMotion()
-  const line = (i) => ({ initial: reduce ? false : { y: '105%' }, animate: { y: 0 }, transition: { duration: 0.9, delay: 0.1 + i * 0.09, ease } })
+  const line = (i) => ({ initial: reduce ? false : { opacity: 0, y: 14 }, animate: { opacity: 1, y: 0 }, transition: { duration: 0.55, delay: 0.05 + i * 0.08, ease } })
   // 副标题和按钮第一帧就在，只做一点位移，不从透明开始
   const fade = (d) => ({ initial: reduce ? false : { y: 10 }, animate: { y: 0 }, transition: { duration: 0.5, delay: d * 0.3, ease } })
   return (
     <section id="top" className="mx-auto grid max-w-7xl items-center gap-10 px-4 pb-20 pt-8 md:px-8 md:pb-28 md:pt-14 lg:grid-cols-12 lg:gap-10 lg:pb-14 lg:pt-10 xl:pt-14">
       <div className="lg:col-span-5">
         <h1 className="font-display text-[length:clamp(54px,4vw_+_20px,78px)] leading-[1.05]">
-          <span className="block overflow-hidden pb-1"><motion.span className="block" {...line(0)}>本来就要经过，</motion.span></span>
-          <span className="block overflow-hidden pb-[0.3em]"><motion.span className="block" {...line(1)}><DashUnder>顺手</DashUnder>捎一下</motion.span></span>
+          <span className="block pb-1"><motion.span className="block" {...line(0)}>本来就要经过，</motion.span></span>
+          <span className="block pb-[0.3em]"><motion.span className="block" {...line(1)}><DashUnder>顺手</DashUnder>捎一下</motion.span></span>
         </h1>
         <motion.p {...fade(0.35)} className="mt-6 max-w-[30ch] lg:mt-8 text-lg leading-relaxed text-muted md:text-xl">
           快递在驿站，你在宿舍。总有同学下课正好从驿站走回去，顺手帮你带上。校内实名，赏金先托管。
@@ -174,9 +174,9 @@ export default function RouteHero({ Cta, Anchor }) {
 const PX = (x) => 13 + ((x + 600) / 1580) * 74
 const PY = (y) => 7 + ((y + 380) / 1280) * 84
 export const ROUTES = [
-  { from: 'jiao1', to: 'mei5', label: '一教下课回梅园' },
-  { from: 'jiao1', to: 'tao2', label: '一教去桃园' },
-  { from: 'gym', to: 'tao2', label: '体育馆回桃园' },
+  { from: 'jiao1', to: 'mei5', label: '一教下课回梅园', short: '一教→梅园' },
+  { from: 'jiao1', to: 'tao2', label: '一教去桃园', short: '一教→桃园' },
+  { from: 'gym', to: 'tao2', label: '体育馆回桃园', short: '体育馆→桃园' },
 ]
 
 export function CampusRoutes() {
@@ -196,12 +196,12 @@ export function CampusRoutes() {
   const pick = (i) => { setTouched(true); setRi(i) }
   return (
     <div>
-      <div className="no-scrollbar -mx-4 flex gap-2 overflow-x-auto px-4 max-md:[mask-image:linear-gradient(to_right,black_88%,transparent)] md:mx-0 md:flex-wrap md:overflow-visible md:px-0" role="group" aria-label="选一条你正要走的路">
+      <div className="no-scrollbar -mx-4 flex gap-1.5 overflow-x-auto px-4 md:gap-2 md:mx-0 md:flex-wrap md:overflow-visible md:px-0" role="group" aria-label="选一条你正要走的路">
         {ROUTES.map((x, i) => (
           <button key={x.label} onClick={() => pick(i)} aria-pressed={i === ri}
-            className={`relative h-10 shrink-0 whitespace-nowrap rounded-full px-4 text-[15px] font-semibold transition-colors ${i === ri ? 'text-bg' : 'bg-surface text-ink ring-1 ring-line'}`}>
+            className={`relative h-10 shrink-0 whitespace-nowrap rounded-full px-3 text-[14px] md:px-4 md:text-[15px] font-semibold transition-colors ${i === ri ? 'text-bg' : 'bg-surface text-ink ring-1 ring-line'}`}>
             {i === ri && <span className="absolute inset-0 rounded-full bg-ink" />}
-            <span className="relative">{x.label}</span>
+            <span className="relative md:hidden">{x.short}</span><span className="relative max-md:hidden">{x.label}</span>
           </button>
         ))}
       </div>

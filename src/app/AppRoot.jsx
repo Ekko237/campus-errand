@@ -17,7 +17,6 @@ import DemoPanel from './DemoPanel'
 const Receipt = gi('receipt')
 const CheckCircle = gi('check')
 const WarningCircle = gi('alert')
-const Path = gi('path')
 const Megaphone = gi('megaphone')
 const PersonSimpleRun = gi('runner')
 const SealCheck = gi('seal')
@@ -32,13 +31,17 @@ export default function AppRoot() {
 
 function RoleSwitch() {
   const { state, act } = useStore()
+  const { pathname } = useLocation()
+  // 订单页切身份：页面换成另一方能做的事，回到顶上，免得主按钮躲在吸顶栏后面
+  const pick = (k) => { act('role', { role: k }); if (pathname.startsWith('/app/task/')) window.scrollTo({ top: 0, behavior: 'smooth' }) }
   const opts = [['poster', '我是发单人'], ['runner', '我是跑腿人']]
   return (
     <div className="relative grid grid-cols-2 rounded-full bg-sunken p-1" role="tablist" aria-label="切换角色">
+      {/* 滑块用 CSS 位移，不跟页面布局联动：换页、滚动时不会从别处飞过来 */}
+      <span aria-hidden="true" className={`absolute inset-y-1 left-1 w-[calc(50%-4px)] rounded-full bg-accent transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] ${state.role === 'runner' ? 'translate-x-full' : ''}`} />
       {opts.map(([k, label]) => (
-        <button key={k} role="tab" aria-selected={state.role === k} onClick={() => act('role', { role: k })}
+        <button key={k} role="tab" aria-selected={state.role === k} onClick={() => pick(k)}
           className={`relative z-10 h-10 whitespace-nowrap rounded-full px-3 text-[15px] font-semibold transition-colors ${state.role === k ? 'text-on-accent' : 'text-muted'}`}>
-          {state.role === k && <motion.span layoutId="role-pill" transition={spring} className="absolute inset-0 -z-10 rounded-full bg-accent" />}
           {label}
         </button>
       ))}
@@ -111,7 +114,7 @@ function Onboarding() {
       </ol>
       <p className="mt-4 rounded-xl bg-sunken px-3 py-2 text-sm text-muted">页面里的人名、任务、金额都是示例数据，保存在你自己的浏览器里。</p>
       <div className="mt-5 grid gap-2">
-        <Btn size="lg" onClick={start}><Path size={20} weight="bold" />跟着走一遍（约 2 分钟）</Btn>
+        <Btn size="lg" onClick={start}>跟着走一遍（约 2 分钟）</Btn>
         <Btn variant="ghost" onClick={() => act('onboarded')}>先自己逛逛</Btn>
       </div>
     </Sheet>
@@ -142,7 +145,10 @@ function useDirection(pathname) {
 
 function Shell() {
   const { state } = useStore()
-  const { pathname } = useLocation()
+  const { pathname, search } = useLocation()
+  // 子页面亮它的来源标签：订单详情、从订单来的认证亮「订单」；钱包、信用规则、其他认证亮「我的」
+  const sub = pathname.startsWith('/app/task') || (pathname.startsWith('/app/verify') && search.includes('back=/app/task')) ? '/app/orders'
+    : ['/app/verify', '/app/wallet', '/app/credit'].some((p) => pathname.startsWith(p)) ? '/app/me' : null
   const reduce = useReducedMotion()
   const dir = useDirection(pathname)
   useLayoutEffect(() => { window.scrollTo(0, 0) }, [pathname])
@@ -178,8 +184,8 @@ function Shell() {
       <nav className="fixed inset-x-0 bottom-0 z-30 border-t border-line bg-surface/95 backdrop-blur xl:inset-x-auto xl:bottom-auto xl:left-[calc(50%-33rem)] xl:top-24 xl:w-36 xl:border-0 xl:bg-transparent xl:backdrop-blur-none" aria-label="主导航">
         <div className="mx-auto grid max-w-xl grid-cols-4 pb-[env(safe-area-inset-bottom)] xl:grid-cols-1 xl:gap-1 xl:pb-0">
           {tabs.map(([to, label, img, end]) => (
-            <NavLink key={to} to={to} end={end} className={({ isActive: a0 }) => { const isActive = pathname.startsWith('/app/task') ? to === '/app/orders' : a0; return `relative flex h-16 flex-col items-center justify-center gap-0.5 text-[13px] font-semibold transition-colors xl:h-12 xl:flex-row xl:justify-start xl:gap-2.5 xl:rounded-xl xl:px-3 xl:text-[15px] ${isActive ? 'text-accent xl:bg-accent-soft' : 'text-muted xl:hover:bg-sunken'}` }}>
-              {({ isActive: a0 }) => { const isActive = pathname.startsWith('/app/task') ? to === '/app/orders' : a0; return (<>{isActive && <motion.span layoutId="nav-dot" transition={{ type: 'spring', stiffness: 500, damping: 34 }} className="absolute top-0 h-[3px] w-10 rounded-b-full bg-accent xl:hidden" />}<img src={`${import.meta.env.BASE_URL}icons/${img}-v1.webp`} width={28} height={28} alt="" aria-hidden="true" className={`size-7 object-contain transition ${isActive ? 'scale-110' : 'opacity-55 grayscale'}`} />{label}</>) }}
+            <NavLink key={to} to={to} end={end} className={({ isActive: a0 }) => { const isActive = sub ? to === sub : a0; return `relative flex h-16 flex-col items-center justify-center gap-0.5 text-[13px] font-semibold transition-colors xl:h-12 xl:flex-row xl:justify-start xl:gap-2.5 xl:rounded-xl xl:px-3 xl:text-[15px] ${isActive ? 'text-accent xl:bg-accent-soft' : 'text-muted xl:hover:bg-sunken'}` }}>
+              {({ isActive: a0 }) => { const isActive = sub ? to === sub : a0; return (<><span aria-hidden="true" className={`absolute top-0 h-[3px] w-10 rounded-b-full bg-accent transition-[opacity,transform] duration-200 xl:hidden ${isActive ? 'opacity-100' : 'scale-x-0 opacity-0'}`} /><img src={`${import.meta.env.BASE_URL}icons/${img}-v1.webp`} width={28} height={28} alt="" aria-hidden="true" className={`size-7 object-contain transition ${isActive ? 'scale-110' : 'opacity-55 grayscale'}`} />{label}</>) }}
             </NavLink>
           ))}
         </div>

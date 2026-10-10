@@ -1,4 +1,5 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
+import { motion, useReducedMotion } from 'motion/react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { ArrowLeft, CaretDown } from '@phosphor-icons/react'
 import { useStore } from '../store'
@@ -23,6 +24,23 @@ export default function Verify() {
   const [code, setCode] = useState('')
   const [err, setErr] = useState({})
   const [busy, setBusy] = useState(false)
+  const [done, setDone] = useState(false)
+  const reduce = useReducedMotion()
+  // 刚认证完：徽章弹进来停 1.4 秒，再自动回到原来的页面
+  useEffect(() => { if (!done) return; const id = setTimeout(() => nav(back), 1400); return () => clearTimeout(id) }, [done, back, nav])
+
+  if (done) {
+    return (
+      <Panel className="p-8 text-center">
+        <motion.img initial={reduce ? false : { scale: 0.4, rotate: -12, opacity: 0 }} animate={{ scale: 1, rotate: 0, opacity: 1 }} transition={{ type: 'spring', stiffness: 380, damping: 14 }}
+          src={`${import.meta.env.BASE_URL}icons/trust-verify-v1.webp`} width={88} height={88} alt="带对勾的学生证" className="mx-auto size-22 object-contain" />
+        <motion.p initial={reduce ? false : { opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }} className="mt-4 text-2xl font-bold">认证通过</motion.p>
+        <motion.p initial={reduce ? false : { opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.3 }} className="mt-1 text-muted">获得校园认证徽章 · 信用从 {CREDIT_INIT} 分起步，现在可以接单了</motion.p>
+        <div className="mt-3 flex justify-center"><VerifiedBadge /></div>
+        <p className="mt-5 text-sm text-muted">{back.startsWith('/app/task') ? '马上回到刚才的订单…' : '马上回到你的页面…'}</p>
+      </Panel>
+    )
+  }
 
   if (me.verified) {
     return (
@@ -38,7 +56,7 @@ export default function Verify() {
 
   const finish = (method) => {
     setBusy(true)
-    setTimeout(() => { act('verify', { who, method }); setBusy(false); nav(back) }, 900)
+    setTimeout(() => { act('verify', { who, method }); setBusy(false); setDone(true) }, 900)
   }
   const submitId = () => {
     const e = {}
