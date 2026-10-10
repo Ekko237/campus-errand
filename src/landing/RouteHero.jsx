@@ -220,7 +220,7 @@ export function CampusRoutes() {
         此刻 {tasks.length} 个示例单里，有 <b className="text-accent">{hits.length} 个</b>顺路，捎上多走 {!hits.length ? 0 : hits[0].m === hits[hits.length - 1].m ? hits[0].m : `${hits[0].m} 到 ${hits[hits.length - 1].m}`} 分钟。
       </p>
       <div ref={box} className="mt-6 hidden md:block"><RouteZoom R={R} hits={hits} reduce={reduce} /></div>
-      <div className="mt-6 md:hidden"><RouteZoom R={R} hits={hits} reduce={reduce} ratio={1.05} pills={false} /></div>
+      <div className="mt-6 md:hidden"><RouteZoom R={R} hits={hits} reduce={reduce} ratio={0.82} vertical /></div>
       <SubwayLine R={R} hits={hits} reduce={reduce} />
       <div className="mt-3 hidden flex-wrap gap-x-5 md:flex gap-y-1 text-sm text-muted">
         <span className="inline-flex items-center gap-1.5"><i className="h-1 w-5 rounded-full bg-ink/80" />你正要走的路</span>
@@ -276,34 +276,33 @@ const LANDMARKS = [
   { k: 'lawn', x: 380, y: 380, w: 260, h: 120, kind: 'green', name: '中心草坪' },
   { k: 'lawn2', x: -120, y: 380, w: 200, h: 110, kind: 'green' },
 ]
-const lpath = (p, q) => ({ d: `M${p[0]} ${p[1]} H${q[0]} V${q[1]}` })
-export function RouteZoom({ R, hits, reduce, ratio = 2.2, pills = true }) {
+export function RouteZoom({ R, hits, reduce, ratio = 2.2, pills = true, vertical = false }) {
   const uid = useId().replace(/:/g, '')
-  const a = B[R.from], b = B[R.to]
-  // 你的路：先横着走，再竖着走
-  const segLen = [Math.abs(b.x - a.x), Math.abs(b.y - a.y)]
-  const total = segLen[0] + segLen[1] || 1
-  const at = (q) => (q * total <= segLen[0]
-    ? { x: a.x + Math.sign(b.x - a.x) * q * total, y: a.y }
-    : { x: b.x, y: a.y + Math.sign(b.y - a.y) * (q * total - segLen[0]) })
-  const along = (id) => {
-    const c = B[id]
-    const t1 = Math.max(0, Math.min(segLen[0], Math.abs(c.x - a.x) * (Math.sign(c.x - a.x) === Math.sign(b.x - a.x) ? 1 : 0)))
-    const d1 = Math.hypot(a.x + Math.sign(b.x - a.x) * t1 - c.x, a.y - c.y)
-    const t2 = Math.max(0, Math.min(segLen[1], (c.y - a.y) * Math.sign(b.y - a.y)))
-    const d2 = Math.hypot(b.x - c.x, a.y + Math.sign(b.y - a.y) * t2 - c.y)
-    return Math.max(0.04, Math.min(0.96, (d1 <= d2 ? t1 : segLen[0] + t2) / total))
+  // 坐标：你的路是一条直线 A→B；竖版（手机）把整张图转到 A 在上、B 在下
+  const A0 = B[R.from], B0 = B[R.to]
+  const ang = vertical ? Math.PI / 2 - Math.atan2(B0.y - A0.y, B0.x - A0.x) : 0
+  const rot = (q) => {
+    const dx = q.x - A0.x, dy = q.y - A0.y
+    return { x: dx * Math.cos(ang) - dy * Math.sin(ang), y: dx * Math.sin(ang) + dy * Math.cos(ang) }
   }
+  const at0 = (id) => rot(B[id])
+  const a = at0(R.from), b = at0(R.to)
+  const vx = b.x - a.x, vy = b.y - a.y, len2 = vx * vx + vy * vy || 1
+  const proj = (q) => Math.max(0, Math.min(1, ((q.x - a.x) * vx + (q.y - a.y) * vy) / len2))
+  const foot = (q) => { const t = proj(q); return { x: a.x + vx * t, y: a.y + vy * t } }
+  const along = (id) => Math.max(0.03, Math.min(0.97, proj(at0(id))))
   const ids = [R.from, R.to, ...hits.flatMap((t) => [t.from, t.to])]
-  let x0 = Math.min(...ids.map((i) => B[i].x)), x1 = Math.max(...ids.map((i) => B[i].x))
-  let y0 = Math.min(...ids.map((i) => B[i].y)), y1 = Math.max(...ids.map((i) => B[i].y))
-  const pw = Math.max(x1 - x0, 300) * 0.16 + 70, ph = Math.max(y1 - y0, 150) * 0.16 + 70
+  const pts = ids.map(at0)
+  let x0 = Math.min(...pts.map((q) => q.x)), x1 = Math.max(...pts.map((q) => q.x))
+  let y0 = Math.min(...pts.map((q) => q.y)), y1 = Math.max(...pts.map((q) => q.y))
+  const pw = Math.max(x1 - x0, 260) * 0.14 + 80, ph = Math.max(y1 - y0, 160) * 0.14 + 80
   x0 -= pw; x1 += pw; y0 -= ph; y1 += ph
   const w = x1 - x0, h = y1 - y0
   if (w / h > ratio) { const d = (w / ratio - h) / 2; y0 -= d; y1 += d } else { const d = (h * ratio - w) / 2; x0 -= d; x1 += d }
   const X = (x) => ((x - x0) / (x1 - x0)) * 100
   const Y = (y) => ((y - y0) / (y1 - y0)) * 100
-  const P = (id) => [X(B[id].x), Y(B[id].y)]
+  const PQ = (q) => [X(q.x), Y(q.y)]
+  const P = (id) => PQ(at0(id))
   const key = new Set(ids)
   const [p, setP] = useState(reduce ? 1 : 0)
   useEffect(() => {
@@ -313,22 +312,22 @@ export function RouteZoom({ R, hits, reduce, ratio = 2.2, pills = true }) {
     return () => c.stop()
   }, [R.label, reduce])
   const sp = { type: 'spring', stiffness: 150, damping: 26 }
-  const me = at(p)
-  const side0 = (id) => (B[id].y <= (a.y + b.y) / 2 ? -1 : 1)
-  // 标签避让：起终点先占位，其余标签离已有标签太近就换到另一侧，两侧都挤就只留圆点
+  const me = { x: a.x + vx * p, y: a.y + vy * p }
+  // 标签放在离你的路更远的一侧；太挤就换边，两边都挤只留圆点
+  const sideOf = (q) => (((q.x - a.x) * vy - (q.y - a.y) * vx) >= 0 ? 1 : -1)
   const placed = []
   const labelSide = {}
-  const near = (q, s) => placed.some((o) => Math.abs(o.x - q[0]) < (ratio < 2 ? 22 : 11) && Math.abs(o.y - (q[1] + s * 7)) < (ratio < 2 ? 9 : 7))
+  const near = (q, s) => placed.some((o) => Math.abs(o.x - q[0]) < (ratio < 1.5 ? 26 : 11) && Math.abs(o.y - (q[1] + s * 7)) < (ratio < 1.5 ? 6 : 7))
   ;[R.from, R.to, ...ids.filter((i) => i !== R.from && i !== R.to)].forEach((id) => {
     if (labelSide[id] !== undefined) return
-    const q = [X(B[id].x), Y(B[id].y)]
-    let s = side0(id)
+    const q = P(id)
+    let s = id === R.from ? -1 : id === R.to ? 1 : (vertical ? sideOf(at0(id)) : (Y(at0(id).y) < Y(foot(at0(id)).y) ? -1 : 1))
     if (near(q, s)) s = -s
     if (near(q, s) && id !== R.from && id !== R.to) { labelSide[id] = 0; return }
     labelSide[id] = s
     placed.push({ x: q[0], y: q[1] + s * 7 })
   })
-  const side = (id) => labelSide[id] || side0(id)
+  const side = (id) => labelSide[id] || 1
   return (
     <div className="relative max-h-[560px] w-full overflow-hidden rounded-[24px] bg-surface ring-1 ring-line md:rounded-[28px]" style={{ aspectRatio: ratio }}
       role="img" aria-label={`示意地图：沿「${R.label}」这条路，${hits.length} 个示例单顺路`}>
@@ -341,33 +340,35 @@ export function RouteZoom({ R, hits, reduce, ratio = 2.2, pills = true }) {
         <rect width="100%" height="100%" fill={`url(#blk${uid})`} />
       </svg>
       <svg viewBox="0 0 100 100" preserveAspectRatio="none" className="absolute inset-0 size-full" aria-hidden="true">
-        <motion.g initial={false} animate={{ opacity: 1 }}>
-          {LANDMARKS.map((m) => {
-            const w = (m.w / (x1 - x0)) * 100, h = (m.h / (y1 - y0)) * 100
-            const cx = X(m.x), cy = Y(m.y)
-            if (m.kind === 'lake') return <ellipse key={m.k} cx={cx} cy={cy} rx={w / 2} ry={h / 2} fill="#d9e6e1" />
-            if (m.kind === 'track') return (
-              <g key={m.k}>
-                <rect x={cx - w / 2} y={cy - h / 2} width={w} height={h} rx={Math.min(w, h) / 2} ry={h / 2} fill="var(--accent-soft)" />
-                <rect x={cx - w * 0.36} y={cy - h * 0.3} width={w * 0.72} height={h * 0.6} rx={w * 0.3} ry={h * 0.3} fill="none" stroke="var(--surface)" strokeWidth="2" vectorEffect="non-scaling-stroke" />
-              </g>
-            )
-            return <rect key={m.k} x={cx - w / 2} y={cy - h / 2} width={w} height={h} rx="1.2" ry={1.2 * (x1 - x0) / (y1 - y0)} fill={m.kind === 'green' ? 'var(--accent-soft)' : '#dfe3df'} stroke="var(--surface)" strokeWidth="3" vectorEffect="non-scaling-stroke" />
-          })}
-        </motion.g>
+        {LANDMARKS.map((m) => {
+          const c = rot(m)
+          const w2 = (m.w / (x1 - x0)) * 100, h2 = (m.h / (y1 - y0)) * 100
+          const cx = X(c.x), cy = Y(c.y)
+          if (m.kind === 'lake') return <ellipse key={m.k} cx={cx} cy={cy} rx={w2 / 2} ry={h2 / 2} fill="#d9e6e1" />
+          if (m.kind === 'track') return <rect key={m.k} x={cx - w2 / 2} y={cy - h2 / 2} width={w2} height={h2} rx={w2 / 2} ry={h2 / 2} fill="var(--accent-soft)" />
+          return <rect key={m.k} x={cx - w2 / 2} y={cy - h2 / 2} width={w2} height={h2} rx="1.2" ry={1.2 * (x1 - x0) / (y1 - y0)} fill={m.kind === 'green' ? 'var(--accent-soft)' : '#dfe3df'} stroke="var(--surface)" strokeWidth="3" vectorEffect="non-scaling-stroke" />
+        })}
+        {/* 你的路：一条直线 */}
+        <motion.line initial={false} animate={{ x1: X(a.x), y1: Y(a.y), x2: X(b.x), y2: Y(b.y) }} transition={sp}
+          stroke="var(--ink)" strokeOpacity="0.85" strokeWidth="5" vectorEffect="non-scaling-stroke" strokeLinecap="round" />
+        {hits.map((t) => {
+          const P1 = at0(t.from), D1 = at0(t.to), F1 = foot(P1), F2 = foot(D1)
+          const lit = p >= along(t.from)
+          return (
+            <g key={t.id} opacity={lit ? 1 : 0.25}>
+              {/* 包裹跟着你走的那一段：压在你的路上 */}
+              <line x1={X(F1.x)} y1={Y(F1.y)} x2={X(F2.x)} y2={Y(F2.y)} stroke="var(--accent)" strokeWidth="8" vectorEffect="non-scaling-stroke" strokeLinecap="round" />
+              {/* 多走的那一点：从你的路岔出去再回来 */}
+              {Math.hypot(P1.x - F1.x, P1.y - F1.y) > 12 && <line x1={X(F1.x)} y1={Y(F1.y)} x2={X(P1.x)} y2={Y(P1.y)} stroke="var(--accent)" strokeWidth="4" strokeDasharray="1 7" vectorEffect="non-scaling-stroke" strokeLinecap="round" />}
+              {t.from !== t.to && Math.hypot(D1.x - F2.x, D1.y - F2.y) > 12 && <line x1={X(F2.x)} y1={Y(F2.y)} x2={X(D1.x)} y2={Y(D1.y)} stroke="var(--accent)" strokeWidth="4" strokeDasharray="1 7" vectorEffect="non-scaling-stroke" strokeLinecap="round" />}
+            </g>
+          )
+        })}
       </svg>
       {LANDMARKS.filter((m) => m.name && !key.has(m.k)).map((m) => (
-        <motion.span key={m.k} initial={false} animate={{ left: `${X(m.x)}%`, top: `${Y(m.y)}%` }} transition={sp}
+        <motion.span key={m.k} initial={false} animate={{ left: `${X(rot(m).x)}%`, top: `${Y(rot(m).y)}%` }} transition={sp}
           className="pointer-events-none absolute -translate-x-1/2 -translate-y-1/2 whitespace-nowrap text-[10px] font-semibold text-muted/70 md:text-xs">{m.name}</motion.span>
       ))}
-      <svg viewBox="0 0 100 100" preserveAspectRatio="none" className="absolute inset-0 size-full" aria-hidden="true">
-        <motion.path initial={false} animate={lpath(P(R.from), P(R.to))} transition={sp} fill="none"
-          stroke="var(--ink)" strokeOpacity="0.85" strokeWidth="5" vectorEffect="non-scaling-stroke" strokeLinecap="round" strokeLinejoin="round" />
-        {hits.filter((t) => t.from !== t.to).map((t) => (
-          <motion.path key={t.id} initial={false} animate={{ ...lpath(P(t.from), P(t.to)), opacity: p >= along(t.from) ? 1 : 0.2 }} transition={sp} fill="none"
-            stroke="var(--accent)" strokeWidth="7" vectorEffect="non-scaling-stroke" strokeLinecap="round" strokeLinejoin="round" />
-        ))}
-      </svg>
       {hits.filter((t) => t.from === t.to).map((t) => (
         <motion.span key={t.id} aria-hidden="true" initial={false} animate={{ left: `${P(t.from)[0]}%`, top: `${P(t.from)[1]}%`, opacity: p >= along(t.from) ? 1 : 0.3 }} transition={sp}
           className="absolute size-9 -translate-x-1/2 -translate-y-1/2 rounded-full bg-accent-soft/60 ring-4 ring-accent md:size-12 md:ring-[5px]" />
@@ -382,16 +383,20 @@ export function RouteZoom({ R, hits, reduce, ratio = 2.2, pills = true }) {
         )
       })}
       <AnimatePresence>
-        {pills && hits.filter((t) => p >= along(t.from)).map((t) => (
-          <motion.span key={R.label + t.id} initial={reduce ? false : { opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1, left: `${P(t.from)[0]}%`, top: `${P(t.from)[1]}%` }} exit={{ opacity: 0 }}
-            transition={{ type: 'spring', stiffness: 420, damping: 24 }}
-            className={`tnum absolute z-20 -translate-x-1/2 whitespace-nowrap rounded-full bg-accent px-2 py-0.5 text-xs font-bold md:px-3 md:py-1 md:text-sm text-on-accent shadow-[0_8px_18px_-8px_rgba(11,122,85,0.7)] ${side(t.from) < 0 ? 'translate-y-[26px] md:translate-y-[34px]' : '-translate-y-[calc(100%+26px)] md:-translate-y-[calc(100%+34px)]'}`}>
-            ¥{t.reward} · {t.dm ? `多走 ${t.dm} 米` : '就在路上'}
-          </motion.span>
-        ))}
+        {pills && hits.filter((t) => p >= along(t.from)).map((t) => {
+          const q = P(t.from)
+          const s = -side(t.from)
+          return (
+            <motion.span key={R.label + t.id} initial={reduce ? false : { opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1, left: `${q[0]}%`, top: `${q[1]}%` }} exit={{ opacity: 0 }}
+              transition={{ type: 'spring', stiffness: 420, damping: 24 }}
+              className={`tnum absolute z-20 -translate-x-1/2 whitespace-nowrap rounded-full bg-accent px-2 py-0.5 text-[11px] font-bold text-on-accent shadow-[0_8px_18px_-8px_rgba(11,122,85,0.7)] md:px-3 md:py-1 md:text-sm ${s < 0 ? '-translate-y-[calc(100%+12px)]' : 'translate-y-[12px]'}`}>
+              ¥{t.reward} · {t.dm ? `+${t.dm} 米` : '就在路上'}
+            </motion.span>
+          )
+        })}
       </AnimatePresence>
       {!reduce && p > 0 && p < 1 && (
-        <span aria-hidden="true" className="absolute z-30 grid size-8 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full bg-surface shadow-[0_6px_16px_-6px_rgba(17,40,30,0.5)] ring-[3px] ring-ink"
+        <span aria-hidden="true" className="absolute z-30 grid size-8 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full bg-surface shadow-[0_6px_16px_-6px_rgba(17,40,30,0.5)] ring-[3px] ring-ink md:size-10"
           style={{ left: `${X(me.x)}%`, top: `${Y(me.y)}%` }}>
           <img src={icon('avatar-runner-v1')} width={32} height={32} alt="" className="size-6 rounded-full md:size-8" />
         </span>

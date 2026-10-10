@@ -42,6 +42,9 @@ function RoleSwitch() {
 // 提示条：只留一张，最近两条合在一起，放在顶栏下面，不叠、不挡顶栏
 function Toasts() {
   const { state, act } = useStore()
+  const { pathname } = useLocation()
+  // 订单页上每一步的结果都直接画在页面里（进度、托管卡、收尾卡），不再弹提示条压内容
+  const quiet = pathname.startsWith('/app/task/')
   const reduce = useReducedMotion()
   const list = state.toasts.slice(-1)
   const last = list[list.length - 1]
@@ -54,7 +57,7 @@ function Toasts() {
   return (
     <div className={`pointer-events-none fixed inset-x-0 z-50 flex justify-center px-4 ${state.tour.active ? 'bottom-[calc(10.5rem+env(safe-area-inset-bottom))] xl:bottom-32' : 'bottom-[calc(4.75rem+env(safe-area-inset-bottom))] xl:bottom-6'} xl:-translate-x-20`} aria-live="polite">
       <AnimatePresence initial={false}>
-        {last && (
+        {last && !quiet && (
           <motion.div key="toast" layout initial={reduce ? false : { y: 12, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ opacity: 0, transition: { duration: 0.15 } }} transition={spring}
             className={`pointer-events-auto w-auto max-w-md space-y-1 rounded-full px-4 py-2.5 text-sm font-medium shadow-lg shadow-ink/10 ring-1 ${bad ? 'bg-danger-soft text-danger ring-danger/30' : 'bg-surface text-ink ring-line'}`}
             onClick={() => list.forEach((t) => act('dismissToast', { tid: t.id }))}>

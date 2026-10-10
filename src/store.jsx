@@ -112,7 +112,7 @@ function reducer(s, a) {
     case 'confirm': {
       let { poster, runner } = s.accounts
       const before = runner.credit
-      if (task.posterId === 'poster') poster = a.auto ? credit({ ...poster, frozen: poster.frozen - task.reward }, -2, `超时未确认「${task.title}」，系统自动放款`) : credit({ ...poster, frozen: poster.frozen - task.reward }, +1, '按时确认收货')
+      if (task.posterId === 'poster') poster = a.auto ? credit({ ...poster, frozen: poster.frozen - task.reward }, -2, `超时未确认「${task.title}」，系统自动放款`) : credit({ ...poster, frozen: poster.frozen - task.reward }, +1, `按时确认收货「${task.title}」`)
       runner = money({ ...runner, done: runner.done + 1 }, task.reward, `「${task.title}」赏金到账`)
       runner = task.late ? credit(runner, -3, `超时送达「${task.title}」`) : credit(runner, +2, `按时完成「${task.title}」`)
       const lm = levelMsg(before, runner.credit)

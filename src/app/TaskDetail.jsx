@@ -531,7 +531,7 @@ export default function TaskDetail() {
       <div className="flex items-center gap-2">
         <button onClick={() => nav(-1)} aria-label="返回" className="grid size-10 place-items-center rounded-full bg-surface ring-1 ring-line"><ArrowLeft size={20} weight="bold" /></button>
         <span className="text-[15px] font-semibold text-muted">订单详情</span>
-        <span className={`ml-auto rounded-full px-3 py-1 text-sm font-semibold ${['refunded', 'cancelled', 'disputed'].includes(t.status) ? 'bg-sunken text-ink' : 'bg-accent-soft text-accent'}`}>{t.status === 'ongoing' ? (t.picked ? '送达中' : '待取件') : STATUS_TEXT[t.status]}</span>
+        <span className={`ml-auto rounded-full px-3 py-1 text-sm font-semibold ${['refunded', 'cancelled', 'disputed'].includes(t.status) ? 'bg-sunken text-ink' : 'bg-accent-soft text-accent'}`}>{STATUS_TEXT[t.status]}</span>
       </div>
 
       {t.status === 'completed' && t.ratingByPoster && t.ratingByRunner && <WrapUp t={t} />}
