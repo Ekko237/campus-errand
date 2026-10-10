@@ -17,7 +17,7 @@ const ease = [0.16, 1, 0.3, 1]
 const img = (name) => `${import.meta.env.BASE_URL}images/${name}.webp`
 const icon = (name) => `${import.meta.env.BASE_URL}icons/${name}.webp`
 // 段落间距：手机 py-20，平板 py-28，桌面 py-32（第二阶段间距规范）
-const SECTION = 'px-4 py-20 md:px-8 md:py-28 lg:py-32'
+const SECTION = 'px-4 py-16 md:px-8 md:py-28 lg:py-32'
 
 function Reveal({ children, className = '', delay = 0, as = 'div', y = 12 }) {
   const reduce = useReducedMotion()
@@ -264,7 +264,7 @@ function Scenes() {
               <motion.div key={x.key} aria-hidden={!on} initial={false} animate={{ opacity: on ? 1 : 0, y: on ? 0 : 10 }} transition={{ duration: reduce ? 0 : 0.4, ease }}
                 className={`col-start-1 row-start-1 flex flex-col justify-start ${on ? '' : 'pointer-events-none'}`}>
                 <p className="text-[15px] font-semibold text-muted">{x.who}</p>
-                <p className="mt-4 text-2xl font-medium leading-[1.55] tracking-[-0.01em] md:text-[28px]">「{x.pain}」</p>
+                <p className="mt-4 -indent-[0.5em] text-2xl font-medium leading-[1.55] tracking-[-0.01em] md:text-[28px]">「{x.pain}」</p>
                 <div className="mt-8 flex gap-4 rounded-2xl bg-accent-soft p-5 md:p-6">
                   <img src={`${import.meta.env.BASE_URL}brand/logo-v2.png`} width={44} height={44} alt="" aria-hidden="true" className="size-11 shrink-0" />
                   <p className="text-lg leading-relaxed">{x.fix}</p>
@@ -316,7 +316,7 @@ const STAGE_PTS = routePath('jiao1', 'mei5').pts.slice(1, -1)
 const STAGE_LEN = STAGE_PTS.slice(1).reduce((n, [x, y], k) => n + Math.hypot(x - STAGE_PTS[k][0], y - STAGE_PTS[k][1]), 0)
 const STAGE_F = (STAGE_PTS[0][0] - PLACES.cainiao.door[0]) / STAGE_LEN // 走到驿站门口时在整条路上的位置
 // 每一步阿远在哪：接单在一教，进行中到驿站，送达时已经到梅园（当面核验送达码）
-const STAGE_P = [0, 0, STAGE_F, 1, 1, 1]
+const STAGE_P = [0, 0.04, STAGE_F, 1, 1, 1]
 const NEED_D = routePath('cainiao', 'mei5').pts.slice(1, -1).map(([x, y], k) => `${k ? 'L' : 'M'}${x} ${y}`).join(' ')
 const stagePt = (f) => {
   let target = f * STAGE_LEN
@@ -500,7 +500,7 @@ function Loop() {
     if (!items) return
     let k = 0
     if (window.innerWidth >= 1024) {
-      const line = window.innerHeight * 0.55
+      const line = window.innerHeight * 0.62
       for (let j = 0; j < items.length; j++) if (items[j].getBoundingClientRect().top < line) k = j
     } else {
       // 手机：吸顶条下面第一个完整露出来的步骤
@@ -856,7 +856,7 @@ function Safety() {
       <Reveal className="relative overflow-hidden rounded-[32px] bg-ink md:rounded-[40px]">
         <div className="relative grid gap-10 px-6 py-14 text-bg md:px-14 md:py-20 lg:grid-cols-12 lg:items-center">
           <div className="lg:col-span-6">
-            <h2 className="font-display text-[44px] font-bold leading-[1.05] tracking-[-0.03em] md:text-7xl">这些单，<br className="md:hidden" />发不出去</h2>
+            <h2 className="font-display text-[44px] font-bold leading-[1.05] tracking-[-0.03em] md:text-7xl">这些单<br className="md:hidden" /><span className="max-md:hidden">，</span>发不出去</h2>
             <p className="mt-5 max-w-[34ch] text-lg leading-relaxed opacity-85 md:text-xl">互助不等于帮人作弊。发布时自动识别关键词并拦截，被举报核实的账号直接封禁。</p>
 
           </div>
@@ -888,7 +888,7 @@ function DotMatrix() {
   const on = useInView(ref, { once: true, amount: 0.5 })
   // 100 条小路线：97 条按时送到（实线），3 条没按时（红色虚线）
   return (
-    <div ref={ref} className="grid w-full max-w-[260px] min-w-0 grid-cols-10 gap-x-1 gap-y-2.5 md:w-max md:max-w-none md:gap-x-2" aria-hidden="true">
+    <div ref={ref} className="mx-auto grid w-full max-w-[260px] md:mx-0 min-w-0 grid-cols-10 gap-x-1 gap-y-2.5 md:w-max md:max-w-none md:gap-x-2" aria-hidden="true">
       {Array.from({ length: 100 }, (_, i) => {
         const bad = i === 23 || i === 58 || i === 86
         return (

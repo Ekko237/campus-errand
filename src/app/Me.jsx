@@ -238,6 +238,12 @@ export default function Me() {
         )}
       </section>
 
+      {!state.tour.active && (
+        <Panel className="flex items-center gap-3 p-4">
+          <p className="flex-1 text-[15px] text-muted">{state.tour.done ? '想再看一遍一单怎么走完？' : '还没走过完整流程？'}约两分钟。</p>
+          <Btn size="sm" onClick={() => { act('tour', { tour: { active: true, taskId: null, done: false } }); act('role', { role: 'poster' }); nav('/app/publish?tour=1') }}>跟着走一遍</Btn>
+        </Panel>
+      )}
       <Panel className="flex items-center gap-3 p-4">
         <ShieldWarning size={24} className="shrink-0 text-muted" />
         <p className="flex-1 text-[15px] text-muted">演示数据存在本机浏览器，可随时恢复初始状态。</p>

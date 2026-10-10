@@ -264,7 +264,7 @@ function DeliverSheet({ t, open, onClose }) {
         ))}
       </div>
       {/* 两个页签内容一样高：切换时页签和按钮都不动，不会点错 */}
-      <div className="min-h-[15.5rem]">
+      <div className="min-h-[13rem]">
       {mode === 'code' ? (
         <div className="mt-5">
           <Field label="发单人的 4 位送达码" error={err} hint={`演示提示：发单人页面能看到送达码，这单是 ${t.deliverCode}`}>
@@ -274,9 +274,9 @@ function DeliverSheet({ t, open, onClose }) {
       ) : (
         <div className="mt-5">
           {photo ? (
-            <ProofPhoto t={t} at={Date.now()} className="h-44" />
+            <ProofPhoto t={t} at={Date.now()} className="h-36" />
           ) : (
-            <button onClick={shoot} className="grid h-44 w-full place-items-center rounded-2xl bg-sunken text-muted ring-1 ring-line">
+            <button onClick={shoot} className="grid h-36 w-full place-items-center rounded-2xl bg-sunken text-muted ring-1 ring-line">
               {shooting ? <span className="animate-pulse text-[15px] font-semibold">正在拍照…</span> : <span className="flex flex-col items-center gap-2 text-[15px] font-semibold"><Camera size={36} />点击拍照（模拟）</span>}
             </button>
           )}
@@ -317,6 +317,8 @@ function RateBlock({ t, by }) {
       <p className="mt-0.5 truncate text-sm text-muted">{stars ? <>对方信用 <b className="tnum">{effect}</b> · </> : null}4 到 5 星 +1，1 到 2 星 -4</p>
       <div className="mt-3"><Stars value={stars} onChange={(n) => { setStars(n); setTags([]); revealSubmit() }} /></div>
       <div className="mt-3 flex min-h-10 flex-wrap gap-2">
+        {/* 没选星时先放灰色标签占位，告诉你下一步会出现什么，不留一块空白 */}
+        {stars === 0 && tagsGood.map((x) => <span key={x} className="grid h-10 place-items-center rounded-full bg-sunken px-4 text-[15px] font-semibold text-muted/60">{x}</span>)}
         {stars > 0 && opts.map((x) => (
           <button key={x} onClick={() => setTags((v) => (v.includes(x) ? v.filter((y) => y !== x) : [...v, x]))} aria-pressed={tags.includes(x)}
             className={`h-10 rounded-full px-4 text-[15px] font-semibold ${tags.includes(x) ? 'bg-ink text-bg' : 'bg-sunken text-ink'}`}>{x}</button>
@@ -578,7 +580,7 @@ function WrapUp({ t }) {
         {rows.map((x) => (
           <div key={x.who.id} className="flex items-center gap-3 rounded-2xl bg-on-accent/10 px-3 py-2.5">
             <img src={`${import.meta.env.BASE_URL}icons/${x.avatar}.webp`} width={32} height={32} alt="" className="size-8 rounded-full bg-on-accent" />
-            <dt className="min-w-0 flex-1 text-[15px]">{x.who.name}<span className="opacity-70"> · {x.who.role}信用</span>{why(x.who) && <span className="tnum block truncate text-xs opacity-75">{why(x.who)}</span>}</dt>
+            <dt className="min-w-0 flex-1 text-[15px]">{x.who.name}<span className="opacity-70"> · {x.who.role}信用</span>{why(x.who) && <span className="tnum block text-xs leading-snug opacity-75">{why(x.who)}</span>}</dt>
             <dd className="tnum text-xl font-bold"><Roll from={x.who.credit - x.d} to={x.who.credit} play={play} /></dd>
             {x.d !== 0 && <span className="tnum rounded-full bg-on-accent px-2 py-0.5 text-sm font-bold text-accent-deep">{x.d > 0 ? '+' : ''}{x.d}</span>}
           </div>

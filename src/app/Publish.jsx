@@ -191,7 +191,7 @@ export default function Publish() {
         return (
           <div className={`flex items-center gap-3 rounded-2xl p-4 ${passing.length ? 'bg-accent-soft' : 'bg-sunken'}`}>
             <span className="flex shrink-0 -space-x-2" aria-hidden="true">
-              {(passing.length ? passing : [0]).slice(0, 3).map((_, k) => <img key={k} src={`${import.meta.env.BASE_URL}icons/avatar-runner-v1.webp`} width={32} height={32} alt="" className={`size-8 rounded-full bg-surface ring-2 ring-accent-soft ${passing.length ? '' : 'opacity-40 grayscale'}`} />)}
+              {(passing.length ? passing : [0]).slice(0, 3).map((_, k) => <img key={k} src={`${import.meta.env.BASE_URL}icons/${k % 2 ? 'avatar-poster-v1' : 'avatar-runner-v1'}.webp`} width={32} height={32} alt="" className={`size-8 rounded-full bg-surface ring-2 ring-accent-soft ${passing.length ? '' : 'opacity-40 grayscale'}`} />)}
             </span>
             <p className="text-[15px] leading-snug">{passing.length
               ? <>此刻有 <b className="text-accent">{passing.length} 条</b>同学常走的路经过这一单，比如「{passing[0].label}」</>

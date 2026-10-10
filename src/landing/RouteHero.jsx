@@ -23,7 +23,7 @@ const STATION = [PLACES.cainiao.door[0], RUN_PTS[1][1]]
 const F = (() => { let acc = 0; for (let i = 1; i < RUN_PTS.length; i++) { const [ax, ay] = RUN_PTS[i - 1], [bx, by] = RUN_PTS[i]; const l = Math.hypot(bx - ax, by - ay); if (ay === STATION[1] && by === STATION[1] && (STATION[0] - ax) * (STATION[0] - bx) <= 0) return (acc + Math.abs(STATION[0] - ax)) / routePath('jiao1', 'mei5').len; acc += l } return 0.2 })()
 const pct = (x, y) => ({ left: `${((x - V.X0) / V.VW) * 100}%`, top: `${((y - V.Y0) / V.VH) * 100}%` })
 const MEI = [260, 438] // 「你」在梅园 5 号楼里
-const ICHI = [1160, 250] // 一教的名牌：在起点左上，阿远头像出发时不压住它
+const ICHI = [1245, 158] // 一教的名牌：贴在一教楼上、起点正上方，阿远头像往左走时碰不到它
 
 function Node({ x, y, children, className = '' }) {
   return <div className={`absolute -translate-x-1/2 -translate-y-1/2 ${className}`} style={pct(x, y)}>{children}</div>

@@ -110,7 +110,8 @@ export default function CampusMap({ R, hits, reduce, pills = true, walker = true
       {marks.map(({ t }) => (
         <span key={`p${t.id}`} aria-hidden="true" className="tnum absolute z-10 -translate-x-1/2 translate-y-[9px] rounded-full bg-surface px-1 text-[10px] font-bold leading-4 text-accent shadow-sm md:hidden" style={pct(markAt(t.from))}>¥{t.reward}</span>
       ))}
-      {ends.map((id) => (
+      {/* 原型订单页（at 有值）上方已经写了人在哪，起点标签不画，免得和小人、1 号点叠在一起 */}
+      {ends.filter((id) => !(at != null && id === R.from)).map((id) => (
         <span key={id} className="absolute z-20" style={pct(id === R.from ? mine[0] : mine[mine.length - 1])}>
           <span className="absolute left-0 top-0 block size-3 -translate-x-1/2 -translate-y-1/2 rounded-full bg-ink ring-[3px] ring-surface md:size-4" />
           <span className={`absolute left-0 -translate-x-1/2 whitespace-nowrap rounded-full bg-ink px-2 py-0.5 text-[12px] font-semibold text-bg shadow-sm md:px-2.5 md:text-[13px] ${outward(id) === 'up' ? 'bottom-3.5' : 'top-3.5'}`}>{SHORT[id]} {id === R.from ? '出发' : '到达'}</span>
@@ -144,7 +145,7 @@ export default function CampusMap({ R, hits, reduce, pills = true, walker = true
         <span className="inline-flex items-center gap-1.5"><i className="h-1 w-5 rounded-full bg-ink/80" />你正要走的路</span>
         <span className="inline-flex items-center gap-1.5"><i className="h-1.5 w-5 rounded-full bg-accent ring-2 ring-surface" />顺手捎的那段（取件到送达）</span>
         <span className="inline-flex items-center gap-1.5 max-md:hidden"><i className="w-5 border-t-[3px] border-dotted border-accent" />拐进楼里取件（多走的路）</span>
-        {hits.some((t) => t.from !== t.to) && <span className="inline-flex items-center gap-1.5"><i className="size-2.5 rounded-full bg-surface ring-2 ring-accent" />送达点</span>}
+        {hits.some((t) => t.from !== t.to && PLACES[t.to] && t.to !== R.from && t.to !== R.to) && <span className="inline-flex items-center gap-1.5"><i className="size-2.5 rounded-full bg-surface ring-2 ring-accent" />送达点</span>}
         <span className="inline-flex items-center gap-1.5"><i className="size-2.5 rounded-full bg-accent" /><span>取件点，<span className="md:hidden">按路上先后编号，</span>共 {hits.length} 单</span></span>
       </p>
     )}

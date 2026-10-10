@@ -81,7 +81,8 @@ function RoleBanner() {
   const { state, act } = useStore()
   const me = state.accounts.runner
   const nav = useNavigate()
-  if (state.role === 'poster' && !state.tour.active && !state.tour.done) {
+  // 没走过导览的，两种身份都在大厅顶上给一个入口（手机上没有侧栏，点了「先自己逛逛」也找得回来）
+  if (!state.tour.active && !state.tour.done) {
     if (!state.onboarded) return null
     const start = () => { act('tour', { tour: { active: true, taskId: null, done: false } }); act('role', { role: 'poster' }); nav('/app/publish?tour=1') }
     return (
@@ -131,7 +132,8 @@ export default function Hall() {
   const [type, setType] = useState('all')
   const [sort, setSort] = useState('route')
   // 手机上地图默认收成一行，任务列表先露出来；桌面默认展开
-  const [showMap, setShowMap] = useState(() => typeof window === 'undefined' || !window.matchMedia('(max-width: 639px)').matches)
+  // 地图默认展开：「顺路」要一进大厅就看得到；可以收起
+  const [showMap, setShowMap] = useState(true)
   const [route, setRoute] = useState(() => {
     try { const r = JSON.parse(localStorage.getItem('shunluxia:myroute')); if (B[r?.from] && B[r?.to]) return r } catch { /* 读不到就用默认路线 */ }
     return { from: 'jiao1', to: 'mei5' }
