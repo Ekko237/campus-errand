@@ -328,6 +328,32 @@ export function RouteZoom({ R, hits, reduce, ratio = 2.2, pills = true, vertical
     placed.push({ x: q[0], y: q[1] + s * 7 })
   })
   const side = (id) => labelSide[id] || 1
+  // 竖版：价签挨个找空位（左边 / 右下 / 右上），和标签、别的价签都不重叠；实在放不下就不放，下面列表里有价格
+  const pillPos = {}
+  if (vertical) {
+    const boxes = []
+    const hit = (b) => b.x0 < 1 || b.x1 > 99 || boxes.some((o) => b.x0 < o.x1 && b.x1 > o.x0 && b.y0 < o.y1 && b.y1 > o.y0)
+    ;[...key].forEach((id) => {
+      const q = P(id)
+      const w2 = SHORT[id].length * 3.6 + 5
+      if (id === R.from) boxes.push({ x0: q[0] - w2 / 2, x1: q[0] + w2 / 2, y0: q[1] - 9, y1: q[1] - 2 })
+      else if (id === R.to) boxes.push({ x0: q[0] - w2 / 2, x1: q[0] + w2 / 2, y0: q[1] + 2, y1: q[1] + 9 })
+      else boxes.push({ x0: q[0] + 2, x1: q[0] + 2 + w2, y0: q[1] - 3, y1: q[1] + 3 })
+      boxes.push({ x0: q[0] - 3, x1: q[0] + 3, y0: q[1] - 3, y1: q[1] + 3 })
+    })
+    ;[...hits].sort((m, n) => P(m.from)[1] - P(n.from)[1]).forEach((t) => {
+      const q = P(t.from)
+      const pw2 = 30
+      const cands = [
+        ['left', { x0: q[0] - 3 - pw2, x1: q[0] - 3, y0: q[1] - 3, y1: q[1] + 3 }],
+        ['below', { x0: q[0] + 2, x1: q[0] + 2 + pw2, y0: q[1] + 3.5, y1: q[1] + 9.5 }],
+        ['above', { x0: q[0] + 2, x1: q[0] + 2 + pw2, y0: q[1] - 9.5, y1: q[1] - 3.5 }],
+      ]
+      const ok = cands.find(([, b]) => !hit(b))
+      if (ok) { pillPos[t.id] = ok[0]; boxes.push(ok[1]) }
+    })
+  }
+
   return (
     <div className="relative max-h-[560px] w-full overflow-hidden rounded-[24px] bg-surface ring-1 ring-line md:rounded-[28px]" style={{ aspectRatio: ratio }}
       role="img" aria-label={`示意地图：沿「${R.label}」这条路，${hits.length} 个示例单顺路`}>
@@ -365,7 +391,7 @@ export function RouteZoom({ R, hits, reduce, ratio = 2.2, pills = true, vertical
           )
         })}
       </svg>
-      {LANDMARKS.filter((m) => m.name && !key.has(m.k)).map((m) => (
+      {!vertical && LANDMARKS.filter((m) => m.name && !key.has(m.k)).map((m) => (
         <motion.span key={m.k} initial={false} animate={{ left: `${X(rot(m).x)}%`, top: `${Y(rot(m).y)}%` }} transition={sp}
           className="pointer-events-none absolute -translate-x-1/2 -translate-y-1/2 whitespace-nowrap text-[10px] font-semibold text-muted/70 md:text-xs">{m.name}</motion.span>
       ))}
@@ -378,18 +404,18 @@ export function RouteZoom({ R, hits, reduce, ratio = 2.2, pills = true, vertical
         return (
           <motion.span key={id} initial={false} animate={{ left: `${P(id)[0]}%`, top: `${P(id)[1]}%` }} transition={sp} className="absolute z-10">
             <span className={`absolute left-0 top-0 block size-3.5 -translate-x-1/2 -translate-y-1/2 rounded-full ring-4 ring-surface ${end ? 'bg-ink' : 'bg-accent'}`} />
-            {labelSide[id] !== 0 && <span className={`absolute left-0 -translate-x-1/2 whitespace-nowrap rounded-full px-2 py-0.5 text-[11px] font-semibold shadow-sm md:px-2.5 md:text-[13px] ${end ? 'bg-ink text-bg' : 'bg-surface text-ink ring-1 ring-line'} ${side(id) < 0 ? 'bottom-3' : 'top-3'}`}>{SHORT[id]}</span>}
+            {(vertical || labelSide[id] !== 0) && <span className={`absolute whitespace-nowrap rounded-full px-2 py-0.5 text-[11px] font-semibold shadow-sm md:px-2.5 md:text-[13px] ${end ? 'bg-ink text-bg' : 'bg-surface text-ink ring-1 ring-line'} ${vertical ? (id === R.from ? 'bottom-3 left-0 -translate-x-1/2' : id === R.to ? 'left-0 top-3 -translate-x-1/2' : 'left-3 top-0 -translate-y-1/2') : `left-0 -translate-x-1/2 ${side(id) < 0 ? 'bottom-3' : 'top-3'}`}`}>{SHORT[id]}</span>}
           </motion.span>
         )
       })}
       <AnimatePresence>
-        {pills && hits.filter((t) => p >= along(t.from)).map((t) => {
+        {pills && hits.filter((t) => p >= along(t.from) && (!vertical || pillPos[t.id])).map((t) => {
           const q = P(t.from)
           const s = -side(t.from)
           return (
             <motion.span key={R.label + t.id} initial={reduce ? false : { opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1, left: `${q[0]}%`, top: `${q[1]}%` }} exit={{ opacity: 0 }}
               transition={{ type: 'spring', stiffness: 420, damping: 24 }}
-              className={`tnum absolute z-20 -translate-x-1/2 whitespace-nowrap rounded-full bg-accent px-2 py-0.5 text-[11px] font-bold text-on-accent shadow-[0_8px_18px_-8px_rgba(11,122,85,0.7)] md:px-3 md:py-1 md:text-sm ${s < 0 ? '-translate-y-[calc(100%+12px)]' : 'translate-y-[12px]'}`}>
+              className={`tnum absolute z-20 whitespace-nowrap rounded-full bg-accent px-2 py-0.5 text-[11px] font-bold text-on-accent shadow-[0_8px_18px_-8px_rgba(11,122,85,0.7)] md:px-3 md:py-1 md:text-sm ${vertical ? { left: '-translate-x-[calc(100%+12px)] -translate-y-1/2', below: 'translate-x-2 translate-y-[12px]', above: 'translate-x-2 -translate-y-[calc(100%+12px)]' }[pillPos[t.id]] : `-translate-x-1/2 ${s < 0 ? '-translate-y-[calc(100%+12px)]' : 'translate-y-[12px]'}`}`}>
               ¥{t.reward} · {t.dm ? `+${t.dm} 米` : '就在路上'}
             </motion.span>
           )

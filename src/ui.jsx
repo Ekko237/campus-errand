@@ -132,6 +132,6 @@ export const left = (t) => {
   if (m <= 0) return '已超时'
   if (m < 60) return `${m} 分钟内`
   const h = Math.floor(m / 60)
-  return h < 24 ? `${h} 小时 ${m % 60} 分内` : `${Math.round(h / 24)} 天内`
+  return h < 24 ? (m % 60 ? `${h} 小时 ${m % 60} 分钟内` : `${h} 小时内`) : `${Math.round(h / 24)} 天内`
 }
 export const clock = (t) => new Date(t).toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' })
