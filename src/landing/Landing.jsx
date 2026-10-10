@@ -515,6 +515,21 @@ function CountUp({ to, prefix = '', suffix = '' }) {
   return <motion.span ref={ref} className="tnum">{v}</motion.span>
 }
 
+// 北极星：100 个点里 97 个按时（绿），3 个没按时（空心），进入视口时一个个点亮
+function DotMatrix() {
+  const reduce = useReducedMotion()
+  const ref = useRef(null)
+  const on = useInView(ref, { once: true, amount: 0.5 })
+  return (
+    <div ref={ref} className="grid w-max grid-cols-10 gap-1.5 md:gap-2" aria-hidden="true">
+      {Array.from({ length: 100 }, (_, i) => (
+        <motion.span key={i} className={`size-3 rounded-full md:size-3.5 ${i < 97 ? 'bg-on-accent' : 'ring-2 ring-inset ring-on-accent/50'}`}
+          initial={reduce ? false : { opacity: 0.15, scale: 0.6 }} animate={on ? { opacity: 1, scale: 1 } : {}} transition={{ duration: 0.25, delay: reduce ? 0 : (i % 10) * 0.03 + Math.floor(i / 10) * 0.05 }} />
+      ))}
+    </div>
+  )
+}
+
 function Metrics() {
   return (
     <section id="metrics" className="scroll-mt-16 border-y border-line bg-surface">
@@ -524,8 +539,14 @@ function Metrics() {
           <Reveal className="flex flex-col justify-between rounded-2xl bg-accent-deep p-6 text-on-accent md:col-span-2 md:p-10 lg:row-span-2">
             <div>
               <p className="text-lg font-semibold opacity-80">北极星指标：履约率</p>
-              <p className="mt-3 text-7xl font-bold tracking-[-0.04em] md:text-[132px] md:leading-none"><span className="mr-3 align-middle text-xl font-semibold tracking-normal opacity-80 md:text-2xl">至少</span><CountUp to={97} suffix="%" /></p>
-              <p className="mt-2 text-[15px] font-medium opacity-60">示例目标值</p>
+              <div className="mt-6 grid gap-8 md:grid-cols-[auto_1fr] md:items-end">
+                <DotMatrix />
+                <div>
+                  <p className="text-7xl font-bold tracking-[-0.04em] md:text-[112px] md:leading-none"><CountUp to={97} suffix="%" /></p>
+                  <p className="mt-2 text-lg font-semibold">每 100 单，至少 97 单按时送到</p>
+                  <p className="mt-1 text-[15px] font-medium opacity-60">示例目标值</p>
+                </div>
+              </div>
             </div>
             <p className="mt-10 max-w-[44ch] text-lg leading-relaxed opacity-90">按时送达且无申诉的单 ÷ 被接的单。信任平台的核心就是「接了就送到」，这个数掉了，其他都没意义。</p>
           </Reveal>
@@ -534,13 +555,11 @@ function Metrics() {
             <p className="mt-1 text-5xl font-bold tracking-tight text-accent"><span className="mr-2 align-middle text-base font-semibold tracking-normal opacity-80">至少</span><CountUp to={85} suffix="%" /></p>
             <p className="mt-4 text-[15px] leading-relaxed text-muted">24 小时内被接的单 ÷ 发布的单。低了说明供给不够或定价偏低。示例目标。</p>
           </Reveal>
-          <Reveal delay={0.1} className="relative overflow-hidden rounded-2xl p-6 text-[#eceeed]">
-            <img src={img('metrics-v1')} width={1100} height={825} alt="傍晚的校园路口，学生步行和骑车经过" loading="lazy" className="absolute inset-0 size-full object-cover" />
-            <div className="absolute inset-0 bg-[#0e1110]/82" />
-            <div className="relative">
+          <Reveal delay={0.1} className="rounded-2xl bg-bg p-6 ring-1 ring-line">
+            <div>
               <p className="text-lg font-semibold">平均接单时长</p>
-              <p className="mt-1 text-5xl font-bold tracking-tight"><span className="mr-2 align-middle text-base font-semibold tracking-normal opacity-80">不超过</span><CountUp to={10} suffix=" 分钟" /></p>
-              <p className="mt-4 text-[15px] leading-relaxed opacity-90">发布到被接的中位时间。跑腿要的是快，超过 10 分钟用户就会自己去。示例目标。</p>
+              <p className="mt-1 text-5xl font-bold tracking-tight text-accent"><span className="mr-2 align-middle text-base font-semibold tracking-normal opacity-80">不超过</span><CountUp to={10} suffix=" 分钟" /></p>
+              <p className="mt-4 text-[15px] leading-relaxed text-muted">发布到被接的中位时间。跑腿要的是快，超过 10 分钟用户就会自己去。示例目标。</p>
             </div>
           </Reveal>
         </div>
@@ -560,14 +579,15 @@ function Roadmap() {
   return (
     <section id="roadmap" className={`mx-auto max-w-7xl scroll-mt-16 ${SECTION}`}>
       <Reveal><H2>接下来做什么</H2></Reveal>
-      <ol className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <ol className="relative mt-12 grid gap-8 lg:grid-cols-4 lg:gap-6">
+        <span aria-hidden="true" className="absolute bottom-2 left-[7px] top-2 w-0.5 border-l-2 border-dashed border-line lg:bottom-auto lg:left-2 lg:right-0 lg:top-[7px] lg:h-0.5 lg:w-auto lg:border-l-0 lg:border-t-2" />
+        <span aria-hidden="true" className="absolute left-[6px] top-2 h-24 w-1 rounded-full bg-accent lg:left-2 lg:top-[6px] lg:h-1 lg:w-[22%]" />
         {ROADMAP.map((r, i) => (
-          <Reveal as="li" key={r.t} delay={i * 0.05} className={`relative rounded-2xl p-6 ${i === 0 ? 'bg-accent text-on-accent' : 'bg-surface ring-1 ring-line'}`}>
-            <p className={`flex items-center gap-2 text-[15px] font-semibold ${i === 0 ? 'opacity-90' : 'text-muted'}`}>
-              <span className={`size-2.5 rounded-full ${i === 0 ? 'bg-on-accent' : 'ring-2 ring-line'}`} />{r.when}
-            </p>
-            <p className="mt-8 text-2xl font-bold tracking-tight md:text-3xl">{r.t}</p>
-            <p className={`mt-3 text-base leading-relaxed ${i === 0 ? 'opacity-90' : 'text-muted'}`}>{r.d}</p>
+          <Reveal as="li" key={r.t} delay={i * 0.06} className="relative pl-10 lg:pl-0 lg:pt-10">
+            <span aria-hidden="true" className={`absolute left-0 top-1 size-4 rounded-full ring-4 ring-bg lg:top-0 ${i === 0 ? 'bg-accent' : 'bg-surface ring-offset-0 [box-shadow:inset_0_0_0_2px_var(--line)]'}`} />
+            <p className={`text-[15px] font-semibold ${i === 0 ? 'text-accent' : 'text-muted'}`}>{r.when}</p>
+            <p className="mt-2 text-2xl font-bold tracking-tight md:text-3xl">{r.t}</p>
+            <p className="mt-3 max-w-[30ch] text-base leading-relaxed text-muted">{r.d}</p>
           </Reveal>
         ))}
       </ol>
