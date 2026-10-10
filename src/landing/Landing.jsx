@@ -76,7 +76,7 @@ const Br = () => <br className="hidden md:inline" />
 const Lead = ({ children, className = '' }) => <p className={`mt-5 max-w-[38ch] text-lg leading-relaxed text-muted md:text-xl ${className}`}>{children}</p>
 
 // 贯穿全站的那条路：宽屏左边一条虚线，每一段是一个站，往下滚它就被走成绿色，小人跟着走
-const STOPS = [['top', '一条路'], ['story', '一单'], ['routes', '整个校园'], ['credit', '信用'], ['safety', '底线'], ['final', '你的路']]
+const STOPS = [['top', '一条路'], ['story', '一单'], ['routes', '整个校园'], ['safety', '底线'], ['final', '你的路']]
 function PageRoute() {
   const reduce = useReducedMotion()
   const { scrollYProgress } = useScroll()
@@ -123,7 +123,7 @@ function ScrollProgress() {
   return <motion.div aria-hidden="true" style={{ scaleX }} className="fixed inset-x-0 top-0 z-50 h-[3px] origin-left bg-accent" />
 }
 
-const NAV_LINKS = [['story', '一单怎么走'], ['routes', '顺路地图'], ['credit', '双向信用'], ['safety', '发不出去'], ['final', '常走的路']]
+const NAV_LINKS = [['story', '一单怎么走'], ['routes', '顺路地图'], ['safety', '发不出去'], ['final', '下课提醒']]
 const SECTIONS = [...NAV_LINKS]
 function Nav({ page }) {
   const { scrollY } = useScroll()
@@ -1262,7 +1262,6 @@ export default function Landing({ page }) {
           <Story />
           <Routes />
           <MoreScenes />
-          <Credit />
           <Safety />
           <Final />
         </main>
