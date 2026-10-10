@@ -1,5 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { motion, AnimatePresence, useReducedMotion, animate, useMotionValue, useTransform } from 'motion/react'
+import { Link } from 'react-router-dom'
+import { ArrowRight } from '@phosphor-icons/react'
 import { routePath, PLACES } from '../campusMap'
 
 // 一单的滚动叙事：同一张校园地图和同一张订单卡一直在场。往下滚，地图的镜头跟着这一步移动，
@@ -97,8 +99,8 @@ function camRect(c, aspect) {
   return { x: clamp(cx - w / 2, 0, MW - w), y: clamp(cy - h / 2, 0, MH - h), w, h }
 }
 const mix = (a, b, t) => a + (b - a) * t
-// 每一段前一半停在这一段的画面，后一半慢慢过渡到下一段：读字的时候画面不动，滚到段尾才往前走
-const settle = (pos) => { const k = Math.floor(pos), t = pos - k; return [k, clamp((t - 0.5) / 0.5)] }
+// 每一段开头停一小会儿（读标题的时候画面不动），之后整段都在跟着滚动往下一段走，看起来是连续的一条路
+const settle = (pos) => { const k = Math.floor(pos), t = pos - k; return [k, clamp((t - 0.3) / 0.7)] }
 const sm = (t) => t * t * (3 - 2 * t)
 function walkAt(pos) {
   const [k, t] = settle(pos)
@@ -312,6 +314,7 @@ function Finale({ on }) {
           <p className="tnum mt-2 text-sm font-bold">{a} → {b}</p>
         </div>
       ))}
+      <Link to="/app" className="col-span-2 mt-2 inline-flex h-12 items-center justify-center gap-2 rounded-full bg-on-accent text-[16px] font-semibold text-accent-deep ring-1 ring-line active:scale-[0.98]">在原型里自己走一遍 <ArrowRight size={16} weight="bold" /></Link>
     </div>
   )
 }
