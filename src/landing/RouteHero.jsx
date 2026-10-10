@@ -79,7 +79,7 @@ export function RouteMap() {
           <img src={icon('avatar-poster-v1')} width={56} height={56} alt="" className="size-full object-cover" />
         </div>
       </Node>
-      <Node x={548} y={384}><Tag>梅园 5 号楼 · 你</Tag></Node>
+      <div className="absolute right-2 -translate-y-1/2" style={{ top: `${(384 / H) * 100}%` }}><Tag>梅园 5 号楼 · 你</Tag></div>
       <motion.div className="absolute z-10 -translate-x-1/2 -translate-y-1/2" style={{ left: rl, top: rt }}>
         <div className={`relative size-9 rounded-full bg-surface p-0.5 ring-[3px] shadow-[0_6px_16px_-6px_rgba(17,40,30,0.5)] transition-colors md:size-11 ${phase >= 1 ? 'ring-accent' : 'ring-ink'}`}>
           <img src={icon('avatar-runner-v1')} width={44} height={44} alt="" className="size-full rounded-full object-cover" />
@@ -107,7 +107,7 @@ export function RouteMap() {
           </motion.div>
         )}
         {phase === 3 && (
-          <motion.div key="c" className="absolute right-[31%] top-[71%] md:right-[24%] md:top-[70%]" initial={reduce ? false : { opacity: 0, y: 10, scale: 0.92 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0 }} transition={{ type: 'spring', stiffness: 420, damping: 26 }}>
+          <motion.div key="c" className="absolute left-[3%] top-[74%] md:left-auto md:right-[24%] md:top-[70%]" initial={reduce ? false : { opacity: 0, y: 10, scale: 0.92 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0 }} transition={{ type: 'spring', stiffness: 420, damping: 26 }}>
             <div className="rounded-2xl bg-accent px-3 py-2 text-on-accent shadow-[0_14px_30px_-14px_rgba(11,122,85,0.7)] md:px-4 md:py-3">
               <p className="text-[13px] font-bold md:text-lg">送到了</p>
               <p className="tnum text-[11px] opacity-90 md:text-sm">¥5 从托管放给学弟</p>
@@ -270,6 +270,7 @@ export function RouteZoom({ R, hits, reduce, ratio = 2.2, pills = true, vertical
   let y0 = Math.min(...pts.map((q) => q.y)), y1 = Math.max(...pts.map((q) => q.y))
   const pw = Math.max(x1 - x0, 260) * 0.14 + 80, ph = Math.max(y1 - y0, 160) * 0.14 + 80
   x0 -= pw; x1 += pw; y0 -= ph; y1 += ph
+  { const mw = 1400; if (x1 - x0 < mw) { const d = (mw - (x1 - x0)) / 2; x0 -= d; x1 += d } }
   const w = x1 - x0, h = y1 - y0
   if (w / h > ratio) { const d = (w / ratio - h) / 2; y0 -= d; y1 += d } else { const d = (h * ratio - w) / 2; x0 -= d; x1 += d }
   const X = (x) => ((x - x0) / (x1 - x0)) * 100

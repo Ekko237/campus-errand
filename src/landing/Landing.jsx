@@ -125,7 +125,7 @@ function Nav() {
   useMotionValueEvent(scrollY, 'change', (v) => setScrolled(v > 420))
   const links = [['scenes', '场景'], ['loop', '一单怎么走'], ['trust', '信任机制'], ['metrics', '核心指标']]
   return (
-    <header className={`sticky top-0 z-30 transition-[background-color,border-color,box-shadow] duration-300 ${scrolled ? 'border-b border-line bg-bg/85 shadow-[0_1px_0_rgba(0,0,0,0.02)] backdrop-blur' : 'border-b border-transparent bg-bg'}`}>
+    <header className={`sticky top-0 z-30 transition-[background-color,border-color,box-shadow] duration-300 ${scrolled ? 'border-b border-line bg-bg shadow-[0_1px_0_rgba(0,0,0,0.02)]' : 'border-b border-transparent bg-bg'}`}>
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-4 px-4 md:px-8">
         <Anchor to="top" className="flex items-center gap-2.5 text-lg font-bold tracking-tight">
           <img src={`${import.meta.env.BASE_URL}brand/logo-v2.png`} width={36} height={36} alt="顺路侠标志：背着书包、夹着包裹奔跑的小人" className="size-9" />顺路侠
@@ -327,13 +327,14 @@ function OrderStage({ i }) {
 
 function LoopStep({ s, now, past }) {
   return (
-    <li className={`flex scroll-mt-40 gap-5 transition-opacity duration-300 lg:min-h-[min(20vh,200px)] lg:items-center ${now ? 'opacity-100' : past ? 'opacity-30 lg:opacity-70' : 'opacity-75'}`}>
+    <li className={`flex scroll-mt-40 gap-5 transition-opacity duration-300 lg:min-h-[min(20vh,200px)] lg:items-center ${now ? 'opacity-100' : past ? 'opacity-100 lg:opacity-70' : 'opacity-100 lg:opacity-75'}`}>
       <span className="grid size-16 shrink-0 place-items-center rounded-2xl bg-bg">
         <img src={icon(s.icon + '-v1')} width={48} height={48} alt={s.alt} loading="lazy" className="size-12 object-contain" />
       </span>
       <div>
         <p className="flex items-center gap-2 text-2xl font-bold md:text-3xl">{s.t}{now && <span className="rounded-full bg-on-accent px-2 py-0.5 text-xs font-bold text-accent-deep">现在</span>}</p>
         <p className="mt-2 max-w-[30ch] text-lg leading-relaxed opacity-75">{s.d}</p>
+        <p className="tnum mt-3 inline-flex flex-wrap items-center gap-x-2 rounded-xl bg-bg px-3 py-1.5 text-sm font-semibold text-ink lg:hidden"><span className="text-accent">{s.status}</span><span className="opacity-60">·</span>{s.escrow}<span className="opacity-60">·</span>{s.credit}</p>
       </div>
     </li>
   )
@@ -394,14 +395,13 @@ function Loop() {
       <div className={`mx-auto max-w-7xl ${SECTION}`}>
         <div className="grid gap-x-12 lg:grid-cols-12 lg:items-end">
           <Reveal className="lg:col-span-7"><H2>一单从发布到信用变化，<br />六步走完</H2></Reveal>
-          <Reveal delay={0.05} className="lg:col-span-5 lg:pb-1"><p className="mt-5 lg:mt-0 max-w-[38ch] text-lg leading-relaxed opacity-80 md:text-xl">往下滚，<span className="lg:hidden">上面</span><span className="hidden lg:inline">左边</span>这张订单会跟着走完一遍：钱什么时候冻结、取件码什么时候出现、信用什么时候变。</p></Reveal>
+          <Reveal delay={0.05} className="lg:col-span-5 lg:pb-1"><p className="mt-5 lg:mt-0 max-w-[38ch] text-lg leading-relaxed opacity-80 md:text-xl">往下滚，<span className="lg:hidden">每一步下面写着这单此刻的状态</span><span className="hidden lg:inline">左边这张订单会跟着走完一遍</span>：钱什么时候冻结、取件码什么时候出现、信用什么时候变。</p></Reveal>
         </div>
         <div className="mt-12 grid gap-12 lg:mt-14 lg:grid-cols-12">
           <div className="hidden lg:col-span-5 lg:block">
             <div className="sticky top-28"><OrderStage i={active} /></div>
           </div>
           <div className="lg:col-span-6 lg:col-start-7">
-            <div className="sticky top-16 z-10 -mx-4 mb-6 bg-accent-deep px-4 pb-3 pt-2 lg:hidden"><MiniOrder i={active} /></div>
             <ol ref={ol} className="space-y-10 lg:space-y-0">
               {LOOP.map((s, k) => <LoopStep key={s.t} s={s} now={k === active} past={k < active} />)}
             </ol>
@@ -811,6 +811,8 @@ function Final() {
 }
 
 export default function Landing() {
+  // 预加载原型分包：首页停一会儿就把原型的代码取下来，点「体验原型」不再先看骨架屏
+  useEffect(() => { const id = setTimeout(() => { import('../app/AppRoot') }, 1500); return () => clearTimeout(id) }, [])
   return (
     <div className="min-h-[100dvh] bg-bg text-ink">
       <ScrollProgress />

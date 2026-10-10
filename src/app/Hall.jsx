@@ -44,7 +44,7 @@ export function TaskCard({ t, me, role, route }) {
         {route ? (() => {
           const m = detourMin(route.from, route.to, t)
           return <span className={`tnum rounded-full px-2 py-0.5 font-semibold ${m <= 5 ? 'bg-accent-soft text-accent' : 'bg-sunken text-ink'}`}>{m <= 5 ? '顺路 · ' : ''}多走 {m} 分钟</span>
-        })() : <span className="tnum">距你 {fmtDist(d)}</span>}
+        })() : (role === 'runner' ? <span className="tnum">距你 {fmtDist(d)}</span> : null)}
         <span className="basis-full">{t.posterId === 'poster' ? '我发布的' : `${t.posterName} · 信用 ${t.posterCredit}`}</span>
       </div>
       {t.posterId !== 'poster' && t.posterCredit < POSTER_WARN && (
@@ -134,6 +134,7 @@ export default function Hall() {
   })
   const setLeg = (k) => (e) => setRoute((r) => {
     const n = { ...r, [k]: e.target.value }
+    if (n.from === n.to) return r
     try { localStorage.setItem('shunluxia:myroute', JSON.stringify(n)) } catch { /* 存不了不影响使用 */ }
     return n
   })
@@ -196,10 +197,10 @@ export default function Hall() {
           className={`inline-flex h-10 shrink-0 items-center gap-1 rounded-full px-3.5 text-[15px] font-semibold transition ${urgentOnly ? 'bg-ink text-bg' : 'bg-surface text-ink ring-1 ring-line'}`}>
           <Lightning size={16} weight="fill" />加急
         </button>
-        <button onClick={() => setGoodPoster((v) => !v)} aria-pressed={goodPoster}
+        {runnerView && <button onClick={() => setGoodPoster((v) => !v)} aria-pressed={goodPoster}
           className={`inline-flex h-10 shrink-0 items-center gap-1 rounded-full px-3.5 text-[15px] font-semibold transition ${goodPoster ? 'bg-ink text-bg' : 'bg-surface text-ink ring-1 ring-line'}`}>
           <ShieldCheck size={16} weight="fill" />信用 ≥ 85
-        </button>
+        </button>}
       </div>
 
       <div className="grid rounded-full bg-sunken p-1" style={{ gridTemplateColumns: `repeat(${sorts.length}, minmax(0, 1fr))` }} role="group" aria-label="排序">
@@ -224,11 +225,11 @@ export default function Hall() {
               <motion.div initial={reduce ? false : { height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.25 }} className="overflow-hidden">
                 <div className="grid grid-cols-[auto_1fr] items-center gap-x-3 gap-y-2 pt-3 text-[15px] sm:grid-cols-[auto_1fr_auto_1fr]">
                   <span className="text-muted">从</span>
-                  <span className="relative"><select aria-label="出发地" value={route.from} onChange={setLeg('from')} className="h-10 w-full appearance-none rounded-full bg-surface pl-4 pr-10 text-[15px] font-semibold ring-1 ring-line">
+                  <span className="relative"><select aria-label="出发地" value={route.from} onChange={setLeg('from')} className="h-10 w-full appearance-none rounded-full bg-surface pl-4 pr-10 text-[15px] font-semibold ring-1 ring-inset ring-line focus:outline-none focus:ring-2 focus:ring-accent">
                     {BUILDINGS.map((b) => <option key={b.id} value={b.id}>{b.name}</option>)}
                   </select><CaretDown size={16} weight="bold" className="pointer-events-none absolute right-3.5 top-1/2 -translate-y-1/2 text-muted" /></span>
                   <span className="text-muted">去</span>
-                  <span className="relative"><select aria-label="目的地" value={route.to} onChange={setLeg('to')} className="h-10 w-full appearance-none rounded-full bg-surface pl-4 pr-10 text-[15px] font-semibold ring-1 ring-line">
+                  <span className="relative"><select aria-label="目的地" value={route.to} onChange={setLeg('to')} className="h-10 w-full appearance-none rounded-full bg-surface pl-4 pr-10 text-[15px] font-semibold ring-1 ring-inset ring-line focus:outline-none focus:ring-2 focus:ring-accent">
                     {BUILDINGS.map((b) => <option key={b.id} value={b.id}>{b.name}</option>)}
                   </select><CaretDown size={16} weight="bold" className="pointer-events-none absolute right-3.5 top-1/2 -translate-y-1/2 text-muted" /></span>
                 </div>

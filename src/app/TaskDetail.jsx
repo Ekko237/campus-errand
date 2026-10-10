@@ -137,7 +137,7 @@ function PickupCard({ t }) {
           <p className="flex items-center gap-1.5 text-sm font-semibold opacity-75">
             <motion.span key={open ? 'o' : 'c'} initial={fresh ? { rotate: -20, scale: 0.6 } : false} animate={{ rotate: 0, scale: 1 }} transition={{ type: 'spring', stiffness: 500, damping: 14 }} className="inline-flex">
               {open && !sealed && !t.picked ? <LockKeyOpen size={16} weight="bold" /> : <LockKey size={16} weight="bold" />}
-            </motion.span>{sealed ? '已送达，取件码已收起' : t.picked ? '已取到，取件码用完了' : `取件码，到${B[t.from]?.name}报这个码`}
+            </motion.span>{sealed ? '已送达，取件码已收起' : t.picked ? '已取到，取件码用完了' : `到${B[t.from]?.name.replace(/（.*?）/, '')}报这个码`}
           </p>
           {fresh && !t.picked && !sealed && (
             <motion.span className="shrink-0 whitespace-nowrap rounded-full bg-accent px-2.5 py-0.5 text-xs font-bold text-on-accent"
@@ -283,11 +283,11 @@ function RateBlock({ t, by }) {
   const tagsBad = by === 'poster' ? ['超时', '物品有损', '态度差'] : ['描述不符', '拖延确认', '态度差']
   const [tags, setTags] = useState([])
   const opts = stars >= 4 ? tagsGood : stars <= 2 ? tagsBad : [...tagsGood.slice(0, 2), tagsBad[0]]
-  const effect = !stars ? '看你打几星' : stars >= 4 ? '+1' : stars <= 2 ? '-4' : '不变'
+  const effect = !stars ? '-' : stars >= 4 ? '+1' : stars <= 2 ? '-4' : '不变'
   return (
     <Panel className="p-4">
       <p className="text-[17px] font-semibold">{by === 'poster' ? '给跑腿人打分' : '给发单人打分'}</p>
-      <p className="mt-0.5 text-sm text-muted">对方信用 {effect}（4 到 5 星 +1，1 到 2 星 -4）</p>
+      <p className="mt-0.5 truncate text-sm text-muted">对方信用 <b className="tnum">{effect}</b> · 4 到 5 星 +1，1 到 2 星 -4</p>
       <div className="mt-3"><Stars value={stars} onChange={(n) => { setStars(n); setTags([]) }} /></div>
       <div className="mt-3 flex flex-wrap gap-2">
         {stars > 0 && opts.map((x) => (
@@ -295,7 +295,7 @@ function RateBlock({ t, by }) {
             className={`h-10 rounded-full px-4 text-[15px] font-semibold ${tags.includes(x) ? 'bg-ink text-bg' : 'bg-sunken text-ink'}`}>{x}</button>
         ))}
       </div>
-      <Btn className="mt-4 w-full" disabled={!stars} onClick={() => { act('rate', { id: t.id, by, stars, tags }); setTimeout(() => window.scrollTo({ top: 0, behavior: 'smooth' }), 60) }}>{stars ? '提交评价' : '先点星星打分'}</Btn>
+      <Btn className="mt-4 w-full" disabled={!stars} onClick={() => { act('rate', { id: t.id, by, stars, tags }); if (by === 'poster' ? t.ratingByRunner : t.ratingByPoster) setTimeout(() => window.scrollTo({ top: 0, behavior: 'smooth' }), 60) }}>{stars ? '提交评价' : '先点星星打分'}</Btn>
     </Panel>
   )
 }
@@ -497,7 +497,7 @@ function WrapUp({ t }) {
     <motion.section initial={play ? { opacity: 0, y: 16, scale: 0.98 } : false} animate={{ opacity: 1, y: 0, scale: 1 }} transition={{ type: 'spring', stiffness: 260, damping: 26 }}
       className="overflow-hidden rounded-[24px] bg-accent-deep p-5 text-on-accent" aria-label="这一单的收尾">
       <p className="text-sm font-semibold opacity-75">这一单走完了</p>
-      <p className="mt-1 text-2xl font-bold">顺路一趟，¥{t.reward} 到账，{rows.every((x) => x.d >= 0) ? '信用都涨了' : '信用有涨有跌'}</p>
+      <p className="mt-1 text-balance text-2xl font-bold">顺路一趟，¥{t.reward} 到账，{rows.every((x) => x.d >= 0) ? '信用都涨了' : '信用有涨有跌'}</p>
       <div className="relative mt-5 h-12" aria-hidden="true">
         <span className="absolute left-0 right-0 top-1/2 h-[3px] -translate-y-1/2 rounded-full bg-on-accent/25" />
         <motion.span className="absolute left-0 top-1/2 h-[3px] -translate-y-1/2 rounded-full bg-on-accent" initial={play ? { width: '0%' } : false} animate={{ width: '100%' }} transition={{ duration: 1, delay: 0.3, ease }} />
@@ -582,12 +582,12 @@ export default function TaskDetail() {
 
       <Panel className="flex items-center gap-3 p-4">
         <div className="flex-1">
-          <p className="text-sm text-muted">发单人</p>
-          <p className="flex flex-wrap items-center gap-2 text-[17px] font-semibold">{own ? state.accounts.poster.name : t.posterName}<VerifiedBadge small /></p>
+          <p className="text-sm text-muted">{own && state.role === 'poster' && t.runnerId ? '跑腿人' : '发单人'}</p>
+          <p className="flex flex-wrap items-center gap-2 text-[17px] font-semibold">{own && state.role === 'poster' && t.runnerId ? state.accounts.runner.name : own ? state.accounts.poster.name : t.posterName}<VerifiedBadge small /></p>
         </div>
         <div className="text-right">
           <p className="text-sm text-muted">信用</p>
-          <p className="tnum text-xl font-bold">{own ? state.accounts.poster.credit : t.posterCredit}</p>
+          <p className="tnum text-xl font-bold">{own && state.role === 'poster' && t.runnerId ? state.accounts.runner.credit : own ? state.accounts.poster.credit : t.posterCredit}</p>
         </div>
       </Panel>
 

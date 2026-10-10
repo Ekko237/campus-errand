@@ -112,7 +112,7 @@ export function Field({ label, error, hint, children }) {
       <span className="text-[15px] font-semibold">{label}</span>
       {children}
       {hint && <span className="text-sm text-muted">{hint}</span>}
-      {error && <span role="alert" className="text-sm font-medium text-danger">{error}</span>}
+      <span role={error ? 'alert' : undefined} className={`min-h-5 text-sm font-medium text-danger ${error ? '' : 'invisible'}`}>{error || '占位'}</span>
     </div>
   )
 }
@@ -144,6 +144,6 @@ export const left = (t) => {
   if (m <= 0) return '已超时'
   if (m < 60) return `${m} 分钟内`
   const h = Math.floor(m / 60)
-  return h < 24 ? (m % 60 ? `${h} 小时 ${m % 60} 分钟内` : `${h} 小时内`) : `${Math.round(h / 24)} 天内`
+  return h < 24 ? (h < 3 && m % 60 ? `${h} 小时 ${m % 60} 分钟内` : `约 ${Math.round(m / 60)} 小时内`) : `${Math.round(h / 24)} 天内`
 }
 export const clock = (t) => new Date(t).toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' })

@@ -49,7 +49,6 @@ export default function TourBar() {
                 {step.final ? <span className="inline-flex items-center gap-1"><Confetti size={14} weight="fill" />完整流程</span> : `完整流程 ${Math.min(step.n, TOTAL)}/${TOTAL}`}
               </p>
               <p className="text-[15px] font-semibold leading-snug">{step.text}</p>
-              {here && <p className="text-[13px] opacity-70">按页面里的绿色按钮继续</p>}
             </div>
             {!here && <button onClick={go} className="inline-flex h-11 shrink-0 items-center gap-1 whitespace-nowrap rounded-full bg-accent px-4 text-[15px] font-semibold text-on-accent active:scale-[0.98]">
               {step.cta}<ArrowRight size={16} weight="bold" />

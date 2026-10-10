@@ -26,7 +26,7 @@ function RemindToggle() {
   const [on, setOn] = useState(() => { try { return localStorage.getItem('shunluxia:remind') === '1' } catch { return false } })
   const flip = () => setOn((v) => { const n = !v; try { localStorage.setItem('shunluxia:remind', n ? '1' : '0') } catch { /* 存不了不影响 */ } return n })
   return (
-    <button onClick={flip} role="switch" aria-checked={on} className="flex w-full items-center gap-3 border-t border-line px-4 py-3 text-left">
+    <button onClick={flip} role="switch" aria-checked={on} aria-label="下课前 5 分钟提醒我路上的单" className="flex w-full items-center gap-3 border-t border-line px-4 py-3 text-left">
       <span className="min-w-0 flex-1">
         <span className="block text-[15px] font-semibold">下课前 5 分钟提醒我路上的单</span>
         <span className="block text-sm text-muted">{on ? '已开启：每天 17:45 推送这条路上的单（示例，原型不会真的发通知）' : '按课表在你要走这条路之前提醒，不用自己翻大厅'}</span>
