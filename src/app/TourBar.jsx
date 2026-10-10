@@ -14,7 +14,7 @@ export function tourStep(state) {
   const t = state.tasks.find((x) => x.id === tour.taskId)
   if (!t) return { n: 1, who: 'poster', text: '发布一个任务', to: '/app/publish?tour=1', cta: '去发布' }
   if (t.status === 'open') {
-    if (!accounts.runner.verified) return { n: 2, who: 'runner', text: '切到跑腿人（你现在是阿远）：先做校园认证', to: `/app/verify?back=/app/task/${t.id}`, cta: '去认证' }
+    if (!accounts.runner.verified) return { n: 2, who: 'runner', text: '切到跑腿人：你现在是阿远，先做校园认证', to: `/app/verify?back=/app/task/${t.id}`, cta: '去认证' }
     return { n: 3, who: 'runner', text: '切到跑腿人：接下这一单', to: `/app/task/${t.id}`, cta: '去接单' }
   }
   if (t.status === 'ongoing' && !t.picked) return { n: 4, who: 'runner', text: '跑腿人：取到后点「我已取到」', to: `/app/task/${t.id}`, cta: '去取件' }
@@ -80,10 +80,9 @@ export default function TourBar() {
           className="border-t border-line bg-ink text-bg">
           <div data-tour-bar className="mx-auto flex min-h-12 max-w-xl items-center gap-3 px-4 py-1.5 xl:max-w-[66rem]">
             <span className="inline-flex shrink-0 items-center gap-1 text-xs font-bold opacity-60">{step.final ? <><Confetti size={12} weight="fill" />走完了</> : '下一步：'}</span>
-            <AnimatePresence mode="wait" initial={false}>
-              <motion.p key={text} initial={reduce ? false : { opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -6 }} transition={{ duration: 0.18 }}
-                className="min-w-0 flex-1 text-[14px] font-semibold leading-snug md:text-[15px]">{text}</motion.p>
-            </AnimatePresence>
+            {/* 文字和订单状态同一帧换，不等旧文字淡出 */}
+            <motion.p key={text} initial={reduce ? false : { opacity: 0.4 }} animate={{ opacity: 1 }} transition={{ duration: 0.15 }}
+              className="min-w-0 flex-1 text-[14px] font-semibold leading-snug md:text-[15px]">{text}</motion.p>
             {!here && !arrived && !loc.pathname.startsWith('/app/verify') && <button onClick={go} className="inline-flex h-9 shrink-0 items-center gap-1 whitespace-nowrap rounded-full bg-accent px-3.5 text-[14px] font-semibold text-on-accent active:scale-[0.98]">
               {step.cta}<ArrowRight size={14} weight="bold" />
             </button>}

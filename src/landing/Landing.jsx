@@ -123,7 +123,7 @@ function ScrollProgress() {
 }
 
 const NAV_LINKS = [['scenes', '场景'], ['routes', '顺路地图'], ['loop', '一单怎么走'], ['trust', '信任机制'], ['credit', '双向信用']]
-const SECTIONS = [NAV_LINKS[0], ['routes', '整个校园的顺路'], ...NAV_LINKS.slice(2), ['safety', '这些单发不出去'], ['final', '你下课常走哪条路']]
+const SECTIONS = [...NAV_LINKS, ['safety', '这些单发不出去'], ['final', '你下课常走哪条路']]
 function Nav({ page }) {
   const { scrollY } = useScroll()
   const [scrolled, setScrolled] = useState(false)
@@ -162,7 +162,7 @@ function Nav({ page }) {
       <AnimatePresence>
         {open && <motion.button key="scrim" aria-label="关闭目录" onClick={() => setOpen(false)} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-x-0 bottom-0 top-16 bg-ink/40 lg:hidden" />}
         {open && (
-          <motion.nav key="menu" id="mnav" aria-label="页面目录" initial={{ opacity: 0, y: -6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -6 }} transition={{ duration: 0.18 }}
+          <motion.nav key="menu" id="mnav" aria-label="页面目录" initial={{ y: -8 }} animate={{ y: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.18 }}
             className="absolute inset-x-0 top-16 border-b border-line bg-bg px-4 pb-4 shadow-[0_20px_30px_-24px_rgba(17,40,30,0.35)] lg:hidden">
             <ol className="grid gap-1">
               {SECTIONS.map(([to, l], i) => (
@@ -363,7 +363,7 @@ function StageMap({ i, tall = false }) {
         initial={false} animate={{ ...spct(me), opacity: i === 0 ? 0 : 1 }} transition={sp}>
         <img src={icon('avatar-runner-v1')} width={28} height={28} alt="" className="size-6 rounded-full md:size-7" />
         {i === 3 && <img src={icon('type-express-v1')} width={20} height={20} alt="" className="absolute -right-2 -top-2 size-5" />}
-        <span className="absolute left-1/2 top-full mt-0.5 -translate-x-1/2 whitespace-nowrap rounded-full bg-ink px-1.5 text-[10px] font-semibold leading-4 text-bg">阿远</span>
+        {i !== 2 && <span className="absolute left-1/2 top-full mt-0.5 -translate-x-1/2 whitespace-nowrap rounded-full bg-ink px-1.5 text-[10px] font-semibold leading-4 text-bg">阿远</span>}
       </motion.span>
       {i >= 4 && (
         <motion.span key={`pay${i}`} className="tnum absolute z-20 -translate-x-1/2 rounded-full bg-accent px-2 py-0.5 text-xs font-bold text-on-accent" style={spct([mei[0] + 10, mei[1] - 262])}
@@ -480,7 +480,7 @@ function MobileLoop() {
       <div className="mt-4 grid">
         {LOOP.map((x, k) => (
           <motion.div key={x.t} aria-hidden={k !== i} initial={false} animate={{ opacity: k === i ? 1 : 0, y: k === i ? 0 : 6 }}
-            transition={reduce ? { duration: 0 } : k === i ? { duration: 0.18, delay: 0.12 } : { duration: 0.12 }}
+            transition={{ duration: reduce ? 0 : 0.18 }}
             className={`col-start-1 row-start-1 flex gap-3 ${k === i ? '' : 'pointer-events-none'}`}>
             <img src={icon(x.icon + '-v1')} width={44} height={44} alt={x.alt} className="size-11 shrink-0 object-contain" />
             <div className="min-w-0">
@@ -558,7 +558,7 @@ function TrustStop({ x, lit, reduce }) {
         <img src={icon(x.icon)} width={44} height={44} alt={x.alt} loading="lazy" className={`size-11 object-contain transition duration-300 ${lit ? '' : 'opacity-60'}`} />
       </motion.span>
       <div className="min-w-0 pt-1">
-        <p className="relative inline-block text-[15px] font-semibold text-muted">
+        <p className="relative inline-block text-[15px] font-semibold text-ink/70">
           {x.fear}
           <motion.span aria-hidden="true" className="absolute inset-x-0 top-1/2 h-0.5 origin-left rounded-full bg-accent"
             initial={false} animate={{ scaleX: lit ? 1 : 0 }} transition={{ duration: reduce ? 0 : 0.35, ease }} />
@@ -684,7 +684,10 @@ function Credit() {
   const switchWho = (w) => { setWho(w); const s0 = w === 'runner' ? 70 : 88; scoreRef.current = s0; setScore(s0); setLast(null); setHist([]) }
   const rules = (who === 'runner' ? [...RULES_PLUS, ...RULES_MINUS] : [...POSTER_RULES_PLUS, ...POSTER_RULES_MINUS]).sort((a, b) => b.delta - a.delta)
   const tiers = who === 'runner' ? LEVELS : POSTER_TIERS
-  const tier = [...tiers].reverse().find((l) => score >= l.min)
+  // 等级跟着滚动的数字走：数字数到门槛才换徽章
+  const [shownScore, setShownScore] = useState(start)
+  useMotionValueEvent(mv, 'change', (v) => setShownScore(Math.round(v)))
+  const tier = [...tiers].reverse().find((l) => shownScore >= l.min)
   const [hist, setHist] = useState([])
   // 手机上点规则时大分数卡已经滚出屏幕：这时底部浮出一个小分数条
   const cardRef = useRef(null)
@@ -840,7 +843,7 @@ function BanDemo() {
       </div>
       {/* 提示区固定高度：拦截卡只淡入淡出，下面的按钮不跟着跳 */}
       <div className="relative mt-3 h-[96px] md:h-[80px]">
-        <AnimatePresence initial={false} mode="wait">
+        <AnimatePresence initial={false}>
           {hit ? (
             <motion.div key="ban" initial={reduce ? false : { opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.2 }}
               className="absolute inset-0 flex items-center gap-3 rounded-2xl bg-danger-soft p-3 ring-1 ring-danger/30">

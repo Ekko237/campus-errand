@@ -264,7 +264,7 @@ function DeliverSheet({ t, open, onClose }) {
         ))}
       </div>
       {/* 两个页签内容一样高：切换时页签和按钮都不动，不会点错 */}
-      <div className="min-h-[11.5rem]">
+      <div className="min-h-[10.5rem]">
       {mode === 'code' ? (
         <div className="mt-5">
           <Field label="发单人的 4 位送达码" error={err} hint={`演示提示：发单人页面能看到送达码，这单是 ${t.deliverCode}`}>
@@ -353,7 +353,7 @@ function Actions({ t }) {
       return own ? (
         <div className="grid gap-2">
           <p className="text-center text-[15px] text-muted">等待同学接单。切到跑腿人可以自己接下这单试试。</p>
-          <div className="grid grid-cols-2 gap-2">
+          <div className="grid grid-cols-2 gap-3">
             <Btn variant="ghost" onClick={() => act('cancel', { id: t.id })}>取消并退款</Btn>
             <Btn onClick={() => act('role', { role: 'runner' })}>切到跑腿人</Btn>
           </div>
@@ -511,7 +511,8 @@ function OnTheWay({ t }) {
   // 小人在哪：刚接单在出发点，取到件在取件点，送到了在终点
   const pts = routePath(R.from, R.to).pts
   const pick = mine ? along(pts.length > 3 ? pts.slice(1, -1) : pts, PLACES[t.from].door) : 0
-  const at = t.status === 'delivered' ? 1 : t.picked ? Math.max(pick, 0.02) : 0.02
+  // 送达中：小人走到取件点和终点之间，看得出正往那边送
+  const at = t.status === 'delivered' ? 1 : t.picked ? (Math.max(pick, 0.02) + 1) / 2 : 0.02
   const name = (id) => B[id]?.name.replace(/（.*?）/, '')
   const cap = t.status === 'delivered' ? `已送到${name(t.to)}，等发单人确认` : t.picked ? `已取到，正往${name(t.to)}走` : `在去${name(t.from)}取件的路上`
   return (
