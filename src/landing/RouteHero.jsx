@@ -264,6 +264,18 @@ function SubwayLine({ R, hits, reduce }) {
 }
 
 // 桌面：镜头缩放到「你的路 + 顺路的单」；底图是和首屏一样的街区，路线沿街走直角；一个小人沿你的路走，经过取件点时那一单弹出来
+// 校园底图：每栋楼按真实位置画成不同形状，宿舍是长条、图书馆最大、体育馆是跑道，再加一片湖和草坪
+const LANDMARKS = [
+  ...BUILDINGS.map((b) => ({
+    k: b.id, x: b.x, y: b.y, name: SHORT[b.id],
+    kind: b.id === 'gym' ? 'track' : 'block',
+    w: b.id === 'gym' ? 300 : b.id === 'lib' ? 230 : b.group === '宿舍区' ? 190 : b.group === '教学区' ? 200 : b.group === '取件点' ? 120 : 150,
+    h: b.id === 'gym' ? 170 : b.id === 'lib' ? 150 : b.group === '宿舍区' ? 80 : b.group === '教学区' ? 120 : b.group === '取件点' ? 80 : 100,
+  })),
+  { k: 'lake', x: -470, y: -60, w: 280, h: 170, kind: 'lake', name: '镜湖' },
+  { k: 'lawn', x: 380, y: 380, w: 260, h: 120, kind: 'green', name: '中心草坪' },
+  { k: 'lawn2', x: -120, y: 380, w: 200, h: 110, kind: 'green' },
+]
 const lpath = (p, q) => ({ d: `M${p[0]} ${p[1]} H${q[0]} V${q[1]}` })
 export function RouteZoom({ R, hits, reduce, ratio = 2.2, pills = true }) {
   const uid = useId().replace(/:/g, '')
@@ -320,20 +332,34 @@ export function RouteZoom({ R, hits, reduce, ratio = 2.2, pills = true }) {
   return (
     <div className="relative max-h-[560px] w-full overflow-hidden rounded-[24px] bg-surface ring-1 ring-line md:rounded-[28px]" style={{ aspectRatio: ratio }}
       role="img" aria-label={`示意地图：沿「${R.label}」这条路，${hits.length} 个示例单顺路`}>
-      <svg className="absolute inset-0 size-full" aria-hidden="true">
+      <svg className="absolute inset-0 size-full opacity-45" aria-hidden="true">
         <defs>
-          <pattern id={`blk${uid}`} width="132" height="104" patternUnits="userSpaceOnUse">
-            <rect x="11" y="11" width="110" height="82" rx="14" fill="var(--sunken)" />
-            {[0, 1, 2, 3].map((c) => [0, 1].map((r) => <rect key={`${c}${r}`} x={28 + c * 22} y={30 + r * 26} width="9" height="11" rx="2" fill="var(--bg)" opacity="0.9" />))}
-          </pattern>
-          <pattern id={`grn${uid}`} width="396" height="312" patternUnits="userSpaceOnUse">
-            <rect x="143" y="115" width="110" height="82" rx="14" fill="var(--accent-soft)" />
-            <circle cx="175" cy="150" r="9" fill="var(--accent)" fillOpacity="0.28" /><circle cx="215" cy="168" r="9" fill="var(--accent)" fillOpacity="0.28" />
+          <pattern id={`blk${uid}`} width="120" height="96" patternUnits="userSpaceOnUse">
+            <rect x="10" y="10" width="100" height="76" rx="12" fill="var(--sunken)" />
           </pattern>
         </defs>
         <rect width="100%" height="100%" fill={`url(#blk${uid})`} />
-        <rect width="100%" height="100%" fill={`url(#grn${uid})`} />
       </svg>
+      <svg viewBox="0 0 100 100" preserveAspectRatio="none" className="absolute inset-0 size-full" aria-hidden="true">
+        <motion.g initial={false} animate={{ opacity: 1 }}>
+          {LANDMARKS.map((m) => {
+            const w = (m.w / (x1 - x0)) * 100, h = (m.h / (y1 - y0)) * 100
+            const cx = X(m.x), cy = Y(m.y)
+            if (m.kind === 'lake') return <ellipse key={m.k} cx={cx} cy={cy} rx={w / 2} ry={h / 2} fill="#d9e6e1" />
+            if (m.kind === 'track') return (
+              <g key={m.k}>
+                <rect x={cx - w / 2} y={cy - h / 2} width={w} height={h} rx={Math.min(w, h) / 2} ry={h / 2} fill="var(--accent-soft)" />
+                <rect x={cx - w * 0.36} y={cy - h * 0.3} width={w * 0.72} height={h * 0.6} rx={w * 0.3} ry={h * 0.3} fill="none" stroke="var(--surface)" strokeWidth="2" vectorEffect="non-scaling-stroke" />
+              </g>
+            )
+            return <rect key={m.k} x={cx - w / 2} y={cy - h / 2} width={w} height={h} rx="1.2" ry={1.2 * (x1 - x0) / (y1 - y0)} fill={m.kind === 'green' ? 'var(--accent-soft)' : '#dfe3df'} stroke="var(--surface)" strokeWidth="3" vectorEffect="non-scaling-stroke" />
+          })}
+        </motion.g>
+      </svg>
+      {LANDMARKS.filter((m) => m.name && !key.has(m.k)).map((m) => (
+        <motion.span key={m.k} initial={false} animate={{ left: `${X(m.x)}%`, top: `${Y(m.y)}%` }} transition={sp}
+          className="pointer-events-none absolute -translate-x-1/2 -translate-y-1/2 whitespace-nowrap text-[10px] font-semibold text-muted/70 md:text-xs">{m.name}</motion.span>
+      ))}
       <svg viewBox="0 0 100 100" preserveAspectRatio="none" className="absolute inset-0 size-full" aria-hidden="true">
         <motion.path initial={false} animate={lpath(P(R.from), P(R.to))} transition={sp} fill="none"
           stroke="var(--ink)" strokeOpacity="0.85" strokeWidth="5" vectorEffect="non-scaling-stroke" strokeLinecap="round" strokeLinejoin="round" />
