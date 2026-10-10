@@ -104,7 +104,8 @@ function CodeReveal({ code, play }) {
 // 接单后最要紧的信息：取件码放大、置顶，带复制按钮；刚接单的那一下锁打开、码一位位揭晓
 function PickupCard({ t }) {
   const reduce = useReducedMotion()
-  const [fresh] = useState(() => !reduce && t.acceptedAt && Date.now() - t.acceptedAt < 4000)
+  const [fresh] = useState(() => !reduce && t.status === 'ongoing' && t.acceptedAt && Date.now() - t.acceptedAt < 4000)
+  const sealed = t.status !== 'ongoing'
   const [open, setOpen] = useState(!fresh)
   useEffect(() => { if (!fresh) return; const id = setTimeout(() => setOpen(true), 350); return () => clearTimeout(id) }, [fresh])
   const [copied, setCopied] = useState(false)
@@ -121,8 +122,8 @@ function PickupCard({ t }) {
           <div className="flex items-start justify-between gap-2">
           <p className="flex items-center gap-1.5 text-sm font-semibold opacity-75">
             <motion.span key={open ? 'o' : 'c'} initial={fresh ? { rotate: -20, scale: 0.6 } : false} animate={{ rotate: 0, scale: 1 }} transition={{ type: 'spring', stiffness: 500, damping: 14 }} className="inline-flex">
-              {open ? <LockKeyOpen size={16} weight="bold" /> : <LockKey size={16} weight="bold" />}
-            </motion.span>取件码，到{B[t.from]?.name}报这个码
+              {open && !sealed ? <LockKeyOpen size={16} weight="bold" /> : <LockKey size={16} weight="bold" />}
+            </motion.span>{sealed ? '已送达，取件码已收起' : `取件码，到${B[t.from]?.name}报这个码`}
           </p>
           {fresh && (
             <motion.span className="shrink-0 whitespace-nowrap rounded-full bg-accent px-2.5 py-0.5 text-xs font-bold text-on-accent"
@@ -130,8 +131,8 @@ function PickupCard({ t }) {
           )}
           </div>
           <div className="mt-1 flex items-center justify-between gap-3">
-            <p className="tnum text-4xl font-bold tracking-wide"><CodeReveal code={t.private.code} play={fresh} /></p>
-            <button onClick={copy} className="h-10 shrink-0 whitespace-nowrap rounded-full bg-bg/15 px-4 text-sm font-semibold transition active:scale-95">{copied ? '已复制' : '复制'}</button>
+            <p className="tnum text-4xl font-bold tracking-wide">{sealed ? <span className="opacity-40">{t.private.code.replace(/\d/g, '•')}</span> : <CodeReveal code={t.private.code} play={fresh} />}</p>
+            {!sealed && <button onClick={copy} className="h-10 shrink-0 whitespace-nowrap rounded-full bg-bg/15 px-4 text-sm font-semibold transition active:scale-95">{copied ? '已复制' : '复制'}</button>}
           </div>
         </>
       ) : (

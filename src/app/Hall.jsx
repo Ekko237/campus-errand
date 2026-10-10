@@ -65,6 +65,15 @@ function RoleBanner() {
   const { state, act } = useStore()
   const me = state.accounts.runner
   const nav = useNavigate()
+  if (state.role === 'poster' && !state.tour.active && !state.tour.done) {
+    const start = () => { act('tour', { tour: { active: true, taskId: null, done: false } }); nav('/app/publish?tour=1') }
+    return (
+      <Panel className="flex items-center gap-3 p-4">
+        <p className="flex-1 text-[15px] leading-snug text-muted"><b className="text-ink">第一次来？</b>一个人切换两种身份，约两分钟走完一单。</p>
+        <Btn size="sm" onClick={start}>一键体验</Btn>
+      </Panel>
+    )
+  }
   if (state.role === 'poster') {
     return (
       <Panel className="flex items-center gap-3 p-4">

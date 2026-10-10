@@ -82,7 +82,15 @@ export default function Publish() {
 
   const submit = () => {
     setTouched(true)
-    if (!blocking) setConfirm(true)
+    if (!blocking) return setConfirm(true)
+    // 报错要在视线里：滚到第一条错误、轻轻抖一下，并把光标放进对应输入框
+    requestAnimationFrame(() => {
+      const el = document.querySelector('main [role=alert]')
+      if (!el) return
+      el.scrollIntoView({ block: 'center', behavior: 'smooth' })
+      el.animate?.([{ transform: 'translateX(0)' }, { transform: 'translateX(-6px)' }, { transform: 'translateX(6px)' }, { transform: 'translateX(-3px)' }, { transform: 'translateX(0)' }], { duration: 320, delay: 250 })
+      el.parentElement?.querySelector('input, textarea, select')?.focus({ preventScroll: true })
+    })
   }
   const doPublish = () => {
     const id = nextId()

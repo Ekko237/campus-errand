@@ -79,7 +79,7 @@ export function RouteMap() {
           transition={{ duration: 1.1, ease: 'easeOut' }} style={{ transformOrigin: '300px 220px' }} />
       </svg>
 
-      <Node x={90} y={56}><Tag>一教</Tag></Node>
+      <Node x={130} y={118}><Tag>一教</Tag></Node>
       <Node x={300} y={220}>
         <motion.div animate={{ scale: lit ? 1.08 : 1 }} transition={{ type: 'spring', stiffness: 400, damping: 18 }}
           className={`grid size-11 place-items-center rounded-full ring-[3px] transition-colors md:size-14 ${lit ? 'bg-accent-soft ring-accent' : 'bg-surface ring-line'}`}>
@@ -93,7 +93,7 @@ export function RouteMap() {
         </div>
       </Node>
       <Node x={500} y={410}><Tag>梅园 5 号楼 · 你</Tag></Node>
-      <motion.div className="absolute z-10 -translate-x-1/2 -translate-y-1/2" style={{ left: rl, top: rt }}>
+      <motion.div className="absolute z-10 -translate-x-1/2 -translate-y-[calc(50%+30px)] md:-translate-y-[calc(50%+46px)]" style={{ left: rl, top: rt }}>
         <div className={`relative size-9 rounded-full bg-surface p-0.5 ring-[3px] shadow-[0_6px_16px_-6px_rgba(17,40,30,0.5)] transition-colors md:size-11 ${phase >= 1 ? 'ring-accent' : 'ring-ink'}`}>
           <img src={icon('avatar-runner-v1')} width={44} height={44} alt="" className="size-full rounded-full object-cover" />
           <AnimatePresence>
@@ -108,7 +108,7 @@ export function RouteMap() {
       <AnimatePresence>
         {phase === 0 && !reduce && (
           <motion.div key="a" className="absolute left-[21%] top-[4%] md:top-[5%]" initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.3 }}>
-            <p className="rounded-xl bg-surface px-2.5 py-1.5 text-[11px] leading-snug shadow-[0_8px_24px_-12px_rgba(17,40,30,0.4)] ring-1 ring-line md:px-3 md:py-2 md:text-sm">学弟 17:50 下课<br />本来就要走回梅园</p>
+            <p className="rounded-xl bg-surface px-2.5 py-1.5 text-[11px] leading-snug shadow-[0_8px_24px_-12px_rgba(17,40,30,0.4)] ring-1 ring-line md:px-3 md:py-2 md:text-sm">学弟在一教 17:50 下课<br />本来就要走回梅园</p>
           </motion.div>
         )}
         {(phase === 1 || phase === 2) && (
@@ -120,7 +120,7 @@ export function RouteMap() {
           </motion.div>
         )}
         {phase === 3 && (
-          <motion.div key="c" className="absolute right-[22%] top-[62%] md:right-[21%]" initial={reduce ? false : { opacity: 0, y: 10, scale: 0.92 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0 }} transition={{ type: 'spring', stiffness: 420, damping: 26 }}>
+          <motion.div key="c" className="absolute right-[22%] top-[71%] md:right-[21%] md:top-[70%]" initial={reduce ? false : { opacity: 0, y: 10, scale: 0.92 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0 }} transition={{ type: 'spring', stiffness: 420, damping: 26 }}>
             <div className="rounded-2xl bg-accent px-3 py-2 text-on-accent shadow-[0_14px_30px_-14px_rgba(11,122,85,0.7)] md:px-4 md:py-3">
               <p className="text-[13px] font-bold md:text-lg">送到了</p>
               <p className="tnum text-[11px] opacity-90 md:text-sm">¥5 从托管放给学弟</p>
@@ -149,7 +149,8 @@ function DashUnder({ children }) {
 export default function RouteHero({ Cta, Anchor }) {
   const reduce = useReducedMotion()
   const line = (i) => ({ initial: reduce ? false : { y: '105%' }, animate: { y: 0 }, transition: { duration: 0.9, delay: 0.1 + i * 0.09, ease } })
-  const fade = (d) => ({ initial: reduce ? false : { opacity: 0, y: 16 }, animate: { opacity: 1, y: 0 }, transition: { duration: 0.8, delay: d, ease } })
+  // 副标题和按钮第一帧就在，只做一点位移，不从透明开始
+  const fade = (d) => ({ initial: reduce ? false : { y: 10 }, animate: { y: 0 }, transition: { duration: 0.5, delay: d * 0.3, ease } })
   return (
     <section id="top" className="mx-auto grid max-w-7xl items-center gap-10 px-4 pb-20 pt-8 md:px-8 md:pb-28 md:pt-14 lg:grid-cols-12 lg:gap-12">
       <div className="lg:col-span-5">

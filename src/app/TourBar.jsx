@@ -40,7 +40,7 @@ export default function TourBar() {
   return (
     <AnimatePresence>
       {step && (
-        <motion.div initial={reduce ? false : { y: 40, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: 40, opacity: 0 }} transition={spring}
+        <motion.div key="bar" initial={reduce ? false : { y: 40, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: 40, opacity: 0 }} transition={spring}
           className="fixed inset-x-0 bottom-[calc(4rem+env(safe-area-inset-bottom))] z-20 px-3 pb-2">
           <div className="mx-auto flex max-w-xl items-center gap-3 rounded-2xl bg-ink p-3 pl-4 text-bg shadow-xl shadow-ink/20">
             <div className="min-w-0 flex-1">
@@ -48,7 +48,7 @@ export default function TourBar() {
                 {step.final ? <span className="inline-flex items-center gap-1"><Confetti size={14} weight="fill" />完整流程</span> : `完整流程 ${Math.min(step.n, TOTAL)}/${TOTAL}`}
               </p>
               <p className="text-[15px] font-semibold leading-snug">{step.text}</p>
-              {here && <p className="text-[13px] opacity-70">操作按钮在页面上方</p>}
+              {here && <p className="text-[13px] opacity-70">按页面里的绿色按钮继续</p>}
             </div>
             {!here && <button onClick={go} className="inline-flex h-11 shrink-0 items-center gap-1 whitespace-nowrap rounded-full bg-accent px-4 text-[15px] font-semibold text-on-accent active:scale-[0.98]">
               {step.cta}<ArrowRight size={16} weight="bold" />

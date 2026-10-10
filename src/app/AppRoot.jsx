@@ -39,30 +39,33 @@ function RoleSwitch() {
   )
 }
 
-function Toast({ t }) {
-  const { act } = useStore()
-  const reduce = useReducedMotion()
-  useEffect(() => {
-    const id = setTimeout(() => act('dismissToast', { tid: t.id }), 2600)
-    return () => clearTimeout(id)
-  }, [t.id, act])
-  return (
-    <motion.div layout initial={reduce ? false : { y: -16, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ opacity: 0, transition: { duration: 0.15 } }} transition={spring}
-      className={`pointer-events-auto flex w-full max-w-md items-start gap-2 rounded-2xl px-4 py-3 text-[15px] font-medium shadow-lg shadow-ink/10 ring-1 ${t.tone === 'bad' ? 'bg-danger-soft text-danger ring-danger/30' : 'bg-surface text-ink ring-line'}`}
-      onClick={() => act('dismissToast', { tid: t.id })}>
-      {t.tone === 'bad' ? <WarningCircle size={20} weight="fill" className="mt-0.5 shrink-0" /> : <CheckCircle size={20} weight="fill" className="mt-0.5 shrink-0 text-accent" />}
-      <span>{t.text}</span>
-    </motion.div>
-  )
-}
-
-// 每条提示独立计时；同时最多露出最新的 2 条，旧的直接收起，不挡页面
+// 提示条：只留一张，最近两条合在一起，放在顶栏下面，不叠、不挡顶栏
 function Toasts() {
-  const { state } = useStore()
+  const { state, act } = useStore()
+  const reduce = useReducedMotion()
+  const list = state.toasts.slice(-2)
+  const last = list[list.length - 1]
+  useEffect(() => {
+    if (!last) return
+    const id = setTimeout(() => list.forEach((t) => act('dismissToast', { tid: t.id })), 2800)
+    return () => clearTimeout(id)
+  }, [last?.id]) // eslint-disable-line react-hooks/exhaustive-deps
+  const bad = list.some((t) => t.tone === 'bad')
   return (
-    <div className="pointer-events-none fixed inset-x-0 top-3 z-50 flex flex-col items-center gap-2 px-4" aria-live="polite">
+    <div className="pointer-events-none fixed inset-x-0 top-[72px] z-50 flex justify-center px-4" aria-live="polite">
       <AnimatePresence initial={false}>
-        {state.toasts.slice(-2).map((t) => <Toast key={t.id} t={t} />)}
+        {last && (
+          <motion.div key="toast" layout initial={reduce ? false : { y: -12, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ opacity: 0, transition: { duration: 0.15 } }} transition={spring}
+            className={`pointer-events-auto w-full max-w-md space-y-1 rounded-2xl px-4 py-3 text-[15px] font-medium shadow-lg shadow-ink/10 ring-1 ${bad ? 'bg-danger-soft text-danger ring-danger/30' : 'bg-surface text-ink ring-line'}`}
+            onClick={() => list.forEach((t) => act('dismissToast', { tid: t.id }))}>
+            {list.map((t) => (
+              <motion.p key={t.id} layout="position" initial={reduce ? false : { opacity: 0 }} animate={{ opacity: 1 }} className="flex items-start gap-2">
+                {t.tone === 'bad' ? <WarningCircle size={20} weight="fill" className="mt-0.5 shrink-0" /> : <CheckCircle size={20} weight="fill" className="mt-0.5 shrink-0 text-accent" />}
+                <span>{t.text}</span>
+              </motion.p>
+            ))}
+          </motion.div>
+        )}
       </AnimatePresence>
     </div>
   )
