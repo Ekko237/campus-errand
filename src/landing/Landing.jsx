@@ -348,11 +348,11 @@ function StageMap({ i, tall = false }) {
         <path d={D} fill="none" stroke="var(--ink)" strokeOpacity="0.35" strokeWidth="12" strokeDasharray="4 22" strokeLinecap="round" strokeLinejoin="round" />
         <motion.path d={D} fill="none" stroke="var(--ink)" strokeOpacity="0.9" strokeWidth="14" strokeLinecap="round" strokeLinejoin="round" initial={false} animate={{ pathLength: STAGE_P[i] }} transition={sp} />
         {/* 捎上包裹以后的那段变绿 */}
-        <motion.path d={NEED_D} fill="none" stroke="var(--accent)" strokeWidth="6" strokeLinecap="round" strokeLinejoin="round" initial={false}
+        <motion.path d={NEED_D} fill="none" stroke="var(--accent)" strokeWidth="9" strokeLinecap="round" strokeLinejoin="round" initial={false}
           animate={{ pathLength: Math.max(0, (STAGE_P[i] - STAGE_F) / (1 - STAGE_F)), opacity: i >= 3 ? 1 : 0 }} transition={sp} />
       </svg>
-      {tag('一教', [STAGE_PTS[0][0] - 50, STAGE_PTS[0][1] - 110], false, 'z-20')}
-      {tag('菜鸟驿站', [station[0], station[1] + 62], i === 2)}
+      {tag('一教', [STAGE_PTS[0][0] - 40, STAGE_PTS[0][1] - 150], false, 'z-20')}
+      {tag('菜鸟驿站', [station[0], STAGE_PTS[1][1] - 72], i === 2, 'z-20')}
       {tag('梅园', [mei[0] + 150, mei[1] + 40], i >= 4)}
       {/* 包裹：先在驿站等着（发布时一闪），第 3 步起跟着阿远走，送到后落在梅园 */}
       {i < 3 && (
