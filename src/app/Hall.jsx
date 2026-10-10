@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { motion, AnimatePresence, useReducedMotion } from 'motion/react'
 import { ROUTES } from '../landing/RouteHero'
 import CampusMap, { along } from '../landing/CampusMap'
@@ -19,11 +19,13 @@ const SORTS = [['route', '顺我路'], ['dist', '距离最近'], ['reward', '赏
 let loadedOnce = false
 
 export function TaskCard({ t, me, role, route, n = 0 }) {
+  // 电脑版右边开着这一单时，列表里它亮起来
+  const here = useLocation().pathname === `/app/task/${t.id}`
   const d = dist(RUNNER_HOME, t.from)
   const need = minCreditFor(t.reward)
   const locked = role === 'runner' && me.verified && t.posterId !== 'poster' && (me.credit ?? 0) < need
   return (
-    <Link to={`/app/task/${t.id}`} className="block rounded-2xl bg-surface p-4 ring-1 ring-line transition active:scale-[0.99] hover:ring-accent/50">
+    <Link to={`/app/task/${t.id}`} className={`block rounded-2xl p-4 ring-1 transition active:scale-[0.99] hover:ring-accent/50 ${here ? 'bg-accent-soft ring-2 ring-accent' : 'bg-surface ring-line'}`}>
       <div className="flex items-center gap-2">
         <TypeTag type={t.type} />
         {t.urgent && <UrgentTag />}

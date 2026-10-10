@@ -22,8 +22,17 @@ export function ViewToggle() {
   const { view, pick } = useView()
   const cur = EMBED || view
   const opts = [['phone', '手机版', DeviceMobile], ['desk', '电脑版', Desktop]]
+  // 第一次进原型：在切换旁边冒一句，告诉他这里能换界面；点了或 6 秒后收起，同一次访问不再出现
+  const [hint, setHint] = useState(() => { try { return !sessionStorage.getItem('shunluxia:viewhint') } catch { return false } })
+  useEffect(() => { if (!hint) return; try { sessionStorage.setItem('shunluxia:viewhint', '1') } catch { /* 无痕模式 */ } const id = setTimeout(() => setHint(false), 6000); return () => clearTimeout(id) }, [hint])
   return (
-    <div className="flex shrink-0 rounded-full bg-sunken p-1" role="group" aria-label="切换界面">
+    <div className="relative flex shrink-0 rounded-full bg-sunken p-1" role="group" aria-label="切换界面">
+      {hint && (
+        <button onClick={() => setHint(false)} className="absolute right-0 top-full z-40 mt-2 whitespace-nowrap rounded-xl bg-ink px-3 py-2 text-[13px] font-semibold text-bg shadow-lg">
+          现在是{cur === 'desk' ? '电脑版' : '手机版'}，这里能换成{cur === 'desk' ? '手机版' : '电脑版'}
+          <span aria-hidden="true" className="absolute -top-1 right-6 size-2.5 rotate-45 bg-ink" />
+        </button>
+      )}
       {opts.map(([k, label, I]) => (
         <button key={k} onClick={() => (EMBED ? embedPick(k) : pick(k))} aria-pressed={cur === k} title={label} aria-label={label}
           className={`grid h-8 w-9 place-items-center rounded-full transition-colors sm:w-auto sm:gap-1 sm:px-2.5 sm:[grid-auto-flow:column] ${cur === k ? 'bg-surface text-ink shadow-sm' : 'text-muted hover:text-ink'}`}>
@@ -107,18 +116,21 @@ function Framed({ view, src, frame }) {
   const [box, setBox] = useState({ w: window.innerWidth, h: window.innerHeight })
   useEffect(() => { const f = () => setBox({ w: window.innerWidth, h: window.innerHeight }); window.addEventListener('resize', f); return () => window.removeEventListener('resize', f) }, [])
   const phone = view === 'phone'
-  const W = phone ? 390 : 1280, H = phone ? 844 : 820
-  const s = phone ? Math.min(1, (box.h - 112) / (H + 24)) : Math.min(1, (box.w - 24) / W)
+  // 手机上看电脑版：不缩到看不清，按最小可读的比例（约 0.55）放，左右滑着看，高度铺满屏幕
+  const W = phone ? 390 : 1280
+  const s = phone ? Math.min(1, (box.h - 112) / (844 + 24)) : Math.min(1, Math.max(0.55, (box.w - 24) / W))
+  const H = phone ? 844 : Math.max(820, Math.round((box.h - 72) / s))
+  const pan = !phone && W * s > box.w - 24
   // 只在挂上的那一刻定地址：之后在框里点来点去，不让外层重新载入
   const [first] = useState(src)
   return (
     <div className="min-h-[100dvh] bg-sunken text-ink">
       <header className="flex h-14 items-center justify-between gap-3 px-4">
-        <Link to="/" className="inline-flex items-center gap-1.5 text-[15px] font-semibold text-muted hover:text-ink"><ArrowLeft size={16} weight="bold" />回首页</Link>
-        {!phone && <p className="truncate text-[13px] text-muted">电脑版在电脑上看效果更好</p>}
+        <Link to="/" className="inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap text-[15px] font-semibold text-muted hover:text-ink"><ArrowLeft size={16} weight="bold" />回首页</Link>
+        {!phone && <p className="truncate text-[13px] text-muted">{pan ? '左右滑动看整页' : '电脑版在电脑上看效果更好'}</p>}
         <Ctx.Provider value={{ view, pick: (v) => { try { const h = frame.current.contentWindow.location.hash.slice(1) || '/app'; window.postMessage({ type: 'shunluxia:view', view: v, path: h }, window.location.origin) } catch { window.postMessage({ type: 'shunluxia:view', view: v }, window.location.origin) } } }}><ViewToggle /></Ctx.Provider>
       </header>
-      <div className="flex justify-center pb-6">
+      <div className={pan ? 'overflow-x-auto overscroll-x-contain px-3 pb-3' : 'flex justify-center pb-6'}>
         {phone ? (
           <div className="rounded-[52px] bg-ink p-3 shadow-[0_40px_80px_-40px_rgba(17,40,30,0.6)]" style={{ width: W * s + 24, height: H * s + 24 }}>
             <div className="relative overflow-hidden rounded-[40px] bg-bg" style={{ width: W * s, height: H * s }}>

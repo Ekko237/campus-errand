@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom'
 import { useEffect, useRef, useState } from 'react'
 import { motion, AnimatePresence, useReducedMotion, useMotionValue, useTransform, useMotionValueEvent, useInView, animate } from 'motion/react'
 import { ArrowDown } from '@phosphor-icons/react'
@@ -176,6 +177,8 @@ export default function RouteHero({ Cta, Anchor }) {
             看看谁顺路<ArrowDown size={18} weight="bold" className="transition-transform group-hover:translate-y-0.5" />
           </Anchor>
         </motion.div>
+        {/* 「体验原型」直接按设备进合适的那种界面；想先挑的，从这里去选择页 */}
+        <motion.p {...fade(0.5)} className="mt-3 text-[15px] text-muted">想先选界面？<Link to="/app/start" className="font-semibold text-ink underline decoration-line underline-offset-4 hover:decoration-ink">手机版 / 电脑版</Link></motion.p>
       </div>
       <motion.div {...fade(0.2)} className="lg:col-span-7">
         <RouteMap />

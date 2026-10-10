@@ -26,6 +26,9 @@ export function tourStep(state) {
   return { n: 9, who: null, text: '这单走了申诉或取消分支，演示结束', to: '/app/orders', cta: '看订单', final: true }
 }
 
+// 导览要找的按钮在哪一块：电脑版右边开着一单时在详情栏，否则在主内容区
+const root = () => document.querySelector('[data-tour-root]') || document.querySelector('main') || document.body
+
 export default function TourBar() {
   const { state, act } = useStore()
   const nav = useNavigate()
@@ -89,12 +92,12 @@ export default function TourBar() {
     const id = setTimeout(() => {
       // 只在刚发布（下一步认证）、刚接单（下一步取件）和刚放款（下一步打分）这三步停
       // 接单那一下先把取件码卡停在视线里（接单后才看得到，是这一单的高光）；取件后先露地图，看得到阿远走到哪了
-      const moment = step?.n === 5 ? document.querySelector('main [data-tour-map]') : [2, 4, 7].includes(step?.n) ? document.querySelector('main [data-tour-moment]') : null
+      const moment = step?.n === 5 ? root().querySelector('[data-tour-map]') : [2, 4, 7].includes(step?.n) ? root().querySelector('[data-tour-moment]') : null
       if (moment) {
         const head = document.querySelector('header')?.getBoundingClientRect().bottom ?? 64
         const mr = moment.getBoundingClientRect()
         // 订单标题和这张卡能一起放下，就从标题开始露，免得标题正好藏在顶栏下面、看不出是哪一单
-        const tr = document.querySelector('main h1')?.getBoundingClientRect()
+        const tr = root().querySelector('h1')?.getBoundingClientRect()
         const from = tr && tr.top < mr.top && mr.bottom - tr.top <= innerHeight - head - 96 ? tr.top : mr.top
         if (!touched && (mr.top < head + 16 || mr.bottom > innerHeight - 80)) window.scrollBy({ top: from - head - 16, behavior: reduce ? 'auto' : 'smooth' })
         // 放款那条「¥5 从小满流到阿远」要播约 2.3 秒，取件码揭晓短一些
@@ -102,7 +105,7 @@ export default function TourBar() {
         late = true
       }
       timers.push(setTimeout(() => {
-        el = document.querySelector('main [data-tour-target]') || [...document.querySelectorAll('main button')].find((x) => x.className.includes('bg-accent') && !x.disabled && x.offsetParent)
+        el = root().querySelector('[data-tour-target]') || [...root().querySelectorAll('button')].find((x) => x.className.includes('bg-accent') && !x.disabled && x.offsetParent)
         if (!el) return
         el.classList.add('tour-focus')
         reveal()

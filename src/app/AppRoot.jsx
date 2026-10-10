@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useRef } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { Routes, Route, NavLink, Link, useNavigate, useLocation } from 'react-router-dom'
 import { motion, AnimatePresence, useReducedMotion } from 'motion/react'
 import { ListMagnifyingGlass, PlusCircle, UserCircle } from '@phosphor-icons/react'
@@ -145,6 +145,84 @@ function useDirection(pathname) {
   return dir.current
 }
 
+// 电脑版（≥1280）：网页的排法：左边导航，中间列表（大厅、订单、发布、我的），右边是点开的那一单；没点开时右边是演示面板
+function useDesk() {
+  const q = '(min-width: 1280px)'
+  const [m, setM] = useState(() => typeof window !== 'undefined' && window.matchMedia(q).matches)
+  useEffect(() => { const mm = window.matchMedia(q); const f = () => setM(mm.matches); mm.addEventListener('change', f); return () => mm.removeEventListener('change', f) }, [])
+  return m
+}
+
+const LIST_ROUTES = (
+  <>
+    <Route index element={<Hall />} />
+    <Route path="publish" element={<Publish />} />
+    <Route path="orders" element={<Orders />} />
+    <Route path="me" element={<Me />} />
+    <Route path="verify" element={<Verify />} />
+    <Route path="credit" element={<CreditRules />} />
+    <Route path="wallet" element={<Wallet />} />
+    <Route path="*" element={<Hall />} />
+  </>
+)
+
+function DeskShell({ sub, openTask }) {
+  const { state } = useStore()
+  const loc = useLocation()
+  const { pathname } = loc
+  const reduce = useReducedMotion()
+  const taskOpen = pathname.startsWith('/app/task/')
+  // 点开一单时，中间留着它所在的那张列表：自己发的、自己接的在「订单」，别人的在「大厅」
+  const listPath = openTask && (openTask.posterId === 'poster' || openTask.runnerId === 'runner') ? '/app/orders' : '/app'
+  const top = state.tour.active ? 'top-[132px]' : 'top-20'
+  return (
+    <div className="min-h-[100dvh] bg-bg">
+      <header className="sticky top-0 z-30 border-b border-line bg-bg/95 backdrop-blur">
+        <div className="mx-auto flex h-16 max-w-[1440px] items-center justify-between gap-3 px-6">
+          <Link to="/" className="flex shrink-0 items-center gap-2 text-lg font-bold tracking-tight">
+            <img src={`${import.meta.env.BASE_URL}brand/logo-v2.png`} width={36} height={36} alt="顺路侠标志：背着书包、夹着包裹奔跑的小人" className="size-9" />
+            顺路侠
+          </Link>
+          <div className="flex items-center gap-2"><RoleSwitch /><ViewToggle /></div>
+        </div>
+        <TourBar />
+      </header>
+      <main className="mx-auto grid max-w-[1440px] grid-cols-[180px_minmax(0,1fr)_460px] gap-6 px-6 pb-24 pt-5">
+        <nav className={`sticky ${top} self-start`} aria-label="主导航">
+          <div className="grid gap-1">
+            {tabs.map(([to, label, img, end]) => (
+              <NavLink key={to} to={to} end={end} className={({ isActive: a0 }) => { const on = sub ? to === sub : a0; return `flex h-12 items-center gap-2.5 rounded-xl px-3 text-[15px] font-semibold transition-colors ${on ? 'bg-accent-soft text-accent' : 'text-muted hover:bg-sunken'}` }}>
+                {({ isActive: a0 }) => { const on = sub ? to === sub : a0; return (<><img src={`${import.meta.env.BASE_URL}icons/${img}-v1.webp`} width={28} height={28} alt="" aria-hidden="true" className={`size-7 object-contain transition ${on ? '' : 'opacity-55 grayscale'}`} />{label}</>) }}
+              </NavLink>
+            ))}
+          </div>
+        </nav>
+        <section aria-label="列表" className="min-w-0" data-tour-root={taskOpen ? undefined : ''}>
+          {taskOpen ? (
+            // 右边开着一单：中间的列表自己滚，不跟着详情走，随时点另一单
+            <div className={`sticky ${top} overflow-y-auto overscroll-contain pr-1`} style={{ maxHeight: `calc(100dvh - ${state.tour.active ? 148 : 96}px)` }}>
+              <Routes location={{ ...loc, pathname: listPath, search: '' }}>{LIST_ROUTES}</Routes>
+            </div>
+          ) : (
+            <div key={pathname} className={reduce ? '' : 'page-in'} style={{ '--dx': '8px' }}><Routes>{LIST_ROUTES}</Routes></div>
+          )}
+        </section>
+        <aside aria-label={taskOpen ? '订单详情' : '演示面板'} className="min-w-0" data-tour-root={taskOpen ? '' : undefined}>
+          {taskOpen ? (
+            <div key={pathname} className={reduce ? '' : 'page-in'} style={{ '--dx': '12px' }}>
+              <Routes><Route path="task/:id" element={<TaskDetail />} /></Routes>
+            </div>
+          ) : (
+            <div className={`sticky ${top}`}><DemoPanel /></div>
+          )}
+        </aside>
+      </main>
+      <Toasts />
+      <Onboarding />
+    </div>
+  )
+}
+
 function Shell() {
   const { state } = useStore()
   const { pathname, search } = useLocation()
@@ -158,7 +236,9 @@ function Shell() {
     : ['/app/verify', '/app/wallet', '/app/credit'].some((p) => pathname.startsWith(p)) ? '/app/me' : null
   const reduce = useReducedMotion()
   const dir = useDirection(pathname)
+  const desk = useDesk()
   useLayoutEffect(() => { window.scrollTo(0, 0) }, [pathname])
+  if (desk) return <DeskShell sub={sub} openTask={openTask} />
   return (
     <div className="min-h-[100dvh] bg-bg">
       <header className="sticky top-0 z-30 border-b border-line bg-bg/95 backdrop-blur">
@@ -187,7 +267,6 @@ function Shell() {
         </Routes>
         </div>
       </main>
-      <DemoPanel />
       <nav className={`fixed inset-x-0 bottom-0 z-30 border-t border-line bg-surface/95 backdrop-blur xl:inset-x-auto xl:bottom-auto xl:left-[calc(50%-33rem)] ${state.tour.active ? 'xl:top-[132px]' : 'xl:top-20'} xl:w-36 xl:border-0 xl:bg-transparent xl:backdrop-blur-none`} aria-label="主导航">
         <div className="mx-auto grid max-w-xl grid-cols-4 pb-[env(safe-area-inset-bottom)] xl:grid-cols-1 xl:gap-1 xl:pb-0">
           {tabs.map(([to, label, img, end]) => (

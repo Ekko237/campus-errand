@@ -42,7 +42,7 @@ export default function DemoPanel() {
     ['runner', runner, `累计收入 ¥${runner.ledger.filter((l) => l.amount > 0).reduce((a, l) => a + l.amount, 0)} · 完成 ${runner.done} 单`],
   ]
   return (
-    <aside className={`fixed hidden w-72 space-y-4 xl:block ${state.tour.active ? 'top-[132px]' : 'top-20'}`} style={{ left: 'calc(50% + 15rem)' }} aria-label="演示面板">
+    <div className="space-y-4">
       <p className="text-sm font-semibold text-muted">演示面板 · 示例数据</p>
       {accounts.map(([k, a, sub]) => (
         <button key={k} onClick={() => act('role', { role: k })} aria-pressed={state.role === k}
@@ -80,6 +80,6 @@ export default function DemoPanel() {
         )}
         <button onClick={() => { if (window.confirm('把演示数据恢复成初始示例？你走过的订单和信用变化都会清掉。')) { act('reset'); nav('/app') } }} className="inline-flex h-11 items-center justify-center gap-2 whitespace-nowrap rounded-full bg-surface text-[15px] font-semibold ring-1 ring-line active:scale-[0.98]"><ArrowCounterClockwise size={18} weight="bold" />重置演示数据</button>
       </div>
-    </aside>
+    </div>
   )
 }
