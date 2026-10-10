@@ -219,7 +219,7 @@ export function CampusRoutes() {
       <p className="mt-4 max-w-[40ch] text-lg leading-relaxed text-muted md:text-xl" aria-live="polite">
         此刻 {tasks.length} 个示例单里，有 <b className="text-accent">{hits.length} 个</b>顺路，捎上多走 {!hits.length ? 0 : hits[0].m === hits[hits.length - 1].m ? hits[0].m : `${hits[0].m} 到 ${hits[hits.length - 1].m}`} 分钟。
       </p>
-      <div ref={box} className="mt-6 hidden md:block"><RouteZoom R={R} tasks={tasks} hits={hits} reduce={reduce} /></div>
+      <div ref={box} className="mt-6 hidden md:block"><RouteZoom R={R} hits={hits} reduce={reduce} /></div>
       <SubwayLine R={R} hits={hits} reduce={reduce} />
       <div className="mt-3 hidden flex-wrap gap-x-5 md:flex gap-y-1 text-sm text-muted">
         <span className="inline-flex items-center gap-1.5"><i className="h-1 w-5 rounded-full bg-ink/80" />你正要走的路</span>
@@ -262,74 +262,96 @@ function SubwayLine({ R, hits, reduce }) {
   )
 }
 
-// 桌面：镜头缩放到「你的路 + 顺路的单」；一个小点沿你的路走，经过取件点时那一单弹出来
-function RouteZoom({ R, tasks, hits, reduce }) {
+// 桌面：镜头缩放到「你的路 + 顺路的单」；底图是和首屏一样的街区，路线沿街走直角；一个小人沿你的路走，经过取件点时那一单弹出来
+const lpath = (p, q) => ({ d: `M${p[0]} ${p[1]} H${q[0]} V${q[1]}` })
+function RouteZoom({ R, hits, reduce }) {
   const a = B[R.from], b = B[R.to]
-  const vx = b.x - a.x, vy = b.y - a.y, len2 = vx * vx + vy * vy || 1
-  const along = (id) => Math.max(0.04, Math.min(0.96, ((B[id].x - a.x) * vx + (B[id].y - a.y) * vy) / len2))
-  const side = (id) => ((B[id].x - a.x) * vy - (B[id].y - a.y) * vx) >= 0 ? 1 : -1
-  // 取景框：路线和顺路单的端点外扩 18%，并补成 2:1
+  // 你的路：先横着走，再竖着走
+  const segLen = [Math.abs(b.x - a.x), Math.abs(b.y - a.y)]
+  const total = segLen[0] + segLen[1] || 1
+  const at = (q) => (q * total <= segLen[0]
+    ? { x: a.x + Math.sign(b.x - a.x) * q * total, y: a.y }
+    : { x: b.x, y: a.y + Math.sign(b.y - a.y) * (q * total - segLen[0]) })
+  const along = (id) => {
+    const c = B[id]
+    const t1 = Math.max(0, Math.min(segLen[0], Math.abs(c.x - a.x) * (Math.sign(c.x - a.x) === Math.sign(b.x - a.x) ? 1 : 0)))
+    const d1 = Math.hypot(a.x + Math.sign(b.x - a.x) * t1 - c.x, a.y - c.y)
+    const t2 = Math.max(0, Math.min(segLen[1], (c.y - a.y) * Math.sign(b.y - a.y)))
+    const d2 = Math.hypot(b.x - c.x, a.y + Math.sign(b.y - a.y) * t2 - c.y)
+    return Math.max(0.04, Math.min(0.96, (d1 <= d2 ? t1 : segLen[0] + t2) / total))
+  }
   const ids = [R.from, R.to, ...hits.flatMap((t) => [t.from, t.to])]
   let x0 = Math.min(...ids.map((i) => B[i].x)), x1 = Math.max(...ids.map((i) => B[i].x))
   let y0 = Math.min(...ids.map((i) => B[i].y)), y1 = Math.max(...ids.map((i) => B[i].y))
-  const pw = Math.max(x1 - x0, 300) * 0.18 + 60, ph = Math.max(y1 - y0, 150) * 0.18 + 60
+  const pw = Math.max(x1 - x0, 300) * 0.16 + 70, ph = Math.max(y1 - y0, 150) * 0.16 + 70
   x0 -= pw; x1 += pw; y0 -= ph; y1 += ph
   const w = x1 - x0, h = y1 - y0
-  if (w / h > 2) { const d = (w / 2 - h) / 2; y0 -= d; y1 += d } else { const d = (h * 2 - w) / 2; x0 -= d; x1 += d }
+  if (w / h > 2.2) { const d = (w / 2.2 - h) / 2; y0 -= d; y1 += d } else { const d = (h * 2.2 - w) / 2; x0 -= d; x1 += d }
   const X = (x) => ((x - x0) / (x1 - x0)) * 100
   const Y = (y) => ((y - y0) / (y1 - y0)) * 100
+  const P = (id) => [X(B[id].x), Y(B[id].y)]
   const key = new Set(ids)
   const [p, setP] = useState(reduce ? 1 : 0)
   useEffect(() => {
     if (reduce) return
     setP(0)
-    const c = animate(0, 1, { duration: 2.6, delay: 0.5, ease: 'easeInOut', onUpdate: setP })
+    const c = animate(0, 1, { duration: 2.8, delay: 0.6, ease: 'easeInOut', onUpdate: setP })
     return () => c.stop()
   }, [R.label, reduce])
-  const sp = { type: 'spring', stiffness: 160, damping: 26 }
+  const sp = { type: 'spring', stiffness: 150, damping: 26 }
+  const me = at(p)
+  const side = (id) => (B[id].y <= (a.y + b.y) / 2 ? -1 : 1)
   return (
-    <div className="relative aspect-[2/1] w-full overflow-hidden rounded-[28px] bg-surface ring-1 ring-line"
-      style={{ backgroundImage: 'linear-gradient(var(--bg) 2px, transparent 2px), linear-gradient(90deg, var(--bg) 2px, transparent 2px)', backgroundSize: '56px 56px' }}
+    <div className="relative aspect-[2.2/1] max-h-[560px] w-full overflow-hidden rounded-[28px] bg-surface ring-1 ring-line"
       role="img" aria-label={`示意地图：沿「${R.label}」这条路，${hits.length} 个示例单顺路`}>
+      <svg className="absolute inset-0 size-full" aria-hidden="true">
+        <defs>
+          <pattern id="rz-blocks" width="132" height="104" patternUnits="userSpaceOnUse">
+            <rect x="11" y="11" width="110" height="82" rx="14" fill="var(--sunken)" />
+            {[0, 1, 2, 3].map((c) => [0, 1].map((r) => <rect key={`${c}${r}`} x={28 + c * 22} y={30 + r * 26} width="9" height="11" rx="2" fill="var(--bg)" opacity="0.9" />))}
+          </pattern>
+          <pattern id="rz-green" width="396" height="312" patternUnits="userSpaceOnUse">
+            <rect x="143" y="115" width="110" height="82" rx="14" fill="var(--accent-soft)" />
+            <circle cx="175" cy="150" r="9" fill="var(--accent)" fillOpacity="0.28" /><circle cx="215" cy="168" r="9" fill="var(--accent)" fillOpacity="0.28" />
+          </pattern>
+        </defs>
+        <rect width="100%" height="100%" fill="url(#rz-blocks)" />
+        <rect width="100%" height="100%" fill="url(#rz-green)" />
+      </svg>
       <svg viewBox="0 0 100 100" preserveAspectRatio="none" className="absolute inset-0 size-full" aria-hidden="true">
-        <motion.line initial={false} animate={{ x1: X(a.x), y1: Y(a.y), x2: X(b.x), y2: Y(b.y) }} transition={sp}
-          stroke="var(--ink)" strokeOpacity="0.85" strokeWidth="4" vectorEffect="non-scaling-stroke" strokeLinecap="round" />
+        <motion.path initial={false} animate={lpath(P(R.from), P(R.to))} transition={sp} fill="none"
+          stroke="var(--ink)" strokeOpacity="0.85" strokeWidth="5" vectorEffect="non-scaling-stroke" strokeLinecap="round" strokeLinejoin="round" />
         {hits.filter((t) => t.from !== t.to).map((t) => (
-          <motion.line key={t.id} initial={false} animate={{ x1: X(B[t.from].x), y1: Y(B[t.from].y), x2: X(B[t.to].x), y2: Y(B[t.to].y), opacity: p >= along(t.from) ? 1 : 0.25 }} transition={sp}
-            stroke="var(--accent)" strokeWidth="7" vectorEffect="non-scaling-stroke" strokeLinecap="round" />
+          <motion.path key={t.id} initial={false} animate={{ ...lpath(P(t.from), P(t.to)), opacity: p >= along(t.from) ? 1 : 0.2 }} transition={sp} fill="none"
+            stroke="var(--accent)" strokeWidth="7" vectorEffect="non-scaling-stroke" strokeLinecap="round" strokeLinejoin="round" />
         ))}
       </svg>
-      {BUILDINGS.filter((bd) => !key.has(bd.id)).map((bd) => (
-        <motion.span key={bd.id} initial={false} animate={{ left: `${X(bd.x)}%`, top: `${Y(bd.y)}%` }} transition={sp}
-          className="absolute -translate-x-1/2 -translate-y-1/2 whitespace-nowrap text-xs text-muted/60">{SHORT[bd.id]}</motion.span>
-      ))}
       {hits.filter((t) => t.from === t.to).map((t) => (
-        <motion.span key={t.id} aria-hidden="true" initial={false} animate={{ left: `${X(B[t.from].x)}%`, top: `${Y(B[t.from].y)}%`, opacity: p >= along(t.from) ? 1 : 0.3 }} transition={sp}
-          className="absolute size-12 -translate-x-1/2 -translate-y-1/2 rounded-full ring-[5px] ring-accent" />
+        <motion.span key={t.id} aria-hidden="true" initial={false} animate={{ left: `${P(t.from)[0]}%`, top: `${P(t.from)[1]}%`, opacity: p >= along(t.from) ? 1 : 0.3 }} transition={sp}
+          className="absolute size-12 -translate-x-1/2 -translate-y-1/2 rounded-full bg-accent-soft/60 ring-[5px] ring-accent" />
       ))}
       {[...key].map((id) => {
         const end = id === R.from || id === R.to
-        const s = side(id)
         return (
-          <motion.span key={id} initial={false} animate={{ left: `${X(B[id].x)}%`, top: `${Y(B[id].y)}%` }} transition={sp} className="absolute z-10">
-            <span className={`absolute left-0 top-0 block size-3 -translate-x-1/2 -translate-y-1/2 rounded-full ring-4 ring-surface ${end ? 'bg-ink' : 'bg-accent'}`} />
-            <span className={`absolute left-0 -translate-x-1/2 whitespace-nowrap rounded-full px-2.5 py-0.5 text-[13px] font-semibold ${end ? 'bg-ink text-bg' : 'bg-surface text-ink ring-1 ring-line'} ${s > 0 ? 'top-3' : 'bottom-3'}`}>{SHORT[id]}</span>
+          <motion.span key={id} initial={false} animate={{ left: `${P(id)[0]}%`, top: `${P(id)[1]}%` }} transition={sp} className="absolute z-10">
+            <span className={`absolute left-0 top-0 block size-3.5 -translate-x-1/2 -translate-y-1/2 rounded-full ring-4 ring-surface ${end ? 'bg-ink' : 'bg-accent'}`} />
+            <span className={`absolute left-0 -translate-x-1/2 whitespace-nowrap rounded-full px-2.5 py-0.5 text-[13px] font-semibold shadow-sm ${end ? 'bg-ink text-bg' : 'bg-surface text-ink ring-1 ring-line'} ${side(id) < 0 ? 'bottom-3' : 'top-3'}`}>{SHORT[id]}</span>
           </motion.span>
         )
       })}
       <AnimatePresence>
         {hits.filter((t) => p >= along(t.from)).map((t) => (
-          <motion.span key={R.label + t.id} initial={reduce ? false : { opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1, left: `${X(B[t.from].x)}%`, top: `${Y(B[t.from].y)}%` }} exit={{ opacity: 0 }}
+          <motion.span key={R.label + t.id} initial={reduce ? false : { opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1, left: `${P(t.from)[0]}%`, top: `${P(t.from)[1]}%` }} exit={{ opacity: 0 }}
             transition={{ type: 'spring', stiffness: 420, damping: 24 }}
-            className={`tnum absolute z-20 whitespace-nowrap rounded-full bg-accent px-3 py-1 text-sm font-bold text-on-accent shadow-[0_8px_18px_-8px_rgba(11,122,85,0.7)] ${side(t.from) > 0 ? '-translate-x-1/2 -translate-y-[calc(100%+14px)]' : '-translate-x-1/2 translate-y-[38px]'}`}>
+            className={`tnum absolute z-20 -translate-x-1/2 whitespace-nowrap rounded-full bg-accent px-3 py-1 text-sm font-bold text-on-accent shadow-[0_8px_18px_-8px_rgba(11,122,85,0.7)] ${side(t.from) < 0 ? 'translate-y-[34px]' : '-translate-y-[calc(100%+34px)]'}`}>
             ¥{t.reward} · {t.dm ? `多走 ${t.dm} 米` : '就在路上'}
           </motion.span>
         ))}
       </AnimatePresence>
       {!reduce && p > 0 && p < 1 && (
-        <span aria-hidden="true" className="absolute z-30 grid size-9 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full bg-surface shadow-[0_6px_16px_-6px_rgba(17,40,30,0.5)] ring-[3px] ring-ink"
-          style={{ left: `${X(a.x + vx * p)}%`, top: `${Y(a.y + vy * p)}%` }}>
-          <img src={icon('avatar-runner-v1')} width={30} height={30} alt="" className="size-7 rounded-full" />
+        <span aria-hidden="true" className="absolute z-30 grid size-10 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full bg-surface shadow-[0_6px_16px_-6px_rgba(17,40,30,0.5)] ring-[3px] ring-ink"
+          style={{ left: `${X(me.x)}%`, top: `${Y(me.y)}%` }}>
+          <img src={icon('avatar-runner-v1')} width={32} height={32} alt="" className="size-8 rounded-full" />
         </span>
       )}
     </div>

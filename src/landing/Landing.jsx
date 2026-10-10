@@ -595,17 +595,19 @@ function Roadmap() {
   )
 }
 
+// 首屏之后第二段：从「一条路」放大到「整个校园」
+function Routes() {
+  return (
+    <section id="routes" className="mx-auto max-w-7xl scroll-mt-16 px-4 pb-20 pt-4 md:px-8 md:pb-28 md:pt-8 lg:pb-32">
+      <Reveal><H2>同一时间，<br />校园里到处是顺路</H2></Reveal>
+      <div className="mt-5"><CampusRoutes /></div>
+    </section>
+  )
+}
+
 function Final() {
-  const reduce = useReducedMotion()
-  const ref = useRef(null)
-  const { scrollYProgress } = useScroll({ target: ref, offset: ['start end', 'end start'] })
-  const scale = useTransform(scrollYProgress, [0, 1], reduce ? [1, 1] : [1.15, 1])
   return (
     <section className="border-t border-line">
-      <div ref={ref} className="mx-auto max-w-7xl px-4 pt-20 md:px-8 md:pt-28 lg:pt-32">
-        <Reveal><H2>同一时间，<br />校园里到处是顺路</H2></Reveal>
-        <div className="mt-5"><CampusRoutes /></div>
-      </div>
       <div className="mx-auto max-w-7xl px-4 py-20 text-center md:px-8 md:py-28 lg:py-32">
         <Reveal><h2 className="text-balance text-[40px] font-bold leading-[1.05] tracking-[-0.035em] md:text-7xl">自己走一遍，<br className="md:hidden" />大约两分钟</h2></Reveal>
         <Reveal delay={0.05}><p className="mx-auto mt-6 max-w-[32ch] text-lg text-muted md:text-xl">顶部一键切换发单人和跑腿人，一个人就能把一单从发布走到信用变化。</p></Reveal>
@@ -628,6 +630,7 @@ export default function Landing() {
       <Nav />
       <main>
         <RouteHero Cta={Cta} Anchor={Anchor} />
+        <Routes />
         <Scenes />
         <Loop />
         <Trust />
