@@ -271,7 +271,7 @@ function OrderCard({ i, go, small = false }) {
 function Chapter({ c, k, now, dark, flat, children }) {
   const reduce = useReducedMotion()
   return (
-    <article data-ch={k} className={`flex flex-col transition-opacity duration-500 ${flat ? 'py-2' : 'pb-10 pt-8 max-lg:min-h-[64svh] lg:min-h-[74svh] lg:justify-center lg:py-0'} ${now ? '' : 'lg:opacity-45'}`}>
+    <article data-ch={k} className={`flex flex-col transition-opacity duration-500 ${flat ? 'py-2' : 'pb-10 pt-8 max-lg:min-h-[64svh] lg:min-h-[74svh] lg:justify-center lg:py-0'} ${now ? '' : 'lg:opacity-60'}`}>
       <div className="flex items-end gap-4">
         {k > 0 && <span className={`tnum font-display text-[56px] leading-none transition-colors duration-500 md:text-[72px] ${dark ? (now ? 'text-on-accent' : 'text-on-accent/50') : now ? 'text-accent' : 'text-accent/30'}`}>0{k}</span>}
         <p className={`flex items-center gap-2 pb-1 text-sm font-semibold ${dark ? 'text-on-accent' : 'text-accent'}`}>
@@ -344,9 +344,9 @@ export default function Story() {
   const list = useRef(null)
   // 换步那条线：桌面在视口 60% 处；手机在吸顶条下面那块可读区域的中间。以每段标题过线为准，文字读到哪、地图就到哪
   const line = () => {
-    if (window.innerWidth >= 1024) return window.innerHeight * 0.6
+    if (window.innerWidth >= 1024) return window.innerHeight * 0.68
     const b = document.querySelector('[data-story-mini]')?.getBoundingClientRect().bottom ?? 260
-    return b + (window.innerHeight - b) * 0.5
+    return b + (window.innerHeight - b) * 0.6
   }
   // 正对着哪一段、这一段滚过了多少：用原生滚动事件算，后台标签页也准
   useEffect(() => {
@@ -396,7 +396,7 @@ export default function Story() {
         <div className="mx-auto max-w-7xl px-2 pb-10 md:px-4 lg:grid lg:grid-cols-12 lg:gap-12 lg:px-4 lg:pb-[12svh] xl:max-w-[calc(80rem-32px)] xl:px-0">
           {/* 手机：吸在顶栏下面的地图 + 一行订单，下面一段段文字滚过去；顶栏的「体验原型」和「目录」一直在 */}
           <div data-story-mini className={`sticky top-16 z-20 -mx-2 px-3 pb-1 pt-2 transition-colors duration-700 lg:hidden ${dark ? 'bg-accent-deep' : 'bg-bg'}`}>
-            <div className="grid gap-1.5"><StoryMap i={i} pos={pos} aspect={2.05} small /><OrderCard i={i} go={go} small /></div>
+            <div className="grid gap-1.5"><StoryMap i={i} pos={pos} aspect={1.7} small /><OrderCard i={i} go={go} small /></div>
             <div aria-hidden="true" className={`pointer-events-none absolute inset-x-0 top-full h-10 bg-gradient-to-b ${dark ? 'from-accent-deep' : 'from-bg'} to-transparent`} />
           </div>
           <div ref={list} className="px-2 lg:col-span-5">

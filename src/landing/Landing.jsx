@@ -1264,7 +1264,6 @@ export default function Landing({ page }) {
           <MoreScenes />
           <Credit />
           <Safety />
-          <ThinkTeaser />
           <Final />
         </main>
       )}
