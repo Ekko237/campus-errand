@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
-import { SealCheck, IdentificationCard, EnvelopeSimple, CaretDown } from '@phosphor-icons/react'
+import { ArrowLeft, SealCheck, IdentificationCard, EnvelopeSimple, CaretDown } from '@phosphor-icons/react'
 import { useStore } from '../store'
 import { Btn, Panel, Field, VerifiedBadge, inputCls } from '../ui'
 import { CREDIT_INIT, code4 } from '../data'
@@ -56,7 +56,10 @@ export default function Verify() {
   return (
     <div className="space-y-5">
       <div>
-        <h1 className="text-2xl font-bold tracking-tight">校园身份认证</h1>
+        <div className="flex items-center gap-2">
+          <button onClick={() => nav(-1)} aria-label="返回" className="grid size-10 shrink-0 place-items-center rounded-full bg-surface ring-1 ring-line"><ArrowLeft size={20} weight="bold" /></button>
+          <h1 className="text-2xl font-bold tracking-tight">校园身份认证</h1>
+        </div>
         <p className="mt-1 text-[15px] leading-relaxed text-muted">只对本校学生开放。认证后获得徽章和初始信用 {CREDIT_INIT} 分，才能接单。未认证只能浏览。</p>
       </div>
       <div className="grid grid-cols-2 rounded-full bg-sunken p-1">

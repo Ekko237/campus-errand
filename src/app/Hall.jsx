@@ -177,7 +177,7 @@ export default function Hall() {
             </button>
           )
         })}
-        <span aria-hidden="true" className="mx-1 w-px shrink-0 self-stretch bg-line" />
+        <span aria-hidden="true" className="mx-1 w-px shrink-0 self-stretch bg-line md:hidden" />
         <button onClick={() => setUrgentOnly((v) => !v)} aria-pressed={urgentOnly}
           className={`inline-flex h-10 shrink-0 items-center gap-1 rounded-full px-3.5 text-[15px] font-semibold transition ${urgentOnly ? 'bg-ink text-bg' : 'bg-surface text-ink ring-1 ring-line'}`}>
           <Lightning size={16} weight="fill" />加急

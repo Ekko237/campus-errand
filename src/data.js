@@ -106,7 +106,6 @@ export const minCreditFor = (reward) => LEVELS.find((l) => l.min >= 60 && reward
 export const RULES_PLUS = [
   { delta: +2, label: '按时完成一单', note: '在截止时间前提交送达凭证' },
   { delta: +1, label: '收到好评', note: '对方打 4 到 5 星' },
-  { delta: +1, label: '发单人按时确认', note: '送达后 2 小时内确认收货' },
 ]
 // 发单人规则（双向信用）
 export const POSTER_RULES_PLUS = [

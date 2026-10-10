@@ -42,7 +42,7 @@ function toast(s, text, tone = 'ok') {
 function levelMsg(before, after) {
   if (before == null || after == null) return null
   const a = levelOf(before), b = levelOf(after)
-  return a.name !== b.name ? `信用等级变为「${b.name}」：${b.desc}` : null
+  return a.name !== b.name ? `跑腿人信用等级变为「${b.name}」：${b.desc}` : null
 }
 
 function reducer(s, a) {

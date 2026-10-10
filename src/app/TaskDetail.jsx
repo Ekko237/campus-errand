@@ -237,7 +237,7 @@ function DeliverSheet({ t, open, onClose }) {
       {mode === 'code' ? (
         <div className="mt-5">
           <Field label="发单人的 4 位送达码" error={err} hint={`演示提示：发单人页面能看到送达码，这单是 ${t.deliverCode}`}>
-            <input inputMode="numeric" maxLength={4} value={code} onChange={(e) => { setCode(e.target.value.replace(/\D/g, '')); setErr(null) }} className={`${inputCls} tnum text-center text-2xl tracking-[0.5em]`} placeholder="____" aria-label="送达码" />
+            <input inputMode="numeric" maxLength={4} value={code} onChange={(e) => { setCode(e.target.value.replace(/\D/g, '')); setErr(null) }} className={`${inputCls} tnum text-center text-2xl tracking-[0.5em] ${err ? 'bg-danger-soft ring-2 ring-danger' : ''}`} placeholder="____" aria-label="送达码" aria-invalid={!!err} />
           </Field>
         </div>
       ) : (
@@ -281,7 +281,7 @@ function RateBlock({ t, by }) {
             className={`h-10 rounded-full px-4 text-[15px] font-semibold ${tags.includes(x) ? 'bg-ink text-bg' : 'bg-sunken text-ink'}`}>{x}</button>
         ))}
       </div>
-      <Btn className="mt-4 w-full" onClick={() => act('rate', { id: t.id, by, stars, tags })}>提交评价</Btn>
+      <Btn className="mt-4 w-full" onClick={() => { act('rate', { id: t.id, by, stars, tags }); if (by === 'poster' ? t.ratingByRunner : t.ratingByPoster) setTimeout(() => window.scrollTo({ top: 0, behavior: 'smooth' }), 60) }}>提交评价</Btn>
     </Panel>
   )
 }

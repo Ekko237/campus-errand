@@ -2,8 +2,9 @@ import { useMemo, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { Minus, Plus, Timer, LockKey, ProhibitInset, Lightning, Wallet, CaretDown } from '@phosphor-icons/react'
 import { useStore } from '../store'
-import { TYPES, TYPE_KEYS, BUILDINGS, B, WINDOWS, SIZES, suggestPrice, estimateMinutes, findBanned, nextId, code4, POSTER_LIMIT } from '../data'
+import { TYPES, TYPE_KEYS, BUILDINGS, B, WINDOWS, SIZES, suggestPrice, estimateMinutes, findBanned, nextId, code4, POSTER_LIMIT, detourMin } from '../data'
 import { Btn, Panel, Field, Sheet, inputCls } from '../ui'
+import { ROUTES } from '../landing/RouteHero'
 
 const groups = [...new Set(BUILDINGS.map((b) => b.group))]
 function BuildingSelect({ value, onChange, id }) {
@@ -177,6 +178,20 @@ export default function Publish() {
       {!errors.banned && (
         <p className="-mt-3 flex items-start gap-1.5 text-sm text-muted"><ProhibitInset size={16} className="mt-0.5 shrink-0" />代考、代签到、代写作业等任务会被拦截，不能发布。</p>
       )}
+
+      {(() => {
+        const passing = ROUTES.filter((r) => detourMin(r.from, r.to, f) <= 5)
+        return (
+          <div className={`flex items-center gap-3 rounded-2xl p-4 ${passing.length ? 'bg-accent-soft' : 'bg-sunken'}`}>
+            <span className="flex shrink-0 -space-x-2" aria-hidden="true">
+              {(passing.length ? passing : [0]).slice(0, 3).map((_, k) => <img key={k} src={`${import.meta.env.BASE_URL}icons/avatar-runner-v1.webp`} width={32} height={32} alt="" className={`size-8 rounded-full bg-surface ring-2 ring-accent-soft ${passing.length ? '' : 'opacity-40 grayscale'}`} />)}
+            </span>
+            <p className="text-[15px] leading-snug">{passing.length
+              ? <>示例：此刻有 <b className="text-accent">{passing.length} 条</b>同学常走的路经过这一单，比如「{passing[0].label}」</>
+              : <>示例：常走的路线里没有正好经过这里的，赏金高一点会更快有人接</>}</p>
+          </div>
+        )
+      })()}
 
       <Panel className="p-4">
         <div className="flex items-center justify-between gap-3">

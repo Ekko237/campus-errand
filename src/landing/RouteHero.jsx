@@ -184,7 +184,7 @@ export default function RouteHero({ Cta, Anchor }) {
 const PX = (x) => 13 + ((x + 600) / 1580) * 74
 const PY = (y) => 7 + ((y + 380) / 1280) * 84
 const SHORT = { cainiao: '菜鸟驿站', sf: '顺丰点', jd: '京东柜', canteen1: '一食堂', canteen2: '二食堂', market: '教育超市', gate: '北门', lib: '图书馆', jiao1: '一教', hall: '报告厅', gym: '体育馆', zhu3: '竹园', mei5: '梅园', tao2: '桃园', lan1: '兰园', yan: '研究生公寓' }
-const ROUTES = [
+export const ROUTES = [
   { from: 'jiao1', to: 'mei5', label: '一教下课回梅园' },
   { from: 'jiao1', to: 'lan1', label: '一教去兰园' },
   { from: 'market', to: 'yan', label: '超市回研究生公寓' },

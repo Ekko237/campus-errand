@@ -251,7 +251,7 @@ function OrderStage({ i }) {
 
 function LoopStep({ s, now, past }) {
   return (
-    <li className={`flex scroll-mt-40 gap-5 transition-opacity duration-300 lg:min-h-[min(26vh,260px)] lg:items-center ${now ? 'opacity-100' : past ? 'opacity-70' : 'opacity-45'}`}>
+    <li className={`flex scroll-mt-40 gap-5 transition-opacity duration-300 lg:min-h-[min(26vh,260px)] lg:items-center ${now ? 'opacity-100' : past ? 'opacity-20 lg:opacity-70' : 'opacity-45'}`}>
       <span className="grid size-16 shrink-0 place-items-center rounded-2xl bg-bg">
         <img src={icon(s.icon + '-v1')} width={48} height={48} alt={s.alt} loading="lazy" className="size-12 object-contain" />
       </span>
@@ -291,9 +291,15 @@ function Loop() {
   useMotionValueEvent(scrollY, 'change', () => {
     const items = ol.current?.children
     if (!items) return
-    const line = window.innerWidth >= 1024 ? window.innerHeight * 0.55 : 240
     let k = 0
-    for (let j = 0; j < items.length; j++) if (items[j].getBoundingClientRect().top < line) k = j
+    if (window.innerWidth >= 1024) {
+      const line = window.innerHeight * 0.55
+      for (let j = 0; j < items.length; j++) if (items[j].getBoundingClientRect().top < line) k = j
+    } else {
+      // 手机：吸顶条下面第一个完整露出来的步骤
+      k = items.length - 1
+      for (let j = 0; j < items.length; j++) if (items[j].getBoundingClientRect().top > 140) { k = j; break }
+    }
     setActive(k)
   })
   return (
@@ -309,7 +315,7 @@ function Loop() {
             <div className="sticky top-28"><OrderStage i={active} /></div>
           </div>
           <div className="lg:col-span-6 lg:col-start-7">
-            <div className="sticky top-[80px] z-10 mb-8 lg:hidden"><MiniOrder i={active} /></div>
+            <div className="sticky top-16 z-10 -mx-4 mb-6 bg-accent-deep px-4 pb-3 pt-2 lg:hidden"><MiniOrder i={active} /></div>
             <ol ref={ol} className="space-y-10 lg:space-y-0">
               {LOOP.map((s, k) => <LoopStep key={s.t} s={s} now={k === active} past={k < active} />)}
             </ol>
