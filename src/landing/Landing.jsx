@@ -16,7 +16,7 @@ function Reveal({ children, className = '', delay = 0, as = 'div', y = 28 }) {
   const reduce = useReducedMotion()
   const M = motion[as]
   return (
-    <M className={className} initial={reduce ? false : { opacity: 0, y }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, amount: 0.2 }} transition={{ duration: 0.7, delay, ease }}>
+    <M className={className} initial={reduce ? false : { opacity: 0, y }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, amount: 0.1, margin: '0px 0px -8% 0px' }} transition={{ duration: 0.5, delay: Math.min(delay, 0.1), ease }}>
       {children}
     </M>
   )
@@ -61,7 +61,7 @@ function Anchor({ to, children, ...p }) {
 }
 
 const H2 = ({ children, className = '' }) => (
-  <h2 className={`text-balance text-[34px] font-bold leading-[1.1] tracking-[-0.02em] md:text-5xl lg:text-[56px] ${className}`}>{children}</h2>
+  <h2 className={`text-balance text-[30px] font-bold leading-[1.1] tracking-[-0.02em] md:text-5xl lg:text-[56px] ${className}`}>{children}</h2>
 )
 const Br = () => <br className="hidden md:inline" />
 const Lead = ({ children, className = '' }) => <p className={`mt-5 max-w-[38ch] text-lg leading-relaxed text-muted md:text-xl ${className}`}>{children}</p>
@@ -196,7 +196,7 @@ function Hero() {
   const reduce = useReducedMotion()
   const ref = useRef(null)
   const { scrollYProgress } = useScroll({ target: ref, offset: ['start start', 'end start'] })
-  const imgY = useTransform(scrollYProgress, [0, 1], reduce ? [0, 0] : [0, 80])
+  const imgY = useTransform(scrollYProgress, [0, 1], [0, 0])
   const imgScale = useTransform(scrollYProgress, [0, 1], reduce ? [1, 1] : [1.04, 1.12])
   const line = (i) => ({ initial: reduce ? false : { y: '105%' }, animate: { y: 0 }, transition: { duration: 0.9, delay: 0.1 + i * 0.09, ease } })
   const fade = (d) => ({ initial: reduce ? false : { opacity: 0, y: 16 }, animate: { opacity: 1, y: 0 }, transition: { duration: 0.8, delay: d, ease } })
@@ -282,7 +282,7 @@ function Scenes() {
   return (
     <section id="scenes" className={`mx-auto max-w-7xl scroll-mt-16 ${SECTION}`}>
       <div className="max-w-4xl">
-        <Reveal><H2>三个每天都在发生的跑腿时刻</H2></Reveal>
+        <Reveal><H2>三个每天都在发生的<br />跑腿时刻</H2></Reveal>
         <Reveal delay={0.05}><Lead>目标用户：时间被课表切碎、又在意隐私的在校生。需求小、频次高、怕被坑。</Lead></Reveal>
       </div>
       <div className="no-scrollbar -mx-4 mt-12 overflow-x-auto px-4">
@@ -395,8 +395,8 @@ function Loop() {
       <div className="rounded-[32px] bg-accent-deep text-on-accent md:rounded-[48px]">
       <div className={`mx-auto max-w-7xl ${SECTION}`}>
         <div className="max-w-4xl">
-          <Reveal><H2>一单从发布到信用变化，<Br />六步走完</H2></Reveal>
-          <Reveal delay={0.05}><p className="mt-5 max-w-[38ch] text-lg leading-relaxed opacity-80 md:text-xl">往下滚，左边这张订单会跟着走完一遍。钱什么时候冻结、取件码什么时候出现、信用什么时候变，一眼看清。</p></Reveal>
+          <Reveal><H2>一单从发布到信用变化，<br />六步走完</H2></Reveal>
+          <Reveal delay={0.05}><p className="mt-5 max-w-[38ch] text-lg leading-relaxed opacity-80 md:text-xl"><span className="hidden lg:inline">往下滚，左边这张订单会跟着走完一遍。</span>钱什么时候冻结、取件码什么时候出现、信用什么时候变，一眼看清。</p></Reveal>
         </div>
         <div className="mt-14 grid gap-12 lg:grid-cols-12">
           <div className="hidden lg:col-span-5 lg:block">
@@ -427,7 +427,7 @@ function Trust() {
     <section id="trust" className={`mx-auto max-w-7xl scroll-mt-16 ${SECTION}`}>
       <div className="grid gap-12 lg:grid-cols-12">
         <div className="lg:col-span-5">
-          <Reveal><H2>凭什么把取件码<Br />交给一个陌生同学</H2></Reveal>
+          <Reveal><H2>凭什么把取件码<br />交给一个陌生同学</H2></Reveal>
           <Reveal delay={0.05}><Lead>校园跑腿最大的成本不是钱，是对陌生人的不放心。信任拆成五道关，每一道只解决一种具体的怕。</Lead></Reveal>
           <Reveal delay={0.1}>
             <img src={img('trust-v1')} width={1100} height={825} alt="两只手在校园里交接一个小包裹" loading="lazy" className="mt-10 hidden aspect-[4/3] w-full rounded-2xl bg-sunken object-cover lg:block" />
@@ -488,8 +488,8 @@ function Credit() {
     <section className="border-y border-line bg-surface">
       <div className={`mx-auto max-w-7xl ${SECTION}`}>
         <div className="max-w-4xl">
-          <Reveal><H2>双向信用：<Br />谁不守约谁扣分</H2></Reveal>
-          <Reveal delay={0.05}><Lead>满分 100，认证后从 70 起步，不能充值也不能刷。点右边任意一条规则，看分数和等级怎么变。</Lead></Reveal>
+          <Reveal><H2>双向信用：<br />谁不守约谁扣分</H2></Reveal>
+          <Reveal delay={0.05}><Lead>满分 100，认证后从 70 起步，不能充值也不能刷。点任意一条规则，看分数和等级怎么变。</Lead></Reveal>
         </div>
         <div className="mt-14 grid gap-6 lg:grid-cols-12">
           <Reveal className="lg:col-span-5">
@@ -526,7 +526,11 @@ function Credit() {
                 <li key={r.label} className={rules.length % 2 && ri === rules.length - 1 ? 'sm:col-span-2' : ''}>
                   <button onClick={() => apply(r)} className="group flex h-full w-full items-start gap-4 rounded-2xl bg-bg p-5 text-left ring-1 ring-line transition hover:-translate-y-0.5 hover:shadow-[0_14px_30px_-18px_rgba(17,40,30,0.4)] hover:ring-accent/40 active:translate-y-0 active:scale-[0.98]">
                     <span className={`tnum w-12 shrink-0 text-3xl font-bold ${r.delta > 0 ? 'text-accent' : 'text-danger'}`}>{r.delta > 0 ? '+' : ''}{r.delta}</span>
-                    <span><span className="block text-lg font-semibold">{r.label}</span><span className="block text-[15px] text-muted">{r.note}</span></span>
+                    <span className="min-w-0"><span className="block text-lg font-semibold">{r.label}</span><span className="block text-[15px] text-muted">{r.note}</span>
+                      {last?.label === r.label && (
+                        <motion.span key={score} initial={reduce ? false : { opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ type: 'spring', stiffness: 380, damping: 30 }}
+                          className="tnum mt-2 inline-flex items-center gap-1.5 rounded-full bg-accent-soft px-3 py-1 text-sm font-bold text-accent lg:hidden">现在 {score} 分 ·「{tier.name}」</motion.span>
+                      )}</span>
                   </button>
                 </li>
               ))}
@@ -549,7 +553,7 @@ function Safety() {
         <div className="absolute inset-0 bg-[#0e1110]/80" />
         <div className="relative px-6 py-16 text-[#eceeed] md:px-16 md:py-24">
           <img src={icon('blocked-v1')} width={80} height={80} alt="盖住试卷的禁止手势" loading="lazy" className="size-20 object-contain" />
-          <h2 className="mt-6 text-[40px] font-bold leading-[1.05] tracking-[-0.03em] md:text-7xl">这些单，发不出去</h2>
+          <h2 className="mt-6 text-[40px] font-bold leading-[1.05] tracking-[-0.03em] md:text-7xl">这些单，<br className="md:hidden" />发不出去</h2>
           <p className="mt-5 max-w-[34ch] text-lg leading-relaxed opacity-90 md:text-xl">互助不等于帮人作弊。发布时自动识别关键词并拦截，被举报核实的账号直接封禁。</p>
           <ul className="mt-10 flex flex-wrap gap-2.5">
             {words.map((w, i) => (
@@ -584,7 +588,7 @@ function Metrics() {
   return (
     <section id="metrics" className="scroll-mt-16 border-y border-line bg-surface">
       <div className={`mx-auto max-w-7xl ${SECTION}`}>
-        <div className="max-w-4xl"><Reveal><H2>看三个数，<Br />就知道平台健不健康</H2></Reveal></div>
+        <div className="max-w-4xl"><Reveal><H2>看三个数，<br />就知道平台健不健康</H2></Reveal></div>
         <div className="mt-14 grid gap-3 md:grid-cols-2 lg:grid-cols-3 lg:grid-rows-2">
           <Reveal className="flex flex-col justify-between rounded-2xl bg-ink p-6 text-bg md:col-span-2 md:p-10 lg:row-span-2">
             <div>
@@ -601,7 +605,7 @@ function Metrics() {
           </Reveal>
           <Reveal delay={0.1} className="relative overflow-hidden rounded-2xl p-6 text-[#eceeed]">
             <img src={img('metrics-v1')} width={1100} height={825} alt="傍晚的校园路口，学生步行和骑车经过" loading="lazy" className="absolute inset-0 size-full object-cover" />
-            <div className="absolute inset-0 bg-[#0e1110]/72" />
+            <div className="absolute inset-0 bg-[#0e1110]/82" />
             <div className="relative">
               <p className="text-lg font-semibold">平均接单时长</p>
               <p className="mt-1 text-5xl font-bold tracking-tight"><CountUp to={10} prefix="≤ " suffix=" 分钟" /></p>

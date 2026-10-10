@@ -111,7 +111,8 @@ export default function Hall() {
     if (urgentOnly) l = l.filter((t) => t.urgent)
     if (goodPoster) l = l.filter((t) => t.posterId === 'poster' || t.posterCredit >= 85)
     const key = { dist: (t) => dist(RUNNER_HOME, t.from), reward: (t) => -t.reward, deadline: (t) => t.deadline }[sort]
-    return [...l].sort((a, b) => key(a) - key(b))
+    const t0 = Date.now()
+    return [...l].sort((a, b) => (a.deadline < t0) - (b.deadline < t0) || key(a) - key(b))
   }, [state.tasks, type, sort, urgentOnly, goodPoster])
 
   return (
@@ -130,7 +131,7 @@ export default function Hall() {
 
       <div className="flex items-end justify-between">
         <h1 className="text-2xl font-bold tracking-tight">任务大厅</h1>
-        <span className="text-sm text-muted">示例数据 · {list.length} 个待接</span>
+        <span className="text-sm text-muted">示例数据 · {list.filter((t) => t.deadline > Date.now()).length} 个待接</span>
       </div>
 
       <div className="no-scrollbar -mx-4 flex gap-2 overflow-x-auto px-4" role="group" aria-label="按类型筛选">

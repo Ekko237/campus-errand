@@ -14,7 +14,12 @@ function load() {
     if (!raw) return { state: fresh(), error: null }
     const s = JSON.parse(raw)
     if (!s || !Array.isArray(s.tasks) || !s.accounts?.poster || !s.accounts?.runner) throw new Error('bad shape')
-    return { state: { ...s, toasts: [] }, error: null }
+    // 示例单是演示用的：过了截止时间就按原来的时间窗重新排到「现在」，大厅不会一片「已超时」
+    const t0 = Date.now()
+    const tasks = s.tasks.map((t) => (/^s\d+$/.test(t.id) && t.status === 'open' && t.deadline < t0
+      ? { ...t, createdAt: t0 - (t.ago ?? 10) * 60000, deadline: t0 + t.windowMin * 60000, timeline: [{ ...t.timeline[0], at: t0 - (t.ago ?? 10) * 60000 }, ...t.timeline.slice(1)] }
+      : t))
+    return { state: { ...s, tasks, toasts: [] }, error: null }
   } catch (e) {
     return { state: fresh(), error: '本地演示数据损坏，已无法读取' }
   }

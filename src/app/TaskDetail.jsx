@@ -11,7 +11,7 @@ function stepIndex(t) {
   if (t.status === 'open') return 0
   if (t.status === 'ongoing') return t.picked ? 2 : 1
   if (t.status === 'delivered' || t.status === 'disputed') return 3
-  if (t.status === 'completed') return t.ratingByPoster || t.ratingByRunner ? 5 : 4
+  if (t.status === 'completed') return t.ratingByPoster && t.ratingByRunner ? 6 : t.ratingByPoster || t.ratingByRunner ? 5 : 4
   return 0
 }
 const STATUS_TEXT = { open: '待接单', ongoing: '进行中', delivered: '待确认', completed: '已完成', disputed: '申诉中', refunded: '已退款', cancelled: '已取消' }
@@ -435,7 +435,7 @@ export default function TaskDetail() {
         <h1 className="mt-3 text-2xl font-bold leading-snug tracking-tight">{t.title}</h1>
         <div className="mt-3 space-y-1.5 text-[15px] text-muted">
           <p className="flex items-start gap-1.5"><MapPin size={18} className="mt-0.5 shrink-0" /><span>{B[t.from]?.name}{t.from !== t.to && <> 到 {B[t.to]?.name}</>}<span className="tnum block text-sm">取件点距跑腿人 {fmtDist(dist(RUNNER_HOME, t.from))}</span></span></p>
-          <p className="flex items-center gap-1.5"><Clock size={18} />截止：{left(t.deadline)}</p>
+          <p className="flex items-center gap-1.5"><Clock size={18} />{['open', 'ongoing'].includes(t.status) ? `截止：${left(t.deadline)}` : t.status === 'delivered' || t.status === 'disputed' ? '已送达，等确认' : t.completedAt ? `完成于 ${clock(t.completedAt)}` : STATUS_TEXT[t.status]}</p>
         </div>
         {t.note && <p className="mt-3 rounded-xl bg-sunken p-3 text-[15px]">备注：{t.note}</p>}
       </div>
