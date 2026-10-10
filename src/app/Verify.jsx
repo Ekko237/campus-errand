@@ -40,7 +40,8 @@ export default function Verify() {
           <VerifiedBadge />
           <span className="tnum rounded-full bg-accent-soft px-3 py-1 text-sm font-bold text-accent">信用 {CREDIT_INIT} ·「{levelOf(CREDIT_INIT).name}」</span>
         </motion.div>
-        <p className="mt-5 text-sm text-muted">{back.startsWith('/app/task') ? '马上回到刚才的订单…' : '马上回到你的页面…'}</p>
+        <Btn className="mt-5" onClick={() => nav(back)}>{back.startsWith('/app/task') ? '现在回去接单' : '回去'}</Btn>
+        <p className="mt-2 text-xs text-muted">2 秒后自动回去</p>
       </Panel>
     )
   }

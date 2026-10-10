@@ -54,7 +54,8 @@ export default function TourBar() {
       const r = el.getBoundingClientRect()
       const top = head + 16, bottom = (navTop > innerHeight / 2 ? navTop : innerHeight) - 24
       if (r.top >= top && r.bottom <= bottom) return
-      const dy = r.bottom > bottom && r.height < bottom - top ? r.bottom - bottom : r.top - top
+      // 把按钮放到可见区中间：它下面的小字（申诉、放弃、说明）也一起露出来，不被底部导航挡
+      const dy = r.height < bottom - top ? r.top + r.height / 2 - (top + bottom) / 2 : r.top - top
       window.scrollBy({ top: dy, behavior: reduce ? 'auto' : 'smooth' })
     }
     const id = setTimeout(() => {

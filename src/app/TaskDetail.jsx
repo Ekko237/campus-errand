@@ -498,7 +498,7 @@ function RouteFit({ t }) {
   return (
     <span className={`tnum inline-flex flex-col rounded-2xl px-3 py-1.5 text-sm ${m <= 5 ? 'bg-accent-soft text-accent' : 'bg-sunken text-ink'}`}>
       <span className="whitespace-nowrap font-bold">{m <= 5 ? '顺路 · ' : ''}捎这单多走 {m} 分钟</span>
-      <span className="whitespace-nowrap font-medium opacity-80">你常走 {name(route.from)} → {name(route.to)}</span>
+      <span className="whitespace-nowrap font-medium opacity-80">{m <= 5 ? `你常走的 ${name(route.from)} → ${name(route.to)} 正好经过` : `你常走 ${name(route.from)} → ${name(route.to)}`}</span>
     </span>
   )
 }
@@ -517,7 +517,7 @@ function OnTheWay({ t }) {
   const cap = t.status === 'delivered' ? `已送到${name(t.to)}，等发单人确认` : t.picked ? `已取到，正往${name(t.to)}走` : `在去${name(t.from)}取件的路上`
   return (
     <Panel className="p-3">
-      <p className="px-1 pb-2 text-sm font-semibold"><span className="text-accent">{cap}</span>{mine && <span className="text-muted"> · 顺路 {name(mine.from)} → {name(mine.to)}</span>}</p>
+      <p className="px-1 pb-2 text-sm font-semibold"><span className="block text-accent">{cap}</span>{mine && <span className="block whitespace-nowrap font-normal text-muted">顺路：{name(mine.from)} → {name(mine.to)}</span>}</p>
       <CampusMap R={R} hits={hits} pills={false} walker={false} at={at} />
     </Panel>
   )

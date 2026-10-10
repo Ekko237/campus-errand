@@ -168,7 +168,7 @@ function Nav({ page }) {
               {SECTIONS.map(([to, l], i) => (
                 <li key={to}><Anchor to={to} onClick={() => setOpen(false)} aria-current={cur === to ? 'location' : undefined} className={`flex h-12 items-center gap-3 rounded-xl px-2 text-[17px] active:bg-sunken ${cur === to ? 'bg-accent-soft font-bold text-accent' : 'font-semibold'}`}><span className="tnum w-5 text-sm opacity-60">{i + 1}</span>{l}{cur === to && <span className="ml-auto text-sm font-semibold">你在这里</span>}</Anchor></li>
               ))}
-              <li><Link to="/thinking" onClick={() => setOpen(false)} className="flex h-12 items-center gap-3 rounded-xl px-2 text-[17px] font-semibold active:bg-sunken"><span className="w-5" />产品思考<ArrowRight size={16} weight="bold" className="ml-auto text-muted" /></Link></li>
+              <li className="mt-1 border-t border-line pt-1"><Link to="/thinking" onClick={() => setOpen(false)} className="flex h-12 items-center gap-3 rounded-xl px-2 text-[17px] font-semibold active:bg-sunken"><span className="w-5" />产品思考<ArrowRight size={16} weight="bold" className="ml-auto text-muted" /></Link></li>
               <li className="pt-2"><Link to="/app" onClick={() => setOpen(false)} className="flex h-12 items-center justify-center gap-2 rounded-full bg-accent text-[17px] font-semibold text-on-accent active:scale-[0.98]">体验原型<ArrowRight size={18} weight="bold" /></Link></li>
             </ol>
           </motion.nav>
@@ -339,7 +339,7 @@ function StageMap({ i, tall = false }) {
   // 驿站门口就在路边：包裹和名牌都贴着路线，看得出这条路经过驿站
   const station = [PLACES.cainiao.door[0], STAGE_PTS[1][1] + 34]
   const mei = [PLACES.mei5.door[0], PLACES.mei5.door[1] + 60]
-  const tag = (txt, at, strong, z = '') => <span className={`absolute ${z} -translate-x-1/2 whitespace-nowrap rounded-full px-1.5 py-0.5 text-[11px] font-semibold shadow-sm ${strong ? 'bg-ink text-bg' : 'bg-surface text-ink ring-1 ring-line'}`} style={spct(at)}>{txt}</span>
+  const tag = (txt, at, strong, z = '') => <span className={`absolute ${z} -translate-x-1/2 whitespace-nowrap rounded-full px-1.5 py-0.5 text-[12px] font-semibold shadow-sm ${strong ? 'bg-ink text-bg' : 'bg-surface text-ink ring-1 ring-line'}`} style={spct(at)}>{txt}</span>
   return (
     <div className="mt-5">
     <div className={`relative overflow-hidden rounded-xl ring-1 ring-line ${tall ? 'aspect-[1290/600]' : 'aspect-[1290/460]'}`} aria-hidden="true">
@@ -352,22 +352,22 @@ function StageMap({ i, tall = false }) {
           animate={{ pathLength: Math.max(0, (STAGE_P[i] - STAGE_F) / (1 - STAGE_F)), opacity: i >= 3 ? 1 : 0 }} transition={sp} />
       </svg>
       {tag('一教', [STAGE_PTS[0][0] - 40, STAGE_PTS[0][1] - 150], false, 'z-20')}
-      {tag('菜鸟驿站', [station[0], STAGE_PTS[1][1] - 72], i === 2, 'z-20')}
+      {i !== 2 && tag('菜鸟驿站', [station[0], STAGE_PTS[1][1] - 72], false, 'z-20')}
       {tag('梅园', [mei[0] + 230, mei[1] + 40], i >= 4)}
       {/* 包裹：先在驿站等着（发布时一闪），第 3 步起跟着阿远走，送到后落在梅园 */}
       {i < 3 && (
         <motion.img src={icon('type-express-v1')} width={28} height={28} alt="" className="absolute size-7 -translate-x-1/2 -translate-y-1/2" style={spct(station)}
           initial={false} animate={{ scale: i === 0 ? [1, 1.25, 1] : 1 }} transition={{ duration: 0.6 }} />
       )}
-      <motion.span className="absolute z-10 grid size-8 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full bg-surface ring-[3px] ring-ink md:size-9"
+      <motion.span className="absolute z-30 grid size-8 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full bg-surface ring-[3px] ring-ink md:size-9"
         initial={false} animate={{ ...spct(me), opacity: i === 0 ? 0 : 1 }} transition={sp}>
         <img src={icon('avatar-runner-v1')} width={28} height={28} alt="" className="size-6 rounded-full md:size-7" />
         {i === 3 && <img src={icon('type-express-v1')} width={20} height={20} alt="" className="absolute -right-2 -top-2 size-5" />}
-        {i !== 2 && <span className="absolute left-1/2 top-full mt-0.5 -translate-x-1/2 whitespace-nowrap rounded-full bg-ink px-1.5 text-[10px] font-semibold leading-4 text-bg">阿远</span>}
+        {i !== 2 && <span className="absolute left-1/2 top-full mt-0.5 -translate-x-1/2 whitespace-nowrap rounded-full bg-ink px-1.5 text-[11px] font-semibold leading-4 text-bg">阿远</span>}
       </motion.span>
       {i >= 4 && (
         <motion.span key={`pay${i}`} className="tnum absolute z-20 -translate-x-1/2 rounded-full bg-accent px-2 py-0.5 text-xs font-bold text-on-accent" style={spct([mei[0] + 200, mei[1] - 262])}
-          initial={reduce ? false : { opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={sp}>{i === 4 ? '+¥5 给阿远' : '阿远信用 +3'}</motion.span>
+          initial={reduce ? false : { opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={sp}>{i === 4 ? '+¥5 给阿远' : '阿远信用 73'}</motion.span>
       )}
     </div>
     <p className="mt-1.5 flex flex-wrap gap-x-3 text-[11px] text-ink/70"><span className="inline-flex items-center gap-1"><i className="h-1 w-4 rounded-full bg-ink/80" />阿远走的路</span><span className="inline-flex items-center gap-1"><i className="h-1.5 w-4 rounded-full bg-accent" />捎着你快递的那段</span></p>
@@ -572,7 +572,7 @@ function TrustStop({ x, lit, reduce }) {
 
 // 隐私分级：同一张取件卡，接单前打码、接单后亮出、结束后收起，三秒换一次
 const PRIV = [
-  { k: '接单前', code: '• • ••••', room: '梅园 * 号楼 ***', tone: 'muted', who: '大厅里谁都看不到，只看到「梅园」' },
+  { k: '接单前', code: '• • ••••', room: '梅园 * 号楼 ***', tone: 'muted', who: '大厅里只看到「梅园」，楼号和门牌都打了码' },
   { k: '接单后', code: '6-2-3108', room: '梅园 5 号楼 412', tone: 'open', who: '只有接下这单的同学看得到' },
   { k: '结束后', code: '6-2-3108', room: '梅园 5 号楼 412', tone: 'closed', who: '确认放款那一刻收回，对方再也看不到' },
 ]
@@ -737,7 +737,7 @@ function Credit() {
                 {(who === 'runner' ? [60, 72, 85] : [70, 75, 85]).map((m) => (
                   <span key={m} className="absolute top-0 -translate-x-1/2 text-center" style={{ left: `${m}%` }}>
                     <span className="mx-auto block h-5 w-0.5 rounded-full bg-on-accent/60" />
-                    <span className="tnum mt-0.5 block text-[11px] font-semibold opacity-80">{m}</span>
+                    <span className="tnum mt-0.5 block text-[12px] font-semibold opacity-80">{m}</span>
                   </span>
                 ))}
               </div>

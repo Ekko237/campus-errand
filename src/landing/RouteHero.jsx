@@ -94,7 +94,7 @@ export function RouteMap() {
           <img src={icon('type-express-v1')} width={36} height={36} alt="" className={`size-6 transition-opacity md:size-9 ${phase >= 2 ? 'opacity-30' : ''}`} />
         </motion.div>
       </Node>
-      <Node x={PLACES.cainiao.door[0]} y={PLACES.cainiao.door[1] + 90} className="z-20"><Tag strong={lit}>菜鸟驿站</Tag></Node>
+      <Node x={PLACES.cainiao.door[0]} y={PLACES.cainiao.door[1] + 112} className="z-20"><Tag strong={lit}>菜鸟驿站</Tag></Node>
       <Node x={MEI[0]} y={MEI[1]}>
         <div className={`relative size-10 rounded-full bg-surface ring-[3px] transition-colors md:size-14 ${phase === 3 ? 'ring-accent' : 'ring-line'}`}>
           <img src={icon('avatar-poster-v1')} width={56} height={56} alt="" className="size-full rounded-full object-cover" />
