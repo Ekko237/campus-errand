@@ -3,6 +3,8 @@ import { motion, AnimatePresence, animate } from 'motion/react'
 import { MAP_W, MAP_H, PLACES, routePath } from '../campusMap'
 
 const icon = (name) => `${import.meta.env.BASE_URL}icons/${name}.webp`
+// 手机上名牌放在点旁边时用的更短的名字
+const TINY = { market: '超市', canteen1: '一食', canteen2: '二食', hall: '报告厅', cainiao: '驿站' }
 export const SHORT = { cainiao: '菜鸟驿站', sf: '顺丰点', jd: '京东柜', canteen1: '一食堂', canteen2: '二食堂', market: '教育超市', gate: '北门', lib: '图书馆', jiao1: '一教', hall: '学术报告厅', gym: '体育馆', zhu3: '竹园', mei5: '梅园', tao2: '桃园', lan1: '兰园', yan: '研究生公寓' }
 
 // 地图上标点的位置：小亭子、校门标在正中，其他楼标在楼里取件的地方（从门口拐进去那段虚线的尽头）
@@ -72,10 +74,13 @@ export default function CampusMap({ R, hits, reduce, pills = true, walker = true
   // 手机上整张图太小：只裁这条路左右 1200 宽、4:3 的一块，放大约 1.3 倍，名牌和编号不挤
   const [small, setSmall] = useState(() => typeof window !== 'undefined' && window.matchMedia('(max-width: 639px)').matches)
   useEffect(() => { const m = window.matchMedia('(max-width: 639px)'); const f = () => setSmall(m.matches); m.addEventListener('change', f); return () => m.removeEventListener('change', f) }, [])
-  const xs = [...mine, ...marks.map(({ t }) => markAt(t.from))].map((q) => q[0])
-  const cx = (Math.min(...xs) + Math.max(...xs)) / 2
-  const V = small ? { X0: Math.max(0, Math.min(MAP_W - 1200, cx - 600)), VW: 1200 } : { X0: 0, VW: MAP_W }
-  const pct = ([x, y]) => ({ left: `${((x - V.X0) / V.VW) * 100}%`, top: `${(y / MAP_H) * 100}%` })
+  // 画框要装下路线、取件点和送达点，左右各留 90；三条路线都装得下 1320 宽，画框高度不随路线跳
+  const pts = [...mine, ...marks.map(({ t }) => markAt(t.from)), ...marks.filter(({ t }) => PLACES[t.to]).map(({ t }) => PLACES[t.to].door)]
+  const xs = pts.map((q) => q[0]), ys = pts.map((q) => q[1])
+  const cx = (Math.min(...xs) + Math.max(...xs)) / 2, cy = (Math.min(...ys) + Math.max(...ys)) / 2
+  const vw = Math.min(MAP_W, Math.max(1320, Math.max(...xs) - Math.min(...xs) + 180)), vh = Math.min(MAP_H, vw * 0.75)
+  const V = small ? { X0: Math.max(0, Math.min(MAP_W - vw, cx - vw / 2)), VW: vw, Y0: Math.max(0, Math.min(MAP_H - vh, cy - vh / 2)), VH: vh } : { X0: 0, VW: MAP_W, Y0: 0, VH: MAP_H }
+  const pct = ([x, y]) => ({ left: `${((x - V.X0) / V.VW) * 100}%`, top: `${((y - V.Y0) / V.VH) * 100}%` })
   const me = pointAt(mine, p)
   const ends = [R.from, R.to]
   // 起终点旁边就有取件点时，名牌翻到另一边，不盖住编号
@@ -95,9 +100,9 @@ export default function CampusMap({ R, hits, reduce, pills = true, walker = true
   const pillUp = (t) => { const id = nearId(t); return id && !side(id) ? !labelUp(id) : outward(t.from) === 'up' }
   return (
     <div>
-    <div className="relative aspect-[4/3] w-full overflow-hidden sm:aspect-[16/9] rounded-[20px] bg-surface ring-1 ring-line md:rounded-[28px]"
+    <div style={{ aspectRatio: `${V.VW} / ${V.VH}` }} className="relative w-full overflow-hidden rounded-[20px] bg-surface ring-1 ring-line md:rounded-[28px]"
       role="img" aria-label={`示意地图：从${SHORT[R.from]}到${SHORT[R.to]}，沿路有 ${hits.length} 个顺路的单`}>
-      <svg viewBox={`${V.X0} 0 ${V.VW} ${MAP_H}`} className="absolute inset-0 size-full" aria-hidden="true">
+      <svg viewBox={`${V.X0} ${V.Y0} ${V.VW} ${V.VH}`} className="absolute inset-0 size-full" aria-hidden="true">
         <image href={`${import.meta.env.BASE_URL}images/campus-map-v2.webp`} x="0" y="0" width={MAP_W} height={MAP_H} />
         {/* 拐进楼里取件的那一小段：从路边进门、走进楼里，多走的分钟数大多花在这里 */}
         {marks.map(({ t, f }) => {
@@ -135,7 +140,7 @@ export default function CampusMap({ R, hits, reduce, pills = true, walker = true
       {ends.filter((id) => !(at != null && ((id === R.from && at < 0.15) || (id === R.to && at >= 0.99)))).map((id) => (
         <span key={id} className="absolute z-20" style={pct(id === R.from ? mine[0] : mine[mine.length - 1])}>
           <span className="absolute left-0 top-0 block size-3 -translate-x-1/2 -translate-y-1/2 rounded-full bg-ink ring-[3px] ring-surface md:size-4" />
-          <span className={`absolute whitespace-nowrap rounded-full bg-ink px-2 py-0.5 text-[13px] font-semibold text-bg shadow-sm md:px-2.5 md:text-[13px] ${side(id) === 'right' ? 'left-3 -translate-y-1/2' : side(id) === 'left' ? 'right-3 -translate-y-1/2' : `${edge(id) === 'l' ? '-left-3' : edge(id) === 'r' ? '-right-3' : 'left-0 -translate-x-1/2'} ${labelUp(id) ? 'bottom-3.5' : 'top-3.5'}`}`}>{side(id) ? <span className="max-md:hidden">{SHORT[id]} </span> : `${SHORT[id]} `}{id === R.from ? '出发' : '到达'}</span>
+          <span className={`absolute whitespace-nowrap rounded-full bg-ink px-2 py-0.5 text-[13px] font-semibold text-bg shadow-sm md:px-2.5 md:text-[13px] ${side(id) === 'right' ? 'left-3 -translate-y-1/2' : side(id) === 'left' ? 'right-3 -translate-y-1/2' : `${edge(id) === 'l' ? '-left-3' : edge(id) === 'r' ? '-right-3' : 'left-0 -translate-x-1/2'} ${labelUp(id) ? 'bottom-3.5' : 'top-3.5'}`}`}>{side(id) ? <><span className="max-md:hidden">{SHORT[id]} </span><span className="md:hidden">{TINY[id] || SHORT[id]} </span></> : `${SHORT[id]} `}{id === R.from ? '出发' : '到达'}</span>
         </span>
       ))}
       {!endsOnly && marks.filter(({ t }) => !ends.includes(t.from)).map(({ t }) => (
@@ -168,7 +173,7 @@ export default function CampusMap({ R, hits, reduce, pills = true, walker = true
         <span className="inline-flex items-center gap-1.5"><i className="h-1.5 w-5 rounded-full bg-accent ring-2 ring-surface" />顺手捎的那段（取件到送达）</span>
         <span className="inline-flex items-center gap-1.5 max-md:hidden"><i className="w-5 border-t-[3px] border-dotted border-accent" />拐进楼里取件（多走的路）</span>
         {hits.some((t) => t.from !== t.to && PLACES[t.to] && t.to !== R.from && t.to !== R.to) && <span className="inline-flex items-center gap-1.5"><i className="size-2.5 rounded-full bg-surface ring-2 ring-accent" />送达点</span>}
-        <span className="inline-flex items-center gap-1.5"><i className="size-2.5 rounded-full bg-accent" /><span>取件点，<span className="md:hidden">按路上先后编号，</span>共 {hits.length} 单</span></span>
+        <span className="inline-flex items-center gap-1.5"><i className="size-2.5 rounded-full bg-accent" /><span>取件点，按路上先后编号，走到就变绿，共 {hits.length} 单</span></span>
       </p>
     )}
     </div>

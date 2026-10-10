@@ -97,7 +97,7 @@ export default function Me() {
           <motion.div initial={reduce ? false : { opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, height: 0 }} transition={{ type: 'spring', stiffness: 380, damping: 30 }}
             className="overflow-hidden rounded-2xl bg-accent p-5 text-on-accent">
             <p className="text-lg font-bold">一单走完了</p>
-            <p className="mt-1 text-[15px] leading-relaxed opacity-90">赏金托管到放款、取件码用完收起、两边互评改了信用分，全程都在这台手机上。</p>
+            <p className="mt-1 text-[15px] leading-relaxed opacity-90">赏金托管到放款、取件码用完收起、两边互评改了信用分，全程都在这台设备上。</p>
             <div className="mt-4 flex flex-wrap gap-2">
               <Link to="/" onClick={closeWrap} className="inline-flex h-10 items-center rounded-full bg-on-accent px-4 text-[15px] font-semibold text-accent">回到产品介绍</Link>
               <button onClick={() => { closeWrap(); act('tour', { tour: { active: true, taskId: null, done: false } }); act('role', { role: 'poster' }); nav('/app/publish?tour=1') }} className="inline-flex h-10 items-center rounded-full bg-on-accent/15 px-4 text-[15px] font-semibold">再走一遍</button>

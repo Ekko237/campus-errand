@@ -131,10 +131,15 @@ function Nav({ page }) {
   const [cur, setCur] = useState(null)
   // 换页（首页 ↔ 产品思考）时目录一定先收起，不带到新页面
   useEffect(() => { setOpen(false) }, [page])
-  useMotionValueEvent(scrollY, 'change', (v) => setScrolled(v > 420))
+  // 桌面顶栏标出现在读到哪一节
+  const [here, setHere] = useState(null)
+  useMotionValueEvent(scrollY, 'change', (v) => {
+    setScrolled(v > 420)
+    setHere([...SECTIONS].reverse().find(([id]) => (document.getElementById(id)?.getBoundingClientRect().top ?? 1e9) < 160)?.[0] ?? null)
+  })
   const home = page !== 'thinking'
   const linkCls = 'group relative py-1 transition-colors hover:text-ink'
-  const under = <span className="absolute inset-x-0 -bottom-0.5 h-px origin-left scale-x-0 bg-ink transition-transform duration-300 group-hover:scale-x-100" />
+  const under = (on) => <span className={`absolute inset-x-0 -bottom-0.5 h-px origin-left bg-ink transition-transform duration-300 group-hover:scale-x-100 ${on ? 'scale-x-100' : 'scale-x-0'}`} />
   return (
     <header className={`sticky top-0 z-30 transition-[background-color,border-color,box-shadow] duration-300 ${scrolled || !home ? 'border-b border-line bg-bg shadow-[0_1px_0_rgba(0,0,0,0.02)]' : 'border-b border-transparent bg-bg'}`}>
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-4 px-4 md:px-8">
@@ -148,12 +153,12 @@ function Nav({ page }) {
           </Link>
         )}
         <nav className="hidden items-center gap-8 text-[15px] font-medium text-muted lg:flex" aria-label="页面导航">
-          {home && NAV_LINKS.map(([to, l]) => <Anchor key={to} to={to} className={linkCls}>{l}{under}</Anchor>)}
-          {home && <Link to="/thinking" className={linkCls}>产品思考{under}</Link>}
+          {home && NAV_LINKS.map(([to, l]) => <Anchor key={to} to={to} aria-current={here === to ? 'location' : undefined} className={`${linkCls} ${here === to ? 'text-ink' : ''}`}>{l}{under(here === to)}</Anchor>)}
+          {home && <Link to="/thinking" className={linkCls}>产品思考{under(false)}</Link>}
         </nav>
         <div className="flex items-center gap-2">
           <div className={`transition-opacity duration-300 ${(scrolled || !home) && !open ? '' : 'max-md:pointer-events-none max-md:opacity-0'}`}><Cta size="sm" /></div>
-          {!home && <Link to="/" className="inline-flex h-10 items-center gap-1.5 rounded-full bg-sunken px-4 text-[15px] font-semibold active:scale-[0.97]"><ArrowLeft size={16} weight="bold" /><span className="max-md:hidden">回</span>首页</Link>}
+          {!home && <Link to="/" className="inline-flex h-10 items-center gap-1.5 rounded-full bg-sunken px-4 text-[15px] font-semibold active:scale-[0.97]"><ArrowLeft size={16} weight="bold" /><span><span className="max-md:hidden">回</span>首页</span></Link>}
           {home && (
             <button onClick={() => { setCur(scrollY + innerHeight >= document.documentElement.scrollHeight - 4 ? SECTIONS[SECTIONS.length - 1][0] : [...SECTIONS].reverse().find(([id]) => (document.getElementById(id)?.getBoundingClientRect().top ?? 1e9) < 140)?.[0]); setOpen((v) => !v) }} aria-expanded={open} aria-controls="mnav" className="grid h-10 place-items-center rounded-full bg-sunken px-4 text-[15px] font-semibold active:scale-[0.97] lg:hidden">{open ? '收起' : '目录'}</button>
           )}
@@ -234,7 +239,7 @@ function Scenes() {
     <section id="scenes" className={`mx-auto max-w-7xl scroll-mt-16 ${SECTION}`}>
       <div className="grid gap-x-12 lg:grid-cols-12 lg:items-end">
         <Reveal className="lg:col-span-7"><H2>三个每天都在发生的<br />跑腿时刻</H2></Reveal>
-        <Reveal delay={0.05} className="lg:col-span-12"><Lead>课表把一天切成好几段，小事却天天有。总有同学刚好要走你那条路。</Lead></Reveal>
+        <Reveal delay={0.05} className="lg:col-span-5 lg:pb-1"><Lead className="lg:mt-0">课表把一天切成好几段，小事却天天有。总有同学刚好要走你那条路。</Lead></Reveal>
       </div>
       <div className="mt-12">
         <div className="grid grid-cols-3 gap-1 rounded-full bg-sunken p-1 md:inline-flex" role="tablist" aria-label="用户场景">
@@ -366,14 +371,14 @@ function StageMap({ i, tall = false }) {
         initial={false} animate={{ ...spct(me), opacity: i === 0 ? 0 : 1 }} transition={sp}>
         <img src={icon('avatar-runner-v1')} width={28} height={28} alt="" className="size-6 rounded-full md:size-7" />
         {i === 3 && !tall && <img src={icon('type-express-v1')} width={20} height={20} alt="" className="absolute -right-3.5 -top-3.5 size-5" />}
-        {!tall && <span className={`absolute ${i === 2 ? 'right-full top-1/2 mr-1.5 -translate-y-1/2' : 'left-1/2 top-full mt-2 -translate-x-1/2'} whitespace-nowrap rounded-full bg-ink px-1.5 text-[11px] font-semibold leading-4 text-bg`}>阿远</span>}
+        
       </motion.span>
       {i >= 4 && (
         <motion.span key={`pay${i}`} className="tnum absolute z-20 -translate-x-1/2 rounded-full bg-accent px-2 py-0.5 text-xs font-bold text-on-accent" style={spct([mei[0] + 200, mei[1] - 262])}
           initial={reduce ? false : { opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={sp}>{i === 4 ? '+¥5 给阿远' : '阿远信用 73'}</motion.span>
       )}
     </div>
-    <p className="mt-1.5 flex flex-wrap gap-x-3 text-[12px] text-ink/80"><span className="inline-flex items-center gap-1"><i className="h-1 w-4 rounded-full bg-ink/80" />{tall ? '头像是阿远，黑线是他走的路' : '阿远走的路'}</span><span className={`inline-flex items-center gap-1 transition-opacity ${i >= 3 ? '' : 'opacity-60'}`}><i className="h-1.5 w-4 rounded-full bg-accent" />捎着你快递的那段{i < 3 && '（取到后出现）'}</span></p>
+    <p className="mt-1.5 flex flex-wrap gap-x-3 text-[12px] text-ink/80"><span className="inline-flex items-center gap-1"><i className="h-1 w-4 rounded-full bg-ink/80" />头像是阿远，黑线是他走过的路</span><span className="inline-flex items-center gap-1"><i className="w-4 border-t-2 border-dotted border-ink/50" />还没走的</span><span className={`inline-flex items-center gap-1 transition-opacity ${i >= 3 ? '' : 'opacity-60'}`}><i className="h-1.5 w-4 rounded-full bg-accent" />捎着你快递的那段{i < 3 && '（取到后出现）'}</span></p>
     </div>
   )
 }
@@ -798,7 +803,7 @@ function Credit() {
                         )}
                       </span>
                       <span className={`tnum w-10 shrink-0 text-2xl font-bold ${r.delta > 0 ? 'text-accent' : 'text-danger'}`}>{r.delta > 0 ? '+' : ''}{r.delta}</span>
-                      <span className="min-w-0 flex-1 max-lg:pr-[4.5rem]"><span className="block text-lg font-semibold">{r.label}</span><span className="block text-[15px] text-muted">{r.note}</span>
+                      <span className="min-w-0 flex-1 max-lg:pr-[5.5rem]"><span className="block text-lg font-semibold">{r.label}</span><span className="block text-[15px] text-muted">{r.note}</span>
 </span>
                       {/* 浮在这一行右边，不往列表里插东西，下面的规则不会被推走 */}
                       {here && (
@@ -827,7 +832,7 @@ function BanDemo() {
   const on = useInView(ref, { amount: 0.4 })
   const [i, setI] = useState(1)
   const [n, setN] = useState(reduce ? BAN_DEMO[1].length : 0)
-  // 用户一点输入框，自动打字就停下，换成他自己打的字
+  // 用户一点输入框，自动打字就停下、清空，换成他自己打的字
   const [own, setOwn] = useState(null)
   const text = BAN_DEMO[i]
   useEffect(() => {
@@ -842,9 +847,9 @@ function BanDemo() {
     <div ref={ref} className="rounded-[24px] bg-surface p-5 text-ink shadow-[0_30px_60px_-30px_rgba(0,0,0,0.6)]" aria-label="发布表单拦截演示">
       <p className="text-[15px] font-semibold">备注（选填）</p>
       <div className="relative mt-2">
-        <input value={typed} onFocus={() => setOwn((v) => v ?? typed)} onChange={(e) => setOwn(e.target.value)} maxLength={40} aria-label="备注（选填），可以自己打字试试"
+        <input value={typed} onFocus={() => setOwn((v) => v ?? '')} onChange={(e) => setOwn(e.target.value)} maxLength={40} aria-label="备注（选填），可以自己打字试试"
           placeholder="比如：帮我代签到" aria-invalid={!!hit}
-          className={`h-12 w-full rounded-xl px-3.5 text-base text-ink ring-1 transition-colors placeholder:text-muted focus:outline-none ${hit ? 'bg-danger-soft ring-2 ring-danger' : 'bg-bg ring-line focus:ring-2 focus:ring-accent'}`} />
+          className={`h-12 w-full rounded-xl px-3.5 text-base text-ink ring-1 transition-colors placeholder:text-muted focus:outline-none ${hit ? 'bg-danger-soft ring-2 ring-danger focus:ring-danger' : 'bg-bg ring-line focus:ring-2 focus:ring-accent'}`} />
         {own === null && <span aria-hidden="true" className="pointer-events-none absolute top-1/2 h-5 w-0.5 -translate-y-1/2 animate-pulse bg-ink" style={{ left: `calc(14px + ${typed.length}em)` }} />}
       </div>
       {/* 提示区固定高度：拦截卡只淡入淡出，下面的按钮不跟着跳 */}
