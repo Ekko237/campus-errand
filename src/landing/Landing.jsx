@@ -350,6 +350,37 @@ function TrustStop({ x, lit, reduce }) {
   )
 }
 
+// 隐私分级：同一张取件卡，接单前打码、接单后亮出、结束后收起，三秒换一次
+const PRIV = [
+  { k: '接单前', code: '•-•-••••', room: '梅园 * 号楼 ***', tone: 'muted' },
+  { k: '接单后', code: '6-2-3108', room: '梅园 5 号楼 412', tone: 'open' },
+  { k: '结束后', code: '已收起', room: '已收起', tone: 'muted' },
+]
+function PrivacyDemo() {
+  const reduce = useReducedMotion()
+  const [i, setI] = useState(1)
+  useEffect(() => { if (reduce) return; const id = setInterval(() => setI((v) => (v + 1) % PRIV.length), 2600); return () => clearInterval(id) }, [reduce])
+  const p = PRIV[i]
+  return (
+    <div className="rounded-[24px] bg-ink p-5 text-bg" aria-label="取件信息在三个阶段的样子">
+      <div className="grid grid-cols-3 gap-1 rounded-full bg-bg/10 p-1 text-sm font-semibold">
+        {PRIV.map((x, k) => (
+          <span key={x.k} className="relative grid h-8 place-items-center rounded-full">
+            {k === i && <motion.span layoutId="priv-pill" transition={{ type: 'spring', stiffness: 420, damping: 34 }} className="absolute inset-0 rounded-full bg-bg" />}
+            <span className={`relative ${k === i ? 'text-ink' : 'opacity-70'}`}>{x.k}</span>
+          </span>
+        ))}
+      </div>
+      <p className="mt-5 text-sm opacity-70">取件码</p>
+      <AnimatePresence mode="wait" initial={false}>
+        <motion.p key={p.code} initial={reduce ? false : { opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -6 }} transition={{ duration: 0.2 }}
+          className={`tnum text-4xl font-bold tracking-wide ${p.tone === 'open' ? '' : 'opacity-40'}`}>{p.code}</motion.p>
+      </AnimatePresence>
+      <div className="mt-4 flex justify-between border-t border-bg/15 pt-3 text-[15px]"><span className="opacity-70">送到</span><span className={`font-semibold ${p.tone === 'open' ? '' : 'opacity-50'}`}>{p.room}</span></div>
+    </div>
+  )
+}
+
 function Trust() {
   const reduce = useReducedMotion()
   const list = useRef(null)
@@ -366,7 +397,7 @@ function Trust() {
             <Reveal><H2>凭什么把取件码<br />交给一个陌生同学</H2></Reveal>
             <Reveal delay={0.05}><Lead>校园跑腿最大的成本不是钱，是对陌生人的不放心。信任拆成五道关，包裹每过一关，就少一种怕。</Lead></Reveal>
             <Reveal delay={0.1}>
-              <img src={img('trust-v1')} width={1100} height={825} alt="两只手在校园里交接一个小包裹" loading="lazy" className="mt-10 hidden aspect-[4/3] w-full rounded-2xl bg-sunken object-cover lg:block" />
+              <div className="mt-10 hidden lg:block"><PrivacyDemo /></div>
             </Reveal>
           </div>
         </div>
@@ -482,27 +513,66 @@ function Credit() {
   )
 }
 
+// 拦截演示：一张真实的发布表单，备注里自己打出「代签到」，输入框变红、拦截卡弹出、发布按钮变灰
+const BAN_DEMO = ['帮忙带份早饭到一教', '下午帮我代签到一下', '图书馆三楼占个座', '帮我代写作业，价格好说']
+function BanDemo() {
+  const reduce = useReducedMotion()
+  const ref = useRef(null)
+  const on = useInView(ref, { amount: 0.4 })
+  const [i, setI] = useState(1)
+  const [n, setN] = useState(reduce ? BAN_DEMO[1].length : 0)
+  const text = BAN_DEMO[i]
+  useEffect(() => {
+    if (reduce || !on) return
+    if (n < text.length) { const id = setTimeout(() => setN(n + 1), 110); return () => clearTimeout(id) }
+    const id = setTimeout(() => { setI((i + 1) % BAN_DEMO.length); setN(0) }, 2200)
+    return () => clearTimeout(id)
+  }, [n, text, on, reduce, i])
+  const typed = text.slice(0, n)
+  const hit = /代签到|代写作业|代考|替考|代点名/.exec(typed)
+  return (
+    <div ref={ref} className="rounded-[24px] bg-surface p-5 text-ink shadow-[0_30px_60px_-30px_rgba(0,0,0,0.6)]" aria-label="发布表单拦截演示">
+      <p className="text-[15px] font-semibold">备注（选填）</p>
+      <div className={`mt-2 min-h-12 rounded-xl px-3.5 py-3 text-base ring-1 transition-colors ${hit ? 'bg-danger-soft ring-2 ring-danger' : 'bg-bg ring-line'}`}>
+        {typed}<span aria-hidden="true" className="ml-0.5 inline-block h-5 w-0.5 translate-y-1 animate-pulse bg-ink" />
+      </div>
+      <AnimatePresence initial={false}>
+        {hit && (
+          <motion.div key="ban" initial={reduce ? false : { opacity: 0, y: -6, height: 0 }} animate={{ opacity: 1, y: 0, height: 'auto' }} exit={{ opacity: 0, height: 0 }} transition={{ duration: 0.25 }} className="overflow-hidden">
+            <div className="mt-3 flex items-center gap-3 rounded-2xl bg-danger-soft p-3 ring-1 ring-danger/30">
+              <img src={icon('blocked-v1')} width={48} height={48} alt="" className="size-12 shrink-0 object-contain" />
+              <p className="text-[15px] font-semibold text-danger">检测到「{hit[0]}」。这类任务发不出去，顺路侠是互助，不帮人作弊。</p>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+      <div className={`mt-4 grid h-12 place-items-center rounded-full text-[15px] font-semibold transition-colors ${hit ? 'bg-sunken text-muted' : 'bg-accent text-on-accent'}`}>{hit ? '不能发布' : '冻结 ¥5 并发布'}</div>
+      <p className="mt-2 text-center text-xs text-muted">这是原型里的真实表单，可以去发布页自己试</p>
+    </div>
+  )
+}
+
 function Safety() {
   const reduce = useReducedMotion()
   const words = ['代考', '替考', '代签到', '代点名', '代写作业', '代写论文', '代刷网课']
   return (
     <section className={`mx-auto max-w-7xl ${SECTION}`}>
-      <Reveal className="relative overflow-hidden rounded-2xl">
-        <img src={img('safety-v1')} width={1400} height={788} alt="空荡的考场，课桌上放着答题纸" loading="lazy" className="absolute inset-0 size-full object-cover" />
-        <div className="absolute inset-0 bg-[#0e1110]/80" />
-        <div className="relative px-6 py-16 text-[#eceeed] md:px-16 md:py-24">
-          <img src={icon('blocked-v1')} width={80} height={80} alt="盖住试卷的禁止手势" loading="lazy" className="size-20 object-contain" />
-          <h2 className="font-display mt-6 text-[40px] font-bold leading-[1.05] tracking-[-0.03em] md:text-7xl">这些单，<br className="md:hidden" />发不出去</h2>
-          <p className="mt-5 max-w-[34ch] text-lg leading-relaxed opacity-90 md:text-xl">互助不等于帮人作弊。发布时自动识别关键词并拦截，被举报核实的账号直接封禁。</p>
-          <ul className="mt-10 flex flex-wrap gap-2.5">
-            {words.map((w, i) => (
-              <li key={w} className="relative rounded-full px-4 py-2 text-[15px] font-semibold ring-1 ring-[#eceeed]/40">
-                {w}
-                <motion.span aria-hidden="true" className="absolute left-3 right-3 top-1/2 h-0.5 origin-left bg-[#f07a6c]"
-                  initial={reduce ? false : { scaleX: 0 }} whileInView={{ scaleX: 1 }} viewport={{ once: true }} transition={{ duration: 0.5, delay: 0.3 + i * 0.08, ease }} />
-              </li>
-            ))}
-          </ul>
+      <Reveal className="relative overflow-hidden rounded-[32px] bg-ink md:rounded-[40px]">
+        <div className="relative grid gap-10 px-6 py-14 text-bg md:px-14 md:py-20 lg:grid-cols-12 lg:items-center">
+          <div className="lg:col-span-6">
+            <h2 className="font-display text-[44px] font-bold leading-[1.05] tracking-[-0.03em] md:text-7xl">这些单，<br className="md:hidden" />发不出去</h2>
+            <p className="mt-5 max-w-[34ch] text-lg leading-relaxed opacity-85 md:text-xl">互助不等于帮人作弊。发布时自动识别关键词并拦截，被举报核实的账号直接封禁。</p>
+            <ul className="mt-8 flex flex-wrap gap-2.5">
+              {words.map((w, i) => (
+                <li key={w} className="relative rounded-full px-4 py-2 text-[15px] font-semibold ring-1 ring-bg/35">
+                  {w}
+                  <motion.span aria-hidden="true" className="absolute left-3 right-3 top-1/2 h-0.5 origin-left bg-[#f07a6c]"
+                    initial={reduce ? false : { scaleX: 0 }} whileInView={{ scaleX: 1 }} viewport={{ once: true }} transition={{ duration: 0.5, delay: 0.3 + i * 0.08, ease }} />
+                </li>
+              ))}
+            </ul>
+          </div>
+          <div className="lg:col-span-5 lg:col-start-8"><BanDemo /></div>
         </div>
       </Reveal>
     </section>
