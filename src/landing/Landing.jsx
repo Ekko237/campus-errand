@@ -129,6 +129,8 @@ function Nav({ page }) {
   const [scrolled, setScrolled] = useState(false)
   const [open, setOpen] = useState(false)
   const [cur, setCur] = useState(null)
+  // 换页（首页 ↔ 产品思考）时目录一定先收起，不带到新页面
+  useEffect(() => { setOpen(false) }, [page])
   useMotionValueEvent(scrollY, 'change', (v) => setScrolled(v > 420))
   const home = page !== 'thinking'
   const linkCls = 'group relative py-1 transition-colors hover:text-ink'
@@ -166,8 +168,8 @@ function Nav({ page }) {
               {SECTIONS.map(([to, l], i) => (
                 <li key={to}><Anchor to={to} onClick={() => setOpen(false)} aria-current={cur === to ? 'location' : undefined} className={`flex h-12 items-center gap-3 rounded-xl px-2 text-[17px] active:bg-sunken ${cur === to ? 'bg-accent-soft font-bold text-accent' : 'font-semibold'}`}><span className="tnum w-5 text-sm opacity-60">{i + 1}</span>{l}{cur === to && <span className="ml-auto text-sm font-semibold">你在这里</span>}</Anchor></li>
               ))}
-              <li><Link to="/thinking" className="flex h-12 items-center gap-3 rounded-xl px-2 text-[17px] font-semibold active:bg-sunken"><span className="w-5" />产品思考<ArrowRight size={16} weight="bold" className="ml-auto text-muted" /></Link></li>
-              <li className="pt-2"><Link to="/app" className="flex h-12 items-center justify-center gap-2 rounded-full bg-accent text-[17px] font-semibold text-on-accent active:scale-[0.98]">体验原型<ArrowRight size={18} weight="bold" /></Link></li>
+              <li><Link to="/thinking" onClick={() => setOpen(false)} className="flex h-12 items-center gap-3 rounded-xl px-2 text-[17px] font-semibold active:bg-sunken"><span className="w-5" />产品思考<ArrowRight size={16} weight="bold" className="ml-auto text-muted" /></Link></li>
+              <li className="pt-2"><Link to="/app" onClick={() => setOpen(false)} className="flex h-12 items-center justify-center gap-2 rounded-full bg-accent text-[17px] font-semibold text-on-accent active:scale-[0.98]">体验原型<ArrowRight size={18} weight="bold" /></Link></li>
             </ol>
           </motion.nav>
         )}
@@ -232,7 +234,7 @@ function Scenes() {
     <section id="scenes" className={`mx-auto max-w-7xl scroll-mt-16 ${SECTION}`}>
       <div className="grid gap-x-12 lg:grid-cols-12 lg:items-end">
         <Reveal className="lg:col-span-7"><H2>三个每天都在发生的<br />跑腿时刻</H2></Reveal>
-        <Reveal delay={0.05} className="lg:col-span-5 lg:pb-1"><Lead className="lg:mt-0">课表把一天切成好几段，小事却天天有。总有同学刚好要走你那条路。</Lead></Reveal>
+        <Reveal delay={0.05} className="lg:col-span-12"><Lead>课表把一天切成好几段，小事却天天有。总有同学刚好要走你那条路。</Lead></Reveal>
       </div>
       <div className="mt-12">
         <div className="grid grid-cols-3 gap-1 rounded-full bg-sunken p-1 md:inline-flex" role="tablist" aria-label="用户场景">
@@ -308,7 +310,7 @@ function StateRow({ k, v }) {
 
 // 六步卡里的小地图：每走一步，跑腿人在路上前进一段
 // 六步区订单卡上的小地图：就是首屏那张校园地图的一条横带，阿远按步骤从一教走到驿站、捎上包裹、送到梅园
-const SX0 = 110, SY0 = 100, SVW = 1320, SVH = 460
+const SX0 = 110, SY0 = 100, SVW = 1290, SVH = 460
 // 只画路面上那段（去掉两头进门的小短线），线头不会拐出一个小钩
 const STAGE_PTS = routePath('jiao1', 'mei5').pts.slice(1, -1)
 const STAGE_LEN = STAGE_PTS.slice(1).reduce((n, [x, y], k) => n + Math.hypot(x - STAGE_PTS[k][0], y - STAGE_PTS[k][1]), 0)
@@ -336,7 +338,7 @@ function StageMap({ i }) {
   const mei = [PLACES.mei5.door[0], PLACES.mei5.door[1] + 60]
   const tag = (txt, at, strong, z = '') => <span className={`absolute ${z} -translate-x-1/2 whitespace-nowrap rounded-full px-1.5 py-0.5 text-[11px] font-semibold shadow-sm ${strong ? 'bg-ink text-bg' : 'bg-surface text-ink ring-1 ring-line'}`} style={spct(at)}>{txt}</span>
   return (
-    <div className="relative mt-5 aspect-[1320/460] overflow-hidden rounded-xl ring-1 ring-line" aria-hidden="true">
+    <div className="relative mt-5 aspect-[1290/460] overflow-hidden rounded-xl ring-1 ring-line" aria-hidden="true">
       <svg viewBox={`${SX0} ${SY0} ${SVW} ${SVH}`} preserveAspectRatio="xMidYMid slice" className="absolute inset-0 size-full">
         <image href={`${import.meta.env.BASE_URL}images/campus-map-v2.webp`} x="0" y="0" width="1600" height="900" />
         <path d={D} fill="none" stroke="var(--ink)" strokeOpacity="0.35" strokeWidth="12" strokeDasharray="4 22" strokeLinecap="round" strokeLinejoin="round" />
@@ -850,7 +852,7 @@ function BanDemo() {
 function Safety() {
   const reduce = useReducedMotion()
   return (
-    <section id="safety" className={`mx-auto max-w-7xl scroll-mt-16 ${SECTION}`}>
+    <section id="safety" className="mx-auto max-w-7xl scroll-mt-16 px-4 pb-20 pt-10 md:px-8 md:pb-28 md:pt-14 lg:pb-32">
       <Reveal className="relative overflow-hidden rounded-[32px] bg-ink md:rounded-[40px]">
         <div className="relative grid gap-10 px-6 py-14 text-bg md:px-14 md:py-20 lg:grid-cols-12 lg:items-center">
           <div className="lg:col-span-6">

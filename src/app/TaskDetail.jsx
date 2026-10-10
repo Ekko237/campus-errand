@@ -6,7 +6,7 @@ import { useStore } from '../store'
 import CampusMap, { along } from '../landing/CampusMap'
 import { PLACES, routePath } from '../campusMap'
 import { B, dist, fmtDist, RUNNER_HOME, minCreditFor, levelOf, detourMin, detourMeters, myRoute, onMyWay } from '../data'
-import { Btn, Panel, TypeTag, UrgentTag, VerifiedBadge, Sheet, Stars, Empty, Field, inputCls, left, clock, spring, gi } from '../ui'
+import { Btn, Panel, TypeTag, UrgentTag, VerifiedBadge, Sheet, Stars, Empty, Field, inputCls, left, clock, ago, spring, gi } from '../ui'
 const MapPin = gi('pin')
 const Clock = gi('clock')
 const LockKey = gi('lock')
@@ -226,6 +226,16 @@ function Escrow({ t }) {
   )
 }
 
+// 送达照片（模拟）：右下角压一行拍摄时间和位置水印
+function ProofPhoto({ t, at, className = '' }) {
+  return (
+    <div className={`relative mx-auto overflow-hidden rounded-2xl bg-sunken ${className}`}>
+      <img src={`${import.meta.env.BASE_URL}images/proof-v1.webp`} width={800} height={450} alt="送达照片（模拟）：宿舍门口放着的包裹" className="size-full object-cover" />
+      <span className="tnum absolute bottom-2 right-2 rounded-md bg-ink/70 px-2 py-0.5 text-xs font-semibold text-bg">{clock(at)} · {B[t.to]?.name.replace(/（.*?）/, '')}</span>
+    </div>
+  )
+}
+
 function DeliverSheet({ t, open, onClose }) {
   const { act, state } = useStore()
   const [mode, setMode] = useState('code')
@@ -241,7 +251,7 @@ function DeliverSheet({ t, open, onClose }) {
       act('deliver', { id: t.id, proof: { kind: 'code' }, late })
     } else {
       if (!photo) return setErr('请先拍一张放置位置的照片')
-      act('deliver', { id: t.id, proof: { kind: 'photo', seed: 'courier-desk-0' }, late })
+      act('deliver', { id: t.id, proof: { kind: 'photo', seed: 'courier-desk-0', at: Date.now() }, late })
     }
     onClose()
   }
@@ -253,6 +263,8 @@ function DeliverSheet({ t, open, onClose }) {
           <button key={k} onClick={() => { setMode(k); setErr(null) }} className={`inline-flex h-10 items-center justify-center gap-1.5 whitespace-nowrap rounded-full text-[15px] font-semibold ${mode === k ? 'bg-surface text-ink shadow-sm' : 'text-muted'}`}><I size={18} />{l}</button>
         ))}
       </div>
+      {/* 两个页签内容一样高：切换时页签和按钮都不动，不会点错 */}
+      <div className="min-h-[15.5rem]">
       {mode === 'code' ? (
         <div className="mt-5">
           <Field label="发单人的 4 位送达码" error={err} hint={`演示提示：发单人页面能看到送达码，这单是 ${t.deliverCode}`}>
@@ -262,9 +274,9 @@ function DeliverSheet({ t, open, onClose }) {
       ) : (
         <div className="mt-5">
           {photo ? (
-            <img src={`${import.meta.env.BASE_URL}images/proof-v1.webp`} width={800} height={450} alt="送达照片（模拟）：宿舍门口放着的包裹" className="mx-auto h-40 w-auto rounded-2xl bg-sunken object-cover" />
+            <ProofPhoto t={t} at={Date.now()} className="h-44" />
           ) : (
-            <button onClick={shoot} className="grid aspect-[16/10] w-full place-items-center rounded-2xl bg-sunken text-muted ring-1 ring-line">
+            <button onClick={shoot} className="grid h-44 w-full place-items-center rounded-2xl bg-sunken text-muted ring-1 ring-line">
               {shooting ? <span className="animate-pulse text-[15px] font-semibold">正在拍照…</span> : <span className="flex flex-col items-center gap-2 text-[15px] font-semibold"><Camera size={36} />点击拍照（模拟）</span>}
             </button>
           )}
@@ -272,6 +284,7 @@ function DeliverSheet({ t, open, onClose }) {
           <p className="mt-2 text-sm text-muted">照片带拍摄时间和位置水印，作为纠纷时的凭证。</p>
         </div>
       )}
+      </div>
       <label className="mt-5 flex items-center gap-3 rounded-xl bg-sunken p-3 text-[15px]">
         <input type="checkbox" aria-label="演示：模拟超时送达" checked={late} onChange={(e) => setLate(e.target.checked)} className="size-5 accent-[var(--accent)]" />
         <span>演示：模拟这单超时送达（看信用 -3）</span>
@@ -521,7 +534,10 @@ function WrapUp({ t }) {
   const { poster, runner } = state.accounts
   const lastAt = Math.max(...t.timeline.map((x) => x.at))
   const [play] = useState(() => !reduce && Date.now() - lastAt < 8000)
-  const sum = (acc) => acc.creditLog.filter((l) => l.label.includes(t.title) && l.at >= (t.completedAt || 0) - 1000).reduce((n, l) => n + l.delta, 0)
+  const mineLog = (acc) => acc.creditLog.filter((l) => l.label.includes(t.title) && l.at >= (t.completedAt || 0) - 1000)
+  const sum = (acc) => mineLog(acc).reduce((n, l) => n + l.delta, 0)
+  // 每一笔是怎么来的：「按时完成 +2 · 5 星好评 +1」
+  const why = (acc) => mineLog(acc).slice().reverse().map((l) => `${l.label.replace(`「${t.title}」`, '').replace(/^收到 ?/, '').replace('收到 ', '').replace('，系统自动放款', '')} ${l.delta > 0 ? '+' : ''}${l.delta}`).join(' · ')
   const rows = [
     t.runnerId === 'runner' && { who: runner, d: sum(runner), avatar: 'avatar-runner-v1' },
     t.posterId === 'poster' && { who: poster, d: sum(poster), avatar: 'avatar-poster-v1' },
@@ -562,7 +578,7 @@ function WrapUp({ t }) {
         {rows.map((x) => (
           <div key={x.who.id} className="flex items-center gap-3 rounded-2xl bg-on-accent/10 px-3 py-2.5">
             <img src={`${import.meta.env.BASE_URL}icons/${x.avatar}.webp`} width={32} height={32} alt="" className="size-8 rounded-full bg-on-accent" />
-            <dt className="flex-1 text-[15px]">{x.who.name}<span className="opacity-70"> · {x.who.role}信用</span></dt>
+            <dt className="min-w-0 flex-1 text-[15px]">{x.who.name}<span className="opacity-70"> · {x.who.role}信用</span>{why(x.who) && <span className="tnum block truncate text-xs opacity-75">{why(x.who)}</span>}</dt>
             <dd className="tnum text-xl font-bold"><Roll from={x.who.credit - x.d} to={x.who.credit} play={play} /></dd>
             {x.d !== 0 && <span className="tnum rounded-full bg-on-accent px-2 py-0.5 text-sm font-bold text-accent-deep">{x.d > 0 ? '+' : ''}{x.d}</span>}
           </div>
@@ -585,7 +601,8 @@ export default function TaskDetail() {
   const t = state.tasks.find((x) => x.id === id)
   // 切了身份，页面换成另一方能做的事：回到顶上从头看，不停在半中间
   const firstRole = useRef(true)
-  useEffect(() => { if (firstRole.current) { firstRole.current = false; return } window.scrollTo({ top: 0, behavior: 'smooth' }) }, [state.role])
+  // 导览进行中由导览条负责滚到要点的按钮，这里不抢
+  useEffect(() => { if (firstRole.current) { firstRole.current = false; return } if (state.tour.active) return; window.scrollTo({ top: 0, behavior: 'smooth' }) }, [state.role]) // eslint-disable-line react-hooks/exhaustive-deps
   if (!t) {
     return <Empty img="empty-search" alt="空纸箱和放大镜" title="找不到这个任务" hint="可能已被取消，或演示数据被重置了。" action={<Btn variant="ghost" onClick={() => nav('/app')}>回到任务大厅</Btn>} />
   }
@@ -609,11 +626,19 @@ export default function TaskDetail() {
       {['ongoing', 'delivered'].includes(t.status) && <OnTheWay t={t} />}
 
       {own && state.role === 'poster' && ['ongoing', 'delivered'].includes(t.status) && (
+        t.status === 'delivered' && t.proof?.kind === 'photo' ? (
+          // 拍照留证：给发单人看照片本身，不再显示送达码
+          <div className="rounded-2xl bg-ink p-3 text-bg">
+            <p className="flex items-center gap-2 px-1 pb-2 text-[15px]"><Check size={22} weight="bold" className="shrink-0 text-accent" />跑腿人已拍照留证，看一眼再放款</p>
+            <ProofPhoto t={t} at={t.proof.at || Date.now()} className="h-44 w-full" />
+          </div>
+        ) : (
         <div className="flex items-center gap-3 rounded-2xl bg-ink p-4 text-bg">
-          {t.status === 'delivered' && t.proof?.kind === 'code' ? <Check size={26} weight="bold" className="shrink-0 text-accent" /> : <Numpad size={26} className="shrink-0" />}
-          <p className="flex-1 text-balance text-[15px]">{t.status === 'delivered' ? (t.proof?.kind === 'code' ? '跑腿人已当面核验送达码' : '跑腿人已拍照留证') : '送达码，见面后告诉跑腿人'}</p>
+          {t.status === 'delivered' ? <Check size={26} weight="bold" className="shrink-0 text-accent" /> : <Numpad size={26} className="shrink-0" />}
+          <p className="flex-1 text-balance text-[15px]">{t.status === 'delivered' ? '跑腿人已当面核验送达码' : '送达码，见面后告诉跑腿人'}</p>
           <span className="tnum text-3xl font-bold tracking-[0.2em]">{t.deliverCode}</span>
         </div>
+        )
       )}
 
 
@@ -662,7 +687,7 @@ export default function TaskDetail() {
             <motion.li key={e.at + e.text} initial={i === 0 ? { opacity: 0, x: -8 } : false} animate={{ opacity: 1, x: 0 }} transition={spring} className="relative">
               <span className={`absolute -left-[23px] top-1.5 size-3 rounded-full ${i === 0 ? 'bg-accent' : 'bg-line'}`} />
               <p className="text-[15px]">{e.text}</p>
-              <p className="tnum text-sm text-muted">{clock(e.at)}</p>
+              <p className="tnum text-sm text-muted">{ago(e.at)}</p>
             </motion.li>
           ))}
         </ol>

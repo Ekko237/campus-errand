@@ -22,7 +22,7 @@ export function tourStep(state) {
   if (t.status === 'delivered') return { n: 6, who: 'poster', text: '切回发单人：确认放款', to: `/app/task/${t.id}`, cta: '去确认' }
   if (t.status === 'completed' && !t.ratingByPoster) return { n: 7, who: 'poster', text: '发单人：给跑腿人打分', to: `/app/task/${t.id}`, cta: '去评价' }
   if (t.status === 'completed' && !t.ratingByRunner) return { n: 8, who: 'runner', text: '切到跑腿人：也给对方打分', to: `/app/task/${t.id}`, cta: '去互评' }
-  if (t.status === 'completed') return { n: 9, who: 'runner', text: '看看信用和收入', to: '/app/me', cta: '去「我的」', final: true }
+  if (t.status === 'completed') return { n: 9, who: 'runner', text: '看信用和收入', to: '/app/me', cta: '去看看', final: true }
   return { n: 9, who: null, text: '这单走了申诉或取消分支，演示结束', to: '/app/orders', cta: '看订单', final: true }
 }
 
@@ -41,16 +41,14 @@ export default function TourBar() {
   const text0 = step && step.who === state.role ? step.text.replace(/^(切(到|回))?(跑腿人|发单人)[，：]?/, '') : step?.text
   const arrived = step?.final && loc.pathname === step.to
   // 已经到了「我的」，就不再叫人「去我的看看」
-  const text = arrived ? '导览完成：这是信用和收入' : text0
+  const text = arrived ? '导览完成' : text0
   // 每到一步：给该点的那个东西加一圈会呼吸的描边；它被顶栏或底部导航挡住时才滚动，只滚到刚好露出来
   useEffect(() => {
     if (!here) return
     let el = null
-    const id = setTimeout(() => {
-      el = document.querySelector('main [data-tour-target]') || [...document.querySelectorAll('main button')].find((x) => x.className.includes('bg-accent') && !x.disabled && x.offsetParent)
-      if (!el) return
-      el.classList.add('tour-focus')
-      if (!loc.pathname.startsWith('/app/task/')) return
+    // 量两次：图片（比如送达照片）加载完会把按钮往下推，第一次量完 0.6 秒后再补一次
+    const reveal = () => {
+      if (!el || !loc.pathname.startsWith('/app/task/')) return
       const head = document.querySelector('header')?.getBoundingClientRect().bottom ?? 64
       const navTop = document.querySelector('nav[aria-label="主导航"]')?.getBoundingClientRect().top ?? innerHeight
       const r = el.getBoundingClientRect()
@@ -58,8 +56,15 @@ export default function TourBar() {
       if (r.top >= top && r.bottom <= bottom) return
       const dy = r.bottom > bottom && r.height < bottom - top ? r.bottom - bottom : r.top - top
       window.scrollBy({ top: dy, behavior: reduce ? 'auto' : 'smooth' })
+    }
+    const id = setTimeout(() => {
+      el = document.querySelector('main [data-tour-target]') || [...document.querySelectorAll('main button')].find((x) => x.className.includes('bg-accent') && !x.disabled && x.offsetParent)
+      if (!el) return
+      el.classList.add('tour-focus')
+      reveal()
     }, 350)
-    return () => { clearTimeout(id); el?.classList.remove('tour-focus') }
+    const id2 = setTimeout(reveal, 950)
+    return () => { clearTimeout(id); clearTimeout(id2); el?.classList.remove('tour-focus') }
   }, [here, step?.n, loc.pathname, reduce, state.role])
   useEffect(() => { if (!arrived) return; const id = setTimeout(() => act('tour', { tour: { active: false, done: true } }), 3000); return () => clearTimeout(id) }, [arrived, act])
   const go = () => {

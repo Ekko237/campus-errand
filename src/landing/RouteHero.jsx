@@ -10,7 +10,7 @@ const icon = (name) => `${import.meta.env.BASE_URL}icons/${name}.webp`
 // 首屏地图就是全校地图（campus-map-v2）的局部放大：同一张图、同一套坐标、同一个寻路，和下面的全景永远对得上
 // 视窗：桌面裁成横幅，上下裁切线落在路上；手机屏窄，用整张图的高度，地图高一些、标签不挤
 const WIDE = { X0: 40, Y0: 72, VW: 1360, VH: 736 }
-const TALL = { X0: 110, Y0: 0, VW: 1250, VH: 900 }
+const TALL = { X0: 150, Y0: 0, VW: 1250, VH: 900 }
 let V = WIDE
 const toD = (pts) => pts.map(([x, y], i) => `${i ? 'L' : 'M'}${x} ${y}`).join(' ')
 // 阿远下课的路：一教 → 沿主路往西 → 梅园；驿站门口就在这条路边
@@ -98,7 +98,7 @@ export function RouteMap() {
           {phase === 3 && <motion.img src={icon('type-express-v1')} width={28} height={28} alt="" initial={reduce ? false : { scale: 0 }} animate={{ scale: 1 }} transition={{ type: 'spring', stiffness: 500, damping: 18 }} className="absolute -right-3 -top-3 size-6 md:size-7" />}
         </div>
       </Node>
-      <Node x={MEI[0] + 40} y={MEI[1] + 92}><Tag>梅园 5 号楼 · 你</Tag></Node>
+      <Node x={MEI[0] + 80} y={MEI[1] + 92}><Tag>梅园 5 号楼 · 你</Tag></Node>
       <motion.div className="absolute z-10 -translate-x-1/2 -translate-y-[92%]" style={{ left: rl, top: rt }} animate={{ opacity: phase === 3 ? 0 : 1 }} transition={{ duration: 0.25 }}>
         <div className={`relative size-8 rounded-full bg-surface p-0.5 ring-[3px] shadow-[0_6px_16px_-6px_rgba(17,40,30,0.5)] transition-colors md:size-11 ${phase >= 1 ? 'ring-accent' : 'ring-ink'}`}>
           <img src={icon('avatar-runner-v1')} width={44} height={44} alt="" className="size-full rounded-full object-cover" />
@@ -197,24 +197,18 @@ export const ROUTES = [
 export function CampusRoutes() {
   const reduce = useReducedMotion()
   const box = useRef(null)
-  const inView = useInView(box, { amount: 0.35 })
+  // 不自动换路线：正在看的清单不会在手底下被换掉，只由上面的路线按钮切
   const [ri, setRi] = useState(0)
-  const [touched, setTouched] = useState(false)
-  useEffect(() => {
-    if (reduce || touched || !inView) return
-    const id = setInterval(() => setRi((v) => (v + 1) % ROUTES.length), 5200)
-    return () => clearInterval(id)
-  }, [reduce, touched, inView])
   const R = ROUTES[ri]
   const tasks = seedTasks().map((t) => ({ ...t, m: detourMin(R.from, R.to, t), dm: detourMeters(R.from, R.to, t) }))
   const hits = tasks.filter((t) => t.m <= 5).sort((a, b) => a.m - b.m)
-  const pick = (i) => { setTouched(true); setRi(i) }
+  const pick = (i) => setRi(i)
   return (
     <div>
       <div className="no-scrollbar -mx-4 flex gap-1.5 overflow-x-auto px-4 md:gap-2 md:mx-0 md:flex-wrap md:overflow-visible md:px-0" role="group" aria-label="选一条你正要走的路">
         {ROUTES.map((x, i) => (
           <button key={x.label} onClick={() => pick(i)} aria-pressed={i === ri}
-            className={`relative h-10 shrink-0 whitespace-nowrap rounded-full px-3 text-[14px] md:px-4 md:text-[15px] font-semibold transition-colors ${i === ri ? 'text-bg' : 'bg-surface text-ink ring-1 ring-line'}`}>
+            className={`relative h-11 shrink-0 whitespace-nowrap rounded-full px-3 text-[14px] md:px-4 md:text-[15px] font-semibold transition-colors ${i === ri ? 'text-bg' : 'bg-surface text-ink ring-1 ring-line'}`}>
             {i === ri && <span className="absolute inset-0 rounded-full bg-ink" />}
             <span className="relative md:hidden">{x.short}</span><span className="relative max-md:hidden">{x.label}</span>
           </button>

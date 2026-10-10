@@ -130,6 +130,8 @@ export default function Hall() {
   const reduce = useReducedMotion()
   const [type, setType] = useState('all')
   const [sort, setSort] = useState('route')
+  // 手机上地图默认收成一行，任务列表先露出来；桌面默认展开
+  const [showMap, setShowMap] = useState(() => typeof window === 'undefined' || !window.matchMedia('(max-width: 639px)').matches)
   const [route, setRoute] = useState(() => {
     try { const r = JSON.parse(localStorage.getItem('shunluxia:myroute')); if (B[r?.from] && B[r?.to]) return r } catch { /* 读不到就用默认路线 */ }
     return { from: 'jiao1', to: 'mei5' }
@@ -140,6 +142,7 @@ export default function Hall() {
     try { localStorage.setItem('shunluxia:myroute', JSON.stringify(n)) } catch { /* 存不了不影响使用 */ }
     return n
   })
+  const routeHits = state.tasks.filter((t) => t.status === 'open' && t.deadline > Date.now() && detourMin(route.from, route.to, t) <= 5).map((t) => ({ ...t, dm: detourMeters(route.from, route.to, t) }))
   const [urgentOnly, setUrgentOnly] = useState(false)
   const [goodPoster, setGoodPoster] = useState(false)
   const [loading, setLoading] = useState(false)
@@ -222,12 +225,13 @@ export default function Hall() {
 
       {sortBy === 'route' && (
         <div className="rounded-2xl bg-accent-soft p-2 pb-3">
-          <CampusMap R={route} reduce={reduce} pills={false} walker={false} legend
-            hits={state.tasks.filter((t) => t.status === 'open' && t.deadline > Date.now() && detourMin(route.from, route.to, t) <= 5).map((t) => ({ ...t, dm: detourMeters(route.from, route.to, t) }))} />
+          {showMap && <CampusMap R={route} reduce={reduce} pills={false} walker={false} legend
+            hits={routeHits} />}
           <div className="px-2 pt-3">
           <div className="flex items-center gap-3">
             <span aria-hidden="true" className="hidden shrink-0 items-center sm:flex"><span className="size-2.5 rounded-full bg-ink" /><span className="h-0.5 w-5 bg-ink" /><span className="size-2.5 rounded-full bg-accent ring-2 ring-accent-soft" /><span className="h-0.5 w-5 bg-ink" /><span className="size-2.5 rounded-full bg-ink" /></span>
-            <p className="min-w-0 flex-1 text-[15px] font-semibold leading-snug">{B[route.from].name.replace(/（.*?）/, '')} → {B[route.to].name.replace(/（.*?）/, '')}</p>
+            <p className="min-w-0 flex-1 text-[15px] font-semibold leading-snug">{B[route.from].name.replace(/（.*?）/, '')} → {B[route.to].name.replace(/（.*?）/, '')}<span className="font-normal text-accent"> · {routeHits.length} 单顺路</span></p>
+            <button onClick={() => setShowMap((v) => !v)} aria-expanded={showMap} className="shrink-0 text-sm font-semibold text-accent">{showMap ? '收起地图' : '看地图'}</button>
             <button onClick={() => setEditRoute((v) => !v)} aria-expanded={editRoute} className="shrink-0 text-sm font-semibold text-accent">{editRoute ? '收起' : '换条路'}</button>
           </div>
           <AnimatePresence initial={false}>
