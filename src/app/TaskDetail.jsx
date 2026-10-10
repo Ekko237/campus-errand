@@ -107,7 +107,43 @@ function PickupCard({ t }) {
   )
 }
 
+function PayoutRail({ t, play }) {
+  const { state } = useStore()
+  const reduce = useReducedMotion()
+  const anim = play && !reduce
+  const runnerName = t.runnerId === 'runner' ? state.accounts.runner.name : '跑腿人'
+  const posterName = t.posterId === 'poster' ? state.accounts.poster.name : t.posterName
+  const ease = [0.16, 1, 0.3, 1]
+  return (
+    <div className="mt-4 border-t border-accent/15 pt-4" aria-label={`¥${t.reward} 已从托管放给${runnerName}`}>
+      <div className="grid grid-cols-[auto_1fr_auto] items-center gap-3">
+        <div className="text-center">
+          <p className="text-sm text-muted">{posterName}托管</p>
+          <motion.p className="tnum text-lg font-bold" initial={anim ? { opacity: 1 } : false} animate={{ opacity: 0.35 }} transition={{ duration: 0.5, delay: anim ? 0.2 : 0 }}>¥{t.reward}</motion.p>
+        </div>
+        <div className="relative h-1.5 rounded-full bg-surface">
+          <motion.div className="absolute inset-y-0 left-0 rounded-full bg-accent" initial={anim ? { width: '0%' } : false} animate={{ width: '100%' }} transition={{ duration: 0.9, ease, delay: 0.2 }} />
+          {anim && (
+            <motion.span className="absolute -top-[11px] grid size-7 place-items-center rounded-full bg-accent text-xs font-bold text-on-accent shadow-[0_4px_12px_rgba(11,122,85,0.35)]"
+              initial={{ left: '0%', x: '-50%', scale: 0.6, opacity: 0 }} animate={{ left: '100%', scale: [0.6, 1.15, 1, 0.6], opacity: [0, 1, 1, 0] }} transition={{ duration: 1, ease, delay: 0.2 }}>¥</motion.span>
+          )}
+        </div>
+        <div className="text-center">
+          <p className="text-sm text-muted">{runnerName}</p>
+          <motion.p className="tnum text-lg font-bold text-accent" initial={anim ? { scale: 0.8, opacity: 0 } : false} animate={{ scale: 1, opacity: 1 }} transition={{ ...spring, delay: anim ? 1.05 : 0 }}>+¥{t.reward}</motion.p>
+        </div>
+      </div>
+      <motion.p className="mt-3 flex items-center justify-center gap-2 text-sm" initial={anim ? { opacity: 0, y: 6 } : false} animate={{ opacity: 1, y: 0 }} transition={{ ...spring, delay: anim ? 1.25 : 0 }}>
+        <span className="text-muted">跑腿人信用</span>
+        <span className={`rounded-full px-2.5 py-0.5 font-bold ${t.late ? 'bg-danger-soft text-danger' : 'bg-surface text-accent'}`}>{t.late ? '-3 超时' : '+2 按时完成'}</span>
+      </motion.p>
+    </div>
+  )
+}
+
 function Escrow({ t }) {
+  const [prev] = useState(t.status)
+  const play = t.status === 'completed' && prev !== 'completed'
   const map = {
     open: ['托管中', '赏金已冻结，送达确认后才放款'],
     ongoing: ['托管中', '跑腿人完成前，钱不会离开平台'],
@@ -118,13 +154,16 @@ function Escrow({ t }) {
     cancelled: ['已退回', '任务取消，赏金退回发单人；接单后取消会先扣 30% 补偿跑腿人'],
   }[t.status]
   return (
-    <div className="flex items-center gap-3 rounded-2xl bg-accent-soft p-4">
-      <img src={`${import.meta.env.BASE_URL}icons/trust-escrow-v1.webp`} width={40} height={40} alt="护着硬币的盾牌" className="size-10 shrink-0 object-contain" />
-      <div className="flex-1">
-        <p className="text-[15px] font-semibold">赏金托管 · {map[0]}</p>
-        <p className="text-sm text-muted">{map[1]}</p>
+    <div className="rounded-2xl bg-accent-soft p-4">
+      <div className="flex items-center gap-3">
+        <img src={`${import.meta.env.BASE_URL}icons/trust-escrow-v1.webp`} width={40} height={40} alt="护着硬币的盾牌" className="size-10 shrink-0 object-contain" />
+        <div className="flex-1">
+          <p className="text-[15px] font-semibold">赏金托管 · {map[0]}</p>
+          <p className="text-sm text-muted">{map[1]}</p>
+        </div>
+        <span className="tnum text-3xl font-bold">¥{t.reward}</span>
       </div>
-      <span className="tnum text-3xl font-bold">¥{t.reward}</span>
+      {t.status === 'completed' && <PayoutRail t={t} play={play} />}
     </div>
   )
 }
@@ -401,9 +440,11 @@ export default function TaskDetail() {
         {t.note && <p className="mt-3 rounded-xl bg-sunken p-3 text-[15px]">备注：{t.note}</p>}
       </div>
 
+      {t.status === 'completed' && <Escrow t={t} />}
+
       {pmode !== 'open' && <div><Actions t={t} /></div>}
 
-      <Escrow t={t} />
+      {t.status !== 'completed' && <Escrow t={t} />}
 
       <Panel className="flex items-center gap-3 p-4">
         <div className="flex-1">
