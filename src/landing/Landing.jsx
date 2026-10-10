@@ -8,6 +8,7 @@ import { ArrowRight, ArrowLeft, ArrowDown, CaretLeft, CaretRight, Plus, ArrowCou
 import { RULES_PLUS, RULES_MINUS, POSTER_RULES_PLUS, POSTER_RULES_MINUS, LEVELS, POSTER_TIERS, TYPES, seedTasks, detourMin } from '../data'
 import { useNavigate } from 'react-router-dom'
 import { gi } from '../ui'
+import { routePath, PLACES } from '../campusMap'
 const LockKey = gi('lock')
 const LockKeyOpen = gi('lock-open')
 const EyeSlash = gi('eye-off')
@@ -299,28 +300,57 @@ function StateRow({ k, v }) {
 }
 
 // 六步卡里的小地图：每走一步，跑腿人在路上前进一段
-const STAGE_X = [8, 8, 42, 90, 90, 90] // 一教 → 驿站 → 梅园
+// 六步区订单卡上的小地图：就是首屏那张校园地图的一条横带，学弟按步骤从一教走到驿站、捎上包裹、送到梅园
+const SX0 = 180, SY0 = 170, SVW = 1220, SVH = 440
+const STAGE_PTS = routePath('jiao1', 'mei5').pts
+const STAGE_LEN = routePath('jiao1', 'mei5').len
+const STAGE_F = (18 + (STAGE_PTS[1][0] - PLACES.cainiao.door[0])) / STAGE_LEN // 走到驿站门口时在整条路上的位置
+const STAGE_P = [0, 0, STAGE_F, 0.62, 1, 1] // 每一步学弟走到哪
+const NEED_D = routePath('cainiao', 'mei5').pts.slice(1).map(([x, y], k) => `${k ? 'L' : 'M'}${x} ${y}`).join(' ')
+const stagePt = (f) => {
+  let target = f * STAGE_LEN
+  for (let k = 1; k < STAGE_PTS.length; k++) {
+    const [ax, ay] = STAGE_PTS[k - 1], [bx, by] = STAGE_PTS[k]
+    const l = Math.hypot(bx - ax, by - ay)
+    if (target <= l || k === STAGE_PTS.length - 1) { const t = l ? Math.min(1, target / l) : 0; return [ax + (bx - ax) * t, ay + (by - ay) * t] }
+    target -= l
+  }
+  return STAGE_PTS[STAGE_PTS.length - 1]
+}
+const spct = ([x, y]) => ({ left: `${((x - SX0) / SVW) * 100}%`, top: `${((y - SY0) / SVH) * 100}%` })
 function StageMap({ i }) {
   const reduce = useReducedMotion()
-  const sp = reduce ? { duration: 0 } : { type: 'spring', stiffness: 160, damping: 22 }
+  const sp = reduce ? { duration: 0 } : { type: 'spring', stiffness: 120, damping: 22 }
+  const me = stagePt(STAGE_P[i])
+  const D = STAGE_PTS.map(([x, y], k) => `${k ? 'L' : 'M'}${x} ${y}`).join(' ')
+  const station = [PLACES.cainiao.door[0], PLACES.cainiao.door[1] + 40]
+  const mei = [PLACES.mei5.door[0], PLACES.mei5.door[1] + 60]
+  const tag = (txt, at, strong) => <span className={`absolute -translate-x-1/2 whitespace-nowrap rounded-full px-1.5 py-0.5 text-[11px] font-semibold shadow-sm ${strong ? 'bg-ink text-bg' : 'bg-surface text-ink ring-1 ring-line'}`} style={spct(at)}>{txt}</span>
   return (
-    <div className="relative mt-5 h-24 overflow-hidden rounded-xl bg-sunken" aria-hidden="true">
-      <span className="absolute left-[8%] right-[10%] top-1/2 h-[3px] -translate-y-1/2 rounded-full bg-ink/70" />
-      <motion.span className="absolute left-[42%] top-1/2 h-[6px] -translate-y-1/2 rounded-full bg-accent" initial={false} animate={{ width: i >= 2 ? '48%' : '0%' }} transition={sp} />
-      {[['一教', 8], ['菜鸟驿站', 42], ['梅园', 90]].map(([n, x]) => (
-        <span key={n} className="absolute top-1/2" style={{ left: `${x}%` }}>
-          <span className={`absolute left-0 top-0 block size-3 -translate-x-1/2 -translate-y-1/2 rounded-full ring-4 ring-sunken ${n === '菜鸟驿站' ? 'bg-accent' : 'bg-ink'}`} />
-          <span className="absolute left-0 top-3 -translate-x-1/2 whitespace-nowrap text-xs font-semibold text-muted">{n}</span>
-        </span>
-      ))}
-      <motion.img src={icon('type-express-v1')} width={28} height={28} alt="" className="absolute top-[4%] size-7 translate-x-1"
-        initial={false} animate={{ left: `${i >= 2 ? STAGE_X[i] : 42}%`, scale: i === 0 ? [1, 1.2, 1] : 1, opacity: i >= 4 ? 0 : 1 }} transition={sp} />
-      <motion.span className="absolute top-[34%] grid size-9 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full bg-surface ring-[3px] ring-ink"
-        initial={false} animate={{ left: `${STAGE_X[i]}%`, opacity: i === 0 ? 0 : 1 }} transition={sp}>
+    <div className="relative mt-5 aspect-[1220/440] overflow-hidden rounded-xl ring-1 ring-line" aria-hidden="true">
+      <svg viewBox={`${SX0} ${SY0} ${SVW} ${SVH}`} preserveAspectRatio="xMidYMid slice" className="absolute inset-0 size-full">
+        <image href={`${import.meta.env.BASE_URL}images/campus-map-v2.webp`} x="0" y="0" width="1600" height="900" />
+        <path d={D} fill="none" stroke="var(--ink)" strokeOpacity="0.35" strokeWidth="12" strokeDasharray="4 22" strokeLinecap="round" strokeLinejoin="round" />
+        <motion.path d={D} fill="none" stroke="var(--ink)" strokeOpacity="0.9" strokeWidth="14" strokeLinecap="round" strokeLinejoin="round" initial={false} animate={{ pathLength: STAGE_P[i] }} transition={sp} />
+        {/* 捎上包裹以后的那段变绿 */}
+        <motion.path d={NEED_D} fill="none" stroke="var(--accent)" strokeWidth="14" strokeLinecap="round" strokeLinejoin="round" initial={false}
+          animate={{ pathLength: Math.max(0, (STAGE_P[i] - STAGE_F) / (1 - STAGE_F)), opacity: i >= 3 ? 1 : 0 }} transition={sp} />
+      </svg>
+      {tag('一教', [STAGE_PTS[0][0] - 40, STAGE_PTS[0][1] - 150])}
+      {tag('菜鸟驿站', [station[0], station[1] + 70], i === 2)}
+      {tag('梅园', [mei[0], mei[1] + 70], i >= 4)}
+      {/* 包裹：先在驿站等着（发布时一闪），第 3 步起跟着学弟走，送到后落在梅园 */}
+      {i < 3 && (
+        <motion.img src={icon('type-express-v1')} width={28} height={28} alt="" className="absolute size-7 -translate-x-1/2 -translate-y-1/2" style={spct(station)}
+          initial={false} animate={{ scale: i === 0 ? [1, 1.25, 1] : 1 }} transition={{ duration: 0.6 }} />
+      )}
+      <motion.span className="absolute z-10 grid size-9 -translate-x-1/2 -translate-y-[90%] place-items-center rounded-full bg-surface ring-[3px] ring-ink"
+        initial={false} animate={{ ...spct(me), opacity: i === 0 ? 0 : 1 }} transition={sp}>
         <img src={icon('avatar-runner-v1')} width={28} height={28} alt="" className="size-7 rounded-full" />
+        {i === 3 && <img src={icon('type-express-v1')} width={20} height={20} alt="" className="absolute -right-2 -top-2 size-5" />}
       </motion.span>
       {i >= 4 && (
-        <motion.span key={`pay${i}`} className="tnum absolute right-[17%] top-[6%] rounded-full bg-accent px-2 py-0.5 text-xs font-bold text-on-accent"
+        <motion.span key={`pay${i}`} className="tnum absolute z-20 -translate-x-1/2 rounded-full bg-accent px-2 py-0.5 text-xs font-bold text-on-accent" style={spct([mei[0] + 120, mei[1] - 150])}
           initial={reduce ? false : { opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={sp}>{i === 4 ? '+¥5' : '信用 +3'}</motion.span>
       )}
     </div>

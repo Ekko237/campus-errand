@@ -84,6 +84,9 @@ export default function CampusMap({ R, hits, reduce, pills = true, walker = true
           initial={false} style={{ pathLength: p }} />
         {/* 顺路的单：取件到送达那段路，小人经过取件点时亮起 */}
         {marks.map(({ t, f }) => (
+          <path key={`c${R.from}${R.to}${t.id}`} d={toD(routePath(t.from, t.to).pts)} fill="none" stroke="var(--surface)" strokeWidth="12" strokeLinecap="round" strokeLinejoin="round" className="max-md:hidden" />
+        ))}
+        {marks.map(({ t, f }) => (
           <motion.path key={`${R.from}${R.to}${t.id}`} d={toD(routePath(t.from, t.to).pts)} fill="none" stroke="var(--accent)" strokeWidth="7" className="max-md:hidden" strokeLinecap="round" strokeLinejoin="round"
             initial={false} animate={{ opacity: p >= f ? 0.95 : 0.25 }} transition={{ duration: 0.3 }} />
         ))}
