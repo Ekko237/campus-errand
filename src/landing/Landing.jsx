@@ -1,4 +1,5 @@
-import RouteHero, { CampusRoutes, ROUTES } from './RouteHero'
+import RouteHero, { CampusRoutes, ROUTES, routeHits } from './RouteHero'
+import CampusMap from './CampusMap'
 import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import {
@@ -330,8 +331,9 @@ const stagePt = (f) => {
 }
 // tall：手机六步卡里用，上下多看一点，地图高一些、标签不挤
 function StageMap({ i, tall = false }) {
-  const Y0 = tall ? 40 : SY0, VH = tall ? 600 : SVH
-  const spct = ([x, y]) => ({ left: `${((x - SX0) / SVW) * 100}%`, top: `${((y - Y0) / VH) * 100}%` })
+  // 手机上地图做高一点（约 200px），只横向裁掉两头用不到的楼
+  const X0 = tall ? 120 : SX0, VW = tall ? 1260 : SVW, Y0 = tall ? 0 : SY0, VH = tall ? 840 : SVH
+  const spct = ([x, y]) => ({ left: `${((x - X0) / VW) * 100}%`, top: `${((y - Y0) / VH) * 100}%` })
   const reduce = useReducedMotion()
   const sp = reduce ? { duration: 0 } : { type: 'spring', stiffness: 120, damping: 22 }
   const me = stagePt(STAGE_P[i])
@@ -342,8 +344,8 @@ function StageMap({ i, tall = false }) {
   const tag = (txt, at, strong, z = '') => <span className={`absolute ${z} -translate-x-1/2 whitespace-nowrap rounded-full px-1.5 py-0.5 text-[12px] font-semibold shadow-sm ${strong ? 'bg-ink text-bg' : 'bg-surface text-ink ring-1 ring-line'}`} style={spct(at)}>{txt}</span>
   return (
     <div className="mt-5">
-    <div className={`relative overflow-hidden rounded-xl ring-1 ring-line ${tall ? 'aspect-[1290/600]' : 'aspect-[1290/460]'}`} aria-hidden="true">
-      <svg viewBox={`${SX0} ${Y0} ${SVW} ${VH}`} preserveAspectRatio="xMidYMid slice" className="absolute inset-0 size-full">
+    <div className={`relative overflow-hidden rounded-xl ring-1 ring-line ${tall ? 'aspect-[1260/840]' : 'aspect-[1290/460]'}`} aria-hidden="true">
+      <svg viewBox={`${X0} ${Y0} ${VW} ${VH}`} preserveAspectRatio="xMidYMid slice" className="absolute inset-0 size-full">
         <image href={`${import.meta.env.BASE_URL}images/campus-map-v2.webp`} x="0" y="0" width="1600" height="900" />
         <path d={D} fill="none" stroke="var(--ink)" strokeOpacity="0.35" strokeWidth="12" strokeDasharray="4 22" strokeLinecap="round" strokeLinejoin="round" />
         <motion.path d={D} fill="none" stroke="var(--ink)" strokeOpacity="0.9" strokeWidth="14" strokeLinecap="round" strokeLinejoin="round" initial={false} animate={{ pathLength: STAGE_P[i] }} transition={sp} />
@@ -352,7 +354,8 @@ function StageMap({ i, tall = false }) {
           animate={{ pathLength: Math.max(0, (STAGE_P[i] - STAGE_F) / (1 - STAGE_F)), opacity: i >= 3 ? 1 : 0 }} transition={sp} />
       </svg>
       {tag('一教', [STAGE_PTS[0][0] - 40, STAGE_PTS[0][1] - 150], false, 'z-20')}
-      {i !== 2 && tag('菜鸟驿站', [station[0], STAGE_PTS[1][1] - 72], false, 'z-20')}
+      {/* 驿站名牌放在路下面（驿站楼在路南），和路北的「一教」分开，也不压阿远 */}
+      {tag('菜鸟驿站', [station[0], STAGE_PTS[1][1] + 130], false, 'z-20')}
       {tag('梅园', [mei[0] + 230, mei[1] + 40], i >= 4)}
       {/* 包裹：先在驿站等着（发布时一闪），第 3 步起跟着阿远走，送到后落在梅园 */}
       {i < 3 && (
@@ -363,14 +366,14 @@ function StageMap({ i, tall = false }) {
         initial={false} animate={{ ...spct(me), opacity: i === 0 ? 0 : 1 }} transition={sp}>
         <img src={icon('avatar-runner-v1')} width={28} height={28} alt="" className="size-6 rounded-full md:size-7" />
         {i === 3 && <img src={icon('type-express-v1')} width={20} height={20} alt="" className="absolute -right-2 -top-2 size-5" />}
-        {i !== 2 && <span className="absolute left-1/2 top-full mt-0.5 -translate-x-1/2 whitespace-nowrap rounded-full bg-ink px-1.5 text-[11px] font-semibold leading-4 text-bg">阿远</span>}
+        {i !== 2 && <span className="absolute left-1/2 top-full mt-1.5 -translate-x-1/2 whitespace-nowrap rounded-full bg-ink px-1.5 text-[11px] font-semibold leading-4 text-bg">阿远</span>}
       </motion.span>
       {i >= 4 && (
         <motion.span key={`pay${i}`} className="tnum absolute z-20 -translate-x-1/2 rounded-full bg-accent px-2 py-0.5 text-xs font-bold text-on-accent" style={spct([mei[0] + 200, mei[1] - 262])}
           initial={reduce ? false : { opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={sp}>{i === 4 ? '+¥5 给阿远' : '阿远信用 73'}</motion.span>
       )}
     </div>
-    <p className="mt-1.5 flex flex-wrap gap-x-3 text-[11px] text-ink/70"><span className="inline-flex items-center gap-1"><i className="h-1 w-4 rounded-full bg-ink/80" />阿远走的路</span><span className="inline-flex items-center gap-1"><i className="h-1.5 w-4 rounded-full bg-accent" />捎着你快递的那段</span></p>
+    <p className="mt-1.5 flex flex-wrap gap-x-3 text-[11px] text-ink/70"><span className="inline-flex items-center gap-1"><i className="h-1 w-4 rounded-full bg-ink/80" />阿远走的路</span><span className={`inline-flex items-center gap-1 transition-opacity ${i >= 3 ? '' : 'opacity-45'}`}><i className="h-1.5 w-4 rounded-full bg-accent" />捎着你快递的那段{i < 3 && '（取到后出现）'}</span></p>
     </div>
   )
 }
@@ -543,7 +546,7 @@ function Loop() {
 
 const TRUST = [
   { icon: 'trust-verify-v1', alt: '带对勾的学生证', t: '校园身份认证', fear: '怕对方是校外的人', fix: '学号或 .edu.cn 邮箱认证，带徽章；没认证只能浏览，不能接单。' },
-  { icon: 'trust-credit-v1', alt: '带上升箭头的奖牌', t: '双向信用分', fear: '怕碰上不靠谱的人', fix: '跑腿人按时 +2、爽约 -5；发单人接单后取消、恶意申诉都 -5。赏金越高，要求的信用越高。' },
+  { icon: 'trust-credit-v1', alt: '带上升箭头的奖牌', t: '双向信用分', fear: '怕碰上不靠谱的人', fix: '跑腿人按时 +2、爽约 -5；发单人按时确认 +1、超时不确认 -2，取消和恶意申诉都 -5。赏金越高，要求的信用越高。' },
   { icon: 'trust-escrow-v1', alt: '护着硬币的盾牌', t: '赏金托管', fear: '怕付了钱没人管', fix: '发布即冻结，确认送达才放款；2 小时不确认自动放款，跑腿人也不怕白跑。' },
   { icon: 'trust-privacy-v1', alt: '挂锁和钥匙', t: '隐私分级', fear: '怕取件码和宿舍号被乱传', fix: '接单后才可见，订单结束自动隐藏；电话一律走虚拟号。' },
   { icon: 'trust-dispute-v1', alt: '天平', t: '送达凭证与申诉', fear: '怕出了问题说不清', fix: '送达码当面核验或拍照留证；申诉期间钱继续冻结，平台判责。' },
@@ -704,7 +707,7 @@ function Credit() {
     setHist((h) => [{ id: seq.current, label: r.label, delta: r.delta, to }, ...h].slice(0, 3))
   }
   return (
-    <section id="credit" className="scroll-mt-16 border-y border-line bg-surface">
+    <section id="credit" className="scroll-mt-16">
       <div className={`mx-auto max-w-7xl ${SECTION}`}>
         <div className="grid gap-x-12 lg:grid-cols-12 lg:items-end">
           <Reveal className="lg:col-span-7"><H2>双向信用：<br />谁不守约谁扣分</H2></Reveal>
@@ -782,9 +785,9 @@ function Credit() {
                 const here = last?.label === r.label
                 return (
                   <li key={r.label} className="relative">
-                    <button onClick={() => apply(r)} className="group relative flex w-full items-center gap-4 rounded-2xl py-3 pr-3 text-left transition hover:bg-bg active:scale-[0.99]">
+                    <button onClick={() => apply(r)} className="group relative flex w-full items-center gap-4 rounded-2xl py-3 pr-3 text-left transition hover:bg-surface active:scale-[0.99]">
                       <span className="relative z-10 grid size-10 shrink-0 place-items-center">
-                        <span className={`size-4 rounded-full ring-4 ring-surface transition-transform group-hover:scale-125 ${r.delta > 0 ? 'bg-accent' : 'bg-danger'}`} />
+                        <span className={`size-4 rounded-full ring-4 ring-bg transition-transform group-hover:scale-125 ${r.delta > 0 ? 'bg-accent' : 'bg-danger'}`} />
                         {here && (
                           <motion.span layoutId="credit-walker" transition={{ type: 'spring', stiffness: 300, damping: 26 }} className="absolute inset-0 grid place-items-center rounded-full bg-surface ring-[3px] ring-ink">
                             <img src={icon('avatar-runner-v1')} width={32} height={32} alt="" className="size-8 rounded-full" />
@@ -1003,8 +1006,15 @@ function Final({ page }) {
   const nav = useNavigate()
   const [ri, setRi] = useState(0)
   const R = ROUTES[ri]
-  const n = seedTasks().filter((t) => detourMin(R.from, R.to, t) <= 5).length
+  const reduce = useReducedMotion()
+  const hits = routeHits(R)
+  const n = hits.length
   const go = () => { try { localStorage.setItem('shunluxia:myroute', JSON.stringify({ from: R.from, to: R.to })) } catch { /* 存不了就用默认路线 */ } nav('/app') }
+  const goBtn = (
+    <button onClick={go} className="group relative inline-flex h-14 items-center gap-2 overflow-hidden whitespace-nowrap rounded-full bg-accent px-7 text-[17px] font-semibold text-on-accent shadow-[0_10px_30px_-12px_rgba(11,122,85,0.7)] transition active:scale-[0.97]">
+      <span className="relative">带着这条路去看看</span><ArrowRight size={20} weight="bold" className="relative transition-transform duration-300 group-hover:translate-x-1" />
+    </button>
+  )
   return (
     <section id="final" className="scroll-mt-16 border-t border-line">
       {page === 'thinking' ? (
@@ -1014,11 +1024,11 @@ function Final({ page }) {
           <Reveal delay={0.1} className="mt-8"><Cta /></Reveal>
         </div>
       ) : (
-      <div className="mx-auto max-w-7xl px-4 py-20 md:px-8 md:py-28 lg:py-32">
-        <div className="mx-auto max-w-3xl text-center">
+      <div className="mx-auto grid max-w-7xl gap-10 px-4 py-20 md:px-8 md:py-28 lg:grid-cols-12 lg:items-center lg:gap-12 lg:py-32">
+        <div className="text-center lg:col-span-5 lg:text-left">
           <Reveal><h2 className="font-display text-balance text-[40px] font-bold leading-[1.08] tracking-[-0.035em] md:text-7xl">你下课<br />常走哪条路？</h2></Reveal>
           <Reveal delay={0.05}>
-            <div className="mt-8 flex flex-wrap justify-center gap-1.5 md:gap-2" role="group" aria-label="选你常走的路">
+            <div className="mt-8 flex flex-wrap justify-center gap-1.5 md:gap-2 lg:justify-start" role="group" aria-label="选你常走的路">
               {ROUTES.map((x, i) => (
                 <button key={x.label} onClick={() => setRi(i)} aria-pressed={i === ri}
                   className={`h-11 whitespace-nowrap rounded-full px-3 text-[14px] font-semibold transition-colors active:scale-[0.97] md:px-4 md:text-[15px] ${i === ri ? 'bg-ink text-bg' : 'bg-surface text-ink ring-1 ring-line'}`}><span className="md:hidden">{x.short}</span><span className="max-md:hidden">{x.label}</span></button>
@@ -1027,24 +1037,29 @@ function Final({ page }) {
           </Reveal>
           <Reveal delay={0.1}>
             <p className="mt-8 text-lg text-muted md:text-xl" aria-live="polite">此刻路上有 <AnimatePresence mode="wait" initial={false}><motion.b key={n} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.18 }} className="tnum inline-block text-3xl text-accent md:text-4xl">{n}</motion.b></AnimatePresence> 单顺路，<span className="whitespace-nowrap">捎上都不超过 5 分钟</span></p>
-            {/* 下课提醒长什么样：选了哪条路，这条推送就跟着变 */}
-            <div className="mx-auto mt-6 flex min-h-[4.75rem] max-w-sm gap-3 rounded-2xl bg-surface p-3 text-left shadow-[0_16px_30px_-18px_rgba(17,40,30,0.45)] ring-1 ring-line">
-              <img src={`${import.meta.env.BASE_URL}brand/logo-v2.png`} width={36} height={36} alt="" className="size-9 shrink-0 rounded-lg" />
-              <div className="min-w-0 text-sm">
-                <p className="flex justify-between gap-2 font-semibold"><span>顺路侠 · 顺路提醒</span><span className="tnum font-normal text-muted">17:45</span></p>
-                <p className="mt-0.5 leading-snug">{R.short.replace('→', ' → ')} 上有 <b className="text-accent">{n} 单</b>顺路，{R.verb}</p>
-              </div>
-            </div>
-            <p className="mx-auto mt-3 max-w-[34ch] text-[15px] text-muted">在原型「我的」里打开下课提醒，下课前 5 分钟把这条路上的单推给你。</p>
+            <p className="mx-auto mt-3 max-w-[34ch] text-[15px] text-muted lg:mx-0">在原型「我的」里打开下课提醒，下课前 5 分钟把这条路上的单推给你。</p>
           </Reveal>
-          <Reveal delay={0.15} className="mt-10 flex justify-center">
-            <Magnetic>
-              <button onClick={go} className="group relative inline-flex h-14 items-center gap-2 overflow-hidden whitespace-nowrap rounded-full bg-accent px-7 text-[17px] font-semibold text-on-accent shadow-[0_10px_30px_-12px_rgba(11,122,85,0.7)] transition active:scale-[0.97]">
-                <span className="relative">带着这条路去看看</span><ArrowRight size={20} weight="bold" className="relative transition-transform duration-300 group-hover:translate-x-1" />
-              </button>
-            </Magnetic>
+          <Reveal delay={0.15} className="mt-10 flex justify-center max-lg:hidden lg:justify-start">
+            <Magnetic>{goBtn}</Magnetic>
           </Reveal>
         </div>
+        {/* 收尾回到那张地图：选哪条路，地图就画哪条，下课提醒像推送一样落在地图上 */}
+        <Reveal delay={0.1} className="lg:col-span-7">
+          <div className="relative">
+            <CampusMap key={ri} R={R} hits={hits} reduce={reduce} pills={false} />
+            <AnimatePresence mode="wait" initial={false}>
+              <motion.div key={ri} initial={reduce ? false : { opacity: 0, y: -14, scale: 0.97 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: -8 }} transition={{ type: 'spring', stiffness: 380, damping: 28, delay: reduce ? 0 : 0.5 }}
+                className="mx-auto mt-3 flex w-full max-w-sm gap-3 rounded-2xl bg-surface p-4 text-left shadow-[0_16px_30px_-18px_rgba(17,40,30,0.45)] ring-1 ring-line md:absolute md:left-1/2 md:top-4 md:mt-0 md:-translate-x-1/2">
+                <img src={`${import.meta.env.BASE_URL}brand/logo-v2.png`} width={36} height={36} alt="" className="size-9 shrink-0 rounded-lg" />
+                <div className="min-w-0 flex-1 text-sm">
+                  <p className="flex justify-between gap-2 font-semibold"><span>顺路侠 · 顺路提醒</span><span className="tnum font-normal text-muted">17:45</span></p>
+                  <p className="mt-0.5 leading-snug">{R.short.replace('→', ' → ')} 上有 <b className="text-accent">{n} 单</b>顺路，{R.verb}</p>
+                </div>
+              </motion.div>
+            </AnimatePresence>
+          </div>
+        </Reveal>
+        <div className="flex justify-center lg:hidden">{goBtn}</div>
       </div>
       )}
       <footer className="border-t border-line">
@@ -1069,8 +1084,10 @@ function ThinkingIntro() {
     <section className="mx-auto max-w-7xl px-4 pb-4 pt-14 md:px-8 md:pt-20">
       <Reveal><p className="text-[15px] font-semibold text-accent">产品思考</p></Reveal>
       <Reveal delay={0.05}><h1 className="mt-3 font-display text-balance text-[44px] leading-[1.08] md:text-7xl">为什么是「顺路」</h1></Reveal>
+      <div className="mt-12 grid gap-12 lg:grid-cols-12 lg:gap-16">
+      <div className="lg:col-span-7">
       {/* 一条推理，画成一段路：三站走下来，结论放大 */}
-      <ol className="relative mt-12 max-w-3xl space-y-10">
+      <ol className="relative max-w-3xl space-y-10">
         <span aria-hidden="true" className="absolute bottom-3 left-[7px] top-3 border-l-2 border-dashed border-line" />
         {[
           ['谁在用', '时间被课表切碎、又在意隐私的在校生。需求小、频次高、怕被坑。'],
@@ -1087,6 +1104,34 @@ function ThinkingIntro() {
       <Reveal className="mt-14 max-w-3xl border-l-4 border-accent pl-6">
         <p className="font-display text-[30px] leading-[1.2] md:text-[44px]">不是多找人跑腿，<br />是让本来就要走的人顺手。</p>
       </Reveal>
+      </div>
+      {/* 同一件事，现在的三种办法摆在一起比 */}
+      <Reveal delay={0.1} className="lg:col-span-5">
+        <div className="rounded-[24px] bg-surface p-5 ring-1 ring-line md:p-6 lg:sticky lg:top-28">
+          <p className="text-[15px] font-semibold text-muted">托人取个快递，现在有三种办法</p>
+          <table className="mt-4 w-full text-left text-[15px]">
+            <thead>
+              <tr className="text-sm text-muted"><th className="pb-2 font-semibold" /><th className="pb-2 font-semibold">群接龙</th><th className="pb-2 font-semibold">外卖跑腿</th><th className="pb-2 font-bold text-accent">顺路侠</th></tr>
+            </thead>
+            <tbody className="divide-y divide-line">
+              {[
+                ['钱谁先拿', ['先转账', '平台扣', '托管到送达']],
+                ['人靠不靠谱', ['看运气', '骑手不认识', '实名 + 信用分']],
+                ['进不进宿舍楼', ['进', '不进', '进']],
+                ['一单多少钱', ['随口说', '¥8 起', '¥3 到 ¥15']],
+                ['宿舍号谁能看', ['全群', '骑手', '接单后才看']],
+              ].map(([k, v]) => (
+                <tr key={k}>
+                  <th scope="row" className="py-3 pr-2 text-sm font-semibold text-muted">{k}</th>
+                  {v.map((x, i) => <td key={i} className={`py-3 pr-2 ${i === 2 ? 'font-bold text-accent' : 'text-ink/80'}`}>{x}</td>)}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          <p className="mt-4 text-sm text-muted">示意对比，按校园里常见的做法整理。</p>
+        </div>
+      </Reveal>
+      </div>
     </section>
   )
 }

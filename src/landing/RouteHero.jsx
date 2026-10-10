@@ -10,7 +10,7 @@ const icon = (name) => `${import.meta.env.BASE_URL}icons/${name}.webp`
 // 首屏地图就是全校地图（campus-map-v2）的局部放大：同一张图、同一套坐标、同一个寻路，和下面的全景永远对得上
 // 视窗：桌面裁成横幅，上下裁切线落在路上；手机屏窄，用整张图的高度，地图高一些、标签不挤
 const WIDE = { X0: 40, Y0: 72, VW: 1360, VH: 736 }
-const TALL = { X0: 150, Y0: 0, VW: 1250, VH: 900 }
+const TALL = { X0: 100, Y0: 0, VW: 1300, VH: 900 }
 let V = WIDE
 const toD = (pts) => pts.map(([x, y], i) => `${i ? 'L' : 'M'}${x} ${y}`).join(' ')
 // 阿远下课的路：一教 → 沿主路往西 → 梅园；驿站门口就在这条路边
@@ -65,7 +65,7 @@ export function RouteMap() {
 
   const lit = phase >= 1
   return (
-    <div ref={box} className="relative -mx-4 aspect-[1250/900] w-[calc(100%+2rem)] sm:aspect-[85/46] overflow-hidden bg-surface sm:mx-0 sm:w-full sm:rounded-[28px] sm:ring-1 sm:ring-line"
+    <div ref={box} className="relative -mx-4 aspect-[1300/900] w-[calc(100%+2rem)] sm:aspect-[85/46] overflow-hidden bg-surface sm:mx-0 sm:w-full sm:rounded-[28px] sm:ring-1 sm:ring-line"
       role="img" aria-label="示意地图：你的快递在菜鸟驿站，阿远从一教走回梅园正好经过驿站门口，顺手捎上，只多走 1 分钟">
       <svg viewBox={`${V.X0} ${V.Y0} ${V.VW} ${V.VH}`} preserveAspectRatio="xMidYMid slice" className="absolute inset-0 size-full" aria-hidden="true">
         <image href={`${import.meta.env.BASE_URL}images/campus-map-v2.webp`} x="0" y="0" width="1600" height="900" />
@@ -116,12 +116,12 @@ export function RouteMap() {
 
       <AnimatePresence mode="wait">
         {phase === 0 && !reduce && (
-          <motion.div key="a" className="absolute left-[3%] top-[70%]" initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.3 }}>
+          <motion.div key="a" className="absolute left-[3%] top-[70%] max-sm:left-auto max-sm:right-[3%] max-sm:top-auto max-sm:bottom-[4%]" initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.3 }}>
             <p className="rounded-xl bg-surface px-2.5 py-1.5 text-[12px] leading-snug shadow-[0_8px_24px_-12px_rgba(17,40,30,0.4)] ring-1 ring-line md:px-3 md:py-2 md:text-sm">阿远在一教 17:50 下课<br />本来就要走回梅园</p>
           </motion.div>
         )}
         {(phase === 1 || phase === 2) && (
-          <motion.div key="b" className="absolute left-[3%] top-[70%]" initial={{ opacity: 0, y: 10, scale: 0.92 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: -6 }} transition={{ type: 'spring', stiffness: 420, damping: 26 }}>
+          <motion.div key="b" className="absolute left-[3%] top-[70%] max-sm:left-auto max-sm:right-[3%] max-sm:top-auto max-sm:bottom-[4%]" initial={{ opacity: 0, y: 10, scale: 0.92 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: -6 }} transition={{ type: 'spring', stiffness: 420, damping: 26 }}>
             <div className="rounded-2xl bg-ink px-3 py-2 text-bg shadow-[0_14px_30px_-14px_rgba(17,40,30,0.6)] md:px-4 md:py-3">
               <p className="text-[13px] font-bold md:text-lg">顺路，只多走 1 分钟</p>
               <p className="text-[11px] opacity-80 md:text-sm">阿远接单 · 赏金 ¥5 托管中</p>
@@ -129,7 +129,7 @@ export function RouteMap() {
           </motion.div>
         )}
         {phase === 3 && (
-          <motion.div key="c" className="absolute left-[3%] top-[70%]" initial={reduce ? false : { opacity: 0, y: 10, scale: 0.92 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0 }} transition={{ type: 'spring', stiffness: 420, damping: 26 }}>
+          <motion.div key="c" className="absolute left-[3%] top-[70%] max-sm:left-auto max-sm:right-[3%] max-sm:top-auto max-sm:bottom-[4%]" initial={reduce ? false : { opacity: 0, y: 10, scale: 0.92 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0 }} transition={{ type: 'spring', stiffness: 420, damping: 26 }}>
             <div className="rounded-2xl bg-accent px-3 py-2 text-on-accent shadow-[0_14px_30px_-14px_rgba(11,122,85,0.7)] md:px-4 md:py-3">
               <p className="text-[13px] font-bold md:text-lg">送到了</p>
               <p className="tnum text-[11px] opacity-90 md:text-sm">¥5 从托管放给阿远</p>
@@ -197,14 +197,16 @@ export const ROUTES = [
   { from: 'market', to: 'mei5', label: '超市回梅园', short: '超市→梅园', verb: '买完东西顺手捎上' },
 ]
 
+// 这条路上多走不超过 5 分钟的单，按多走的分钟数排
+export const routeHits = (R) => seedTasks().map((t) => ({ ...t, m: detourMin(R.from, R.to, t), dm: detourMeters(R.from, R.to, t) })).filter((t) => t.m <= 5).sort((a, b) => a.m - b.m)
+
 export function CampusRoutes() {
   const reduce = useReducedMotion()
   const box = useRef(null)
   // 不自动换路线：正在看的清单不会在手底下被换掉，只由上面的路线按钮切
   const [ri, setRi] = useState(0)
   const R = ROUTES[ri]
-  const tasks = seedTasks().map((t) => ({ ...t, m: detourMin(R.from, R.to, t), dm: detourMeters(R.from, R.to, t) }))
-  const hits = tasks.filter((t) => t.m <= 5).sort((a, b) => a.m - b.m)
+  const hits = routeHits(R)
   const pick = (i) => setRi(i)
   return (
     <div>
@@ -218,7 +220,7 @@ export function CampusRoutes() {
         ))}
       </div>
       <p className="mt-4 max-w-[40ch] text-lg leading-relaxed text-muted md:text-xl" aria-live="polite">
-        此刻 {tasks.length} 个单里，有 <b className="text-accent">{hits.length} 个</b>顺路，{!hits.length ? '' : '每单'}多走 {!hits.length ? 0 : hits[0].m === hits[hits.length - 1].m ? hits[0].m : `${hits[0].m} 到 ${hits[hits.length - 1].m}`} 分钟。
+        此刻 {seedTasks().length} 个单里，有 <b className="text-accent">{hits.length} 个</b>顺路，{!hits.length ? '' : '每单'}多走 {!hits.length ? 0 : hits[0].m === hits[hits.length - 1].m ? hits[0].m : `${hits[0].m} 到 ${hits[hits.length - 1].m}`} 分钟。
       </p>
       <div className="mt-6 lg:grid lg:grid-cols-12 lg:items-start lg:gap-8">
         <div ref={box} className="lg:col-span-8"><CampusMap R={R} hits={hits} reduce={reduce} legend /></div>
@@ -256,6 +258,13 @@ function SubwayLine({ R, hits, reduce }) {
         ))}
         {end(SHORT[R.to], '到达')}
       </ol>
+      {/* 汇总：这条路上的单全捎上能拿多少 */}
+      {stops.length > 0 && (
+        <p className="tnum mt-4 flex items-baseline justify-between gap-3 border-t border-line pt-3 text-[15px]">
+          <span className="text-muted">{stops.length} 单全捎上</span>
+          <span className="font-semibold">赏金合计 <b className="text-xl text-accent">¥{stops.reduce((a, t) => a + t.reward, 0)}</b></span>
+        </p>
+      )}
     </div>
   )
 }

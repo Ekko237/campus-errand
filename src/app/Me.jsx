@@ -87,8 +87,25 @@ export default function Me() {
     { img: 'level-reliable', alt: '带对勾的绿色盾牌', name: '信用可靠', on: (me.credit ?? 0) >= 72 },
     { img: 'level-gold', alt: '带皇冠的金牌', name: '金牌信用', on: (me.credit ?? 0) >= 85 },
   ]
+  // 导览刚走完：顶上放一张收尾卡，告诉他这一单里钱、码、分都走了一遍，下一步去哪
+  const [wrap, setWrap] = useState(() => { try { return state.tour.done && !sessionStorage.getItem('shunluxia:wrap-seen') } catch { return false } })
+  const closeWrap = () => { setWrap(false); try { sessionStorage.setItem('shunluxia:wrap-seen', '1') } catch { /* 无痕模式 */ } }
   return (
     <div className="space-y-5">
+      <AnimatePresence initial={false}>
+        {wrap && (
+          <motion.div initial={reduce ? false : { opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, height: 0 }} transition={{ type: 'spring', stiffness: 380, damping: 30 }}
+            className="overflow-hidden rounded-2xl bg-accent p-5 text-on-accent">
+            <p className="text-lg font-bold">一单走完了</p>
+            <p className="mt-1 text-[15px] leading-relaxed opacity-90">赏金托管到放款、取件码用完收起、两边互评改了信用分，全程都在这台手机上。</p>
+            <div className="mt-4 flex flex-wrap gap-2">
+              <Link to="/" onClick={closeWrap} className="inline-flex h-10 items-center rounded-full bg-on-accent px-4 text-[15px] font-semibold text-accent">回到产品介绍</Link>
+              <button onClick={() => { closeWrap(); act('tour', { tour: { active: true, taskId: null, done: false } }); act('role', { role: 'poster' }); nav('/app/publish?tour=1') }} className="inline-flex h-10 items-center rounded-full bg-on-accent/15 px-4 text-[15px] font-semibold">再走一遍</button>
+              <button onClick={closeWrap} className="ml-auto inline-flex h-10 items-center px-2 text-[15px] font-semibold opacity-80">知道了</button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
       <div className="flex items-center gap-4">
         <Avatar who={me.id} name={me.name} size={64} />
         <div className="min-w-0">
@@ -249,6 +266,7 @@ export default function Me() {
         <p className="flex-1 text-[15px] text-muted">演示数据存在本机浏览器，可随时恢复初始状态。</p>
         <Btn size="sm" variant="ghost" onClick={() => { if (window.confirm('把演示数据恢复成初始示例？你走过的订单和信用变化都会清掉。')) { act('reset'); nav('/app') } }}><ArrowCounterClockwise size={16} weight="bold" />重置</Btn>
       </Panel>
+      <Link to="/" className="flex h-12 items-center justify-center gap-1 text-[15px] font-semibold text-muted hover:text-ink">回到产品介绍页<ArrowRight size={14} weight="bold" /></Link>
     </div>
   )
 }

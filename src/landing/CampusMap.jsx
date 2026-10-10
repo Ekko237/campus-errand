@@ -72,9 +72,19 @@ export default function CampusMap({ R, hits, reduce, pills = true, walker = true
   }, [R.from, R.to, reduce, walker])
   const me = pointAt(mine, p)
   const ends = [R.from, R.to]
-  const nearEnd = (t) => [mine[0], mine[mine.length - 1]].some((e) => { const [x, y] = markAt(t.from); return Math.abs(x - e[0]) < 220 && Math.abs(y - e[1]) < 200 })
   // 起终点旁边就有取件点时，名牌翻到另一边，不盖住编号
   const flip = (id) => { const e = id === R.from ? mine[0] : mine[mine.length - 1]; return marks.some(({ t }) => { const [x, y] = markAt(t.from); return Math.abs(x - e[0]) < 160 && Math.abs(y - e[1]) < 160 }) }
+  // 起终点名牌在点的上面还是下面
+  const labelUp = (id) => (outward(id) === 'up') !== flip(id)
+  // 离起终点名牌近的取件点：价签放到名牌的另一侧，而不是不放
+  const nearId = (t) => ends.find((id) => { const e = id === R.from ? mine[0] : mine[mine.length - 1]; const [x, y] = markAt(t.from); return Math.abs(x - e[0]) < 220 && Math.abs(y - e[1]) < 200 })
+  // 上下都挨着取件点（比如超市出发：1 号在下、2 号在上）：名牌放到点的旁边，手机上只写「出发 / 到达」
+  const side = (id) => {
+    const e = id === R.from ? mine[0] : mine[mine.length - 1]
+    const near = (lo, hi) => marks.some(({ t }) => { const [x, y] = markAt(t.from); return Math.abs(x - e[0]) < 260 && y - e[1] > lo && y - e[1] < hi })
+    return near(-200, -10) && near(10, 200) ? (e[0] > 1300 ? 'left' : 'right') : null
+  }
+  const pillUp = (t) => { const id = nearId(t); return id && !side(id) ? !labelUp(id) : outward(t.from) === 'up' }
   return (
     <div>
     <div className="relative aspect-[16/9] w-full overflow-hidden rounded-[20px] bg-surface ring-1 ring-line md:rounded-[28px]"
@@ -110,15 +120,14 @@ export default function CampusMap({ R, hits, reduce, pills = true, walker = true
       {marks.filter(({ t }) => t.from !== t.to && PLACES[t.to] && !ends.includes(t.to)).map(({ t }) => (
         <span key={`d${t.id}`} aria-hidden="true" className="absolute z-10 size-3.5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-surface ring-[3px] ring-accent md:size-4" style={pct(PLACES[t.to].door)} />
       ))}
-      {marks.filter(({ t }) => !nearEnd(t)).map(({ t }) => (
-        <span key={`p${t.id}`} aria-hidden="true" className="tnum absolute z-10 -translate-x-1/2 translate-y-[9px] rounded-full bg-surface px-1 text-[12px] font-bold leading-4 text-accent shadow-sm md:hidden" style={pct(markAt(t.from))}>¥{t.reward}</span>
+      {marks.map(({ t }) => (
+        <span key={`p${t.id}`} aria-hidden="true" className={`tnum absolute z-10 -translate-x-1/2 ${nearId(t) && pillUp(t) ? '-translate-y-[27px]' : 'translate-y-[9px]'} rounded-full bg-surface px-1 text-[12px] font-bold leading-4 text-accent shadow-sm md:hidden`} style={pct(markAt(t.from))}>¥{t.reward}</span>
       ))}
-      {/* 原型订单页（at 有值）上方已经写了人在哪，起点标签不画，免得和小人、1 号点叠在一起 */}
-      {/* 原型订单页：起点不标；小人到了终点就不再标「到达」，免得两样叠在一起 */}
-      {ends.filter((id) => !(at != null && (id === R.from || (id === R.to && at >= 0.99)))).map((id) => (
+      {/* 原型订单页：小人还在起点附近时起点不标，到了终点就不再标「到达」，免得和小人叠在一起 */}
+      {ends.filter((id) => !(at != null && ((id === R.from && at < 0.15) || (id === R.to && at >= 0.99)))).map((id) => (
         <span key={id} className="absolute z-20" style={pct(id === R.from ? mine[0] : mine[mine.length - 1])}>
           <span className="absolute left-0 top-0 block size-3 -translate-x-1/2 -translate-y-1/2 rounded-full bg-ink ring-[3px] ring-surface md:size-4" />
-          <span className={`absolute left-0 -translate-x-1/2 whitespace-nowrap rounded-full bg-ink px-2 py-0.5 text-[13px] font-semibold text-bg shadow-sm md:px-2.5 md:text-[13px] ${(outward(id) === 'up') !== flip(id) ? 'bottom-3.5' : 'top-3.5'}`}>{SHORT[id]} {id === R.from ? '出发' : '到达'}</span>
+          <span className={`absolute whitespace-nowrap rounded-full bg-ink px-2 py-0.5 text-[13px] font-semibold text-bg shadow-sm md:px-2.5 md:text-[13px] ${side(id) === 'right' ? 'left-3 -translate-y-1/2' : side(id) === 'left' ? 'right-3 -translate-y-1/2' : `left-0 -translate-x-1/2 ${labelUp(id) ? 'bottom-3.5' : 'top-3.5'}`}`}>{side(id) ? <span className="max-md:hidden">{SHORT[id]} </span> : `${SHORT[id]} `}{id === R.from ? '出发' : '到达'}</span>
         </span>
       ))}
       {!endsOnly && marks.filter(({ t }) => !ends.includes(t.from)).map(({ t }) => (
@@ -129,11 +138,11 @@ export default function CampusMap({ R, hits, reduce, pills = true, walker = true
         </span>
       ))}
       <AnimatePresence>
-        {/* 价签：离起终点名牌太近的不放（会把「X 出发」盖住），那几单的价钱看下面 / 右边的清单 */}
-        {pills && marks.filter(({ f, t }) => p >= f && !nearEnd(t)).map(({ t }) => (
+        {/* 价签：离起终点名牌近的放到名牌另一侧 */}
+        {pills && marks.filter(({ f }) => p >= f).map(({ t }) => (
           <span key={`${R.from}${R.to}${t.id}`} className="absolute z-30 hidden md:block" style={pct(markAt(t.from))}>
             <motion.span initial={reduce ? false : { opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0 }} transition={{ type: 'spring', stiffness: 420, damping: 24 }}
-              className={`tnum absolute left-0 -translate-x-1/2 whitespace-nowrap rounded-full bg-accent px-3 py-1 text-sm font-bold text-on-accent shadow-[0_8px_18px_-8px_rgba(11,122,85,0.7)] ${outward(t.from) === 'up' ? 'bottom-10' : 'top-10'}`}>
+              className={`tnum absolute left-0 -translate-x-1/2 whitespace-nowrap rounded-full bg-accent px-3 py-1 text-sm font-bold text-on-accent shadow-[0_8px_18px_-8px_rgba(11,122,85,0.7)] ${pillUp(t) ? 'bottom-10' : 'top-10'}`}>
               ¥{t.reward} · {t.dm ? `+${t.m ?? Math.max(1, Math.ceil(t.dm / 80))} 分钟` : '就在路上'}
             </motion.span>
           </span>
