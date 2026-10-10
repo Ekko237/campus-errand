@@ -271,7 +271,8 @@ function Scenes() {
             return (
               <motion.div key={x.key} aria-hidden={!on} initial={false} animate={{ opacity: on ? 1 : 0, y: on ? 0 : 10 }} transition={{ duration: reduce ? 0 : on ? 0.3 : 0.12, delay: reduce || !on ? 0 : 0.12, ease }}
                 className={`col-start-1 row-start-1 flex flex-col justify-start ${on ? '' : 'pointer-events-none'}`}>
-                <p className="text-[15px] font-semibold text-muted">{x.who}</p>
+                <p className="font-clock text-[56px] font-semibold leading-none text-[var(--dusk)] md:text-[80px]">{{ express: '17:50', seat: '07:40', handoff: '12:10' }[x.key]}</p>
+                <p className="mt-3 text-[15px] font-semibold text-muted">{x.who}</p>
                 <p className="mt-4 -indent-[0.5em] text-2xl font-medium leading-[1.55] tracking-[-0.01em] md:text-[28px]">「{x.pain}」</p>
                 <div className="mt-8 flex gap-4 rounded-2xl bg-accent-soft p-5 md:p-6">
                   <img src={`${import.meta.env.BASE_URL}brand/logo-v2.png`} width={44} height={44} alt="" aria-hidden="true" className="size-11 shrink-0" />

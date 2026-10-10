@@ -161,29 +161,26 @@ export default function RouteHero({ Cta, Anchor }) {
   // 副标题和按钮第一帧就在，只做一点位移，不从透明开始
   const fade = (d) => ({ initial: reduce ? false : { y: 10 }, animate: { y: 0 }, transition: { duration: 0.5, delay: d * 0.3, ease } })
   return (
-    <section id="top" className="mx-auto grid max-w-7xl items-center gap-10 px-4 pb-12 pt-8 md:px-8 md:pb-20 md:pt-12 lg:grid-cols-12 lg:gap-10 lg:pb-4 lg:pt-10 xl:pt-14">
-      <div className="lg:col-span-5">
-        <h1 className="font-display text-[54px] leading-[1.05] md:text-[80px] lg:text-[length:clamp(54px,4vw_+_20px,78px)]">
-          <span className="block pb-1"><motion.span className="block" {...line(0)}>本来就要经过，</motion.span></span>
-          <span className="block pb-[0.3em]"><motion.span className="block" {...line(1)}><DashUnder>顺手</DashUnder>捎一下</motion.span></span>
+    <section id="top" className="relative isolate overflow-hidden">
+      {/* 方向 B：首屏是一个时刻。17:45，还有 5 分钟下课，傍晚教学楼门口 */}
+      <img src={`${import.meta.env.BASE_URL}images/dusk-v1.webp`} width={1920} height={1080} alt="傍晚五点多的教学楼门口，下课的同学走下台阶，一个男生手里捧着一个快递盒" className="absolute inset-0 -z-10 size-full object-cover object-[70%_center]" />
+      <div aria-hidden="true" className="absolute inset-0 -z-10 bg-gradient-to-r from-[#f5efe3]/95 via-[#f5efe3]/60 to-transparent max-md:bg-gradient-to-b max-md:from-[#f5efe3]/95 max-md:via-[#f5efe3]/70 max-md:to-transparent" />
+      <div className="mx-auto flex min-h-[86vh] max-w-7xl flex-col justify-center px-4 py-16 md:px-8 md:py-24">
+        <motion.p {...fade(0)} className="font-clock text-[96px] font-semibold leading-none text-[var(--dusk)] md:text-[168px]">17:45</motion.p>
+        <h1 className="font-display mt-4 max-w-[13em] text-[40px] leading-[1.15] md:text-[64px]">
+          <motion.span className="block" {...line(0)}>还有 5 分钟下课，</motion.span>
+          <motion.span className="block" {...line(1)}>你的快递<em className="not-italic text-accent">有人顺路</em></motion.span>
         </h1>
-        <motion.p {...fade(0.35)} className="mt-6 max-w-[30ch] md:max-w-[36ch] lg:mt-8 lg:max-w-[30ch] text-lg leading-relaxed text-muted md:text-[22px] lg:text-xl">
-          快递在驿站，你在宿舍。总有同学下课正好从驿站走回去，顺手帮你带上。校内实名，赏金先托管。
+        <motion.p {...fade(0.35)} className="mt-6 max-w-[30ch] text-lg leading-relaxed text-ink/80 md:text-xl">
+          快递在驿站，你在宿舍。阿远下课正好从驿站走回梅园，顺手帮你带上，只多走 1 分钟。校内实名，赏金先托管。
         </motion.p>
         <motion.div {...fade(0.45)} className="mt-8 flex flex-wrap items-center gap-3">
           <Cta />
-          <Anchor to="routes" className="group inline-flex h-14 items-center gap-2 whitespace-nowrap rounded-full px-5 text-[17px] font-semibold text-ink transition hover:bg-sunken">
+          <Anchor to="routes" className="group inline-flex h-14 items-center gap-2 whitespace-nowrap rounded-full bg-surface/70 px-5 text-[17px] font-semibold text-ink backdrop-blur transition hover:bg-surface">
             看看谁顺路<ArrowDown size={18} weight="bold" className="transition-transform group-hover:translate-y-0.5" />
           </Anchor>
         </motion.div>
       </div>
-      <motion.div {...fade(0.2)} className="lg:col-span-7">
-        <RouteMap />
-        <p className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-[13px] text-ink/80 md:text-[14px]">
-          <span className="inline-flex items-center gap-1.5"><i className="h-1 w-5 rounded-full bg-ink/80" />阿远本来就要走的路</span>
-          <span className="inline-flex items-center gap-1.5"><i className="h-1.5 w-5 rounded-full bg-accent" />顺手捎上你的快递</span>
-        </p>
-      </motion.div>
     </section>
   )
 }

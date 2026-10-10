@@ -4,10 +4,11 @@
    圆角规则：可点的按钮/筛选片 = 全圆角；卡片/面板 = 16px（rounded-2xl）；输入框 = 12px（rounded-xl）。
    red 仅用于「错误/违规拦截」语义，不当装饰色。 */
 :root {
-  --bg: #f4f5f3;
-  --surface: #fbfbfa;
+  --bg: #f5efe3;
+  --surface: #fcf8f0;
   --sunken: #eaecea;
   --ink: #18191a;
+  --dusk: #d9732e;
   --muted: #55595c;
   --line: #dcdfdc;
   --accent: #0b7a55;
@@ -57,8 +58,9 @@ h1, h2, h3 { text-wrap: balance; }
 /* 得意黑还没下载完时用的替身：系统黑体缩到 80%，和得意黑一样宽，标题不会先排三行再跳回两行 */
 @font-face { font-family: "Smiley Fallback"; src: local("PingFang SC"), local("PingFangSC-Regular"), local("Microsoft YaHei"), local("Noto Sans CJK SC"), local("Noto Sans SC"); size-adjust: 80%; }
 /* 得意黑还在路上时，替身字先斜过来，换字那一下不从直体跳成斜体 */
-.fl .font-display { font-style: oblique 9deg; }
-.font-display { font-family: "Smiley Sans Oblique", "Smiley Fallback", "Geist Variable", "PingFang SC", "Noto Sans SC", sans-serif; font-weight: 400; letter-spacing: 0; margin-left: 0.04em; }
+/* 方向 B「下课那 5 分钟」：标题用宋体粗体（编辑感），时间数字用等宽 */
+.font-display { font-family: "Songti SC", "STSong", "Noto Serif SC", "Source Han Serif SC", serif; font-weight: 900; letter-spacing: -0.01em; }
+.font-clock { font-family: ui-monospace, "SF Mono", "Menlo", monospace; font-variant-numeric: tabular-nums; letter-spacing: -0.04em; }
 
 
 
