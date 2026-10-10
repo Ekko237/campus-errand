@@ -168,7 +168,7 @@ function mk(o) {
 
 export function seedTasks() {
   return [
-    mk({ id: 's1', type: 'express', title: '菜鸟驿站取 2 个小件快递', from: 'cainiao', to: 'mei5', reward: 5, windowMin: 90, urgent: true, size: 's', note: '两个都是衣服，很轻', room: '梅园 5 号楼 412', posterName: '梁小禾', posterCredit: 91, ago: 6 }),
+    mk({ id: 's1', type: 'express', title: '菜鸟驿站取 2 个小件快递', from: 'cainiao', to: 'mei5', reward: 5, windowMin: 90, urgent: false, size: 's', note: '两个都是衣服，很轻', room: '梅园 5 号楼 412', posterName: '梁小禾', posterCredit: 91, ago: 6 }),
     mk({ id: 's2', type: 'food', title: '外卖到北门了，帮忙拎上楼', from: 'gate', to: 'tao2', reward: 3, windowMin: 25, urgent: true, size: 's', note: '黄色袋子，尾号 7731', room: '桃园 2 号楼 608', posterName: '许一舟', posterCredit: 83, ago: 3 }),
     mk({ id: 's3', type: 'buy', title: '教育超市带一瓶生抽和两包抽纸', from: 'market', to: 'zhu3', reward: 6, windowMin: 240, urgent: false, size: 's', note: '生抽要海天的，钱到了一起转', room: '竹园 3 号楼 215', posterName: '温晴', posterCredit: 95, ago: 22 }),
     mk({ id: 's4', type: 'seat', title: '图书馆三楼占一个靠窗座位', from: 'lib', to: 'lib', reward: 4, windowMin: 600, urgent: false, size: 's', note: '明早 7:40 前，放本书就行', room: '图书馆 3F 自习区', posterName: '周砚', posterCredit: 88, ago: 40 }),
@@ -197,8 +197,8 @@ export function seedAccounts() {
       ].map(([y, mo, d, h, amount, label]) => ({ at: new Date(y, mo - 1, d, h, 0).getTime(), amount, label, sample: true })),
       creditLog: [
         { at: now() - 3 * 24 * 60 * M, delta: 1, label: '示例：「顺丰大件代取」按时确认收货' },
-        { at: now() - 3 * 24 * 60 * M - 5 * M, delta: 1, label: '示例：「顺丰大件代取」收到 5 星好评' },
-        { at: now() - 19 * 24 * 60 * M, delta: 1, label: '示例：「外卖送上楼」收到 5 星好评' },
+        { at: now() - 3 * 24 * 60 * M - 5 * M, delta: 1, label: '示例：「顺丰大件代取」收到 5\u00a0星好评' },
+        { at: now() - 19 * 24 * 60 * M, delta: 1, label: '示例：「外卖送上楼」收到 5\u00a0星好评' },
         { at: now() - 40 * 24 * 60 * M, delta: 0, label: '示例账号：起始信用 85' },
       ],
     },

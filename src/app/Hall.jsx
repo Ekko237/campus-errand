@@ -144,7 +144,6 @@ export default function Hall() {
     try { localStorage.setItem('shunluxia:myroute', JSON.stringify(n)) } catch { /* 存不了不影响使用 */ }
     return n
   })
-  const routeHits = state.tasks.filter((t) => t.status === 'open' && t.deadline > Date.now() && detourMin(route.from, route.to, t) <= 5).map((t) => ({ ...t, dm: detourMeters(route.from, route.to, t) }))
   const [urgentOnly, setUrgentOnly] = useState(false)
   const [goodPoster, setGoodPoster] = useState(false)
   const [loading, setLoading] = useState(false)
@@ -172,6 +171,8 @@ export default function Hall() {
     const t0 = Date.now()
     return [...l].sort((a, b) => (a.deadline < t0) - (b.deadline < t0) || key(a) - key(b))
   }, [state.tasks, type, sortBy, urgentOnly, goodPoster, route])
+  // 地图和列表用同一份筛选结果：筛到 0 单，地图上也是 0 单
+  const routeHits = list.filter((t) => t.deadline > Date.now() && detourMin(route.from, route.to, t) <= 5).map((t) => ({ ...t, dm: detourMeters(route.from, route.to, t) }))
   // 和地图上一样的编号：没过期、顺路的单按路上先后 1、2、3
   const numbered = list.filter((t) => t.deadline > Date.now() && detourMin(route.from, route.to, t) <= 5).map((t) => t.id)
 

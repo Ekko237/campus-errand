@@ -27,7 +27,8 @@ export default function Verify() {
   const [done, setDone] = useState(false)
   const reduce = useReducedMotion()
   // 刚认证完：徽章弹进来停 1.4 秒，再自动回到原来的页面
-  useEffect(() => { if (!done) return; const id = setTimeout(() => nav(back), 1800); return () => clearTimeout(id) }, [done, back, nav])
+  const [sec, setSec] = useState(2)
+  useEffect(() => { if (!done) return; const id = setTimeout(() => nav(back), 2000); const tick = setInterval(() => setSec((x) => Math.max(1, x - 1)), 1000); return () => { clearTimeout(id); clearInterval(tick) } }, [done, back, nav])
 
   if (done) {
     return (
@@ -41,7 +42,7 @@ export default function Verify() {
           <span className="tnum rounded-full bg-accent-soft px-3 py-1 text-sm font-bold text-accent">信用 {CREDIT_INIT} ·「{levelOf(CREDIT_INIT).name}」</span>
         </motion.div>
         <Btn className="mt-5" onClick={() => nav(back)}>{back.startsWith('/app/task') ? '现在回去接单' : '回去'}</Btn>
-        <p className="mt-2 text-xs text-muted">2 秒后自动回去</p>
+        <p className="tnum mt-2 text-xs text-muted">{sec} 秒后自动回去</p>
       </Panel>
     )
   }

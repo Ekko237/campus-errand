@@ -46,8 +46,7 @@ export default function TourBar() {
   useEffect(() => {
     if (!here) return
     let el = null
-    // 刚确认放款（下一步是打分）：先让「已放款」那一下播完，再滚去打分
-    const wait = step?.n === 7 ? 1600 : 350
+    let wait = 0
     // 量两次：图片（比如送达照片）加载完会把按钮往下推，第一次量完 0.6 秒后再补一次
     const reveal = () => {
       if (!el || !(loc.pathname.startsWith('/app/task/') || loc.pathname.startsWith('/app/publish'))) return
@@ -68,14 +67,26 @@ export default function TourBar() {
       if (dy == null) dy = r.height < bottom - top ? r.top + r.height / 2 - (top + bottom) / 2 : r.top - top
       window.scrollBy({ top: dy, behavior: reduce ? 'auto' : 'smooth' })
     }
+    // 刚发生的「奖励时刻」（取件码揭晓、托管放款）：先把那张卡停在视线里 1.6 秒，再去找下一个按钮
+    const timers = []
     const id = setTimeout(() => {
-      el = document.querySelector('main [data-tour-target]') || [...document.querySelectorAll('main button')].find((x) => x.className.includes('bg-accent') && !x.disabled && x.offsetParent)
-      if (!el) return
-      el.classList.add('tour-focus')
-      reveal()
-    }, wait)
-    const id2 = setTimeout(reveal, wait + 600)
-    return () => { clearTimeout(id); clearTimeout(id2); el?.classList.remove('tour-focus') }
+      // 只在刚接单（下一步取件）和刚放款（下一步打分）这两步停
+      const moment = [4, 7].includes(step?.n) ? document.querySelector('main [data-tour-moment]') : null
+      if (moment) {
+        const head = document.querySelector('header')?.getBoundingClientRect().bottom ?? 64
+        const mr = moment.getBoundingClientRect()
+        if (mr.top < head + 16 || mr.bottom > innerHeight - 80) window.scrollBy({ top: mr.top - head - 16, behavior: reduce ? 'auto' : 'smooth' })
+        wait = 1600
+      }
+      timers.push(setTimeout(() => {
+        el = document.querySelector('main [data-tour-target]') || [...document.querySelectorAll('main button')].find((x) => x.className.includes('bg-accent') && !x.disabled && x.offsetParent)
+        if (!el) return
+        el.classList.add('tour-focus')
+        reveal()
+        timers.push(setTimeout(reveal, 600))
+      }, moment ? wait : 0))
+    }, 350)
+    return () => { clearTimeout(id); timers.forEach(clearTimeout); el?.classList.remove('tour-focus') }
   }, [here, step?.n, loc.pathname, reduce, state.role])
   useEffect(() => { if (!arrived) return; const id = setTimeout(() => act('tour', { tour: { active: false, done: true } }), 3000); return () => clearTimeout(id) }, [arrived, act])
   const go = () => {

@@ -131,7 +131,7 @@ function PickupCard({ t }) {
     setTimeout(() => setCopied(false), 1500)
   }
   return (
-    <motion.section aria-label="取件信息" className="relative overflow-hidden rounded-2xl bg-ink p-4 text-bg"
+    <motion.section aria-label="取件信息" data-tour-moment={fresh ? '' : undefined} className="relative overflow-hidden rounded-2xl bg-ink p-4 text-bg"
       initial={fresh ? { opacity: 0.4, scale: 0.98 } : false} animate={{ opacity: 1, scale: 1 }} transition={{ type: 'spring', stiffness: 260, damping: 30 }}>
       {t.private?.code ? (
         <>
@@ -200,8 +200,8 @@ function PayoutRail({ t, play }) {
 }
 
 function Escrow({ t }) {
-  const [prev] = useState(t.status)
-  const play = t.status === 'completed' && prev !== 'completed'
+  // 确认放款时这块会换位置重新挂载：用「刚完成 4 秒内」判断要不要播放款动画
+  const [play] = useState(() => t.status === 'completed' && !!t.completedAt && Date.now() - t.completedAt < 4000)
   const map = {
     open: ['托管中', '赏金已冻结，送达确认后才放款'],
     ongoing: ['托管中', '跑腿人完成前，钱不会离开平台'],
@@ -212,7 +212,7 @@ function Escrow({ t }) {
     cancelled: ['已退回', '任务取消，赏金退回发单人；接单后取消会先扣 30% 补偿跑腿人'],
   }[t.status]
   return (
-    <div id="escrow" className="scroll-mt-24 rounded-2xl bg-accent-soft p-4">
+    <div id="escrow" data-tour-moment={play ? '' : undefined} className="scroll-mt-24 rounded-2xl bg-accent-soft p-4">
       <div className="flex items-center gap-3">
         <img src={`${import.meta.env.BASE_URL}icons/trust-escrow-v1.webp`} width={40} height={40} alt="护着硬币的盾牌" className="size-10 shrink-0 object-contain" />
         <div className="flex-1">
@@ -423,7 +423,7 @@ function Actions({ t }) {
       return (
         <div className="grid gap-2">
           <Btn size="lg" className="w-full" onClick={() => { act('confirm', { id: t.id }); toEscrow() }}>确认送达，放款 ¥{t.reward}</Btn>
-          <p className="text-center text-sm text-muted">送达码证明人到了，东西对不对要你看一眼再放钱；2 小时内确认，你的信用 +1</p>
+          <p className="text-center text-sm text-muted">送达码证明人到了，东西对不对要你看一眼再放钱；<span className="whitespace-nowrap">2 小时内确认</span>，<span className="whitespace-nowrap">你的信用 +1</span></p>
           <Btn variant="plain" size="sm" onClick={() => setDisputeOpen(true)}>有问题，申诉</Btn>
           <Sheet open={disputeOpen} onClose={() => setDisputeOpen(false)} title="发起申诉">
             <p className="text-[15px] text-muted">申诉期间赏金继续冻结，平台会核对送达凭证。凭证有效、申诉被驳回时，你的信用 -5。</p>
@@ -615,8 +615,7 @@ export default function TaskDetail() {
     <div className="space-y-5">
       <div className="flex items-center gap-2">
         <button onClick={() => nav(-1)} aria-label="返回" className="grid size-10 place-items-center rounded-full bg-surface ring-1 ring-line"><ArrowLeft size={20} weight="bold" /></button>
-        {/* 接单后取件码排在最上面：顶栏先写清是哪一单 */}
-        <span className={`min-w-0 truncate text-[15px] font-semibold ${pmode === 'open' ? 'text-ink' : 'text-muted'}`}>{pmode === 'open' ? t.title : '订单详情'}</span>
+        <span className={`min-w-0 truncate text-[15px] font-semibold text-muted`}>订单详情</span>
         <span className={`ml-auto rounded-full px-3 py-1 text-sm font-semibold ${['refunded', 'cancelled', 'disputed'].includes(t.status) ? 'bg-sunken text-ink' : 'bg-accent-soft text-accent'}`}>{t.status === 'ongoing' && t.picked ? '送达中' : STATUS_TEXT[t.status]}</span>
       </div>
 

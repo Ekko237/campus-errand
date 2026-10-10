@@ -19,7 +19,6 @@ const markAt = (id) => {
   return [(x0 + x1) / 2, (y0 + y1) / 2]
 }
 const toD = (pts) => pts.map(([x, y], i) => `${i ? 'L' : 'M'}${x} ${y}`).join(' ')
-const pct = ([x, y]) => ({ left: `${(x / MAP_W) * 100}%`, top: `${(y / MAP_H) * 100}%` })
 // 门口在路的上方还是下方：标签放在门口外侧，不压路
 const outward = (id) => {
   const { door, road } = PLACES[id]
@@ -70,6 +69,13 @@ export default function CampusMap({ R, hits, reduce, pills = true, walker = true
     const c = animate(0, 1, { duration: 3, delay: 0.4, ease: 'easeInOut', onUpdate: setP })
     return () => c.stop()
   }, [R.from, R.to, reduce, walker])
+  // 手机上整张图太小：只裁这条路左右 1200 宽、4:3 的一块，放大约 1.3 倍，名牌和编号不挤
+  const [small, setSmall] = useState(() => typeof window !== 'undefined' && window.matchMedia('(max-width: 639px)').matches)
+  useEffect(() => { const m = window.matchMedia('(max-width: 639px)'); const f = () => setSmall(m.matches); m.addEventListener('change', f); return () => m.removeEventListener('change', f) }, [])
+  const xs = [...mine, ...marks.map(({ t }) => markAt(t.from))].map((q) => q[0])
+  const cx = (Math.min(...xs) + Math.max(...xs)) / 2
+  const V = small ? { X0: Math.max(0, Math.min(MAP_W - 1200, cx - 600)), VW: 1200 } : { X0: 0, VW: MAP_W }
+  const pct = ([x, y]) => ({ left: `${((x - V.X0) / V.VW) * 100}%`, top: `${(y / MAP_H) * 100}%` })
   const me = pointAt(mine, p)
   const ends = [R.from, R.to]
   // 起终点旁边就有取件点时，名牌翻到另一边，不盖住编号
@@ -82,15 +88,17 @@ export default function CampusMap({ R, hits, reduce, pills = true, walker = true
   const side = (id) => {
     const e = id === R.from ? mine[0] : mine[mine.length - 1]
     const near = (lo, hi) => marks.some(({ t }) => { const [x, y] = markAt(t.from); return Math.abs(x - e[0]) < 260 && y - e[1] > lo && y - e[1] < hi })
-    return near(-200, -10) && near(10, 200) ? (e[0] > 1300 ? 'left' : 'right') : null
+    return near(-200, -10) && near(10, 200) ? ((e[0] - V.X0) / V.VW > 0.75 ? 'left' : 'right') : null
   }
+  // 起终点靠近画框左右边：名牌往里长，不被裁掉
+  const edge = (id) => { const f = ((id === R.from ? mine[0] : mine[mine.length - 1])[0] - V.X0) / V.VW; return f < 0.15 ? 'l' : f > 0.85 ? 'r' : null }
   const pillUp = (t) => { const id = nearId(t); return id && !side(id) ? !labelUp(id) : outward(t.from) === 'up' }
   return (
     <div>
-    <div className="relative aspect-[16/9] w-full overflow-hidden rounded-[20px] bg-surface ring-1 ring-line md:rounded-[28px]"
+    <div className="relative aspect-[4/3] w-full overflow-hidden sm:aspect-[16/9] rounded-[20px] bg-surface ring-1 ring-line md:rounded-[28px]"
       role="img" aria-label={`示意地图：从${SHORT[R.from]}到${SHORT[R.to]}，沿路有 ${hits.length} 个顺路的单`}>
-      <img src={`${import.meta.env.BASE_URL}images/campus-map-v2.webp`} width={1600} height={900} alt="" aria-hidden="true" loading="lazy" className="absolute inset-0 size-full object-cover" />
-      <svg viewBox={`0 0 ${MAP_W} ${MAP_H}`} className="absolute inset-0 size-full" aria-hidden="true">
+      <svg viewBox={`${V.X0} 0 ${V.VW} ${MAP_H}`} className="absolute inset-0 size-full" aria-hidden="true">
+        <image href={`${import.meta.env.BASE_URL}images/campus-map-v2.webp`} x="0" y="0" width={MAP_W} height={MAP_H} />
         {/* 拐进楼里取件的那一小段：从路边进门、走进楼里，多走的分钟数大多花在这里 */}
         {marks.map(({ t, f }) => {
           const P = PLACES[t.from]
@@ -127,7 +135,7 @@ export default function CampusMap({ R, hits, reduce, pills = true, walker = true
       {ends.filter((id) => !(at != null && ((id === R.from && at < 0.15) || (id === R.to && at >= 0.99)))).map((id) => (
         <span key={id} className="absolute z-20" style={pct(id === R.from ? mine[0] : mine[mine.length - 1])}>
           <span className="absolute left-0 top-0 block size-3 -translate-x-1/2 -translate-y-1/2 rounded-full bg-ink ring-[3px] ring-surface md:size-4" />
-          <span className={`absolute whitespace-nowrap rounded-full bg-ink px-2 py-0.5 text-[13px] font-semibold text-bg shadow-sm md:px-2.5 md:text-[13px] ${side(id) === 'right' ? 'left-3 -translate-y-1/2' : side(id) === 'left' ? 'right-3 -translate-y-1/2' : `left-0 -translate-x-1/2 ${labelUp(id) ? 'bottom-3.5' : 'top-3.5'}`}`}>{side(id) ? <span className="max-md:hidden">{SHORT[id]} </span> : `${SHORT[id]} `}{id === R.from ? '出发' : '到达'}</span>
+          <span className={`absolute whitespace-nowrap rounded-full bg-ink px-2 py-0.5 text-[13px] font-semibold text-bg shadow-sm md:px-2.5 md:text-[13px] ${side(id) === 'right' ? 'left-3 -translate-y-1/2' : side(id) === 'left' ? 'right-3 -translate-y-1/2' : `${edge(id) === 'l' ? '-left-3' : edge(id) === 'r' ? '-right-3' : 'left-0 -translate-x-1/2'} ${labelUp(id) ? 'bottom-3.5' : 'top-3.5'}`}`}>{side(id) ? <span className="max-md:hidden">{SHORT[id]} </span> : `${SHORT[id]} `}{id === R.from ? '出发' : '到达'}</span>
         </span>
       ))}
       {!endsOnly && marks.filter(({ t }) => !ends.includes(t.from)).map(({ t }) => (

@@ -152,8 +152,8 @@ function Nav({ page }) {
           {home && <Link to="/thinking" className={linkCls}>产品思考{under}</Link>}
         </nav>
         <div className="flex items-center gap-2">
-          <div className={`transition-opacity duration-300 ${!home ? 'max-md:hidden' : ''} ${(scrolled || !home) && !open ? '' : 'max-md:pointer-events-none max-md:opacity-0'}`}><Cta size="sm" /></div>
-          {!home && <Link to="/" className="inline-flex h-10 items-center gap-1.5 rounded-full bg-sunken px-4 text-[15px] font-semibold active:scale-[0.97]"><ArrowLeft size={16} weight="bold" />回首页</Link>}
+          <div className={`transition-opacity duration-300 ${(scrolled || !home) && !open ? '' : 'max-md:pointer-events-none max-md:opacity-0'}`}><Cta size="sm" /></div>
+          {!home && <Link to="/" className="inline-flex h-10 items-center gap-1.5 rounded-full bg-sunken px-4 text-[15px] font-semibold active:scale-[0.97]"><ArrowLeft size={16} weight="bold" /><span className="max-md:hidden">回</span>首页</Link>}
           {home && (
             <button onClick={() => { setCur(scrollY + innerHeight >= document.documentElement.scrollHeight - 4 ? SECTIONS[SECTIONS.length - 1][0] : [...SECTIONS].reverse().find(([id]) => (document.getElementById(id)?.getBoundingClientRect().top ?? 1e9) < 140)?.[0]); setOpen((v) => !v) }} aria-expanded={open} aria-controls="mnav" className="grid h-10 place-items-center rounded-full bg-sunken px-4 text-[15px] font-semibold active:scale-[0.97] lg:hidden">{open ? '收起' : '目录'}</button>
           )}
@@ -215,7 +215,7 @@ const SCENES = [
     fix: '接单人的信用分公开可见。接了不去算爽约，直接扣 5 分，下次能接的单就变少。',
   },
   {
-    key: 'handoff', tab: '宿舍楼下的交接', short: '楼下交接', route: ['北门', '桃园 2 号楼', '一教去兰园的同学，多走 3 分钟'], img: 'scene-handoff-v3', alt: '傍晚的宿舍楼门口，一名学生把外卖袋递给另一名学生',
+    key: 'handoff', tab: '宿舍楼下的交接', short: '楼下交接', route: ['北门', '桃园 2 号楼', '一教回桃园的同学，多走 3 分钟'], img: 'scene-handoff-v3', alt: '傍晚的宿舍楼门口，一名学生把外卖袋递给另一名学生',
     who: '赶作业下不了楼的于小渔',
     pain: '外卖放在北门取餐点，走回 6 楼要十分钟。正好回宿舍的同学顺手就能捎上来，可彼此不认识，也不想把宿舍号给陌生人。',
     fix: '大厅按距离排序，顺路回宿舍的人最先看到；宿舍号接单后才显示，订单结束自动隐藏。',
@@ -366,7 +366,7 @@ function StageMap({ i, tall = false }) {
         initial={false} animate={{ ...spct(me), opacity: i === 0 ? 0 : 1 }} transition={sp}>
         <img src={icon('avatar-runner-v1')} width={28} height={28} alt="" className="size-6 rounded-full md:size-7" />
         {i === 3 && !tall && <img src={icon('type-express-v1')} width={20} height={20} alt="" className="absolute -right-3.5 -top-3.5 size-5" />}
-        {!tall && <span className={`absolute left-1/2 -translate-x-1/2 ${i === 2 ? 'bottom-full mb-2' : 'top-full mt-2'} whitespace-nowrap rounded-full bg-ink px-1.5 text-[11px] font-semibold leading-4 text-bg`}>阿远</span>}
+        {!tall && <span className={`absolute ${i === 2 ? 'right-full top-1/2 mr-1.5 -translate-y-1/2' : 'left-1/2 top-full mt-2 -translate-x-1/2'} whitespace-nowrap rounded-full bg-ink px-1.5 text-[11px] font-semibold leading-4 text-bg`}>阿远</span>}
       </motion.span>
       {i >= 4 && (
         <motion.span key={`pay${i}`} className="tnum absolute z-20 -translate-x-1/2 rounded-full bg-accent px-2 py-0.5 text-xs font-bold text-on-accent" style={spct([mei[0] + 200, mei[1] - 262])}
@@ -718,7 +718,7 @@ function Credit() {
         </div>
         <div className="mt-14 grid gap-6 lg:grid-cols-12">
           <Reveal className="lg:col-span-5">
-            <div ref={cardRef} className={`flex flex-col rounded-2xl p-6 text-on-accent transition-colors duration-500 md:p-8 lg:sticky lg:top-28 lg:h-full ${shownScore < 60 ? 'bg-danger' : 'bg-accent'}`}>
+            <div ref={cardRef} className={`flex flex-col rounded-2xl p-6 text-on-accent transition-colors duration-500 md:p-8 lg:sticky lg:top-28 lg:h-full ${shownScore < 60 ? 'bg-danger' : 'bg-accent-deep'}`}>
               <div className="flex items-center justify-between">
                 <div className="grid grid-cols-2 rounded-full bg-on-accent/15 p-1 text-sm font-semibold">
                   {[['runner', '跑腿人'], ['poster', '发单人']].map(([k, l]) => (
@@ -772,7 +772,7 @@ function Credit() {
             <AnimatePresence>
               {flash > 0 && !cardOn && listOn && (
                 <motion.div key="mini" initial={reduce ? false : { y: 16, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: 10, opacity: 0 }} transition={{ type: 'spring', stiffness: 420, damping: 32 }}
-                  className="fixed inset-x-4 bottom-4 z-30 flex items-center gap-3 rounded-full bg-accent py-2 pl-2 pr-5 text-on-accent shadow-[0_16px_30px_-12px_rgba(11,122,85,0.7)] lg:hidden" aria-hidden="true">
+                  className="fixed inset-x-4 bottom-4 z-30 flex items-center gap-3 rounded-full bg-accent-deep py-2 pl-2 pr-5 text-on-accent shadow-[0_16px_30px_-12px_rgba(11,122,85,0.7)] lg:hidden" aria-hidden="true">
                   <img src={icon(tier.badge + '-v1')} width={40} height={40} alt="" className="size-10 rounded-full bg-on-accent/90 object-contain p-0.5" />
                   <span className="text-[15px] font-semibold">{who === 'runner' ? '跑腿人' : '发单人'}「{tier.name}」</span>
                   <span className="ml-auto flex items-baseline gap-2">
@@ -1052,7 +1052,7 @@ function Final({ page }) {
             <div className="relative size-full overflow-hidden rounded-[36px]">
               <img src={`${import.meta.env.BASE_URL}images/campus-map-v2.webp`} width={1600} height={900} alt="" aria-hidden="true" loading="lazy" className="absolute inset-0 size-full scale-110 object-cover blur-[3px] brightness-[0.55]" />
               <div className="relative flex h-full flex-col items-center px-3 pt-12 text-bg">
-                <p className="text-sm font-semibold opacity-80">下课了</p>
+                <p className="text-sm font-semibold opacity-80">还有 5 分钟下课</p>
                 <p className="tnum mt-1 text-[64px] font-light leading-none tracking-[-0.03em] md:text-[72px]">17:45</p>
                 <div className="mt-10 w-full space-y-2">
                   <AnimatePresence mode="popLayout" initial={false}>
