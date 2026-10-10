@@ -302,11 +302,13 @@ function StateRow({ k, v }) {
 // 六步卡里的小地图：每走一步，跑腿人在路上前进一段
 // 六步区订单卡上的小地图：就是首屏那张校园地图的一条横带，学弟按步骤从一教走到驿站、捎上包裹、送到梅园
 const SX0 = 180, SY0 = 100, SVW = 1220, SVH = 460
-const STAGE_PTS = routePath('jiao1', 'mei5').pts
-const STAGE_LEN = routePath('jiao1', 'mei5').len
-const STAGE_F = (18 + (STAGE_PTS[1][0] - PLACES.cainiao.door[0])) / STAGE_LEN // 走到驿站门口时在整条路上的位置
-const STAGE_P = [0, 0, STAGE_F, 0.62, 1, 1] // 每一步学弟走到哪
-const NEED_D = routePath('cainiao', 'mei5').pts.slice(1).map(([x, y], k) => `${k ? 'L' : 'M'}${x} ${y}`).join(' ')
+// 只画路面上那段（去掉两头进门的小短线），线头不会拐出一个小钩
+const STAGE_PTS = routePath('jiao1', 'mei5').pts.slice(1, -1)
+const STAGE_LEN = STAGE_PTS.slice(1).reduce((n, [x, y], k) => n + Math.hypot(x - STAGE_PTS[k][0], y - STAGE_PTS[k][1]), 0)
+const STAGE_F = (STAGE_PTS[0][0] - PLACES.cainiao.door[0]) / STAGE_LEN // 走到驿站门口时在整条路上的位置
+// 每一步学弟在哪：接单在一教，进行中到驿站，送达时已经到梅园（当面核验送达码）
+const STAGE_P = [0, 0, STAGE_F, 1, 1, 1]
+const NEED_D = routePath('cainiao', 'mei5').pts.slice(1, -1).map(([x, y], k) => `${k ? 'L' : 'M'}${x} ${y}`).join(' ')
 const stagePt = (f) => {
   let target = f * STAGE_LEN
   for (let k = 1; k < STAGE_PTS.length; k++) {
@@ -344,7 +346,7 @@ function StageMap({ i }) {
         <motion.img src={icon('type-express-v1')} width={28} height={28} alt="" className="absolute size-7 -translate-x-1/2 -translate-y-1/2" style={spct(station)}
           initial={false} animate={{ scale: i === 0 ? [1, 1.25, 1] : 1 }} transition={{ duration: 0.6 }} />
       )}
-      <motion.span className="absolute z-10 grid size-8 -translate-x-1/2 -translate-y-[90%] place-items-center rounded-full bg-surface ring-[3px] ring-ink md:size-9"
+      <motion.span className="absolute z-10 grid size-8 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full bg-surface ring-[3px] ring-ink md:size-9"
         initial={false} animate={{ ...spct(me), opacity: i === 0 ? 0 : 1 }} transition={sp}>
         <img src={icon('avatar-runner-v1')} width={28} height={28} alt="" className="size-6 rounded-full md:size-7" />
         {i === 3 && <img src={icon('type-express-v1')} width={20} height={20} alt="" className="absolute -right-2 -top-2 size-5" />}
