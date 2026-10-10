@@ -1,3 +1,4 @@
+import { createPortal } from 'react-dom'
 import { useEffect, useMemo, useState } from 'react'
 import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { motion, AnimatePresence, useReducedMotion } from 'motion/react'
@@ -178,6 +179,40 @@ export default function Hall() {
   // 和地图上一样的编号：没过期、顺路的单按路上先后 1、2、3
   const numbered = list.filter((t) => t.deadline > Date.now() && detourMin(route.from, route.to, t) <= 5).map((t) => t.id)
 
+  // 电脑版：地图放到右栏（没点开订单时），中间第一屏就是订单
+  const [deskSlot, setDeskSlot] = useState(null)
+  useEffect(() => { const el = document.getElementById('desk-map-slot'); setDeskSlot((p) => (p === el ? p : el)) })
+  const mapBlock = (
+        <div className="rounded-2xl bg-accent-soft p-2 pb-3">
+          {showMap && <CampusMap R={route} reduce={reduce} pills={false} walker={false} legend
+            hits={routeHits} />}
+          <div className="px-2 pt-3">
+          <div className="flex items-center gap-3">
+            <span aria-hidden="true" className="hidden shrink-0 items-center sm:flex"><span className="size-2.5 rounded-full bg-ink" /><span className="h-0.5 w-5 bg-ink" /><span className="size-2.5 rounded-full bg-accent ring-2 ring-accent-soft" /><span className="h-0.5 w-5 bg-ink" /><span className="size-2.5 rounded-full bg-ink" /></span>
+            <p className="min-w-0 flex-1 text-[15px] font-semibold leading-snug"><span className="whitespace-nowrap">{B[route.from].name.replace(/（.*?）/, '')} → {B[route.to].name.replace(/（.*?）/, '')}</span> <span className="block whitespace-nowrap text-sm font-normal text-accent sm:inline">{routeHits.length} 单顺路</span></p>
+            <button onClick={() => setShowMap((v) => !v)} aria-expanded={showMap} className="shrink-0 text-sm font-semibold text-accent">{showMap ? '收起地图' : '看地图'}</button>
+            <button onClick={() => setEditRoute((v) => !v)} aria-expanded={editRoute} className="shrink-0 text-sm font-semibold text-accent">{editRoute ? '收起路线' : '换条路'}</button>
+          </div>
+          <AnimatePresence initial={false}>
+            {editRoute && (
+              <motion.div initial={reduce ? false : { height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.25 }} className="overflow-hidden">
+                <div className="grid grid-cols-[auto_1fr] items-center gap-x-3 gap-y-2 pt-3 text-[15px] sm:grid-cols-[auto_1fr_auto_1fr]">
+                  <span className="text-muted">从</span>
+                  <span className="relative"><select aria-label="出发地" value={route.from} onChange={setLeg('from')} className="h-10 w-full appearance-none rounded-full bg-surface pl-4 pr-10 text-[15px] font-semibold ring-1 ring-inset ring-line focus:outline-none focus:ring-2 focus:ring-accent">
+                    {BUILDINGS.map((b) => <option key={b.id} value={b.id}>{b.name}</option>)}
+                  </select><CaretDown size={16} weight="bold" className="pointer-events-none absolute right-3.5 top-1/2 -translate-y-1/2 text-muted" /></span>
+                  <span className="text-muted">去</span>
+                  <span className="relative"><select aria-label="目的地" value={route.to} onChange={setLeg('to')} className="h-10 w-full appearance-none rounded-full bg-surface pl-4 pr-10 text-[15px] font-semibold ring-1 ring-inset ring-line focus:outline-none focus:ring-2 focus:ring-accent">
+                    {BUILDINGS.map((b) => <option key={b.id} value={b.id}>{b.name}</option>)}
+                  </select><CaretDown size={16} weight="bold" className="pointer-events-none absolute right-3.5 top-1/2 -translate-y-1/2 text-muted" /></span>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+          <p className="mt-2 hidden text-sm text-muted sm:block">按捎上每单要多走几分钟排，5 分钟以内标为顺路，绿点就是路上的单。</p>
+          </div>
+        </div>
+  )
   return (
     <div className="space-y-5">
       {loadError && !errDismissed && (
@@ -228,37 +263,7 @@ export default function Hall() {
         </button>}
       </div>
 
-      {sortBy === 'route' && (
-        <div className="rounded-2xl bg-accent-soft p-2 pb-3">
-          {showMap && <CampusMap R={route} reduce={reduce} pills={false} walker={false} legend
-            hits={routeHits} />}
-          <div className="px-2 pt-3">
-          <div className="flex items-center gap-3">
-            <span aria-hidden="true" className="hidden shrink-0 items-center sm:flex"><span className="size-2.5 rounded-full bg-ink" /><span className="h-0.5 w-5 bg-ink" /><span className="size-2.5 rounded-full bg-accent ring-2 ring-accent-soft" /><span className="h-0.5 w-5 bg-ink" /><span className="size-2.5 rounded-full bg-ink" /></span>
-            <p className="min-w-0 flex-1 text-[15px] font-semibold leading-snug"><span className="whitespace-nowrap">{B[route.from].name.replace(/（.*?）/, '')} → {B[route.to].name.replace(/（.*?）/, '')}</span> <span className="block whitespace-nowrap text-sm font-normal text-accent sm:inline">{routeHits.length} 单顺路</span></p>
-            <button onClick={() => setShowMap((v) => !v)} aria-expanded={showMap} className="shrink-0 text-sm font-semibold text-accent">{showMap ? '收起地图' : '看地图'}</button>
-            <button onClick={() => setEditRoute((v) => !v)} aria-expanded={editRoute} className="shrink-0 text-sm font-semibold text-accent">{editRoute ? '收起路线' : '换条路'}</button>
-          </div>
-          <AnimatePresence initial={false}>
-            {editRoute && (
-              <motion.div initial={reduce ? false : { height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.25 }} className="overflow-hidden">
-                <div className="grid grid-cols-[auto_1fr] items-center gap-x-3 gap-y-2 pt-3 text-[15px] sm:grid-cols-[auto_1fr_auto_1fr]">
-                  <span className="text-muted">从</span>
-                  <span className="relative"><select aria-label="出发地" value={route.from} onChange={setLeg('from')} className="h-10 w-full appearance-none rounded-full bg-surface pl-4 pr-10 text-[15px] font-semibold ring-1 ring-inset ring-line focus:outline-none focus:ring-2 focus:ring-accent">
-                    {BUILDINGS.map((b) => <option key={b.id} value={b.id}>{b.name}</option>)}
-                  </select><CaretDown size={16} weight="bold" className="pointer-events-none absolute right-3.5 top-1/2 -translate-y-1/2 text-muted" /></span>
-                  <span className="text-muted">去</span>
-                  <span className="relative"><select aria-label="目的地" value={route.to} onChange={setLeg('to')} className="h-10 w-full appearance-none rounded-full bg-surface pl-4 pr-10 text-[15px] font-semibold ring-1 ring-inset ring-line focus:outline-none focus:ring-2 focus:ring-accent">
-                    {BUILDINGS.map((b) => <option key={b.id} value={b.id}>{b.name}</option>)}
-                  </select><CaretDown size={16} weight="bold" className="pointer-events-none absolute right-3.5 top-1/2 -translate-y-1/2 text-muted" /></span>
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
-          <p className="mt-2 hidden text-sm text-muted sm:block">按捎上每单要多走几分钟排，5 分钟以内标为顺路，绿点就是路上的单。</p>
-          </div>
-        </div>
-      )}
+      {sortBy === 'route' && (deskSlot ? createPortal(mapBlock, deskSlot) : mapBlock)}
 
       {loading ? <Skeleton /> : list.length === 0 ? (
         <Empty img="empty-search" alt="空纸箱和放大镜" title="这个分类暂时没人发单" hint="换个分类看看，或者自己发一单，附近顺路的同学会看到。"

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { ArrowRight } from '@phosphor-icons/react'
 import { useStore } from '../store'
@@ -15,6 +15,9 @@ export default function Orders() {
   const poster = state.role === 'poster'
   const mine = state.tasks.filter((t) => (poster ? t.posterId === 'poster' : t.runnerId === 'runner'))
   const [tab, setTab] = useState(() => (mine.some((t) => ACTIVE.includes(t.status)) || !mine.length ? 'active' : 'done'))
+  // 电脑版右边开着一单：页签跟着切到它所在的那一栏
+  const openId = (here.match(/^\/app\/task\/(.+)$/) || [])[1]
+  useEffect(() => { const t = mine.find((x) => x.id === openId); if (t) setTab(ACTIVE.includes(t.status) ? 'active' : 'done') }, [openId, mine.find((x) => x.id === openId)?.status]) // eslint-disable-line react-hooks/exhaustive-deps
   const list = mine.filter((t) => (tab === 'active' ? ACTIVE.includes(t.status) : !ACTIVE.includes(t.status)))
   return (
     <div className="space-y-5">

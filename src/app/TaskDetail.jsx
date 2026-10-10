@@ -508,7 +508,7 @@ function RouteFit({ t }) {
   const name = (id) => B[id].name.replace(/（.*?）/, '')
   return (
     <span className={`tnum inline-flex flex-col rounded-2xl px-3 py-1.5 text-sm ${m <= 5 ? 'bg-accent-soft text-accent' : 'bg-sunken text-ink'}`}>
-      <span className="whitespace-nowrap font-bold">{m <= 5 ? '顺路 · ' : ''}捎这单多走 {m} 分钟</span>
+      <span className="whitespace-nowrap font-bold">{m <= 5 ? '顺路 · ' : '不顺路 · '}捎这单多走 {m} 分钟</span>
       <span className="whitespace-nowrap font-medium opacity-80">{m <= 5 ? `你常走的 ${name(route.from)} → ${name(route.to)} 正好经过` : `你常走 ${name(route.from)} → ${name(route.to)}`}</span>
     </span>
   )

@@ -102,7 +102,7 @@ function Onboarding() {
     nav('/app/publish?tour=1')
   }
   return (
-    <Sheet open={!state.onboarded} onClose={() => act('onboarded')} title="顺路侠怎么用">
+    <Sheet open={!state.onboarded && EMBED !== 'desk'} onClose={() => act('onboarded')} title="顺路侠怎么用">
       <ol className="space-y-4">
         {steps.map((s, i) => (
           <li key={s.t} className="flex gap-3">
@@ -173,7 +173,7 @@ function DeskShell({ sub, openTask }) {
   const reduce = useReducedMotion()
   const taskOpen = pathname.startsWith('/app/task/')
   // 点开一单时，中间留着它所在的那张列表：自己发的、自己接的在「订单」，别人的在「大厅」
-  const listPath = openTask && (openTask.posterId === 'poster' || openTask.runnerId === 'runner') ? '/app/orders' : '/app'
+  const listPath = openTask && ((state.role === 'poster' && openTask.posterId === 'poster') || (state.role === 'runner' && openTask.runnerId === 'runner')) ? '/app/orders' : '/app'
   const top = state.tour.active ? 'top-[132px]' : 'top-20'
   return (
     <div className="min-h-[100dvh] bg-bg">
@@ -183,11 +183,11 @@ function DeskShell({ sub, openTask }) {
             <img src={`${import.meta.env.BASE_URL}brand/logo-v2.png`} width={36} height={36} alt="顺路侠标志：背着书包、夹着包裹奔跑的小人" className="size-9" />
             顺路侠
           </Link>
-          <div className="flex items-center gap-2"><RoleSwitch /><ViewToggle /></div>
+          <div className="flex items-center gap-2"><RoleSwitch /><ViewToggle inner /></div>
         </div>
         <TourBar />
       </header>
-      <main className="mx-auto grid max-w-[1440px] grid-cols-[180px_minmax(0,1fr)_460px] gap-6 px-6 pb-24 pt-5">
+      <main className="mx-auto grid max-w-[1440px] grid-cols-[180px_minmax(0,1fr)_500px] gap-6 px-6 pb-24 pt-5">
         <nav className={`sticky ${top} self-start`} aria-label="主导航">
           <div className="grid gap-1">
             {tabs.map(([to, label, img, end]) => (
@@ -213,7 +213,10 @@ function DeskShell({ sub, openTask }) {
               <Routes><Route path="task/:id" element={<TaskDetail />} /></Routes>
             </div>
           ) : (
-            <div className={`sticky ${top}`}><DemoPanel /></div>
+            <div className={`sticky ${top} space-y-5 overflow-y-auto overscroll-contain`} style={{ maxHeight: `calc(100dvh - ${state.tour.active ? 148 : 96}px)` }}>
+              {(pathname === '/app' || pathname === '/app/') && <div id="desk-map-slot" />}
+              <DemoPanel />
+            </div>
           )}
         </aside>
       </main>
@@ -247,7 +250,7 @@ function Shell() {
             <img src={`${import.meta.env.BASE_URL}brand/logo-v2.png`} width={36} height={36} alt="顺路侠标志：背着书包、夹着包裹奔跑的小人" className="size-9" />
             <span className="max-[359px]:hidden">顺路侠</span>
           </Link>
-          <div className="flex items-center gap-2"><RoleSwitch /><ViewToggle /></div>
+          <div className="flex items-center gap-2"><RoleSwitch /><ViewToggle inner /></div>
         </div>
         <TourBar />
       </header>
