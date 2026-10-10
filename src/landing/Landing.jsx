@@ -527,20 +527,32 @@ function Credit() {
             </div>
           </Reveal>
           <Reveal delay={0.05} className="lg:col-span-7">
-            <ul className="grid gap-2 sm:grid-cols-2">
-              {rules.map((r, ri) => (
-                <li key={r.label} className={rules.length % 2 && ri === rules.length - 1 ? 'sm:col-span-2' : ''}>
-                  <button onClick={() => apply(r)} className="group flex h-full w-full items-start gap-4 rounded-2xl bg-bg p-5 text-left ring-1 ring-line transition hover:-translate-y-0.5 hover:shadow-[0_14px_30px_-18px_rgba(17,40,30,0.4)] hover:ring-accent/40 active:translate-y-0 active:scale-[0.98]">
-                    <span className={`tnum w-12 shrink-0 text-3xl font-bold ${r.delta > 0 ? 'text-accent' : 'text-danger'}`}>{r.delta > 0 ? '+' : ''}{r.delta}</span>
-                    <span className="min-w-0"><span className="block text-lg font-semibold">{r.label}</span><span className="block text-[15px] text-muted">{r.note}</span>
-                      {last?.label === r.label && (
-                        <motion.span key={score} initial={reduce ? false : { opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ type: 'spring', stiffness: 380, damping: 30 }}
-                          className="tnum mt-2 inline-flex items-center gap-1.5 rounded-full bg-accent-soft px-3 py-1 text-sm font-bold text-accent lg:hidden">现在 {score} 分 ·「{tier.name}」</motion.span>
-                      )}</span>
-                  </button>
-                </li>
-              ))}
-            </ul>
+            <ol className="relative">
+              <span aria-hidden="true" className="absolute bottom-6 left-[19px] top-6 border-l-2 border-dashed border-line" />
+              {rules.map((r) => {
+                const here = last?.label === r.label
+                return (
+                  <li key={r.label} className="relative">
+                    <button onClick={() => apply(r)} className="group flex w-full items-center gap-4 rounded-2xl py-3 pr-3 text-left transition hover:bg-bg active:scale-[0.99]">
+                      <span className="relative z-10 grid size-10 shrink-0 place-items-center">
+                        <span className={`size-4 rounded-full ring-4 ring-surface transition-transform group-hover:scale-125 ${r.delta > 0 ? 'bg-accent' : 'bg-danger'}`} />
+                        {here && (
+                          <motion.span layoutId="credit-walker" transition={{ type: 'spring', stiffness: 300, damping: 26 }} className="absolute inset-0 grid place-items-center rounded-full bg-surface ring-[3px] ring-ink">
+                            <img src={icon('avatar-runner-v1')} width={32} height={32} alt="" className="size-8 rounded-full" />
+                          </motion.span>
+                        )}
+                      </span>
+                      <span className={`tnum w-10 shrink-0 text-2xl font-bold ${r.delta > 0 ? 'text-accent' : 'text-danger'}`}>{r.delta > 0 ? '+' : ''}{r.delta}</span>
+                      <span className="min-w-0 flex-1"><span className="block text-lg font-semibold">{r.label}</span><span className="block text-[15px] text-muted">{r.note}</span>
+                        {here && (
+                          <motion.span key={score} initial={reduce ? false : { opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ type: 'spring', stiffness: 380, damping: 30 }}
+                            className="tnum mt-2 inline-flex items-center gap-1.5 rounded-full bg-accent-soft px-3 py-1 text-sm font-bold text-accent lg:hidden">现在 {score} 分 ·「{tier.name}」</motion.span>
+                        )}</span>
+                    </button>
+                  </li>
+                )
+              })}
+            </ol>
             <p className="mt-4 text-[15px] text-muted">{who === 'runner' ? '跑腿人：72 分以上可接 ¥15 以内的单，85 分以上不限金额，低于 60 分暂停接单。' : '发单人：低于 70 分单笔赏金上限 ¥10，低于 75 分大厅会提醒跑腿人。'}</p>
           </Reveal>
         </div>
