@@ -1110,6 +1110,21 @@ function Final({ page }) {
         <div className="lg:hidden">{goBtn}</div>
       </div>
       )}
+      {page !== 'thinking' && (
+        // 收尾一屏：一句话、一个按钮，背景是首屏那张校园地图，首尾呼应
+        <div className="px-2 pb-10 md:px-4">
+          <div className="relative isolate overflow-hidden rounded-[32px] md:rounded-[48px]">
+            <img src={img('campus-map-v2')} width={1600} height={900} alt="" aria-hidden="true" loading="lazy" className="absolute inset-0 -z-10 size-full object-cover" />
+            <div aria-hidden="true" className="absolute inset-0 -z-10 bg-accent-deep/85" />
+            <div className="mx-auto flex min-h-[60svh] max-w-4xl flex-col items-center justify-center px-6 py-20 text-center text-on-accent">
+              <Reveal><p className="text-sm font-semibold opacity-80">今天 17:50 之后</p></Reveal>
+              <Reveal delay={0.05}><h2 className="mt-3 font-display text-[44px] leading-[1.08] md:text-[80px]">明天下课，<br className="md:hidden" />顺手捎一单</h2></Reveal>
+              <Reveal delay={0.1}><p className="mt-5 max-w-[30ch] text-lg leading-relaxed opacity-85 md:text-xl">本来就要走的路，多走一分钟，帮同学把快递带回宿舍。</p></Reveal>
+              <Reveal delay={0.15}><Link to="/app" className="mt-8 inline-flex h-14 items-center gap-2 rounded-full bg-on-accent px-7 text-[17px] font-semibold text-accent-deep transition active:scale-[0.97]">体验原型<ArrowRight size={18} weight="bold" /></Link></Reveal>
+            </div>
+          </div>
+        </div>
+      )}
       <footer className="border-t border-line">
         <div className="mx-auto grid max-w-7xl gap-6 px-4 py-10 text-sm text-muted md:grid-cols-[1fr_auto] md:items-center md:px-8">
           <div>

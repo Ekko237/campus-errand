@@ -3,6 +3,8 @@ import { Routes, Route, NavLink, Link, useNavigate, useLocation } from 'react-ro
 import { motion, AnimatePresence, useReducedMotion } from 'motion/react'
 import { ListMagnifyingGlass, PlusCircle, UserCircle } from '@phosphor-icons/react'
 import { StoreProvider, useStore } from '../store'
+import CampusMap from '../landing/CampusMap'
+import { myRoute, B } from '../data'
 import { ViewHost, ViewToggle, EMBED } from './ViewMode'
 import { OpenTaskCtx } from './openTask'
 import { Sheet, Btn, spring, gi } from '../ui'
@@ -167,6 +169,26 @@ const LIST_ROUTES = (
   </>
 )
 
+// 电脑版「我的」页右栏：我常走的那条路画在校园地图上，和下课提醒开没开
+function MeSide() {
+  const r = myRoute()
+  const read = () => { try { return localStorage.getItem('shunluxia:remind') === '1' } catch { return false } }
+  const [on, setOn] = useState(read)
+  // 左边开关一拨，右边跟着变
+  useEffect(() => { const f = () => setOn(read()); window.addEventListener('shunluxia:remind', f); return () => window.removeEventListener('shunluxia:remind', f) }, [])
+  const name = (id) => B[id]?.name.replace(/（.*?）/, '')
+  return (
+    <div className="space-y-3">
+      <p className="text-sm font-semibold text-muted">我常走的路</p>
+      <CampusMap R={r} pills={false} walker={false} endsOnly compact hits={[]} />
+      <div className="rounded-2xl bg-surface p-4 ring-1 ring-line">
+        <p className="text-[15px] font-semibold">{name(r.from)} → {name(r.to)}</p>
+        <p className="mt-1 text-sm text-muted">{on ? '下课前 5 分钟提醒已开启：这条路上有新单会推给你' : '打开「下课前 5 分钟提醒」以后，这条路上有新单就会推给你'}</p>
+      </div>
+    </div>
+  )
+}
+
 // 电脑版右栏在发布、订单、我的这些页：放一句用法，提示点开一单就在这里看
 function RightHint() {
   return (
@@ -233,6 +255,7 @@ function DeskShell({ sub, openTask }) {
               {(pathname === '/app' || pathname === '/app/') ? <div id="desk-map-slot" />
                 : pathname.startsWith('/app/publish') ? <div id="desk-side-slot" />
                 : verifyBack ? <Routes location={{ ...loc, pathname: `/app/task/${verifyBack}`, search: '' }}><Route path="task/:id" element={<TaskDetail />} /></Routes>
+                : pathname.startsWith('/app/me') ? <MeSide />
                 : <RightHint />}
             </div>
           )}

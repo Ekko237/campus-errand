@@ -32,7 +32,7 @@ function RemindToggle() {
   const goRoute = () => { setRing(false); act('role', { role: 'runner' }); nav('/app') }
   const reduce = useReducedMotion()
   const [on, setOn] = useState(() => { try { return localStorage.getItem('shunluxia:remind') === '1' } catch { return false } })
-  const flip = () => setOn((v) => { const n = !v; try { localStorage.setItem('shunluxia:remind', n ? '1' : '0') } catch { /* 存不了不影响 */ } return n })
+  const flip = () => setOn((v) => { const n = !v; try { localStorage.setItem('shunluxia:remind', n ? '1' : '0') } catch { /* 存不了不影响 */ } window.dispatchEvent(new Event('shunluxia:remind')); return n })
   const r = myRoute()
   const name = (id) => B[id]?.name.replace(/（.*?）/, '')
   const open = state.tasks.filter((t) => t.status === 'open' && t.deadline > Date.now() && t.posterId !== 'runner')
