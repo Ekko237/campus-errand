@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { motion, AnimatePresence, animate } from 'motion/react'
 import { MAP_W, MAP_H, PLACES, routePath } from '../campusMap'
 
@@ -56,6 +56,14 @@ export default function CampusMap({ R, hits, reduce, pills = true, walker = true
   // 画路线只画路面上的那段（去掉两头进门的小短线），起点终点的圆点就压在路上，不会偏开
   const full = routePath(R.from, R.to).pts
   const mine = full.length > 3 ? full.slice(1, -1) : full
+  // 点在不在你的路上（离路线某一段 3 以内）
+  const onMine = ([x, y]) => mine.some(([ax, ay], k) => {
+    if (!k) return false
+    const [bx, by] = mine[k - 1]
+    return x >= Math.min(ax, bx) - 3 && x <= Math.max(ax, bx) + 3 && y >= Math.min(ay, by) - 3 && y <= Math.max(ay, by) + 3
+  })
+  // 从起点去取件点的路里，最后一个还在你路上的点开始，到门口再进楼
+  const leaveFrom = (pts, deep) => { let k = 0; pts.forEach((q, n) => { if (onMine(q)) k = n }); return [...pts.slice(k), deep] }
   const marks = useMemo(() => hits.map((t) => ({ t, f: along(mine, PLACES[t.from].door) })).sort((a, b) => a.f - b.f), [hits, mine])
   const [p, setP] = useState(at ?? (reduce || !walker ? 1 : 0))
   // at：小人停在路上的某个位置（原型订单页按订单状态给），变了就沿路走过去
@@ -72,6 +80,9 @@ export default function CampusMap({ R, hits, reduce, pills = true, walker = true
     return () => c.stop()
   }, [R.from, R.to, reduce, walker])
   // 手机上整张图太小：只裁这条路左右 1200 宽、4:3 的一块，放大约 1.3 倍，名牌和编号不挤
+  // 起终点名牌自动避让：画完量一下，压到编号、送达点、价签、别的名牌，或者伸出画框，就换到上 / 下 / 左 / 右里压得最少的一边
+  const box = useRef(null)
+  const [force, setForce] = useState({})
   const [small, setSmall] = useState(() => typeof window !== 'undefined' && window.matchMedia('(max-width: 639px)').matches)
   useEffect(() => { const m = window.matchMedia('(max-width: 639px)'); const f = () => setSmall(m.matches); m.addEventListener('change', f); return () => m.removeEventListener('change', f) }, [])
   // 画框要装下路线、取件点和送达点，左右各留 90；三条路线都装得下 1320 宽，画框高度不随路线跳
@@ -108,9 +119,56 @@ export default function CampusMap({ R, hits, reduce, pills = true, walker = true
   // 起终点靠近画框左右边：名牌往里长，不被裁掉
   const edge = (id) => { const f = ((id === R.from ? mine[0] : mine[mine.length - 1])[0] - V.X0) / V.VW; return f < 0.15 ? 'l' : f > 0.85 ? 'r' : null }
   const pillUp = (t) => { const id = nearId(t); return id && !side(id) ? !labelUp(id) : outward(t.from) === 'up' }
+  // 送达点的名牌：默认手机放圈的右下、电脑放圈的上方；压到终点黑点或别的名牌就换到圈的下方 / 上方
+  const dropCls = (id) => force['d' + id] === 'below' ? 'left-1/2 top-[calc(100%+6px)] -translate-x-1/2' : force['d' + id] === 'above' ? 'bottom-[calc(100%+6px)] left-1/2 -translate-x-1/2' : 'bottom-[calc(100%+6px)] left-1/2 -translate-x-1/2 max-md:bottom-auto max-md:left-auto max-md:right-0 max-md:top-[calc(100%+6px)] max-md:translate-x-0'
+  const defPlace = (id) => side(id) || (labelUp(id) ? 'up' : 'down')
+  const placeCls = (id) => {
+    const pl = force[id] || defPlace(id)
+    if (pl === 'right') return 'left-3 -translate-y-1/2'
+    if (pl === 'left') return 'right-3 -translate-y-1/2'
+    return `${edge(id) === 'l' ? '-left-5' : edge(id) === 'r' ? '-right-5' : 'left-0 -translate-x-1/2'} ${pl === 'up' ? 'bottom-3.5' : 'top-3.5'}`
+  }
+  useEffect(() => { setForce({}) }, [R.from, R.to, small])
+  useLayoutEffect(() => {
+    const el = box.current
+    if (!el) return
+    const B = el.getBoundingClientRect()
+    const obs = [...el.querySelectorAll('[data-ob]')].filter((o) => o.offsetParent).map((o) => ({ el: o, own: o.dataset.own, r: o.getBoundingClientRect() }))
+    const next = { ...force }
+    let changed = false
+    for (const lab of el.querySelectorAll('[data-end]')) {
+      const id = lab.dataset.end, a = lab.parentElement.getBoundingClientRect(), r0 = lab.getBoundingClientRect()
+      const w = r0.width, h = r0.height, x = a.left, y = a.top
+      const rect = { up: [x - w / 2, y - 14 - h, x + w / 2, y - 14], down: [x - w / 2, y + 14, x + w / 2, y + 14 + h], right: [x + 12, y - h / 2, x + 12 + w, y + h / 2], left: [x - 12 - w, y - h / 2, x - 12, y + h / 2] }
+      const score = ([l, t, rr, b]) => obs.filter((o) => o.own !== id && o.r.left < rr - 2 && o.r.right > l + 2 && o.r.top < b - 2 && o.r.bottom > t + 2).length + (l < B.left || rr > B.right || t < B.top || b > B.bottom ? 1.5 : 0)
+      const cur = force[id] || defPlace(id)
+      // 现在的位置按实际量到的框算（有贴边收进来的偏移）
+      const now = score([r0.left, r0.top, r0.right, r0.bottom])
+      if (now === 0) continue
+      const best = ['up', 'down', 'right', 'left'].filter((k) => k !== cur).map((k) => [k, score(rect[k])]).sort((m, n) => m[1] - n[1])[0]
+      if (best && best[1] < now) { next[id] = best[0]; changed = true }
+    }
+    for (const lab of el.querySelectorAll('[data-drop]')) {
+      const key = 'd' + lab.dataset.drop, r0 = lab.getBoundingClientRect(), c = lab.parentElement.getBoundingClientRect()
+      const w = r0.width, h = r0.height, x = (c.left + c.right) / 2
+      const hitN = ([l, t, rr, b]) => obs.filter((o) => o.el !== lab && o.el !== lab.parentElement && o.r.left < rr - 2 && o.r.right > l + 2 && o.r.top < b - 2 && o.r.bottom > t + 2).length + (l < B.left || rr > B.right || t < B.top || b > B.bottom ? 1.5 : 0)
+      const now = hitN([r0.left, r0.top, r0.right, r0.bottom])
+      if (now === 0) continue
+      const cand = { below: [x - w / 2, c.bottom + 6, x + w / 2, c.bottom + 6 + h], above: [x - w / 2, c.top - 6 - h, x + w / 2, c.top - 6] }
+      const best = Object.entries(cand).filter(([k]) => k !== force[key]).map(([k, r]) => [k, hitN(r)]).sort((m, n) => m[1] - n[1])[0]
+      if (best && best[1] < now) { next[key] = best[0]; changed = true }
+    }
+    // 价签互相压住：后一个翻到编号的另一侧
+    const pills = [...el.querySelectorAll('[data-pill]')].map((x) => ({ x, r: x.getBoundingClientRect() }))
+    pills.forEach((a2, n) => pills.slice(0, n).forEach((b2) => {
+      const q = a2.r, r = b2.r
+      if (q.left < r.right - 2 && q.right > r.left + 2 && q.top < r.bottom - 2 && q.bottom > r.top + 2 && !next['p' + a2.x.dataset.pill]) { next['p' + a2.x.dataset.pill] = a2.x.dataset.up ? 'down' : 'up'; changed = true }
+    }))
+    if (changed) setForce(next)
+  })
   return (
     <div>
-    <div style={{ aspectRatio: `${V.VW} / ${V.VH}` }} className="relative isolate w-full overflow-hidden rounded-[20px] bg-surface ring-1 ring-line md:rounded-[28px]"
+    <div ref={box} style={{ aspectRatio: `${V.VW} / ${V.VH}` }} className="relative isolate w-full overflow-hidden rounded-[20px] bg-surface ring-1 ring-line md:rounded-[28px]"
       role="img" aria-label={`示意地图：从${SHORT[R.from]}到${SHORT[R.to]}，沿路有 ${hits.length} 个顺路的单`}>
       <svg viewBox={`${V.X0} ${V.Y0} ${V.VW} ${V.VH}`} className="absolute inset-0 size-full" aria-hidden="true">
         <image href={`${import.meta.env.BASE_URL}images/campus-map-v2.webp`} x="0" y="0" width={MAP_W} height={MAP_H} />
@@ -120,7 +178,9 @@ export default function CampusMap({ R, hits, reduce, pills = true, walker = true
           if (!P || P.kind === 'kiosk' || P.kind === 'gate') return null
           const foot = P.road[0] === 'h' ? [P.door[0], P.road[1]] : [P.road[1], P.door[1]]
           const deep = inside(t.from)
-          return <motion.path key={`in${R.from}${R.to}${t.id}`} d={toD([foot, P.door, deep])} fill="none" stroke="var(--accent)" className="[stroke-dasharray:1_28] [stroke-width:20] md:[stroke-dasharray:1_15] md:[stroke-width:9]" strokeLinecap="round" strokeLinejoin="round"
+          // 楼门口不在你走的这条路边（比如门朝另一条路）：虚线从你的路上分出来，沿路绕到门口，不让人以为要穿楼
+          const walk = onMine(foot) ? [foot, P.door, deep] : leaveFrom(routePath(R.from, t.from).pts, deep)
+          return <motion.path key={`in${R.from}${R.to}${t.id}`} d={toD(walk)} fill="none" stroke="var(--accent)" className="[stroke-dasharray:1_28] [stroke-width:20] md:[stroke-dasharray:1_15] md:[stroke-width:9]" strokeLinecap="round" strokeLinejoin="round"
             initial={false} animate={{ opacity: p >= f ? 1 : 0.35 }} transition={{ duration: 0.3 }} />
         })}
         {/* 你的路：整条先淡淡画着，小人走过的部分描深 */}
@@ -137,29 +197,29 @@ export default function CampusMap({ R, hits, reduce, pills = true, walker = true
         ))}
       </svg>
       {marks.map(({ t, f }, i) => (
-        <span key={t.id} aria-hidden="true" className={`tnum absolute z-10 grid size-5 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full text-[12px] font-bold text-on-accent ring-[3px] ring-surface transition-colors md:size-7 md:text-[13px] ${p >= f ? 'bg-accent' : 'bg-muted'}`} style={pct(markAt(t.from))}>{i + 1}</span>
+        <span key={t.id} data-ob="" aria-hidden="true" className={`tnum absolute z-10 grid size-5 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full text-[12px] font-bold text-on-accent ring-[3px] ring-surface transition-colors md:size-7 md:text-[13px] ${p >= f ? 'bg-accent' : 'bg-muted'}`} style={pct(markAt(t.from))}>{i + 1}</span>
       ))}
       {/* 送达点：空心圈，和取件点的实心编号对应，看得出「取件到送达」是哪一段 */}
       {marks.filter(({ t }) => t.from !== t.to && PLACES[t.to] && !ends.includes(t.to)).map(({ t }) => (
         // 送达点也写上是哪儿，不然读的人看不出绿线最后拐去了哪
-        <span key={`d${t.id}`} aria-hidden="true" className="absolute z-10 size-3.5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-surface ring-[3px] ring-accent md:size-4" style={pct(PLACES[t.to].door)}>
-          <span className="absolute bottom-[calc(100%+6px)] left-1/2 -translate-x-1/2 whitespace-nowrap rounded-full bg-surface px-1.5 max-md:bottom-auto max-md:left-auto max-md:right-0 max-md:top-[calc(100%+6px)] max-md:translate-x-0 text-[12px] font-bold leading-5 text-accent shadow-sm ring-1 ring-accent/40 md:px-2 md:text-[13px]">{TINY[t.to] || SHORT[t.to]} 送达</span>
+        <span key={`d${t.id}`} data-ob="" aria-hidden="true" className="absolute z-10 size-3.5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-surface ring-[3px] ring-accent md:size-4" style={pct(PLACES[t.to].door)}>
+          <span data-ob="" data-drop={t.id} className={`absolute whitespace-nowrap rounded-full bg-surface px-1.5 ${dropCls(t.id)} text-[12px] font-bold leading-5 text-accent shadow-sm ring-1 ring-accent/40 md:px-2 md:text-[13px]`}>{TINY[t.to] || SHORT[t.to]} 送达</span>
         </span>
       ))}
       {marks.map(({ t }) => (
-        <span key={`p${t.id}`} aria-hidden="true" className={`tnum absolute z-10 -translate-x-1/2 translate-y-[9px] whitespace-nowrap rounded-full bg-surface px-1 text-[12px] font-bold leading-4 text-accent shadow-sm md:hidden`} style={pct(markAt(t.from))}>{t.type === 'express' ? `${TINY[t.from] || SHORT[t.from]} ` : ''}¥{t.reward}</span>
+        <span key={`p${t.id}`} data-ob="" aria-hidden="true" className={`tnum absolute z-10 -translate-x-1/2 translate-y-[9px] whitespace-nowrap rounded-full bg-surface px-1 text-[12px] font-bold leading-4 text-accent shadow-sm md:hidden`} style={pct(markAt(t.from))}>{t.type === 'express' ? `${TINY[t.from] || SHORT[t.from]} ` : ''}¥{t.reward}</span>
       ))}
       {/* 原型订单页：小人还在起点附近时起点不标，到了终点就不再标「到达」，免得和小人叠在一起 */}
       {ends.filter((id) => !(at != null && !park && ((id === R.from && p < 0.15) || (id === R.to && p >= 0.99)))).map((id) => (
         <span key={id} className="absolute z-20" style={pct(id === R.from ? mine[0] : mine[mine.length - 1])}>
           {/* 收尾卡小人停在终点时，终点小黑点会正好盖在头像脸上：这时只留名牌 */}
-          {!(park && id === R.to && p >= 0.97) && <span className="absolute left-0 top-0 block size-3 -translate-x-1/2 -translate-y-1/2 rounded-full bg-ink ring-[3px] ring-surface md:size-4" />}
-          <span className={`absolute whitespace-nowrap rounded-full bg-ink px-2 py-0.5 text-[13px] font-semibold text-bg shadow-sm md:px-2.5 md:text-[13px] ${side(id) === 'right' ? 'left-3 -translate-y-1/2' : side(id) === 'left' ? 'right-3 -translate-y-1/2' : `${edge(id) === 'l' ? '-left-5' : edge(id) === 'r' ? '-right-5' : 'left-0 -translate-x-1/2'} ${labelUp(id) ? 'bottom-3.5' : 'top-3.5'}`}`}>{side(id) ? <><span className="max-md:hidden">{SHORT[id]} </span><span className="md:hidden">{TINY[id] || SHORT[id]} </span></> : `${SHORT[id]} `}{id === R.from ? '出发' : '到达'}</span>
+          {!(park && id === R.to && p >= 0.97) && <span data-ob="" data-own={id} className="absolute left-0 top-0 block size-3 -translate-x-1/2 -translate-y-1/2 rounded-full bg-ink ring-[3px] ring-surface md:size-4" />}
+          <span data-ob="" data-end={id} data-own={id} className={`absolute whitespace-nowrap rounded-full bg-ink px-2 py-0.5 text-[13px] font-semibold text-bg shadow-sm md:px-2.5 md:text-[13px] ${placeCls(id)}`}>{side(id) ? <><span className="max-md:hidden">{SHORT[id]} </span><span className="md:hidden">{TINY[id] || SHORT[id]} </span></> : `${SHORT[id]} `}{id === R.from ? '出发' : '到达'}</span>
         </span>
       ))}
       {!endsOnly && marks.filter(({ t }) => !ends.includes(t.from)).map(({ t }) => (
         <span key={`l${t.id}`} className="absolute z-10 hidden md:block" style={pct(markAt(t.from))}>
-          <span className={`absolute left-0 -translate-x-1/2 whitespace-nowrap rounded-full bg-surface px-1.5 py-0.5 text-[12px] font-semibold md:px-2.5 md:text-[13px] text-ink shadow-sm ring-1 ring-line ${outward(t.from) === 'up' ? 'bottom-3.5' : 'top-3.5'}`}>
+          <span data-ob="" className={`absolute left-0 -translate-x-1/2 whitespace-nowrap rounded-full bg-surface px-1.5 py-0.5 text-[12px] font-semibold md:px-2.5 md:text-[13px] text-ink shadow-sm ring-1 ring-line ${outward(t.from) === 'up' ? 'bottom-3.5' : 'top-3.5'}`}>
             {compact ? TINY[t.from] || SHORT[t.from] : SHORT[t.from]}
           </span>
         </span>
@@ -169,7 +229,7 @@ export default function CampusMap({ R, hits, reduce, pills = true, walker = true
         {pills && marks.filter(({ f }) => p >= f).map(({ t }) => (
           <span key={`${R.from}${R.to}${t.id}`} className="absolute z-30 hidden md:block" style={pct(markAt(t.from))}>
             <motion.span initial={reduce ? false : { opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0 }} transition={{ type: 'spring', stiffness: 420, damping: 24 }}
-              className={`tnum absolute left-0 -translate-x-1/2 whitespace-nowrap rounded-full bg-accent px-3 py-1 text-sm font-bold text-on-accent shadow-[0_8px_18px_-8px_rgba(11,122,85,0.7)] ${pillUp(t) ? 'bottom-10' : 'top-10'}`}>
+              className={`tnum absolute left-0 -translate-x-1/2 whitespace-nowrap rounded-full bg-accent px-3 py-1 text-sm font-bold text-on-accent shadow-[0_8px_18px_-8px_rgba(11,122,85,0.7)] ${(force['p' + t.id] ? force['p' + t.id] === 'up' : pillUp(t)) ? 'bottom-10' : 'top-10'}`} data-pill={t.id} data-up={(force['p' + t.id] ? force['p' + t.id] === 'up' : pillUp(t)) ? '1' : ''}>
               ¥{t.reward} · {t.dm ? `+${t.m ?? Math.max(1, Math.ceil(t.dm / 80))} 分钟` : '就在路上'}
             </motion.span>
           </span>

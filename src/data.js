@@ -24,7 +24,7 @@ export const TYPE_KEYS = Object.keys(TYPES)
 // 楼栋坐标单位：米（示例校园平面）
 export const BUILDINGS = [
   { id: 'cainiao', name: '菜鸟驿站（东门）', group: '取件点', x: 900, y: 120 },
-  { id: 'sf', name: '顺丰点（西门）', group: '取件点', x: -350, y: 300 },
+  { id: 'sf', name: '顺丰点（南门）', group: '取件点', x: -350, y: 300 },
   { id: 'jd', name: '京东快递柜（南门）', group: '取件点', x: 300, y: 900 },
   { id: 'canteen1', name: '第一食堂', group: '食堂/超市', x: 420, y: 260 },
   { id: 'canteen2', name: '第二食堂', group: '食堂/超市', x: 160, y: 520 },
@@ -67,6 +67,11 @@ export const WINDOWS = [
   { id: 'today', label: '今天 22:00 前', min: 360 },
   { id: 'tomorrow', label: '明早 8:00 前', min: 720 },
 ]
+// 「今天 22:00 前」「明早 8:00 前」按现在的时间算到那个点，不是固定 6、12 小时
+export const winNow = (id) => {
+  const w = WINDOWS.find((x) => x.id === id) || WINDOWS[1]
+  return w.id === 'today' ? { ...w, min: untilMin(22, 0) } : w.id === 'tomorrow' ? { ...w, min: untilMin(8, 0) } : w
+}
 
 export const SIZES = [
   { id: 's', label: '小件', add: 0 },
@@ -77,7 +82,7 @@ export const SIZES = [
 // 建议价：类型底价 + 路程（每 400m +1）+ 加急 +2 + 体积
 export function suggestPrice({ type, from, to, urgent, size }) {
   const d = dist(from, to) + dist(RUNNER_HOME, from) * 0.3
-  const s = (TYPES[type]?.base ?? 3) + Math.floor(d / 400) + (urgent ? 2 : 0) + (SIZES.find((x) => x.id === size)?.add ?? 0)
+  const s = (TYPES[type]?.base ?? 3) + Math.floor(d / 400) + (urgent ? 2 : 0) + (type === 'seat' ? 0 : SIZES.find((x) => x.id === size)?.add ?? 0)
   return [s, s + 2]
 }
 
@@ -94,9 +99,11 @@ export function estimateMinutes({ reward, suggested, urgent, windowMin }) {
 }
 
 // 违规任务关键词拦截
-export const BANNED = ['代考', '替考', '枪手', '代签到', '代打卡', '代点名', '代上课', '代课', '代写作业', '代写论文', '代写报告', '代做作业', '刷课', '代刷网课', '答案', '作弊']
+export const BANNED = ['代考', '替考', '枪手', '代签到', '代打卡', '代点名', '代上课', '代课', '代写作业', '代写论文', '代写报告', '代做作业', '刷课', '代刷网课', '考试答案', '抄答案', '作弊',
+  // 烟酒和违禁品不能代买代送，刷单也不行
+  '香烟', '烟酒', '买烟', '带烟', '包烟', '电子烟', '买酒', '带酒', '白酒', '啤酒', '违禁', '刷单', '管制刀具']
 // 除了原词，也认换个说法的：「帮我签个到」「替我上课」「帮考」这类「帮 / 替 / 代 + 签到 / 考 / 课 / 点名 / 打卡」
-const BANNED_LOOSE = /(?:帮|替|代)(?:我|人|他|她)?(?:签个?到|考试?|上个?课|上节课|课|点个?名|打个?卡|写个?作业)/g
+const BANNED_LOOSE = /(?:帮|替|代)(?:我|人|他|她)?(?:签个?到|考试?|上个?课(?![用的要本前后])|上节课(?![用的要])|课(?![用的要本前后])|点个?名|打个?卡|写个?作业)/g
 export const findBanned = (text) => [...new Set([...BANNED.filter((w) => text.includes(w)), ...(text.match(BANNED_LOOSE) || [])])]
 
 // 信用规则
@@ -156,7 +163,7 @@ export const nextId = () => 't' + (seq++) + Math.random().toString(36).slice(2, 
 export const code4 = () => String(Math.floor(1000 + Math.random() * 9000))
 
 // 占座这类「明早之前」的单：截止定在下一个 7:40，不管现在几点打开，都不会出现「明天 05:00 前」这种怪时间
-const untilMin = (hh, mm) => { const d = new Date(); const t = new Date(d); t.setHours(hh, mm, 0, 0); if (t - d < 60 * M) t.setDate(t.getDate() + 1); return Math.round((t - d) / M) }
+export const untilMin = (hh, mm) => { const d = new Date(); const t = new Date(d); t.setHours(hh, mm, 0, 0); if (t - d < 60 * M) t.setDate(t.getDate() + 1); return Math.round((t - d) / M) }
 
 function mk(o) {
   return {
@@ -173,14 +180,14 @@ function mk(o) {
 
 export function seedTasks() {
   return [
-    mk({ id: 's1', type: 'express', title: '菜鸟驿站取 2 个小件快递', from: 'cainiao', to: 'mei5', reward: 5, windowMin: 90, urgent: false, size: 's', note: '两个都是衣服，很轻', room: '梅园 5 号楼 412', posterName: '梁小禾', posterCredit: 91, ago: 6 }),
+    mk({ id: 's1', type: 'express', title: '菜鸟驿站帮取一箱教材', from: 'cainiao', to: 'mei5', reward: 5, windowMin: 90, urgent: false, size: 's', note: '一箱书，不重，抱得动', room: '梅园 5 号楼 412', posterName: '梁小禾', posterCredit: 91, ago: 6 }),
     mk({ id: 's2', type: 'food', title: '外卖到北门了，帮忙拎上楼', from: 'gate', to: 'tao2', reward: 3, windowMin: 25, urgent: true, size: 's', note: '黄色袋子，尾号 7731', room: '桃园 2 号楼 608', posterName: '许一舟', posterCredit: 83, ago: 3 }),
     mk({ id: 's3', type: 'buy', title: '教育超市带一瓶生抽和两包抽纸', from: 'market', to: 'zhu3', reward: 6, windowMin: 240, urgent: false, size: 's', note: '生抽要海天的，钱到了一起转', room: '竹园 3 号楼 215', posterName: '温晴', posterCredit: 95, ago: 22 }),
     mk({ id: 's4', type: 'seat', title: '图书馆三楼占一个靠窗座位', from: 'lib', to: 'lib', reward: 4, windowMin: untilMin(7, 40), urgent: false, size: 's', note: '明早 7:40 前，放本书就行', room: '图书馆 3F 自习区', posterName: '周砚', posterCredit: 88, ago: 40 }),
     mk({ id: 's5', type: 'express', title: '顺丰大件显示器，需要力气', from: 'sf', to: 'yan', reward: 15, windowMin: 180, urgent: false, size: 'l', note: '箱子大约 8 斤，有提手', room: '研究生公寓 B 栋 1103', posterName: '程立', posterCredit: 97, ago: 15 }),
     mk({ id: 's6', type: 'buy', title: '二食堂带一份黄焖鸡米饭', from: 'canteen2', to: 'jiao1', reward: 4, windowMin: 35, urgent: true, size: 's', note: '微辣，不要香菜', room: '一教 204 教室后排', posterName: '于小渔', posterCredit: 68, ago: 4 }),
     mk({ id: 's7', type: 'other', title: '把雨伞送到体育馆门口', from: 'lan1', to: 'gym', reward: 5, windowMin: 45, urgent: false, size: 's', note: '伞在宿管阿姨那里，报我名字', room: '兰园 1 号楼宿管室', posterName: '乐知行', posterCredit: 86, ago: 9 }),
-    mk({ id: 's8', type: 'seat', title: '今晚讲座帮占前排两个位', from: 'hall', to: 'hall', reward: 12, windowMin: 120, urgent: false, size: 's', note: '19:00 开始，18:40 前到', room: '学术报告厅前三排', posterName: '社团 王一凡', posterCredit: 90, ago: 55 }),
+    mk({ id: 's8', type: 'seat', title: '今晚讲座帮占前排两个位', from: 'hall', to: 'hall', reward: 12, windowMin: 120, urgent: false, size: 's', note: '19:00 开始，18:40 前到', room: '学术报告厅前三排', posterName: '王一凡（社团）', posterCredit: 90, ago: 55 }),
   ]
 }
 
@@ -189,11 +196,11 @@ export function seedAccounts() {
     poster: {
       id: 'poster', name: '小满', role: '发单人', avatar: 'student-city-1',
       verified: true, verifyMethod: '学号认证', credit: 88, balance: 50, frozen: 0,
-      done: 0, ratings: [5, 5, 4, 5],
+      done: 0, ratings: [5, 5],
       ledger: [
         [2026, 10, 7, 12, -7, '发布「顺丰大件代取」托管，已放款给跑腿人'],
         [2026, 9, 21, 18, -3, '发布「外卖送上楼」托管，已放款给跑腿人'],
-        [2026, 4, 8, 16, 5, '「菜鸟驿站取快递」取消，托管退回'],
+        [2026, 4, 8, 16, 5, '取消「菜鸟驿站取快递」，托管退回'],
         [2026, 4, 8, 9, -5, '发布「菜鸟驿站取快递」冻结托管'],
         [2026, 3, 15, 20, 30, '钱包充值'],
         [2025, 11, 20, 7, -4, '发布「图书馆占座」托管，已放款给跑腿人'],
@@ -201,10 +208,10 @@ export function seedAccounts() {
         [2025, 9, 3, 10, 40, '钱包充值'],
       ].map(([y, mo, d, h, amount, label]) => ({ at: new Date(y, mo - 1, d, h, 0).getTime(), amount, label, sample: true })),
       creditLog: [
-        { at: now() - 3 * 24 * 60 * M, delta: 1, label: '示例：「顺丰大件代取」按时确认收货' },
-        { at: now() - 3 * 24 * 60 * M - 5 * M, delta: 1, label: '示例：「顺丰大件代取」收到 5\u00a0星好评' },
-        { at: now() - 19 * 24 * 60 * M, delta: 1, label: '示例：「外卖送上楼」收到 5\u00a0星好评' },
-        { at: now() - 40 * 24 * 60 * M, delta: 0, label: '示例账号：起始信用 85' },
+        { at: new Date(2026, 9, 7, 13, 0).getTime(), delta: 1, label: '示例：「顺丰大件代取」按时确认收货' },
+        { at: new Date(2026, 9, 7, 12, 55).getTime(), delta: 1, label: '示例：「顺丰大件代取」收到 5\u00a0星好评' },
+        { at: new Date(2026, 8, 21, 19, 0).getTime(), delta: 1, label: '示例：「外卖送上楼」收到 5\u00a0星好评' },
+        { at: new Date(2025, 8, 3, 10, 0).getTime(), delta: 0, label: '老用户示例：之前已攒到 85 分' },
       ],
     },
     runner: {

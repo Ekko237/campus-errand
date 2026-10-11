@@ -5,13 +5,14 @@ import { useStore } from '../store'
 import { levelOf, posterTierOf } from '../data'
 import { Avatar, gi } from '../ui'
 
-const STEPS = ['发布托管', '认证接单', '取到快递', '送达交凭证', '确认放款', '发单人评价', '跑腿人回评']
-function progress(t) {
+// 和导览条的「共 8 步」一一对应
+const STEPS = ['发布托管', '校园认证', '接单', '取到快递', '送达交凭证', '确认放款', '发单人评价', '跑腿人回评']
+function progress(t, verified) {
   if (!t) return 0
-  if (t.status === 'open') return 1
-  if (t.status === 'ongoing') return t.picked ? 3 : 2
-  if (t.status === 'delivered' || t.status === 'disputed') return 4
-  if (t.status === 'completed') return 5 + (t.ratingByPoster ? 1 : 0) + (t.ratingByRunner ? 1 : 0)
+  if (t.status === 'open') return verified ? 2 : 1
+  if (t.status === 'ongoing') return t.picked ? 4 : 3
+  if (t.status === 'delivered' || t.status === 'disputed') return 5
+  if (t.status === 'completed') return 6 + (t.ratingByPoster ? 1 : 0) + (t.ratingByRunner ? 1 : 0)
   return 1
 }
 
@@ -31,7 +32,7 @@ export default function DemoPanel() {
   const { poster, runner } = state.accounts
   // 引导进行中跟踪引导那一单，否则显示发单人最新发布的一单（tasks 按发布时间倒序）
   const t = (state.tour.active && state.tasks.find((x) => x.id === state.tour.taskId)) || state.tasks.find((x) => x.posterId === 'poster')
-  const n = progress(t)
+  const n = progress(t, runner.verified)
   const start = () => {
     act('tour', { tour: { active: true, taskId: null, done: false } })
     act('role', { role: 'poster' })

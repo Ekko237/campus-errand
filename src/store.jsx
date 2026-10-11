@@ -88,7 +88,7 @@ function reducer(s, a) {
     }
     case 'cancel': {
       const p = s.accounts.poster
-      const poster = money({ ...p, frozen: p.frozen - task.reward }, task.reward, `取消「${task.title}」托管退回`)
+      const poster = money({ ...p, frozen: p.frozen - task.reward }, task.reward, `取消「${task.title}」，托管退回`)
       return toast({ ...upd(a.id, (t) => log({ ...t, status: 'cancelled' }, '发单人取消，托管赏金原路退回')), accounts: { ...s.accounts, poster } }, '已取消，赏金退回钱包')
     }
     case 'posterCancel':
@@ -107,7 +107,7 @@ function reducer(s, a) {
       return toast({ ...upd(a.id, (t) => log({ ...t, status: 'cancelled', posterCredit }, text)), accounts: { ...s.accounts, poster, runner } }, text, 'bad')
     }
     case 'accept':
-      return toast(upd(a.id, (t) => log({ ...t, status: 'ongoing', runnerId: 'runner', acceptedAt: now() }, `${s.accounts.runner.name} 接单，联系方式与取件码已对其可见`)), '接单成功，取件码、电话、宿舍号已解锁')
+      return toast(upd(a.id, (t) => log({ ...t, status: 'ongoing', runnerId: 'runner', acceptedAt: now() }, `${s.accounts.runner.name}接单，联系方式与取件码已对其可见`)), '接单成功，取件码、电话、宿舍号已解锁')
     case 'pick':
       return toast(upd(a.id, (t) => log({ ...t, picked: true }, '跑腿人已取到物品，正在送达')), '已取到，出发送达。到了让发单人报送达码')
     case 'abandon': {
@@ -116,7 +116,7 @@ function reducer(s, a) {
       return toast({ ...upd(a.id, (t) => log({ ...t, status: 'open', runnerId: null, picked: false }, '跑腿人放弃订单，重新开放接单')), accounts: { ...s.accounts, runner } }, `已放弃，信用 -5（当前 ${runner.credit}）`, 'bad')
     }
     case 'deliver':
-      return toast(upd(a.id, (t) => log({ ...t, status: 'delivered', proof: a.proof, late: !!a.late }, a.proof.kind === 'code' ? '送达码核验通过，等待发单人确认' : '已上传送达照片，等待发单人确认')), '已提交送达凭证，等发单人确认后放款')
+      return toast(upd(a.id, (t) => log({ ...t, status: 'delivered', proof: a.proof, late: !!a.late || Date.now() > t.deadline }, a.proof.kind === 'code' ? '送达码核验通过，等待发单人确认' : '已上传送达照片，等待发单人确认')), '已提交送达凭证，等发单人确认后放款')
     case 'confirm': {
       let { poster, runner } = s.accounts
       const before = runner.credit

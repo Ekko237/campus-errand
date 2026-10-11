@@ -40,8 +40,11 @@ export default function Wallet() {
   const runner = me.id === 'runner'
   const inWord = runner ? '收入' : '入账'
 
-  const income = me.ledger.filter((l) => l.amount > 0).reduce((a, l) => a + l.amount, 0)
-  const spend = me.ledger.filter((l) => l.amount < 0).reduce((a, l) => a - l.amount, 0)
+  // 托管退回不算入账，从支出里减掉：不然冻结时记一次支出、退回时又记一次入账，两头都算
+  const refund = (l) => l.amount > 0 && l.label.includes('退回')
+  const refunds = me.ledger.filter(refund).reduce((a, l) => a + l.amount, 0)
+  const income = me.ledger.filter((l) => l.amount > 0 && !refund(l)).reduce((a, l) => a + l.amount, 0)
+  const spend = me.ledger.filter((l) => l.amount < 0).reduce((a, l) => a - l.amount, 0) - refunds
 
   const groups = useMemo(() => {
     const list = [...me.ledger]
@@ -64,7 +67,7 @@ export default function Wallet() {
   return (
     <div className="space-y-5">
       <div className="flex items-center gap-2">
-        <button onClick={() => nav(-1)} aria-label="返回" className="grid size-11 place-items-center rounded-full bg-surface ring-1 ring-line"><ArrowLeft size={20} weight="bold" /></button>
+        <button onClick={() => (window.history.state?.idx > 0 ? nav(-1) : nav("/app"))} aria-label="返回" className="grid size-11 place-items-center rounded-full bg-surface ring-1 ring-line"><ArrowLeft size={20} weight="bold" /></button>
         <h1 className="font-display text-[28px] leading-tight">{runner ? '收入流水' : '钱包流水'}</h1>
       </div>
 

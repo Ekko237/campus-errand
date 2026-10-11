@@ -4,7 +4,7 @@ import CampusMap from '../landing/CampusMap'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { Minus, Plus, CaretDown } from '@phosphor-icons/react'
 import { useStore } from '../store'
-import { TYPES, TYPE_KEYS, BUILDINGS, B, WINDOWS, SIZES, suggestPrice, estimateMinutes, findBanned, nextId, code4, POSTER_LIMIT, detourMin } from '../data'
+import { TYPES, TYPE_KEYS, BUILDINGS, B, WINDOWS, SIZES, suggestPrice, estimateMinutes, findBanned, nextId, code4, POSTER_LIMIT, detourMin, winNow } from '../data'
 import { Btn, Panel, Field, Sheet, inputCls, gi } from '../ui'
 import { ROUTES } from '../landing/RouteHero'
 const Timer = gi('timer')
@@ -68,9 +68,9 @@ export default function Publish() {
 
   const [sLo, sHi] = suggestPrice(f)
   const reward = f.reward ?? sLo
-  const win = WINDOWS.find((w) => w.id === f.windowId)
+  const win = winNow(f.windowId)
   const [eLo, eHi] = estimateMinutes({ reward, suggested: sLo, urgent: f.urgent, windowMin: win.min })
-  const title = f.title || defaultTitle(f)
+  const title = f.title.trim() || defaultTitle(f)
   const banned = useMemo(() => findBanned(title + f.note), [title, f.note])
 
   const errors = {
@@ -78,10 +78,12 @@ export default function Publish() {
     code: f.type === 'express' && !f.code.trim() ? '代取快递需要填写取件码，接单后才对跑腿人可见' : null,
     same: f.type !== 'seat' && f.from === f.to ? '取件地点和送达地点不能是同一栋楼' : null,
     money: reward > poster.balance ? `钱包余额 ¥${poster.balance} 不够托管 ¥${reward}` : poster.credit < POSTER_LIMIT.min && reward > POSTER_LIMIT.cap ? `你的信用 ${poster.credit} 低于 ${POSTER_LIMIT.min}，单笔赏金上限 ¥${POSTER_LIMIT.cap}` : null,
-    banned: banned.length ? `检测到违规内容「${banned.join('、')}」。平台禁止代考、代签到、代写作业等学术不端任务` : null,
+    banned: banned.length ? `检测到违规内容「${banned.join('、')}」。平台不接代考、代签到、代写作业这类学术不端任务，也不接烟酒、违禁品和刷单` : null,
   }
   const blocking = Object.values(errors).some(Boolean)
 
+  const [sideSlot, setSideSlot] = useState(null)
+  useEffect(() => { const el = document.getElementById('desk-side-slot'); setSideSlot((p) => (p === el ? p : el)) })
   // 从落地页带着备注过来（?as=poster）：直接用发单人身份打开表单
   useEffect(() => { if (sp.get('as') === 'poster' && state.role !== 'poster') act('role', { role: 'poster' }) }, []) // eslint-disable-line react-hooks/exhaustive-deps
   if (state.role !== 'poster') {
@@ -120,9 +122,7 @@ export default function Publish() {
     nav(`/app/task/${id}`)
   }
 
-  // 电脑版：右栏实时预览这一单发出去以后的样子，和它在谁的路上
-  const [sideSlot, setSideSlot] = useState(null)
-  useEffect(() => { const el = document.getElementById('desk-side-slot'); setSideSlot((p) => (p === el ? p : el)) })
+  // 电脑版：右栏实时预览这一单发出去以后的样子，和它在谁的路上（sideSlot 在上面取，hook 不能放在提前返回后面）
   const preview = sideSlot && (() => {
     const passing = ROUTES.filter((r) => detourMin(r.from, r.to, f) <= 5)
     const R = passing[0] ? { from: passing[0].from, to: passing[0].to } : { from: f.from, to: f.to }
@@ -138,7 +138,7 @@ export default function Publish() {
             <span className="tnum ml-auto text-2xl font-bold">¥{reward}</span>
           </div>
           <p className="mt-2 text-[17px] font-semibold">{title}</p>
-          <p className="mt-1 text-sm text-muted">{name(f.from)} → {name(f.to)}{f.room ? ' · 宿舍号接单后才给对方看' : ''}</p>
+          <p className="mt-1 text-sm text-muted">{f.from === f.to ? name(f.to) : `${name(f.from)} → ${name(f.to)}`}{f.room ? ' · 宿舍号接单后才给对方看' : ''}</p>
         </Panel>
         {valid && <CampusMap R={R} reduce pills={false} walker={false} compact hits={passing[0] ? [{ ...f, id: 'preview', reward }] : []} />}
         <p className="text-sm text-muted">{passing.length ? `此刻有 ${passing.length} 条同学常走的路经过它，图上是「${passing[0].label}」` : '还没有常走的路正好经过它，赏金高一点会更快有人接'}</p>
@@ -158,33 +158,33 @@ export default function Publish() {
         <div className="flex flex-wrap gap-2">
           {TYPE_KEYS.map((k) => {
             const T = TYPES[k]
-            return <button key={k} type="button" onClick={() => setF((x) => ({ ...x, type: k, title: '' }))} className={chip(f.type === k)} aria-pressed={f.type === k}><T.Icon size={18} weight="bold" />{T.label}</button>
+            return <button key={k} type="button" onClick={() => setF((x) => ({ ...x, type: k, title: x.titleMine ? x.title : '', ...(k === 'seat' ? { size: 's', ...(x.from === 'cainiao' ? { from: 'lib', to: 'lib' } : {}) } : {}) }))} className={chip(f.type === k)} aria-pressed={f.type === k}><T.Icon size={18} weight="bold" />{T.label}</button>
           })}
         </div>
       </Field>
 
       <div className="grid gap-4 sm:grid-cols-2">
-        <Field label={f.type === 'seat' ? '占座地点' : '取件 / 购买地点'}><BuildingSelect value={f.from} onChange={(v) => setF((x) => ({ ...x, from: v, title: '' }))} /></Field>
-        <Field label="送达楼栋" error={touched && errors.same}><BuildingSelect value={f.to} onChange={(v) => setF((x) => ({ ...x, to: v, title: '' }))} /></Field>
+        <Field label={f.type === 'seat' ? '占座地点' : '取件 / 购买地点'}><BuildingSelect value={f.from} onChange={(v) => setF((x) => ({ ...x, from: v, title: x.titleMine ? x.title : '' }))} /></Field>
+        <Field label="送达楼栋" error={touched && errors.same}><BuildingSelect value={f.to} onChange={(v) => setF((x) => ({ ...x, to: v, title: x.titleMine ? x.title : '' }))} /></Field>
       </div>
       {usual.length > 0 && (
         <div className="-mt-2 flex flex-wrap items-center gap-2">
           <span className="text-sm text-muted">常送到</span>
           {usual.map((id) => (
-            <button key={id} type="button" onClick={() => setF((x) => ({ ...x, to: id, title: '' }))} aria-pressed={f.to === id}
+            <button key={id} type="button" onClick={() => setF((x) => ({ ...x, to: id, title: x.titleMine ? x.title : '' }))} aria-pressed={f.to === id}
               className={`inline-flex h-9 items-center rounded-full px-3.5 text-sm font-semibold transition active:scale-[0.97] ${f.to === id ? 'bg-accent-soft text-accent' : 'bg-surface ring-1 ring-line'}`}>{B[id].name}</button>
           ))}
         </div>
       )}
 
       <Field label="任务标题" hint="已按模板自动生成，可以改">
-        <input className={inputCls} value={title} onChange={(e) => set('title')(e.target.value)} maxLength={30} />
+        <input className={inputCls} value={title} onChange={(e) => setF((x) => ({ ...x, title: e.target.value, titleMine: !!e.target.value.trim() }))} maxLength={30} />
       </Field>
 
       {f.type !== 'seat' && (
         <Field label="物品大小">
           <div className="flex flex-wrap gap-2">
-            {SIZES.map((s) => <button key={s.id} type="button" onClick={() => setF((x) => ({ ...x, size: s.id, title: '' }))} className={chip(f.size === s.id)} aria-pressed={f.size === s.id}>{s.label}{s.add ? ` +¥${s.add}` : ''}</button>)}
+            {SIZES.map((s) => <button key={s.id} type="button" onClick={() => setF((x) => ({ ...x, size: s.id, title: x.titleMine ? x.title : '' }))} className={chip(f.size === s.id)} aria-pressed={f.size === s.id}>{s.label}{s.add ? ` +¥${s.add}` : ''}</button>)}
           </div>
         </Field>
       )}
@@ -256,7 +256,7 @@ export default function Publish() {
       </Panel>
 
       {touched && blocking && !errors.banned && (
-        <p role="status" className="-mb-2 rounded-xl bg-danger-soft px-4 py-2.5 text-[15px] font-semibold text-danger">还差：{[errors.code && '取件码', errors.room && '宿舍号', errors.same && '楼栋选重了', errors.money && '赏金'].filter(Boolean).join('、')}</p>
+        <p role="status" className="-mb-2 rounded-xl bg-danger-soft px-4 py-2.5 text-[15px] font-semibold text-danger">还要改：{[errors.code && '取件码没填', errors.room && '宿舍号没填', errors.same && '取送楼栋相同', errors.money && (reward > poster.balance ? '余额不够' : '赏金超过信用上限')].filter(Boolean).join('、')}</p>
       )}
       {/* 发布按钮贴在底部导航上面：一进页面就看得到，表单从上往下填，不用先滚到底 */}
       {/* 发布按钮吸底：手机贴在底部导航上面，电脑版贴在窗口底边，填表时一直看得到 */}
@@ -266,7 +266,7 @@ export default function Publish() {
 
       <Sheet open={confirm} onClose={() => setConfirm(false)} title="确认发布">
         <dl className="space-y-3 text-[15px]">
-          {[['任务', title], ['路线', `${B[f.from].name} 到 ${B[f.to].name}`], ['时间窗', win.label + (f.urgent ? '，加急' : '')], ['托管赏金', `¥${reward}，确认送达后放款`], ['预估接单', `${eLo} 到 ${eHi} 分钟`]].map(([k, v]) => (
+          {[['任务', title], ['路线', f.from === f.to ? B[f.to].name : `${B[f.from].name} 到 ${B[f.to].name}`], ['时间窗', win.label + (f.urgent ? '，加急' : '')], ['托管赏金', `¥${reward}，确认送达后放款`], ['预估接单', `${eLo} 到 ${eHi} 分钟`]].map(([k, v]) => (
             <div key={k} className="flex gap-3"><dt className="w-20 shrink-0 text-muted">{k}</dt><dd className="font-medium">{v}</dd></div>
           ))}
         </dl>

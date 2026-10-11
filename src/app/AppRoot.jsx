@@ -3,7 +3,7 @@ import { Routes, Route, NavLink, Link, useLocation } from 'react-router-dom'
 import { motion, AnimatePresence, useReducedMotion } from 'motion/react'
 import { ListMagnifyingGlass, PlusCircle, UserCircle, Compass } from '@phosphor-icons/react'
 import { StoreProvider, useStore } from '../store'
-import { ViewHost, ViewToggle, EMBED } from './ViewMode'
+import { ViewHost, ViewToggle, EMBED, HomeLink } from './ViewMode'
 import { OpenTaskCtx } from './openTask'
 import { Sheet, Btn, spring, gi } from '../ui'
 import Hall from './Hall'
@@ -93,23 +93,25 @@ function Onboarding() {
   const fromPush = useLocation().search.includes('from=remind')
   useEffect(() => { if (fromPush) { act('role', { role: 'runner' }); if (!state.onboarded) act('onboarded'); try { localStorage.setItem('shunluxia:remind', '1') } catch { /* 存不了不影响 */ } } }, [fromPush]) // eslint-disable-line react-hooks/exhaustive-deps
   // 第一次进原型：先问一句要不要带着走；选了就开始「指哪点哪」，不选或关掉就正常用，记住选择不再问
-  const go = () => { act('tour', { tour: { active: true, taskId: null, done: false, dismissed: false } }); act('role', { role: 'poster' }) }
+  // 先让小窗收起来（约 0.3 秒），再出导览条和圈：不然导览条一出来会把正在收起的小窗往下推一截
+  const go = () => { act('onboarded'); setTimeout(() => { act('tour', { tour: { active: true, taskId: null, done: false, dismissed: false } }); act('role', { role: 'poster' }) }, 320) }
   return (
     <Sheet open={!state.onboarded && !fromPush} onClose={() => act('onboarded')} title="第一次来？">
-      <p className="text-[17px] leading-relaxed text-muted">跟着指引走完一单，大约 1 分钟。一个人轮流扮演发单人和跑腿人，屏幕上会圈出每一步该点哪里。</p>
+      <p className="text-[17px] leading-relaxed text-muted">跟着指引走完一单，约 2 分钟。一个人轮流扮演发单人和跑腿人，屏幕上会圈出每一步该点哪里。</p>
       <div className="mt-6 grid gap-2">
         <Btn size="lg" onClick={go}>带我走一遍</Btn>
         <Btn variant="ghost" onClick={() => act('onboarded')}>我自己逛逛</Btn>
       </div>
-      <p className="mt-4 text-sm text-muted">以后想看，右下角「新手指引」随时能重新开始。</p>
+      <p className="mt-4 text-sm text-muted">以后想看，点顶栏的「新手指引」随时能重新开始。</p>
     </Sheet>
   )
 }
 
-// 固定在右下角的「新手指引」：随时重新开始；上次没走完的那一单还在，就从那一步接着走
+// 顶栏里的「新手指引」：随时重新开始；上次没走完的那一单还在，就从那一步接着走
+// 放在顶栏而不是浮在右下角：浮着会压住下面的内容（地图图例、星星、下拉框）
+// 指引进行中只是隐藏（导览条上有退出），位置留着，身份切换不跟着挪
 function GuideEntry() {
   const { state, act } = useStore()
-  if (state.tour.active || !state.onboarded) return null
   const t = state.tasks.find((x) => x.id === state.tour.taskId)
   const unfinished = t && !state.tour.done && !(t.status === 'completed' && t.ratingByPoster && t.ratingByRunner) && !['cancelled', 'refunded', 'disputed'].includes(t.status)
   const start = () => {
@@ -117,13 +119,13 @@ function GuideEntry() {
     act('tour', { tour: { active: true, taskId: null, done: false, dismissed: false } })
     act('role', { role: 'poster' })
   }
+  const hidden = state.tour.active || !state.onboarded
   return (
-    <button onClick={start} className="fixed bottom-[calc(5rem+env(safe-area-inset-bottom))] right-4 z-30 inline-flex h-11 items-center gap-1.5 rounded-full bg-surface px-4 text-[15px] font-semibold text-ink shadow-lg shadow-ink/15 ring-1 ring-line active:scale-[0.97] xl:bottom-6 xl:right-6">
-      <Compass size={20} weight="bold" className="text-accent" />新手指引
+    <button onClick={start} aria-label="新手指引" tabIndex={hidden ? -1 : undefined} className={`inline-flex h-10 min-w-11 shrink-0 items-center justify-center gap-1 rounded-full bg-sunken px-3 text-[14px] font-semibold text-ink active:scale-[0.97] ${hidden ? 'invisible' : ''}`}>
+      <Compass size={18} weight="bold" className="text-accent" /><span className={EMBED ? '' : 'max-[439px]:sr-only'}>新手指引</span>
     </button>
   )
 }
-
 const tabs = [
   ['/app', '大厅', 'nav-hall', true],
   ['/app/publish', '发布', 'nav-publish'],
@@ -195,11 +197,11 @@ function DeskShell({ sub, openTask }) {
     <div className="min-h-[100dvh] bg-bg">
       <header className="sticky top-0 z-30 border-b border-line bg-bg/95 backdrop-blur">
         <div className="mx-auto flex h-16 max-w-[1440px] items-center justify-between gap-3 px-6">
-          <Link to="/" className="flex shrink-0 items-center gap-2 text-lg font-bold tracking-tight">
+          <HomeLink className="-m-1 flex shrink-0 items-center gap-2 rounded-xl p-1 text-lg font-bold tracking-tight">
             <img src={`${import.meta.env.BASE_URL}brand/logo-v2.png`} width={36} height={36} alt="顺路侠标志：背着书包、夹着包裹奔跑的小人" className="size-9" />
             顺路侠
-          </Link>
-          <div className="flex items-center gap-2"><RoleSwitch /><ViewToggle inner /></div>
+          </HomeLink>
+          <div className="flex items-center gap-2"><GuideEntry /><RoleSwitch /><ViewToggle inner /></div>
         </div>
         <TourBar wide />
       </header>
@@ -242,7 +244,6 @@ function DeskShell({ sub, openTask }) {
       </main>
       <Toasts />
       <Onboarding />
-      <GuideEntry />
       <Coach />
     </div>
   )
@@ -268,11 +269,11 @@ function Shell() {
     <div className="min-h-[100dvh] bg-bg">
       <header className="sticky top-0 z-30 border-b border-line bg-bg/95 backdrop-blur">
         <div className="mx-auto flex h-16 max-w-xl items-center justify-between gap-3 px-4 xl:max-w-[66rem]">
-          <Link to="/" className="flex shrink-0 items-center gap-2 text-lg font-bold tracking-tight">
+          <HomeLink className="-m-1 flex shrink-0 items-center gap-2 rounded-xl p-1 text-lg font-bold tracking-tight">
             <img src={`${import.meta.env.BASE_URL}brand/logo-v2.png`} width={36} height={36} alt="顺路侠标志：背着书包、夹着包裹奔跑的小人" className="size-9" />
-            <span className="max-[359px]:hidden">顺路侠</span>
-          </Link>
-          <div className="flex items-center gap-2"><RoleSwitch /><ViewToggle inner /></div>
+            <span className="max-[439px]:hidden">顺路侠</span>
+          </HomeLink>
+          <div className="flex items-center gap-2"><GuideEntry /><RoleSwitch /><ViewToggle inner /></div>
         </div>
         <TourBar />
       </header>
@@ -303,7 +304,6 @@ function Shell() {
       </nav>
       <Toasts />
       <Onboarding />
-      <GuideEntry />
       <Coach />
     </div>
   )

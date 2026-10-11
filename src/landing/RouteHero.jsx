@@ -161,7 +161,7 @@ export default function RouteHero({ Cta, Anchor }) {
   // 副标题和按钮第一帧就在，只做一点位移，不从透明开始
   const fade = (d) => ({ initial: reduce ? false : { y: 10 }, animate: { y: 0 }, transition: { duration: 0.5, delay: d * 0.3, ease } })
   return (
-    <section id="top" className="mx-auto grid max-w-7xl items-center gap-10 px-4 pb-8 pt-8 md:px-8 md:pb-20 md:pt-12 lg:grid-cols-12 lg:gap-10 lg:pb-26 lg:pt-10 xl:pt-14">
+    <section id="top" className="mx-auto grid max-w-7xl items-center gap-10 px-4 pb-8 pt-8 md:px-8 md:pb-20 md:pt-12 lg:grid-cols-12 lg:gap-10 lg:pb-8 lg:pt-10 xl:pt-14">
       <div className="lg:col-span-5">
         <h1 className="font-display text-[54px] leading-[1.05] md:text-[80px] lg:text-[length:clamp(54px,4vw_+_20px,78px)]">
           <span className="block pb-1"><motion.span className="block" {...line(0)}>本来就要经过，</motion.span></span>
@@ -221,7 +221,7 @@ export function CampusRoutes() {
         ))}
       </div>
       <p className="mt-4 max-w-[40ch] text-lg leading-relaxed text-muted md:text-xl" aria-live="polite">
-        此刻 {seedTasks().length} 个单里，有 <b className="text-accent">{hits.length} 个</b>顺路，<span className="whitespace-nowrap">{!hits.length ? '' : '每单'}多走 {!hits.length ? 0 : hits[0].m === hits[hits.length - 1].m ? hits[0].m : `${hits[0].m} 到 ${hits[hits.length - 1].m}`} 分钟</span>。
+        此刻 {seedTasks().length} 单里，有 <b className="text-accent">{hits.length} 单</b>顺路，<span className="whitespace-nowrap">{!hits.length ? '' : '每单'}多走 {!hits.length ? 0 : hits[0].m === hits[hits.length - 1].m ? hits[0].m : `${hits[0].m} 到 ${hits[hits.length - 1].m}`} 分钟</span>。
       </p>
       <div className="mt-6 lg:grid lg:grid-cols-12 lg:items-start lg:gap-8">
         <div ref={box} className="lg:col-span-8"><CampusMap R={R} hits={hits} reduce={reduce} legend /></div>

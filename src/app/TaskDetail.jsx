@@ -11,10 +11,10 @@ const MapPin = gi('pin')
 const Clock = gi('clock')
 const LockKey = gi('lock')
 const LockKeyOpen = gi('lock-open')
-const EyeSlash = gi('eye-off', 'v2')
-const Phone = gi('phone')
-const Package = gi('parcel')
-const House = gi('door')
+const EyeSlash = gi('eye-off', 'v3')
+const Phone = gi('phone', 'v2')
+const Package = gi('parcel', 'v2')
+const House = gi('door', 'v2')
 const ShieldCheck = gi('shield-check')
 const Camera = gi('camera')
 const Numpad = gi('keypad')
@@ -97,7 +97,8 @@ function PrivateInfo({ t, role }) {
 
 // 取件码揭晓：每一位先快速跳数，再从左到右依次定下来
 function CodeReveal({ code, play }) {
-  const [shown, setShown] = useState(play ? code.replace(/\d/g, '0') : code)
+  // 揭晓时没定下来的位先显示圆点，一位一位落定：不滚随机数字，免得截图或眼角看到一个「错号」
+  const [shown, setShown] = useState(play ? code.replace(/\d/g, '•') : code)
   useEffect(() => {
     if (!play) return
     const t0 = performance.now()
@@ -107,7 +108,7 @@ function CodeReveal({ code, play }) {
       const next = code.split('').map((ch) => {
         if (!/\d/.test(ch)) return ch
         const settled = el > 380 + k++ * 110
-        return settled ? ch : String(Math.floor(Math.random() * 10))
+        return settled ? ch : '•'
       }).join('')
       setShown(next)
       if (next === code) clearInterval(id)
@@ -288,7 +289,7 @@ function DeliverSheet({ t, open, onClose }) {
             <ProofPhoto t={t} at={Date.now()} className="h-36" />
           ) : (
             <button onClick={shoot} className="grid h-36 w-full place-items-center rounded-2xl bg-sunken text-muted ring-1 ring-line">
-              {shooting ? <span className="animate-pulse text-[15px] font-semibold">正在拍照…</span> : <span className="flex flex-col items-center gap-2 text-[15px] font-semibold"><Camera size={36} />点击拍照（模拟）</span>}
+              {shooting ? <span className="animate-pulse text-[15px] font-semibold">正在拍照……</span> : <span className="flex flex-col items-center gap-2 text-[15px] font-semibold"><Camera size={36} />点击拍照（模拟）</span>}
             </button>
           )}
           {err && <p role="alert" className="mt-2 text-sm font-medium text-danger">{err}</p>}
@@ -306,7 +307,7 @@ function DeliverSheet({ t, open, onClose }) {
 }
 
 function RateBlock({ t, by }) {
-  const { act } = useStore()
+  const { act, state } = useStore()
   const [stars, setStars] = useState(0)
   const submitRef = useRef(null)
   // 选完星，标签会展开把「提交评价」往下推：等它展开后，滚到刚好露在底部导航上面
@@ -335,7 +336,7 @@ function RateBlock({ t, by }) {
             className={`h-10 rounded-full px-4 text-[15px] font-semibold ${tags.includes(x) ? 'bg-accent text-on-accent' : 'bg-sunken text-ink'}`}>{x}</button>
         ))}
       </div>
-      <Btn ref={submitRef} className="mt-4 w-full" disabled={!stars} onClick={() => { act('rate', { id: t.id, by, stars, tags }); if (by === 'poster' ? t.ratingByRunner : t.ratingByPoster) setTimeout(() => window.scrollTo({ top: 0, behavior: 'smooth' }), 60) }}>{stars ? '提交评价' : '先点星星打分'}</Btn>
+      <Btn ref={submitRef} className="mt-4 w-full" disabled={!stars} onClick={() => { act('rate', { id: t.id, by, stars, tags }); if ((by === 'poster' ? t.ratingByRunner : t.ratingByPoster) && !state.tour.active) setTimeout(() => window.scrollTo({ top: 0, behavior: 'smooth' }), 60) }}>{stars ? '提交评价' : '先点星星打分'}</Btn>
     </Panel>
   )
 }
@@ -381,6 +382,7 @@ function Actions({ t }) {
         </div>
       )
     }
+    if (t.deadline < Date.now()) return <Btn size="lg" className="w-full" disabled>已过截止时间，不能接了</Btn>
     return <Btn size="lg" className="w-full" onClick={() => act('accept', { id: t.id })}>接单</Btn>
   }
 
@@ -449,9 +451,10 @@ function Actions({ t }) {
       )
     }
     if (!own) {
+      if (state.role === 'poster') return <p className="text-center text-[15px] text-muted">这是{t.posterName}发的单，正在等{t.posterName}确认收货。</p>
       return (
         <div className="grid gap-2 text-center">
-          <p className="text-[15px] text-muted">等待发单人 {t.posterName} 确认，2 小时内不确认将自动放款。</p>
+          <p className="text-[15px] text-muted">等待发单人{t.posterName}确认，2 小时内不确认将自动放款。</p>
           <Btn variant="ghost" onClick={() => { act('confirm', { id: t.id, simulated: true }); toEscrow() }}>试一下：对方确认收货</Btn>
           <Btn variant="plain" size="sm" onClick={() => act('confirm', { id: t.id, auto: true })}>试一下：对方 2 小时没确认（发单人 -2）</Btn>
         </div>
@@ -470,7 +473,7 @@ function Actions({ t }) {
     return (
       <Panel className="p-4">
         <p className="flex items-center gap-2 text-[15px] font-semibold"><Scales size={20} className="text-accent" />申诉处理中：{t.dispute?.reason}</p>
-        <p className="mt-1 text-sm text-muted">平台核对送达凭证和聊天记录，通常 24 小时内给结果。演示里你可以直接选裁决结果：</p>
+        <p className="mt-1 text-sm text-muted">平台核对送达凭证和通话记录，通常 24 小时内给结果。演示里你可以直接选裁决结果：</p>
         <div className="mt-3 grid grid-cols-2 gap-2">
           <Btn variant="ghost" size="sm" onClick={() => act('resolve', { id: t.id, winner: 'runner' })}>凭证有效，放款</Btn>
           <Btn variant="danger" size="sm" onClick={() => act('resolve', { id: t.id, winner: 'poster' })}>申诉成立，退款</Btn>
@@ -653,7 +656,7 @@ export default function TaskDetail() {
         </motion.div>
       )}
       <div className="flex items-center gap-2">
-        <button onClick={() => nav(-1)} aria-label="返回" className="grid size-11 place-items-center rounded-full bg-surface ring-1 ring-line"><ArrowLeft size={20} weight="bold" /></button>
+        <button onClick={() => (window.history.state?.idx > 0 ? nav(-1) : nav("/app"))} aria-label="返回" className="grid size-11 place-items-center rounded-full bg-surface ring-1 ring-line"><ArrowLeft size={20} weight="bold" /></button>
         <span className={`min-w-0 truncate text-[15px] font-semibold text-muted`}>订单详情</span>
         <span className="ml-auto"><StatusTag t={t} /></span>
       </div>

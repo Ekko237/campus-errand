@@ -19,8 +19,19 @@ const AppRoot = lazy(() =>
 )
 
 // 原型分包一般在首页就预加载好了；真没加载完时只留底色，不放假的骨架屏
+// 慢网时原型分包还没到：放一个和顶栏、列表同形状的骨架，不留整屏空白
 function AppLoading() {
-  return <div className="min-h-[100dvh] bg-bg" aria-label="加载中" />
+  return (
+    <div className="min-h-[100dvh] bg-bg" aria-label="加载中" role="status">
+      <div className="flex h-16 items-center justify-between border-b border-line px-4">
+        <span className="flex items-center gap-2 text-lg font-bold"><img src={`${import.meta.env.BASE_URL}brand/logo-v2.png`} width={36} height={36} alt="" className="size-9" />顺路侠</span>
+        <span className="h-10 w-36 animate-pulse rounded-full bg-sunken motion-reduce:animate-none" />
+      </div>
+      <div className="mx-auto max-w-xl space-y-3 p-4">
+        {[0, 1, 2, 3].map((k) => <div key={k} className="h-28 animate-pulse rounded-2xl bg-surface ring-1 ring-line motion-reduce:animate-none" />)}
+      </div>
+    </div>
+  )
 }
 
 try { sessionStorage.removeItem('stale-reload') } catch {}

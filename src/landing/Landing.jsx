@@ -12,7 +12,7 @@ import { gi } from '../ui'
 import { routePath, PLACES } from '../campusMap'
 const LockKey = gi('lock')
 const LockKeyOpen = gi('lock-open')
-const EyeSlash = gi('eye-off', 'v2')
+const EyeSlash = gi('eye-off', 'v3')
 
 const ease = [0.16, 1, 0.3, 1]
 const img = (name) => `${import.meta.env.BASE_URL}images/${name}.webp`
@@ -164,7 +164,7 @@ function Nav({ page }) {
           {home && <Link to="/thinking" className={linkCls}>产品思考{under(false)}</Link>}
         </nav>
         <div className="flex items-center gap-2">
-          <div className={`transition-opacity duration-300 ${(scrolled || !home) && !open ? '' : 'max-md:pointer-events-none max-md:opacity-0'}`}><Cta size="sm" /></div>
+          <div className={`transition-opacity duration-300 ${(scrolled || !home) && !open ? '' : 'max-md:pointer-events-none max-md:invisible max-md:opacity-0'}`}><Cta size="sm" /></div>
           {!home && <Link to="/" aria-label="回首页" className="inline-flex h-10 items-center gap-1.5 rounded-full bg-sunken px-3 text-[15px] font-semibold active:scale-[0.97] md:px-4"><ArrowLeft size={16} weight="bold" /><span><span className="max-md:hidden">回</span>首页</span></Link>}
           {home && (
             <button onClick={() => { setCur(scrollY + innerHeight >= document.documentElement.scrollHeight - 4 ? SECTIONS[SECTIONS.length - 1][0] : [...SECTIONS].reverse().find(([id]) => (document.getElementById(id)?.getBoundingClientRect().top ?? 1e9) < innerHeight * 0.35)?.[0]); setOpen((v) => !v) }} aria-expanded={open} aria-controls="mnav" className="grid h-10 place-items-center rounded-full bg-sunken px-4 text-[15px] font-semibold active:scale-[0.97] lg:hidden">{open ? '收起' : '目录'}</button>
@@ -224,13 +224,13 @@ const SCENES = [
     key: 'seat', tab: '早八前的图书馆座位', short: '早八占座', route: ['竹园', '图书馆', '从竹园去一教、路过图书馆的同学，就在路上'], img: 'scene-seat-v3', alt: '清晨的图书馆阅览室，靠窗的空位上放着一本书占座',
     who: '考研，住得远的周砚',
     pain: '宿舍离图书馆一公里，每天 7:40 靠窗位就没了。住在旁边的同学顺手就能占，但不知道谁靠谱。',
-    fix: '接单人的信用分公开可见。接了不去算爽约，直接扣 5 分，下次能接的单就变少。',
+    fix: '跑腿人的信用分公开可见。接了不去算爽约，直接扣 5 分，下次能接的单就变少。',
   },
   {
     key: 'handoff', tab: '宿舍楼下的交接', short: '楼下交接', route: ['北门', '桃园 2 号楼', '从北门进校回桃园的同学，多走 3 分钟'], img: 'scene-handoff-v3', alt: '傍晚的宿舍楼门口，一名学生把外卖袋递给另一名学生',
-    who: '赶作业下不了楼的于小渔',
+    who: '赶作业下不了楼的许一舟',
     pain: '外卖放在北门取餐点，走回 6 楼要十分钟。正好回宿舍的同学顺手就能捎上来，可彼此不认识，也不想把宿舍号给陌生人。',
-    fix: '大厅优先显示顺你路的单，顺路回宿舍的人最先看到；宿舍号接单后才显示，订单结束自动隐藏。',
+    fix: '大厅把这单优先推给顺路回宿舍的同学，顺路回宿舍的人最先看到；宿舍号接单后才显示，订单结束自动隐藏。',
   },
 ]
 
@@ -875,7 +875,7 @@ function BanDemo() {
         <input value={typed} onFocus={() => setOwn((v) => v ?? '')} onChange={(e) => setOwn(e.target.value)} maxLength={40} aria-label="备注（选填），可以自己打字试试"
           placeholder="比如：帮我代签到" aria-invalid={!!hit}
           className={`h-12 w-full rounded-xl px-3.5 text-base text-ink ring-1 transition-colors placeholder:text-muted focus:outline-none ${hit ? 'bg-danger-soft ring-2 ring-danger focus:ring-danger' : 'bg-bg ring-line focus:ring-2 focus:ring-accent'}`} />
-        {own === null && <span aria-hidden="true" className="pointer-events-none absolute top-1/2 h-5 w-0.5 -translate-y-1/2 animate-pulse bg-ink" style={{ left: `calc(16px + ${typed.length}em)` }} />}
+        {own === null && <span aria-hidden="true" className="pointer-events-none absolute top-1/2 h-5 w-0.5 -translate-y-1/2 animate-pulse bg-ink motion-reduce:animate-none" style={{ left: `calc(16px + ${typed.length}em)` }} />}
       </div>
       {/* 提示区固定高度：拦截卡只淡入淡出，下面的按钮不跟着跳 */}
       <div className="relative mt-3 h-[96px] md:h-[80px]">
@@ -977,7 +977,7 @@ function Metrics() {
                 </div>
               </div>
             </div>
-            <p className="mt-10 max-w-[44ch] text-lg leading-relaxed opacity-90">按时送达且无申诉的单 ÷ 被接的单。信任平台的核心就是「接了就送到」，这个数掉了，其他都没意义。</p>
+            <p className="mt-10 max-w-[44ch] text-lg leading-relaxed opacity-90">按时送达且无申诉的单 ÷ 被接的单。大家敢用，靠的就是接了就送到。这个数掉了，别的指标再好也没用。</p>
           </Reveal>
           <Reveal delay={0.05} className="rounded-2xl bg-bg p-6 ring-1 ring-line">
             <p className="flex items-center gap-2 text-lg font-semibold">接单率<span className="rounded-full bg-sunken px-2 py-0.5 text-xs text-muted">目标</span></p>
@@ -998,10 +998,11 @@ function Metrics() {
 }
 
 const ROADMAP = [
-  { when: '现在', t: '顺路接单 + 下课提醒', d: '说一句「我正要从一教回梅园」，大厅就按捎上每单要多走几分钟排序，5 分钟以内标为顺路；下课前 5 分钟把这条路上的单推给你。' },
+  { when: '现在', t: '顺路接单 + 下课提醒', d: '选好「我正要从一教回梅园」，大厅就按捎上每单要多走几分钟排序，5 分钟以内标为顺路；下课前 5 分钟把这条路上的单推给你。' },
   { when: '下个月', t: '课表自动认路', d: '导入课表，自动认出你每天几点、从哪栋楼走回哪栋楼，不用自己设常走的路。' },
-  { when: '下学期', t: '楼长担保', d: '宿舍楼长、社团负责人做担保人，新人起步更快；上线小程序。' },
-  { when: '一年内', t: '多校区', d: '同城多校共享信用，开放二手互助和拼单。' },
+  { when: '下学期', t: '楼长担保', d: '宿舍楼长、社团负责人做担保人，新人起步更快。' },
+  { when: '下学期', t: '上线小程序', d: '不用打开网页，微信里就能发单、接单和收提醒。' },
+  { when: '一年内', t: '同城多校', d: '同城多校共享信用，开放二手互助和拼单。' },
 ]
 
 function Roadmap() {
@@ -1028,7 +1029,7 @@ function Roadmap() {
 function Routes() {
   return (
     <section id="routes" className="mx-auto max-w-7xl scroll-mt-16 px-4 pb-16 pt-10 md:px-8 md:pb-20 md:pt-22 lg:pb-24 lg:pt-26">
-      <Reveal><H2>同一时间<br />校园里到处是顺路</H2></Reveal>
+      <Reveal><H2>同一时间<br />校园里到处有人顺路</H2></Reveal>
       <Reveal delay={0.05}><Lead>阿远那一单只是其中一条。选一条路，看看此刻这条路上还有几单，顺手能捎上多少。</Lead></Reveal>
       <div className="mt-5"><CampusRoutes /></div>
     </section>
@@ -1055,7 +1056,7 @@ function Final({ page }) {
       {page === 'thinking' ? (
         <div className="mx-auto max-w-3xl px-4 py-20 text-center md:py-28">
           <Reveal><h2 className="font-display text-balance text-[40px] leading-[1.08] md:text-6xl">想法讲完了<br />点一遍看看</h2></Reveal>
-          <Reveal delay={0.05}><p className="mx-auto mt-5 max-w-[32ch] text-lg text-muted">原型里一个人就能分别扮演发单人和<span className="whitespace-nowrap">跑腿人</span>，大约两分钟走完一单。</p></Reveal>
+          <Reveal delay={0.05}><p className="mx-auto mt-5 max-w-[32ch] text-lg text-muted">原型里一个人就能分别扮演发单人和<span className="whitespace-nowrap">跑腿人</span>，大约 2 分钟走完一单。</p></Reveal>
           <Reveal delay={0.1} className="mt-8"><Cta /></Reveal>
         </div>
       ) : (
@@ -1071,7 +1072,7 @@ function Final({ page }) {
             </div>
           </Reveal>
           <Reveal delay={0.1}>
-            <p className="mt-8 text-lg text-muted md:text-xl" aria-live="polite">此刻路上有 <AnimatePresence mode="wait" initial={false}><motion.b key={n} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.18 }} className="tnum inline-block text-3xl text-accent md:text-4xl">{n}</motion.b></AnimatePresence> 单顺路，<span className="whitespace-nowrap">捎上都不超过 5 分钟</span></p>
+            <p className="mt-8 text-lg text-muted md:text-xl" aria-live="polite">此刻路上有 <AnimatePresence mode="wait" initial={false}><motion.b key={n} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.18 }} className="tnum inline-block text-3xl text-accent md:text-4xl">{n}</motion.b></AnimatePresence> 单顺路，<span className="whitespace-nowrap">捎上都在 5 分钟以内</span></p>
             <p className="mt-3 max-w-[34ch] text-[15px] text-muted">在原型「我的」里打开下课提醒，下课前 5 分钟把这条路上的单推给你。</p>
           </Reveal>
           <Reveal delay={0.15} className="mt-10 flex max-lg:hidden">
@@ -1107,7 +1108,7 @@ function Final({ page }) {
             </div>
           </div>
         </Reveal>
-        <div className="lg:hidden">{goBtn}</div>
+        <div className="flex justify-center lg:hidden">{goBtn}</div>
       </div>
       )}
       <footer className="border-t border-line">
@@ -1117,7 +1118,7 @@ function Final({ page }) {
             <p className="mt-2">校园跑腿互助平台产品原型。页面中的人名、任务、金额和指标均为示例。</p>
           </div>
           <div className="grid gap-4 md:justify-items-end">
-            {/* 「体验原型」直接按设备进合适的界面；想先挑手机版还是电脑版，从这里去选择页 */}<Link to="/app/start" className="mr-3 -my-3 inline-flex min-h-11 items-center font-semibold text-ink underline-offset-4 hover:underline">选手机版 / 电脑版</Link>{page !== 'thinking' ? <Link to="/thinking" className="-my-3 inline-flex min-h-11 items-center font-semibold text-ink underline-offset-4 hover:underline">产品思考</Link> : <Link to="/" className="-my-3 inline-flex min-h-11 items-center font-semibold text-ink underline-offset-4 hover:underline">回首页</Link>}
+            {/* 「体验原型」直接按设备进合适的界面；想先挑手机版还是电脑版，从这里去选择页 */}<Link to="/app/start" className="-my-3 inline-flex min-h-11 items-center font-semibold text-ink underline-offset-4 hover:underline">选手机版 / 电脑版</Link>{page !== 'thinking' ? <Link to="/thinking" className="-my-3 inline-flex min-h-11 items-center font-semibold text-ink underline-offset-4 hover:underline">产品思考</Link> : <Link to="/" className="-my-3 inline-flex min-h-11 items-center font-semibold text-ink underline-offset-4 hover:underline">回首页</Link>}
             <p>演示数据只存在这台设备的浏览器里 · <button onClick={() => { if (window.confirm('把原型里的演示数据恢复成刚打开时的样子？')) { try { Object.keys(localStorage).filter((k) => k.startsWith('shunluxia:')).forEach((k) => localStorage.removeItem(k)) } catch { /* 无痕模式下没有本地存储 */ } } }}
               className="-my-3 inline-flex min-h-11 items-center font-semibold text-ink underline-offset-4 hover:underline">重置演示数据</button></p>
           </div>
@@ -1131,8 +1132,8 @@ const COMPARE = [
   ['钱谁先拿', ['先转账', '平台扣', '托管到送达']],
   ['人靠不靠谱', ['看运气', '骑手不认识', '实名 + 信用分']],
   ['出了事找谁', ['自己找', '平台客服', '凭证 + 申诉']],
-  ['一单多少钱', ['随口说', '¥8 起', '顺路才 ¥4 起']],
-  ['宿舍号谁能看', ['全群', '骑手', '接单后才看']],
+  ['一单多少钱', ['随口说', '¥8 起', '顺路 ¥3 起']],
+  ['宿舍号谁能看', ['全群', '骑手', '接单的同学']],
 ]
 
 function ThinkingIntro() {
@@ -1148,7 +1149,7 @@ function ThinkingIntro() {
         {[
           ['谁在用', '时间被课表切碎、又在意隐私的在校生。需求小、频次高、怕被坑。'],
           ['为什么现在没人做好', '外卖平台不进宿舍楼，校园群接龙没有托管和信用，熟人才敢托付。'],
-          ['顺路解决什么', '跑腿人本来就要走这条路，多走不到 5 分钟，赏金低也愿意接，供给自然就有。'],
+          ['顺路解决什么', '跑腿人本来就要走这条路，多走 5 分钟以内，赏金低也愿意接，供给自然就有。'],
         ].map(([t, d], i) => (
           <Reveal as="li" key={t} delay={0.05 * i} className="relative pl-10">
             <span aria-hidden="true" className={`absolute left-0 top-1.5 size-4 rounded-full ring-4 ring-bg ${i === 2 ? 'bg-accent' : 'bg-ink'}`} />
@@ -1204,7 +1205,7 @@ function MoreScenes() {
   return (
     <section className="mx-auto max-w-7xl px-4 pb-22 pt-16 md:px-8 md:pb-30 md:pt-24 lg:pb-34">
       <Reveal><H2>不止取快递</H2></Reveal>
-      <Reveal delay={0.05}><Lead>同一套托管、隐私和信用，换成早八占座、楼下交接，也是同一条顺路。</Lead></Reveal>
+      <Reveal delay={0.05}><Lead>同一套托管、隐私和信用，换成早八占座、楼下交接，一样适用。</Lead></Reveal>
       <div className="mt-10 grid gap-6 md:grid-cols-2">
         {SCENES.filter((x) => x.key !== 'express').map((x, k) => (
           <Reveal key={x.key} delay={0.05 * k}>

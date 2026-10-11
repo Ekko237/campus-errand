@@ -1,3 +1,4 @@
+import { useEffect, useRef } from 'react'
 import { createPortal } from 'react-dom'
 import { motion, AnimatePresence, useReducedMotion, useIsPresent } from 'motion/react'
 import { X, Star } from '@phosphor-icons/react'
@@ -94,12 +95,30 @@ export function Sheet({ open, onClose, title, children }) {
 function SheetBody({ onClose, title, children }) {
   const reduce = useReducedMotion()
   const present = useIsPresent()
+  // 打开时把键盘焦点放进弹层，Tab 只在弹层里转，不跑到被压暗的背景里
+  const panel = useRef(null)
+  useEffect(() => {
+    if (!present || !panel.current) return
+    const els = () => [...panel.current.querySelectorAll('button, a[href], input, select, textarea, [tabindex]:not([tabindex="-1"])')].filter((e) => !e.disabled && e.offsetParent)
+    const prev = document.activeElement
+    if (!panel.current.contains(document.activeElement)) (els().find((e) => !e.matches('[aria-label="关闭"]')) || panel.current).focus({ preventScroll: true })
+    const trap = (e) => {
+      if (e.key !== 'Tab') return
+      const l = els(); if (!l.length) return
+      const i = l.indexOf(document.activeElement)
+      if (e.shiftKey && (i <= 0)) { e.preventDefault(); l[l.length - 1].focus() } else if (!e.shiftKey && i === l.length - 1) { e.preventDefault(); l[0].focus() }
+    }
+    window.addEventListener('keydown', trap)
+    return () => { window.removeEventListener('keydown', trap); if (prev && document.contains(prev)) prev.focus?.({ preventScroll: true }) }
+  }, [present])
+  // 按 Esc 也能关
+  useEffect(() => { if (!present) return; const f = (e) => { if (e.key === 'Escape') onClose?.() }; window.addEventListener('keydown', f); return () => window.removeEventListener('keydown', f) }, [present, onClose])
   return (
         // 只让遮罩淡入淡出，弹层本身一直不透明、只做上滑：下面的表单字不会从弹层里透上来
         <motion.div className={`fixed inset-0 z-50 flex items-end justify-center sm:items-center ${present ? '' : 'pointer-events-none'}`} initial={false} exit={{ opacity: 1, transition: { duration: 0.25 } }}>
           <motion.div className="absolute inset-0 bg-ink/50" onClick={onClose} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.2 }} />
           <motion.div
-            role="dialog" aria-modal="true" aria-label={title} data-closing={present ? undefined : ''}
+            ref={panel} tabIndex={-1} role="dialog" aria-modal="true" aria-label={title} data-closing={present ? undefined : ''}
             className="relative max-h-[88dvh] w-full max-w-lg overflow-y-auto rounded-t-2xl bg-surface p-5 pb-8 sm:rounded-2xl"
             initial={reduce ? false : { y: '100%' }} animate={{ y: 0 }} exit={reduce ? { opacity: 0 } : { y: '100%' }} transition={spring}
           >

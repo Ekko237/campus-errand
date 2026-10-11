@@ -4,6 +4,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence, animate, useMotionValue, useTransform, useReducedMotion } from 'motion/react'
 import { CaretRight, ArrowRight, ArrowCounterClockwise, ListBullets } from '@phosphor-icons/react'
 import { useStore, useMe } from '../store'
+import { HomeLink } from './ViewMode'
 import { levelOf, nextLevel, iconUrl, posterTierOf, posterNextTier, B, detourMin, onMyWay, myRoute } from '../data'
 import { Avatar, VerifiedBadge, Panel, Btn, Empty, ago, gi } from '../ui'
 const Path = gi('path')
@@ -105,8 +106,9 @@ export default function Me() {
     { img: 'trust-verify', alt: '带对勾的学生证', name: '校园认证', on: me.verified },
     { img: 'badge-first', alt: '插在包裹旁的小旗', name: '首单完成', on: isPoster ? state.tasks.some((t) => t.posterId === 'poster' && t.status === 'completed') : me.done >= 1 },
     { img: 'badge-praise', alt: '带星星的点赞徽章', name: '好评 3 次', on: good >= 3 },
-    { img: 'level-reliable', alt: '带对勾的绿色盾牌', name: '信用可靠', on: (me.credit ?? 0) >= 72 },
-    { img: 'level-gold', alt: '带皇冠的金牌', name: '金牌信用', on: (me.credit ?? 0) >= 85 },
+    // 发单人和跑腿人的信用档位名称、门槛不一样：各用各的
+    { img: 'level-reliable', alt: '带对勾的绿色盾牌', name: isPoster ? '信用良好' : '信用可靠', on: (me.credit ?? 0) >= (isPoster ? 75 : 72) },
+    { img: 'level-gold', alt: '带皇冠的金牌', name: isPoster ? '信用优质' : '金牌信用', on: (me.credit ?? 0) >= 85 },
   ]
   // 导览刚走完：顶上放一张收尾卡，告诉他这一单里钱、码、分都走了一遍，下一步去哪
   const [wrap, setWrap] = useState(() => { try { return state.tour.done && !sessionStorage.getItem('shunluxia:wrap-seen') } catch { return false } })
@@ -120,7 +122,7 @@ export default function Me() {
             <p className="text-lg font-bold">一单走完了</p>
             <p className="mt-1 text-[15px] leading-relaxed opacity-90">赏金托管到放款、取件码用完收起、两边互评改了信用分，全程都在这台设备上。</p>
             <div className="mt-4 flex flex-wrap gap-2">
-              <Link to="/" onClick={closeWrap} className="inline-flex h-10 items-center rounded-full bg-on-accent px-4 text-[15px] font-semibold text-accent">回到产品介绍</Link>
+              <HomeLink onClick={closeWrap} className="inline-flex h-10 items-center rounded-full bg-on-accent px-4 text-[15px] font-semibold text-accent">回到产品介绍</HomeLink>
               <button onClick={() => { closeWrap(); act('tour', { tour: { active: true, taskId: null, done: false } }); act('role', { role: 'poster' }); nav('/app/publish?tour=1') }} className="inline-flex h-10 items-center rounded-full bg-on-accent/15 px-4 text-[15px] font-semibold">再走一遍</button>
               <button onClick={closeWrap} className="ml-auto inline-flex h-10 items-center px-2 text-[15px] font-semibold opacity-80">知道了</button>
             </div>
@@ -278,7 +280,7 @@ export default function Me() {
 
       {!state.tour.active && (
         <Panel className="flex items-center gap-3 p-4">
-          <p className="flex-1 text-[15px] text-muted">{state.tour.done ? '想再看一遍一单怎么走完？' : '还没走过完整流程？'}约两分钟。</p>
+          <p className="flex-1 text-[15px] text-muted">{state.tour.done ? '想再看一遍一单怎么走完？' : '还没走过完整流程？'}约 2 分钟。</p>
           <Btn size="sm" onClick={() => { act('tour', { tour: { active: true, taskId: null, done: false } }); act('role', { role: 'poster' }); nav('/app/publish?tour=1') }}>跟着走一遍</Btn>
         </Panel>
       )}
@@ -287,7 +289,7 @@ export default function Me() {
         <p className="flex-1 text-[15px] text-muted">演示数据存在本机浏览器，可随时恢复初始状态。</p>
         <Btn size="sm" variant="ghost" onClick={() => { if (window.confirm('把演示数据恢复成初始示例？你走过的订单和信用变化都会清掉。')) { act('reset'); nav('/app') } }}><ArrowCounterClockwise size={16} weight="bold" />重置</Btn>
       </Panel>
-      <Link to="/" className="flex h-12 items-center justify-center gap-1 text-[15px] font-semibold text-muted hover:text-ink">回到产品介绍页<ArrowRight size={14} weight="bold" /></Link>
+      <HomeLink className="flex h-12 items-center justify-center gap-1 text-[15px] font-semibold text-muted hover:text-ink">回到产品介绍页<ArrowRight size={14} weight="bold" /></HomeLink>
     </div>
   )
 }

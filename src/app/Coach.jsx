@@ -51,7 +51,7 @@ function resolve(state, path) {
     const root = document.querySelector('[data-tour-root]') || document.querySelector('main')
     if ([...root.querySelectorAll('button')].some((b) => b.innerText.includes('核验中'))) return null
     const btn = [...root.querySelectorAll('button')].find((b) => b.classList.contains('bg-accent') && !b.disabled && vis(b))
-    return btn && { el: btn, text: label(btn).includes('提交') ? '学号和学院已替你填好，点这里：提交认证' : `点这里：${label(btn)}` }
+    return btn && { el: btn, text: label(btn).includes('提交') ? '已替你填好，点这里：提交认证' : `点这里：${label(btn)}` }
   }
   // 4 不在这一步的页面：导航里有这一页就圈导航，没有就圈导览条上的「带我去」
   if (path !== to && !(step.n === 2 && path.startsWith('/app/task/'))) {
@@ -92,6 +92,14 @@ export default function Coach() {
   const side0 = useRef({})
   // 刚点中圈住的东西：先把圈和气泡收起来，等下一个目标出来再显示，不在弹窗收起、页面切换的那一下指回旧按钮
   const held = useRef(null)
+  // 最近一次操作是键盘还是鼠标 / 手指
+  const kbd = useRef(false)
+  useEffect(() => {
+    const k = (e) => { if (e.key === 'Tab' || e.key === 'Enter' || e.key === ' ') kbd.current = true }
+    const ptr = () => { kbd.current = false }
+    window.addEventListener('keydown', k, true); window.addEventListener('pointerdown', ptr, true)
+    return () => { window.removeEventListener('keydown', k, true); window.removeEventListener('pointerdown', ptr, true) }
+  }, [])
   // 目标得先停稳：滚动、弹层上滑、页面换位的那几帧不画圈，停住 0.2 秒再出来，免得圈落在错的地方
   const still = useRef({})
   const on = state.tour.active
@@ -109,6 +117,8 @@ export default function Coach() {
       const r1 = hit.el.getBoundingClientRect(), now = Date.now(), st = still.current
       if (st.el !== hit.el || Math.abs(st.x - r1.left) > 1 || Math.abs(st.y - r1.top) > 1) { still.current = { el: hit.el, x: r1.left, y: r1.top, at: now }; hide(R, T, P); return }
       if (now - st.at < 200) return
+      // 用键盘走的人：换到新目标时把焦点放过去，Tab 不用从头数
+      if (cur.current !== hit.el && kbd.current) { const f = hit.el.matches('button, a, input, select, textarea') ? hit.el : hit.el.querySelector('button, a, input, select, textarea'); f?.focus({ preventScroll: true }) }
       cur.current = hit.el
       // 在外层框里左右滑着看时（手机上看电脑版）：目标换了就告诉外层，外层把它滑进屏幕
       if (window.parent !== window && sent.current !== hit.el) {
@@ -120,6 +130,13 @@ export default function Coach() {
       // 弹窗里的目标不在屏幕里：滚到中间（只滚一次，之后用户自己滑不跟着抢）
       const r0 = hit.el.getBoundingClientRect()
       if ((r0.top < 0 || r0.bottom > innerHeight) && scrolled.current !== hit.el && hit.el.closest('[role=dialog]')) { scrolled.current = hit.el; hit.el.scrollIntoView({ block: 'center' }) }
+      // 页面上的目标被顶栏或底部导航挡住（矮屏、放大）：滚到可见区域中间，只滚一次
+      if (scrolled.current !== hit.el && !hit.el.closest('[role=dialog], header, nav[aria-label="主导航"], [data-tour-bar]')) {
+        const hb = document.querySelector('header')?.getBoundingClientRect().bottom ?? 0
+        const nt = document.querySelector('nav[aria-label="主导航"]')?.getBoundingClientRect().top ?? innerHeight
+        const ft = nt > innerHeight / 2 ? nt : innerHeight
+        if (r0.top < hb + 8 || r0.bottom > ft - 8) { scrolled.current = hit.el; window.scrollBy({ top: r0.top + r0.height / 2 - (hb + ft) / 2, behavior: 'auto' }) }
+      }
       const r = hit.el.getBoundingClientRect()
       const dlg = !!hit.el.closest('[role=dialog]')
       const pad = 6
@@ -133,7 +150,9 @@ export default function Coach() {
       const navTop = document.querySelector('nav[aria-label="主导航"]')?.getBoundingClientRect().top ?? innerHeight
       const floor = (navTop > innerHeight / 2 && !hit.nav ? navTop : innerHeight) - m
       const below = r.bottom + pad + gap + th <= floor
-      const above = r.top - pad - gap - th >= m
+      // 上面放不下就别往上放：气泡不能压到导览条上的字
+      const barTop = (document.querySelector('[data-tour-bar]')?.getBoundingClientRect().bottom ?? 0) + 8
+      const above = r.top - pad - gap - th >= Math.max(m, hit.el.closest('header, [data-tour-bar]') ? m : barTop)
       const side = r.top < 140 && r.left - pad - gap - tw >= m && innerWidth >= 768
       // 上下都放得下：哪边盖住的字少放哪边（气泡和圈都不接收点击，elementFromPoint 看到的就是下面的页面）
       const textAt = (y0) => {

@@ -86,7 +86,7 @@ function RoleBanner() {
   const { state, act } = useStore()
   const me = state.accounts.runner
   const nav = useNavigate()
-  // 第一次进来已经问过要不要指引，右下角也一直有「新手指引」：大厅顶上不再放第二个入口，拒绝了就不打扰
+  // 第一次进来已经问过要不要指引，顶栏也一直有「新手指引」：大厅顶上不再放第二个入口，拒绝了就不打扰
   if (state.role === 'poster') {
     // 发单人也看得到顺路：常从哪寄到哪，路过的同学有几条
     const mine = state.tasks.filter((t) => t.posterId === 'poster')
@@ -193,11 +193,11 @@ export default function Hall() {
                 <div className="grid grid-cols-[auto_1fr] items-center gap-x-3 gap-y-2 pt-3 text-[15px] sm:grid-cols-[auto_1fr_auto_1fr]">
                   <span className="text-muted">从</span>
                   <span className="relative"><select aria-label="出发地" value={route.from} onChange={setLeg('from')} className="h-10 w-full appearance-none rounded-full bg-surface pl-4 pr-10 text-[15px] font-semibold ring-1 ring-inset ring-line focus:outline-none focus:ring-2 focus:ring-accent">
-                    {BUILDINGS.map((b) => <option key={b.id} value={b.id}>{b.name}</option>)}
+                    {BUILDINGS.map((b) => <option key={b.id} value={b.id} disabled={b.id === route.to}>{b.name}{b.id === route.to ? '（已是目的地）' : ''}</option>)}
                   </select><CaretDown size={16} weight="bold" className="pointer-events-none absolute right-3.5 top-1/2 -translate-y-1/2 text-muted" /></span>
                   <span className="text-muted">去</span>
                   <span className="relative"><select aria-label="目的地" value={route.to} onChange={setLeg('to')} className="h-10 w-full appearance-none rounded-full bg-surface pl-4 pr-10 text-[15px] font-semibold ring-1 ring-inset ring-line focus:outline-none focus:ring-2 focus:ring-accent">
-                    {BUILDINGS.map((b) => <option key={b.id} value={b.id}>{b.name}</option>)}
+                    {BUILDINGS.map((b) => <option key={b.id} value={b.id} disabled={b.id === route.from}>{b.name}{b.id === route.from ? '（已是出发地）' : ''}</option>)}
                   </select><CaretDown size={16} weight="bold" className="pointer-events-none absolute right-3.5 top-1/2 -translate-y-1/2 text-muted" /></span>
                 </div>
               </motion.div>

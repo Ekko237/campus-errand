@@ -40,7 +40,7 @@ const END = 0.93
 export const CH = [
   {
     k: 'scene', icon: 'type-express-v1', alt: '纸箱快递', kicker: '跟着一单往下走',
-    t: '快递在驿站，你在宿舍', hl: '驿站',
+    t: '快递在驿站，小满在宿舍', hl: '驿站',
     d: '小满两个快递在菜鸟驿站放了三天，驿站 18:00 关门。找室友要欠人情，找陌生人又怕取件码被乱用。',
     note: ['为什么叫「顺路」', '不是多找一个跑腿的人，是让本来就要经过驿站的同学，顺手带上。'],
   },
@@ -54,7 +54,7 @@ export const CH = [
     k: 'match', icon: 'trust-verify-v1', alt: '带对勾的学生证', kicker: '顺路', fear: '怕对方是校外的人',
     t: '阿远一教下课，正好顺路', hl: '正好顺路',
     d: '阿远 17:50 在一教下课，本来就要走回梅园，路过驿站只多走 1 分钟。大厅把顺他路的单排在最前面。',
-    note: ['认证和门槛', '学号或 .edu.cn 邮箱认证后才能接单；信用 72 分以上，才能接 ¥15 以内的单。'],
+    note: ['认证和门槛', '学号或 .edu.cn 邮箱认证后才能接单；60 分起能接 ¥8 以内的单，72 分起放宽到 ¥15。'],
   },
   {
     k: 'code', icon: 'trust-privacy-v1', alt: '挂锁和钥匙', kicker: '接单', fear: '怕取件码和宿舍号被乱传',
@@ -65,7 +65,7 @@ export const CH = [
   {
     k: 'deliver', icon: 'trust-dispute-v1', alt: '天平', kicker: '送达', fear: '怕出了问题说不清',
     t: '捎着快递走回梅园', hl: '走回梅园',
-    d: '绿色这一段，是阿远捎着你的快递走的路。到楼下当面报 4 位送达码，或者拍照放门口。',
+    d: '绿色这一段，是阿远捎着小满的快递走的路。到楼下，小满当面报出 4 位送达码，或者他拍照放门口。',
     note: ['送达凭证与申诉', '送达码当面核验，或拍照留证；有问题就申诉，申诉期间钱继续冻结，平台判责。'],
   },
   {
@@ -77,7 +77,7 @@ export const CH = [
   {
     k: 'credit', icon: 'trust-credit-v1', alt: '带上升箭头的奖牌', kicker: '互评', fear: '怕碰上不靠谱的人',
     t: '两个人的信用，一起涨', hl: '一起涨',
-    d: '互相打分之后，阿远 70 → 73，小满 88 → 90。下次阿远能接更贵的单，小满的单也更快有人接。',
+    d: '这一单走完，阿远 70 → 73，小满 88 → 90。下次阿远能接更贵的单，小满的单也更快有人接。',
     note: ['双向信用', '跑腿人按时 +2、爽约 -5、被判责 -8；发单人按时确认 +1、超时不确认 -2。不能充值，也刷不了。'],
   },
 ]
@@ -90,7 +90,7 @@ const CODE = ['还没有', '••••', '••••', '6-2-3108', '已用�
 const RUNNER = [70, 70, 70, 70, 70, 72, 73]
 const POSTER = [88, 88, 88, 88, 88, 89, 90]
 // 每段地图镜头对准哪儿：[中心 x, 中心 y, 镜头宽]，最后一段拉远看整条路
-const CAM = [[720, 360, 1300], [1060, 330, 1020], [1120, 310, 1060], [1100, 330, 1020], [700, 330, 1300], [640, 360, 1250], [720, 420, 1440]]
+const CAM = [[720, 360, 1300], [1060, 330, 1020], [790, 330, 1380], [800, 330, 1380], [700, 330, 1300], [640, 360, 1250], [720, 420, 1440]]
 
 // 把镜头换算成「整张图在画框里的位置」：画框宽高比固定，镜头外的部分裁掉
 function camRect(c, aspect) {
@@ -100,7 +100,7 @@ function camRect(c, aspect) {
 }
 const mix = (a, b, t) => a + (b - a) * t
 // 每一段开头停一小会儿（读标题的时候画面不动），之后整段都在跟着滚动往下一段走，看起来是连续的一条路
-const settle = (pos) => { const k = Math.floor(pos), t = pos - k; return [k, clamp((t - 0.3) / 0.7)] }
+const settle = (pos) => { const k = Math.floor(pos), t = pos - k; return [k, clamp((t - 0.55) / 0.45)] }
 const sm = (t) => t * t * (3 - 2 * t)
 function walkAt(pos) {
   const [k, t] = settle(pos)
@@ -149,11 +149,30 @@ function StoryMap({ i, pos, aspect, small = false }) {
   const photo = useTransform(pos, (p) => 1 - sm(clamp((p - 0.45) / 0.45)))
   const photoScale = useTransform(pos, (p) => 1 + 0.06 * clamp(p / 0.9))
   const sw = small ? 1.4 : 1
+  // 镜头推拉时，地名牌可能被画框边切掉：每一帧量一下，伸出去的就往里挪回来（留 6px）
+  const frame = useRef(null)
+  useEffect(() => {
+    const fit = () => {
+      const F0 = frame.current?.getBoundingClientRect()
+      if (!F0) return
+      frame.current.querySelectorAll('[data-keep]').forEach((el) => {
+        const ml = +(el.dataset.dx || 0), mt = +(el.dataset.dy || 0)
+        const r = el.getBoundingClientRect(), l = r.left - ml, t = r.top - mt
+        const dx = l < F0.left + 6 ? F0.left + 6 - l : l + r.width > F0.right - 6 ? F0.right - 6 - (l + r.width) : 0
+        const dy = t < F0.top + 6 ? F0.top + 6 - t : 0
+        el.dataset.dx = dx; el.dataset.dy = dy; el.style.transform = dx || dy ? `translate(${dx}px, ${dy}px)` : ''
+      })
+    }
+    fit()
+    const off = pos.on('change', () => requestAnimationFrame(fit))
+    window.addEventListener('resize', fit)
+    return () => { off(); window.removeEventListener('resize', fit) }
+  }, [pos])
   const tag = (txt, p) => (
-    <span className={`absolute z-20 -translate-x-1/2 whitespace-nowrap rounded-full bg-surface px-2 py-0.5 font-semibold text-ink shadow-sm ring-1 ring-line ${small ? 'text-[11px]' : 'text-[13px]'}`} style={pp(p)}>{txt}</span>
+    <span data-keep="" className={`absolute z-20 -translate-x-1/2 whitespace-nowrap rounded-full bg-surface px-2 py-0.5 font-semibold text-ink shadow-sm ring-1 ring-line ${small ? 'text-[11px]' : 'text-[13px]'}`} style={pp(p)}>{txt}</span>
   )
   return (
-    <div className={`relative isolate overflow-hidden bg-sunken ring-1 ring-line ${small ? 'rounded-xl' : 'rounded-[28px]'}`} style={{ aspectRatio: aspect }} aria-hidden="true">
+    <div ref={frame} className={`relative isolate overflow-hidden bg-sunken ring-1 ring-line ${small ? 'rounded-xl' : 'rounded-[28px]'}`} style={{ aspectRatio: aspect }} aria-hidden="true">
       <motion.div className="absolute" style={{ left, top, width, height }}>
         <svg viewBox={`0 0 ${MW} ${MH}`} className="absolute inset-0 size-full">
           <image href={img('campus-map-v2')} x="0" y="0" width={MW} height={MH} />
@@ -175,7 +194,7 @@ function StoryMap({ i, pos, aspect, small = false }) {
           <span className={`grid place-items-center rounded-full bg-accent-soft ring-[3px] ring-accent ${small ? 'size-8' : 'size-12'}`}>
             <img src={icon('avatar-poster-v1')} width={40} height={40} alt="" className={`${small ? 'size-6' : 'size-10'} rounded-full`} />
           </span>
-          <span className={`absolute whitespace-nowrap rounded-full bg-surface px-2 py-0.5 font-semibold text-ink shadow-sm ring-1 ring-line ${small ? 'left-full top-1/2 ml-1 -translate-x-0 -translate-y-1/2 text-[11px]' : 'left-1/2 top-full mt-1 -translate-x-1/2 text-[13px]'}`}>梅园 · 小满</span>
+          <span className={`absolute whitespace-nowrap rounded-full bg-surface px-2 py-0.5 font-semibold text-ink shadow-sm ring-1 ring-line ${small ? 'right-full top-1/2 mr-1 -translate-y-1/2 text-[11px]' : 'bottom-full left-1/2 mb-1 -translate-x-1/2 text-[13px]'}`} data-keep="">梅园 · 小满</span>
         </span>
         {/* 快递：在驿站等着，被阿远拿走以后跟着他走 */}
         <motion.span className="absolute z-10 -translate-x-1/2 -translate-y-1/2" style={{ ...pp(STATION), opacity: pkgAtStation }}>
@@ -191,7 +210,7 @@ function StoryMap({ i, pos, aspect, small = false }) {
 
         {/* 每一段在地图上冒一句 */}
         <AnimatePresence>
-          {i === 2 && <Bubble key="b2" p={pp([ICHI[0] - 260, ICHI[1] - 95])} small={small} dark>17:50 下课，本来就走这条路</Bubble>}
+          {i === 2 && <Bubble key="b2" p={pp([ICHI[0] - (small ? 470 : 330), ICHI[1] - (small ? 40 : 95)])} small={small} dark>17:50 下课，本来就走这条路</Bubble>}
           {i === 3 && (
             // 取件码揭晓：这一步是隐私分级的高光，放一张大的码卡，不是一句小气泡
             <motion.span key="b3" initial={reduce ? false : { opacity: 0, y: 12, scale: 0.9 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: -6 }} transition={{ type: 'spring', stiffness: 320, damping: 22 }}
@@ -372,8 +391,9 @@ export default function Story() {
   // 换步那条线：桌面在视口 60% 处；手机在吸顶条下面那块可读区域的中间。以每段标题过线为准，文字读到哪、地图就到哪
   const line = () => {
     if (window.innerWidth >= 1024) return window.innerHeight * 0.75
-    const b = document.querySelector('[data-story-mini]')?.getBoundingClientRect().bottom ?? 260
-    return b + (window.innerHeight - b) * 0.6
+    // 可读区域的顶：手机上是吸住的小地图下沿，电脑上是顶栏下沿；读到可读区域 45% 处算进入这一段
+    const b = Math.max(document.querySelector('[data-story-mini]')?.getBoundingClientRect().bottom || 0, document.querySelector('header')?.getBoundingClientRect().bottom || 64)
+    return b + (window.innerHeight - b) * 0.45
   }
   // 正对着哪一段、这一段滚过了多少：用原生滚动事件算，后台标签页也准
   useEffect(() => {
@@ -396,7 +416,9 @@ export default function Story() {
   // 点订单卡上的进度格：滚到那一段的开头
   const go = (k) => {
     const el = list.current?.querySelectorAll('[data-ch]')[k]?.querySelector('h2, h3')
-    if (el) window.scrollBy({ top: el.getBoundingClientRect().top - line() + 2, behavior: reduce ? 'auto' : 'smooth' })
+    // 标题停在可读区域顶上一点：这一段的正文和小框都在屏幕里，地图也还停在这一段
+    const b = Math.max(document.querySelector('[data-story-mini]')?.getBoundingClientRect().bottom || 0, document.querySelector('header')?.getBoundingClientRect().bottom || 64)
+    if (el) window.scrollBy({ top: el.getBoundingClientRect().top - b - 24, behavior: reduce ? 'auto' : 'smooth' })
   }
   // 放款和互评两段换成品牌深绿：一单走到最后，整段的颜色也到了高潮
   const dark = i >= 5

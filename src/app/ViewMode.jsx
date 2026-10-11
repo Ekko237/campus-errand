@@ -17,6 +17,12 @@ function useMedia(q) {
   return m
 }
 
+// 回首页的链接：在框里（?embed=）时要让最外层整页跳回首页，不在小框里打开首页
+export function HomeLink({ children, onClick, ...p }) {
+  if (!EMBED) return <Link to="/" onClick={onClick} {...p}>{children}</Link>
+  return <a href={`${import.meta.env.BASE_URL}#/`} target="_top" onClick={onClick} {...p}>{children}</a>
+}
+
 // 顶栏里的「手机版 / 电脑版」：两个小图标按钮
 export function ViewToggle({ inner = false }) {
   const { view, pick } = useView()
@@ -155,13 +161,13 @@ function Framed({ view, src, frame }) {
         {phone ? (
           <div className="rounded-[52px] bg-ink p-3 shadow-[0_40px_80px_-40px_rgba(17,40,30,0.6)]" style={{ width: W * s + 24, height: H * s + 24 }}>
             <div className="relative overflow-hidden rounded-[40px] bg-bg" style={{ width: W * s, height: H * s }}>
-              <span className="absolute inset-0 grid place-items-center text-sm font-semibold text-muted" aria-hidden="true">正在打开…</span>
+              <span className="absolute inset-0 grid place-items-center text-sm font-semibold text-muted" aria-hidden="true">正在打开……</span>
               <iframe ref={frame} title="顺路侠手机版" src={first} className="absolute left-0 top-0 origin-top-left border-0" style={{ width: W, height: H, transform: `scale(${s})` }} />
             </div>
           </div>
         ) : (
           <div className="relative overflow-hidden rounded-xl bg-bg shadow-[0_24px_60px_-30px_rgba(17,40,30,0.5)] ring-1 ring-line" style={{ width: W * s, height: H * s }}>
-            <span className="absolute inset-0 grid place-items-center text-sm font-semibold text-muted" aria-hidden="true">正在打开…</span>
+            <span className="absolute inset-0 grid place-items-center text-sm font-semibold text-muted" aria-hidden="true">正在打开……</span>
             <iframe ref={frame} title="顺路侠电脑版" src={first} className="absolute left-0 top-0 origin-top-left border-0" style={{ width: W, height: H, transform: `scale(${s})` }} />
           </div>
         )}

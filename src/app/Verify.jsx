@@ -76,6 +76,7 @@ export default function Verify() {
     setErr({}); setSent(code4())
   }
   const submitEmail = () => {
+    if (!code) return setErr({ code: '请输入邮件里的 4 位验证码' })
     if (code !== sent) return setErr({ code: '验证码不对，请检查后重新输入' })
     finish('校园邮箱认证')
   }
@@ -84,7 +85,7 @@ export default function Verify() {
     <div className="space-y-5">
       <div>
         <div className="flex items-center gap-2">
-          <button onClick={() => nav(-1)} aria-label="返回" className="grid size-11 shrink-0 place-items-center rounded-full bg-surface ring-1 ring-line"><ArrowLeft size={20} weight="bold" /></button>
+          <button onClick={() => (window.history.state?.idx > 0 ? nav(-1) : nav("/app"))} aria-label="返回" className="grid size-11 shrink-0 place-items-center rounded-full bg-surface ring-1 ring-line"><ArrowLeft size={20} weight="bold" /></button>
           <h1 className="font-display text-[28px] leading-tight">校园身份认证</h1>
         </div>
         <p className="mt-1 text-[15px] leading-relaxed text-muted">只对本校学生开放。认证后获得徽章和初始信用 {CREDIT_INIT} 分，才能接单。未认证只能浏览。</p>
@@ -108,7 +109,7 @@ export default function Verify() {
             <CaretDown size={18} weight="bold" className="pointer-events-none absolute right-3.5 top-1/2 -translate-y-1/2 text-muted" />
             </div>
           </Field>
-          <Btn size="lg" className="w-full" onClick={submitId} disabled={busy}>{busy ? '核验中…' : '提交认证'}</Btn>
+          <Btn size="lg" className="w-full" onClick={submitId} disabled={busy}>{busy ? '核验中……' : '提交认证'}</Btn>
         </div>
       ) : (
         <div className="space-y-4">
@@ -119,11 +120,11 @@ export default function Verify() {
             </div>
           </Field>
           {sent && (
-            <Field label="验证码" error={err.code} hint={`会发到你的学校邮箱；这次的验证码是 ${sent}`}>
+            <Field label="验证码" error={err.code} hint={`会发到你的校园邮箱；这次的验证码是 ${sent}`}>
               <input inputMode="numeric" className={`${inputCls} tnum tracking-[0.3em]`} value={code} maxLength={4} onChange={(e) => setCode(e.target.value.replace(/\D/g, ''))} placeholder="4 位数字" />
             </Field>
           )}
-          <Btn size="lg" className="w-full" onClick={submitEmail} disabled={!sent || busy}>{busy ? '核验中…' : '完成认证'}</Btn>
+          <Btn size="lg" className="w-full" onClick={submitEmail} disabled={!sent || busy}>{busy ? '核验中……' : '完成认证'}</Btn>
         </div>
       )}
     </div>
