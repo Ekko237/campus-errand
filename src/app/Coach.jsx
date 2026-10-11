@@ -15,6 +15,8 @@ const ROLE = { poster: '发单人', runner: '跑腿人' }
 // 切身份那一下要说清楚切过去干什么
 const WHY = { 2: '先做校园认证', 3: '去接这一单', 4: '去取件', 5: '去送达', 6: '确认收货、放款', 7: '给跑腿人打分', 8: '给发单人打分' }
 const vis = (el) => { if (!el) return false; const r = el.getBoundingClientRect(); return r.width > 0 && r.height > 0 && getComputedStyle(el).visibility !== 'hidden' }
+// 收起立刻收（不淡出，免得旧圈在旧位置多停一会儿）；出来时再淡入
+const hide = (...els) => els.forEach((e) => { e.style.transition = 'none'; e.style.opacity = '0' })
 const label = (el) => (el.innerText || el.getAttribute('aria-label') || '').trim().replace(/\s+/g, ' ')
 
 function resolve(state, path) {
@@ -45,7 +47,10 @@ function resolve(state, path) {
   }
   // 3 认证页：认证完了点「现在回去接单」，没认证点「提交认证」（学号替你填好了）
   if (path.startsWith('/app/verify')) {
-    const btn = [...document.querySelectorAll('main button, [data-tour-root] button')].find((b) => b.classList.contains('bg-accent') && !b.disabled && vis(b))
+    // 只在认证这一栏里找（电脑版右栏还开着订单详情，别圈到那边去）；正在核验时先不指
+    const root = document.querySelector('[data-tour-root]') || document.querySelector('main')
+    if ([...root.querySelectorAll('button')].some((b) => b.innerText.includes('核验中'))) return null
+    const btn = [...root.querySelectorAll('button')].find((b) => b.classList.contains('bg-accent') && !b.disabled && vis(b))
     return btn && { el: btn, text: label(btn).includes('提交') ? '学号和学院已替你填好，点这里：提交认证' : `点这里：${label(btn)}` }
   }
   // 4 不在这一步的页面：导航里有这一页就圈导航，没有就圈导览条上的「带我去」
@@ -87,6 +92,8 @@ export default function Coach() {
   const side0 = useRef({})
   // 刚点中圈住的东西：先把圈和气泡收起来，等下一个目标出来再显示，不在弹窗收起、页面切换的那一下指回旧按钮
   const held = useRef(null)
+  // 目标得先停稳：滚动、弹层上滑、页面换位的那几帧不画圈，停住 0.2 秒再出来，免得圈落在错的地方
+  const still = useRef({})
   const on = state.tour.active
   useEffect(() => {
     if (!on) return
@@ -96,9 +103,12 @@ export default function Coach() {
       const hit = resolve(state, pathname)
       const R = ring.current, T = tip.current, A = arrow.current, P = point.current
       if (!R || !T || !A || !P) return
-      if (held.current && hit && (hit.el === held.current.el || hit.el.contains(held.current.el)) && Date.now() - held.current.at < 1500) { R.style.opacity = '0'; T.style.opacity = '0'; P.style.opacity = '0'; return }
-      if (!hit || !vis(hit.el)) { R.style.opacity = '0'; T.style.opacity = '0'; P.style.opacity = '0'; cur.current = null; return }
+      if (held.current && hit && (hit.el === held.current.el || hit.el.contains(held.current.el)) && Date.now() - held.current.at < 1500) { hide(R, T, P); return }
+      if (!hit || !vis(hit.el)) { hide(R, T, P); cur.current = null; return }
       held.current = null
+      const r1 = hit.el.getBoundingClientRect(), now = Date.now(), st = still.current
+      if (st.el !== hit.el || Math.abs(st.x - r1.left) > 1 || Math.abs(st.y - r1.top) > 1) { still.current = { el: hit.el, x: r1.left, y: r1.top, at: now }; hide(R, T, P); return }
+      if (now - st.at < 200) return
       cur.current = hit.el
       // 在外层框里左右滑着看时（手机上看电脑版）：目标换了就告诉外层，外层把它滑进屏幕
       if (window.parent !== window && sent.current !== hit.el) {
@@ -116,7 +126,7 @@ export default function Coach() {
       const rad = Math.min(parseFloat(getComputedStyle(hit.el).borderTopLeftRadius) || 12, r.height / 2) + pad
       // 圈贴着屏幕边（底部导航、顶栏）时收进屏幕里，不被切掉
       const E = 11, L = Math.max(E, r.left - pad), Tp = Math.max(E, r.top - pad), Rt = Math.min(innerWidth - E, r.right + pad), Bt = Math.min(innerHeight - E, r.bottom + pad)
-      Object.assign(R.style, { opacity: '1', left: `${L}px`, top: `${Tp}px`, width: `${Rt - L}px`, height: `${Bt - Tp}px`, borderRadius: `${rad}px`,
+      Object.assign(R.style, { transition: '', opacity: '1', left: `${L}px`, top: `${Tp}px`, width: `${Rt - L}px`, height: `${Bt - Tp}px`, borderRadius: `${rad}px`,
         boxShadow: dlg ? '0 0 0 3px var(--accent), 0 0 0 9px color-mix(in srgb, var(--accent) 25%, transparent)' : '0 0 0 3px var(--accent), 0 0 0 9px color-mix(in srgb, var(--accent) 25%, transparent), 0 0 0 200vmax rgba(12, 24, 18, 0.32)' })
       // 气泡：下面放得下就放下面，否则放上面；左右夹在屏幕里；箭头对着目标中间
       const tw = T.offsetWidth, th = T.offsetHeight, gap = 48, m = 8
@@ -146,14 +156,14 @@ export default function Coach() {
       // 箭头也放在导览条下面（导览条和气泡之间），不压导览条上的字
       const top2 = pushed ? Math.max(top, barB + 48) : top
       const left = side ? r.left - pad - gap - tw : Math.max(m, Math.min(innerWidth - tw - m, r.left + r.width / 2 - tw / 2))
-      Object.assign(T.style, { opacity: '1', left: `${left}px`, top: `${Math.max(m, Math.min(innerHeight - th - m, top2))}px` })
+      Object.assign(T.style, { transition: '', opacity: '1', left: `${left}px`, top: `${Math.max(m, Math.min(innerHeight - th - m, top2))}px` })
       const ax = Math.max(14, Math.min(tw - 14, r.left + r.width / 2 - left))
       Object.assign(A.style, side ? { left: '', right: '-6px', top: `${th / 2 - 6}px`, bottom: '' } : { left: `${ax - 6}px`, right: '', top: down ? '-6px' : '', bottom: down ? '' : '-6px' })
       // 大箭头：品牌绿，放在气泡和目标之间，箭尖对着目标中间；气泡在下面就朝上指，在上面就朝下指
       const tTop = Math.max(m, Math.min(innerHeight - th - m, top2))
       const px = side ? (left + tw + r.left - pad) / 2 : Math.max(m + 18, Math.min(innerWidth - m - 18, r.left + r.width / 2))
       const py = side ? r.top + r.height / 2 : pushed ? (barB + tTop) / 2 : down ? (Math.min(r.bottom + pad, innerHeight - 3) + tTop) / 2 : (tTop + th + Math.max(r.top - pad, 3)) / 2
-      Object.assign(P.style, { opacity: '1', left: `${px - 18}px`, top: `${py - 18}px` })
+      Object.assign(P.style, { transition: '', opacity: '1', left: `${px - 18}px`, top: `${py - 18}px` })
       P.dataset.dir = side ? 'right' : down ? 'up' : 'down'
     }
     raf = requestAnimationFrame(tick)

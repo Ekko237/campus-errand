@@ -81,6 +81,8 @@ export default function CampusMap({ R, hits, reduce, pills = true, walker = true
   const vw = Math.min(MAP_W, Math.max(1320, Math.max(...xs) - Math.min(...xs) + 180)), vh = Math.min(MAP_H, vw * 0.75)
   const V = small ? { X0: Math.max(0, Math.min(MAP_W - vw, cx - vw / 2)), VW: vw, Y0: Math.max(0, Math.min(MAP_H - vh, cy - vh / 2)), VH: vh } : { X0: 0, VW: MAP_W, Y0: 0, VH: MAP_H }
   const pct = ([x, y]) => ({ left: `${((x - V.X0) / V.VW) * 100}%`, top: `${((y - V.Y0) / V.VH) * 100}%` })
+  // 小人头像比别的点大：走到画框边上时整颗收进框里，描边不被裁
+  const pin = ([x, y]) => ({ left: `clamp(23px, ${((x - V.X0) / V.VW) * 100}%, calc(100% - 23px))`, top: `clamp(23px, ${((y - V.Y0) / V.VH) * 100}%, calc(100% - 23px))` })
   const me = pointAt(mine, p)
   const ends = [R.from, R.to]
   // 起终点旁边就有取件点时，名牌翻到另一边，不盖住编号
@@ -175,7 +177,7 @@ export default function CampusMap({ R, hits, reduce, pills = true, walker = true
       </AnimatePresence>
       {/* 落地页的小人只在路中间走：出发和到达那一下藏起来，不和起终点名牌叠；park（收尾卡）走到终点就停在那里 */}
       {((walker && !reduce && p > 0.06 && (p < 0.97 || park)) || (at != null && p > 0)) && (
-        <span aria-hidden="true" className="absolute z-[5] grid size-7 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full bg-surface shadow-[0_6px_16px_-6px_rgba(17,40,30,0.5)] ring-[3px] ring-ink md:size-10" style={pct(me)}>
+        <span aria-hidden="true" className="absolute z-[5] grid size-7 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full bg-surface shadow-[0_6px_16px_-6px_rgba(17,40,30,0.5)] ring-[3px] ring-ink md:size-10" style={pin(me)}>
           <img src={icon('avatar-runner-v1')} width={32} height={32} alt="" className="size-5 rounded-full md:size-8" />
         </span>
       )}

@@ -226,7 +226,7 @@ export default function Hall() {
         <span className="text-sm text-muted">{list.filter((t) => t.deadline > Date.now()).length} 个待接</span>
       </div>
 
-      <div className="no-scrollbar -mx-4 -mt-1 mb-4 flex gap-1.5 overflow-x-auto px-4 py-1 sm:mx-0 sm:gap-2 sm:px-0" role="group" aria-label="按类型筛选">
+      <div className="no-scrollbar -mx-4 -mt-1 mb-4 flex gap-1.5 overflow-x-auto px-4 py-1 sm:-mx-1 sm:gap-2 sm:px-1" role="group" aria-label="按类型筛选">
         {[['all', '全部'], ...TYPE_KEYS.map((k) => [k, TYPES[k].label])].map(([k, label]) => {
           return (
             <button key={k} onClick={() => setType(k)} aria-pressed={type === k}

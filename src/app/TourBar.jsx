@@ -104,7 +104,7 @@ export default function TourBar({ wide = false }) {
         const from = tr && tr.top < mr.top && mr.bottom - tr.top <= innerHeight - head - 96 ? tr.top : mr.top
         if (!touched && (mr.top < head + 16 || mr.bottom > innerHeight - 80)) window.scrollBy({ top: from - head - 16, behavior: 'auto' })
         // 放款那条「¥5 从小满流到阿远」要播约 2.3 秒，取件码揭晓短一些
-        wait = step.n === 7 ? 2600 : step.n === 5 ? 1200 : 1600
+        wait = step.n === 7 ? 2600 : step.n === 5 ? 500 : 1100
         late = true
       }
       timers.push(setTimeout(() => {

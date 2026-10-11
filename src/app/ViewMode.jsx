@@ -36,9 +36,12 @@ export function ViewToggle({ inner = false }) {
         </button>
       )}
       {opts.map(([k, label, I]) => (
+        // 按钮本身 44px 高（上下用负边距抵回去，外框不变高），看得见的白色滑块还是原来的大小
         <button key={k} onClick={() => (EMBED ? embedPick(k) : pick(k))} aria-pressed={cur === k} title={label} aria-label={label}
-          className={`grid h-8 w-9 place-items-center rounded-full transition-colors sm:w-auto sm:gap-1 sm:px-2.5 sm:[grid-auto-flow:column] ${cur === k ? 'bg-surface text-ink shadow-sm' : 'text-muted hover:text-ink'}`}>
-          <I size={17} weight={cur === k ? 'fill' : 'regular'} /><span className="hidden text-[13px] font-semibold sm:inline">{label}</span>
+          className={`group -my-1.5 grid h-11 place-items-center transition-colors ${cur === k ? 'text-ink' : 'text-muted hover:text-ink'}`}>
+          <span className={`grid h-8 w-9 place-items-center rounded-full sm:w-auto sm:gap-1 sm:px-2.5 sm:[grid-auto-flow:column] ${cur === k ? 'bg-surface shadow-sm' : ''}`}>
+            <I size={17} weight={cur === k ? 'fill' : 'regular'} /><span className="hidden text-[13px] font-semibold sm:inline">{label}</span>
+          </span>
         </button>
       ))}
     </div>
