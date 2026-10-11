@@ -40,43 +40,43 @@ const END = 0.93
 export const CH = [
   {
     k: 'scene', icon: 'type-express-v1', alt: '纸箱快递', kicker: '跟着一单往下走',
-    t: '快递在驿站，你在宿舍',
+    t: '快递在驿站，你在宿舍', hl: '驿站',
     d: '小满两个快递在菜鸟驿站放了三天，驿站 18:00 关门。找室友要欠人情，找陌生人又怕取件码被乱用。',
     note: ['为什么叫「顺路」', '不是多找一个跑腿的人，是让本来就要经过驿站的同学，顺手带上。'],
   },
   {
     k: 'publish', icon: 'trust-escrow-v1', alt: '护着硬币的盾牌', kicker: '发布', fear: '怕付了钱没人管',
-    t: '发一单 ¥5，钱先冻结',
+    t: '发一单 ¥5，钱先冻结', hl: '钱先冻结',
     d: '选「取快递」模板，填楼栋和截止时间。赏金在发布那一刻就冻结在平台，谁也拿不走。',
     note: ['赏金托管', '确认送达才放款；发单人 2 小时不确认，系统自动放款，跑腿的人也不怕白跑。'],
   },
   {
     k: 'match', icon: 'trust-verify-v1', alt: '带对勾的学生证', kicker: '顺路', fear: '怕对方是校外的人',
-    t: '阿远一教下课，正好顺路',
+    t: '阿远一教下课，正好顺路', hl: '正好顺路',
     d: '阿远 17:50 在一教下课，本来就要走回梅园，路过驿站只多走 1 分钟。大厅把顺他路的单排在最前面。',
     note: ['认证和门槛', '学号或 .edu.cn 邮箱认证后才能接单；信用 72 分以上，才能接 ¥15 以内的单。'],
   },
   {
     k: 'code', icon: 'trust-privacy-v1', alt: '挂锁和钥匙', kicker: '接单', fear: '怕取件码和宿舍号被乱传',
-    t: '接单那一刻，取件码才出现',
+    t: '接单那一刻，取件码才出现', hl: '取件码',
     d: '阿远接单，到驿站报 6-2-3108 取件。接单之前，大厅里只看得到「梅园」，楼号和门牌都打了码。',
     note: ['隐私分级', '取件码和宿舍号只给接单的人看，订单结束自动收回；电话一律走虚拟号。'],
   },
   {
     k: 'deliver', icon: 'trust-dispute-v1', alt: '天平', kicker: '送达', fear: '怕出了问题说不清',
-    t: '捎着快递走回梅园',
+    t: '捎着快递走回梅园', hl: '走回梅园',
     d: '绿色这一段，是阿远捎着你的快递走的路。到楼下当面报 4 位送达码，或者拍照放门口。',
     note: ['送达凭证与申诉', '送达码当面核验，或拍照留证；有问题就申诉，申诉期间钱继续冻结，平台判责。'],
   },
   {
     k: 'pay', icon: 'step-confirm-v1', alt: '两只手传递硬币', kicker: '放款', fear: '怕钱放了，信息还留在别人手里',
-    t: '确认收货，¥5 放给阿远',
+    t: '确认收货，¥5 放给阿远', hl: '¥5 放给阿远',
     d: '小满看过东西没问题，点一下确认，托管的 ¥5 当场转给阿远。',
     note: ['放款即收回', '钱放出去的同一刻，取件码和宿舍号对阿远隐藏，这单的隐私不留在别人手机里。'],
   },
   {
     k: 'credit', icon: 'trust-credit-v1', alt: '带上升箭头的奖牌', kicker: '互评', fear: '怕碰上不靠谱的人',
-    t: '两个人的信用，一起涨',
+    t: '两个人的信用，一起涨', hl: '一起涨',
     d: '互相打分之后，阿远 70 → 73，小满 88 → 90。下次阿远能接更贵的单，小满的单也更快有人接。',
     note: ['双向信用', '跑腿人按时 +2、爽约 -5、被判责 -8；发单人按时确认 +1、超时不确认 -2。不能充值，也刷不了。'],
   },
@@ -192,7 +192,14 @@ function StoryMap({ i, pos, aspect, small = false }) {
         {/* 每一段在地图上冒一句 */}
         <AnimatePresence>
           {i === 2 && <Bubble key="b2" p={pp([ICHI[0] - 260, ICHI[1] - 95])} small={small} dark>17:50 下课，本来就走这条路</Bubble>}
-          {i === 3 && <Bubble key="b3" p={pp([STATION[0] - 150, STATION[1] - 125])} small={small} dark>报 6-2-3108 取件</Bubble>}
+          {i === 3 && (
+            // 取件码揭晓：这一步是隐私分级的高光，放一张大的码卡，不是一句小气泡
+            <motion.span key="b3" initial={reduce ? false : { opacity: 0, y: 12, scale: 0.9 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: -6 }} transition={{ type: 'spring', stiffness: 320, damping: 22 }}
+              className={`absolute z-40 -translate-x-1/2 -translate-y-1/2 rounded-2xl bg-ink text-bg shadow-[0_20px_40px_-18px_rgba(17,40,30,0.7)] ${small ? 'px-3 py-1.5' : 'px-5 py-3'}`} style={pp([STATION[0] - 190, STATION[1] - 150])}>
+              <span className={`block font-semibold opacity-70 ${small ? 'text-[10px]' : 'text-xs'}`}>接单后才看得到 · 到驿站报</span>
+              <span className={`tnum block whitespace-nowrap font-bold tracking-wide ${small ? 'text-[18px] leading-tight' : 'text-[34px] leading-none'}`}>6-2-3108</span>
+            </motion.span>
+          )}
           {i === 5 && <Bubble key="b5" p={pp([XM[0] + 280, XM[1] - 250])} small={small} green>+¥5 到阿远</Bubble>}
           {i === 6 && <Bubble key="b6" p={pp([XM[0] + 330, XM[1] - 250])} small={small} green>阿远 +3 · 小满 +2</Bubble>}
         </AnimatePresence>
@@ -270,8 +277,28 @@ function OrderCard({ i, go, small = false }) {
   )
 }
 
+// 关键词下面的点线小路：和首屏「顺手」同一个笔触，读到这一段时从左画到右，末端一个点
+function KeyLine({ children, on, dark }) {
+  const reduce = useReducedMotion()
+  return (
+    <span className={`relative inline-block ${dark ? 'text-on-accent' : 'text-accent'}`}>
+      {children}
+      <svg aria-hidden="true" viewBox="0 0 200 20" preserveAspectRatio="none" className="absolute -bottom-[0.18em] left-0 h-[0.16em] w-full overflow-visible">
+        <motion.path d="M4 10 H186" fill="none" stroke="currentColor" strokeWidth="6" strokeLinecap="round" strokeDasharray="0.1 14"
+          initial={false} animate={{ pathLength: on || reduce ? 1 : 0 }} transition={{ duration: reduce ? 0 : 0.6, ease }} />
+        <motion.circle cx="192" cy="10" r="7" fill="currentColor" initial={false} animate={{ scale: on || reduce ? 1 : 0 }} transition={{ type: 'spring', stiffness: 400, damping: 15, delay: reduce ? 0 : 0.5 }} style={{ transformOrigin: '192px 10px' }} />
+      </svg>
+    </span>
+  )
+}
+
 function Chapter({ c, k, now, dark, flat, children }) {
   const reduce = useReducedMotion()
+  const hl = (x) => {
+    const at = c.hl ? x.indexOf(c.hl) : -1
+    if (at < 0) return x
+    return <>{x.slice(0, at)}<KeyLine on={now || flat} dark={dark}>{c.hl}</KeyLine>{x.slice(at + c.hl.length)}</>
+  }
   return (
     <article data-ch={k} data-now={now ? '' : undefined} className={`group/ch flex flex-col ${flat ? 'py-2' : 'pb-10 pt-8 max-lg:min-h-[52svh] lg:min-h-[74svh] lg:justify-center lg:py-0'} `}>
       <div className="flex items-end gap-4">
@@ -287,10 +314,10 @@ function Chapter({ c, k, now, dark, flat, children }) {
             initial={false} animate={{ scaleX: now || reduce ? 1 : 0 }} transition={{ duration: reduce ? 0 : 0.45, delay: reduce ? 0 : 0.25, ease }} />
         </p>
       )}
-      {/* 标题只在逗号处换行，不把「下课」「阿远」这种词拆开 */}
+      {/* 标题只在逗号处换行，不把「下课」「阿远」这种词拆开；每段的关键词和首屏「顺手」一样，绿字加一条点线小路，读到这段时画出来 */}
       {(() => { const parts = c.t.split('，'); const T = k === 0 ? 'h2' : 'h3'; return (
         <T className={`${k === 0 ? 'mt-3' : 'mt-2'} font-display text-[32px] leading-[1.12] md:text-[44px] xl:text-[52px]`}>
-          {parts.map((x, n) => <span key={n} className="inline-block whitespace-nowrap">{x}{n < parts.length - 1 ? '，' : ''}</span>)}
+          {parts.map((x, n) => <span key={n} className="inline-block whitespace-nowrap">{hl(x)}{n < parts.length - 1 ? '，' : ''}</span>)}
         </T>
       ) })()}
       <p className={`mt-4 max-w-[32ch] text-lg leading-relaxed transition-opacity duration-500 md:text-xl ${now ? 'opacity-85' : 'opacity-85 lg:opacity-45'}`}>{c.d}</p>
@@ -389,7 +416,7 @@ export default function Story() {
         <div className="mx-auto max-w-7xl px-2 pb-10 md:px-4 lg:grid lg:grid-cols-12 lg:gap-12 lg:px-4 lg:pb-[12svh] xl:max-w-[1216px] xl:px-0">
           {/* 手机：吸在顶栏下面的地图 + 一行订单，下面一段段文字滚过去；顶栏的「体验原型」和「目录」一直在 */}
           <div data-story-mini className={`sticky top-16 z-20 -mx-2 px-3 pb-1 pt-2 transition-colors duration-700 lg:hidden ${dark ? 'bg-accent-deep' : 'bg-bg'}`}>
-            <div className="relative"><StoryMap i={i} pos={pos} aspect={1.75} small /><div className="absolute inset-x-1.5 bottom-1.5 z-10"><OrderCard i={i} go={go} small /></div></div>
+            <div className="relative"><StoryMap i={i} pos={pos} aspect={2} small /><div className="absolute inset-x-1.5 bottom-1.5 z-10"><OrderCard i={i} go={go} small /></div></div>
             <div aria-hidden="true" className={`pointer-events-none absolute inset-x-0 top-full h-10 bg-gradient-to-b ${dark ? 'from-accent-deep' : 'from-bg'} to-transparent`} />
           </div>
           <div ref={list} className="px-2 lg:col-span-5">
