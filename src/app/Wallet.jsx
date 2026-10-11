@@ -89,7 +89,7 @@ export default function Wallet() {
       {groups.length === 0 ? (
         <Panel>
           <Empty img="empty-wallet" alt="只有一枚硬币的钱包" title={me.ledger.length ? '这个筛选下没有记录' : '还没有流水'}
-            hint={me.ledger.length ? '换个类型看看。' : runner ? '完成第一单后，赏金会从托管放到这里，并按月份归档。' : '发单、退款、充值都会记在这里。'} />
+            hint={me.ledger.length ? '换个类型看看。' : runner ? <>完成第一单后，赏金会从托管放到<span className="whitespace-nowrap">这里，</span>按月份归档。</> : '发单、退款、充值都会记在这里。'} />
         </Panel>
       ) : (
         <div key={by + kind} className="space-y-5">

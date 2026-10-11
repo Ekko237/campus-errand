@@ -142,7 +142,7 @@ export default function TourBar({ wide = false }) {
             {!here && !arrived && !loc.pathname.startsWith('/app/verify') && <button onClick={go} className="inline-flex h-9 shrink-0 items-center gap-1 whitespace-nowrap rounded-full bg-accent px-3.5 text-[14px] font-semibold text-on-accent active:scale-[0.98]">
               {step.cta}<ArrowRight size={14} weight="bold" />
             </button>}
-            <button onClick={() => act('tour', { tour: { active: false } })} aria-label="退出演示" className="-my-1.5 -mr-2 grid size-11 shrink-0 place-items-center rounded-full opacity-70 hover:opacity-100"><X size={16} weight="bold" /></button>
+            <button onClick={() => act('tour', { tour: { active: false } })} aria-label="退出演示" className="-mx-1.5 -my-1.5 grid size-11 shrink-0 place-items-center rounded-full opacity-70 hover:opacity-100"><X size={16} weight="bold" /></button>
           </div>
         </motion.div>
       )}

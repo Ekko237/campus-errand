@@ -37,7 +37,7 @@ export function ViewToggle({ inner = false }) {
       )}
       {opts.map(([k, label, I]) => (
         <button key={k} onClick={() => (EMBED ? embedPick(k) : pick(k))} aria-pressed={cur === k} title={label} aria-label={label}
-          className={`grid h-8 w-11 place-items-center rounded-full transition-colors sm:w-auto sm:gap-1 sm:px-2.5 sm:[grid-auto-flow:column] ${cur === k ? 'bg-surface text-ink shadow-sm' : 'text-muted hover:text-ink'}`}>
+          className={`grid h-8 w-9 place-items-center rounded-full transition-colors sm:w-auto sm:gap-1 sm:px-2.5 sm:[grid-auto-flow:column] ${cur === k ? 'bg-surface text-ink shadow-sm' : 'text-muted hover:text-ink'}`}>
           <I size={17} weight={cur === k ? 'fill' : 'regular'} /><span className="hidden text-[13px] font-semibold sm:inline">{label}</span>
         </button>
       ))}
