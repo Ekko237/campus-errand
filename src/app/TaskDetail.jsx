@@ -6,7 +6,7 @@ import { useStore } from '../store'
 import CampusMap, { along } from '../landing/CampusMap'
 import { PLACES, routePath } from '../campusMap'
 import { B, dist, fmtDist, RUNNER_HOME, minCreditFor, levelOf, nextLevel, detourMin, detourMeters, myRoute, onMyWay } from '../data'
-import { Btn, Panel, TypeTag, UrgentTag, VerifiedBadge, Sheet, Stars, Empty, Field, inputCls, left, clock, ago, spring, gi } from '../ui'
+import { Btn, Panel, TypeTag, UrgentTag, VerifiedBadge, Sheet, Stars, Empty, Field, inputCls, left, clock, ago, spring, gi, StatusTag } from '../ui'
 const MapPin = gi('pin')
 const Clock = gi('clock')
 const LockKey = gi('lock')
@@ -325,7 +325,7 @@ function RateBlock({ t, by }) {
   return (
     <Panel className="p-4" data-tour-target>
       <p className="text-[17px] font-semibold">{by === 'poster' ? '给跑腿人打分' : '给发单人打分'}</p>
-      <p className="mt-0.5 truncate text-sm text-muted">{stars ? <>对方信用 <b className="tnum">{effect}</b> · </> : null}4 到 5 星 +1，1 到 2 星 -4</p>
+      <p className="mt-0.5 text-sm text-muted">{stars ? <>对方信用 <b className="tnum">{effect}</b> · </> : null}4 到 5 星 +1，1 到 2 星 -4</p>
       <div className="mt-3"><Stars value={stars} onChange={(n) => { setStars(n); setTags([]); revealSubmit() }} /></div>
       <div className="mt-3 flex min-h-10 flex-wrap gap-2">
         {/* 没选星时先放灰色标签占位，告诉你下一步会出现什么，不留一块空白 */}
@@ -581,7 +581,7 @@ function WrapUp({ t }) {
       <p className="mt-1 text-balance text-2xl font-bold"><span className="whitespace-nowrap">顺路一趟，¥{t.reward} 到账，</span><span className="whitespace-nowrap">{rows.every((x) => x.d >= 0) ? '信用都涨了' : '信用有涨有跌'}</span></p>
       {PLACES[mapR.from] && PLACES[mapR.to] && mapR.from !== mapR.to ? (
         // 顺路的单：画跑腿人本来要走的整条路，这一单捎的那段亮绿；不顺路的单：只画取件到送达
-        <div className="mt-4 overflow-hidden rounded-2xl ring-1 ring-on-accent/20"><CampusMap R={mapR} hits={mapHits} reduce={!play} pills={false} walker={play} park at={play ? null : 1} /></div>
+        <div className="mt-4"><CampusMap R={mapR} hits={mapHits} reduce={!play} pills={false} walker={play} park at={play ? null : 1} /></div>
       ) : (
       <div className="relative mt-5 h-12" aria-hidden="true">
         <span className="absolute left-0 right-0 top-1/2 h-[3px] -translate-y-1/2 rounded-full bg-on-accent/25" />
@@ -655,7 +655,7 @@ export default function TaskDetail() {
       <div className="flex items-center gap-2">
         <button onClick={() => nav(-1)} aria-label="返回" className="grid size-11 place-items-center rounded-full bg-surface ring-1 ring-line"><ArrowLeft size={20} weight="bold" /></button>
         <span className={`min-w-0 truncate text-[15px] font-semibold text-muted`}>订单详情</span>
-        <span className={`ml-auto rounded-full px-3 py-1 text-sm font-semibold ${['refunded', 'cancelled', 'disputed'].includes(t.status) ? 'bg-sunken text-ink' : 'bg-accent-soft text-accent'}`}>{t.status === 'ongoing' && t.picked ? '送达中' : STATUS_TEXT[t.status]}</span>
+        <span className="ml-auto"><StatusTag t={t} /></span>
       </div>
 
       {t.status === 'completed' && t.ratingByPoster && t.ratingByRunner && <WrapUp t={t} />}

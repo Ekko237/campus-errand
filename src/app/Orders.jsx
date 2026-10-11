@@ -4,11 +4,12 @@ import { useOpenTaskId } from './openTask'
 import { ArrowRight } from '@phosphor-icons/react'
 import { useStore } from '../store'
 import { B } from '../data'
-import { TypeTag, Empty, Btn, ago, gi } from '../ui'
+import { TypeTag, StatusTag, Empty, Btn, ago, gi } from '../ui'
 const Receipt = gi('receipt')
 
+// 列表里楼名去掉括号里的补充（「菜鸟驿站（东门）」→「菜鸟驿站」），一行放得下从哪到哪和时间
+const nm = (k) => B[k]?.name.replace(/（.*?）/, '')
 const ACTIVE = ['open', 'ongoing', 'delivered', 'disputed']
-const STATUS_TEXT = { open: '待接单', ongoing: '进行中', delivered: '待确认', completed: '已完成', disputed: '申诉中', refunded: '已退款', cancelled: '已取消' }
 
 export default function Orders() {
   const open = useOpenTaskId()
@@ -40,11 +41,12 @@ export default function Orders() {
         <ul className="space-y-3">
           {list.map((t) => (
             <li key={t.id}>
-              <Link to={`/app/task/${t.id}`} className={`flex items-center gap-3 rounded-2xl p-4 ring-1 active:scale-[0.99] ${here === `/app/task/${t.id}` ? 'bg-accent-soft ring-2 ring-accent' : 'bg-surface ring-line'}`}>
+              <Link to={`/app/task/${t.id}`} className={`flex items-center gap-3 rounded-2xl p-4 ring-1 active:scale-[0.99] ${here === `/app/task/${t.id}` ? 'bg-surface ring-2 ring-accent' : 'bg-surface ring-line'}`}>
                 <div className="min-w-0 flex-1">
-                  <div className="flex items-center gap-2"><TypeTag type={t.type} /><span className="text-sm font-semibold text-accent">{STATUS_TEXT[t.status]}</span></div>
-                  <p className="mt-2 truncate text-[17px] font-semibold">{t.title}</p>
-                  <p className="mt-0.5 text-sm text-muted">{B[t.to]?.name} · {ago(t.createdAt)}</p>
+                  <div className="flex items-center gap-2"><TypeTag type={t.type} /><StatusTag t={t} /><span className="ml-1 whitespace-nowrap text-sm text-muted">{ago(t.createdAt)}</span></div>
+                  <p className="mt-2.5 truncate text-[17px] font-semibold leading-snug">{t.title}</p>
+                  {/* 标题常常已经写了送到哪，这里写从哪到哪；楼名不从中间断开 */}
+                  <p className="mt-1 text-sm leading-snug text-muted">{t.from === t.to ? nm(t.to) : <><span className="whitespace-nowrap">{nm(t.from)}</span> 到 <span className="whitespace-nowrap">{nm(t.to)}</span></>}</p>
                 </div>
                 <span className="tnum text-xl font-bold">¥{t.reward}</span>
                 <ArrowRight size={18} className="text-muted" />

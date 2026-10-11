@@ -44,6 +44,13 @@ export function TypeTag({ type }) {
   )
 }
 
+// 订单状态：和类型标签同一种胶囊，出了岔子的（申诉、退款、取消）用灰底
+const STATUS_TEXT = { open: '待接单', ongoing: '进行中', delivered: '待确认', completed: '已完成', disputed: '申诉中', refunded: '已退款', cancelled: '已取消' }
+export function StatusTag({ t }) {
+  const off = ['refunded', 'cancelled', 'disputed'].includes(t.status)
+  return <span className={`inline-flex items-center rounded-full px-2.5 py-1 text-sm font-semibold ${off ? 'bg-sunken text-ink' : 'bg-accent-soft text-accent'}`}>{t.status === 'ongoing' && t.picked ? '送达中' : STATUS_TEXT[t.status]}</span>
+}
+
 export function UrgentTag() {
   return (
     <span className="inline-flex items-center gap-1 rounded-full bg-ink px-2.5 py-1 text-sm font-semibold text-bg">

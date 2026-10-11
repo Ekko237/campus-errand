@@ -107,7 +107,7 @@ export default function Wallet() {
                 {g.items.map((l, i) => (
                   <div key={l.at + l.label + i} className="flex items-center gap-3 p-4">
                     <div className="min-w-0 flex-1">
-                      <p className="truncate text-[15px] font-medium">{l.label}</p>
+                      <p className="text-[15px] font-medium">{l.label}</p>
                       <p className="tnum text-sm text-muted">{when(l.at, by)}</p>
                     </div>
                     <span className={`tnum shrink-0 text-lg font-bold ${l.amount > 0 ? 'text-accent' : ''}`}>{fmtMoney(l.amount)}</span>

@@ -224,7 +224,7 @@ export default function Me() {
 
       <section>
         <h2 className="mb-3 flex items-baseline justify-between text-lg font-bold">徽章<span className="tnum text-sm font-semibold text-muted">已得 {badges.filter((b) => b.on).length} / {badges.length}<span className="md:hidden">，左右滑动</span></span></h2>
-        <div className="no-scrollbar -mx-4 flex gap-3 overflow-x-auto px-4 [mask-image:linear-gradient(to_right,black_85%,transparent)]">
+        <div className="no-scrollbar -mx-4 -my-1 flex gap-3 overflow-x-auto px-4 py-1 [mask-image:linear-gradient(to_right,black_85%,transparent)]">
           {[...badges].sort((a, b) => b.on - a.on).map((b) => (
             <div key={b.name} className={`flex w-24 shrink-0 flex-col items-center gap-2 rounded-2xl p-3 text-center ${b.on ? 'bg-accent-soft' : 'bg-sunken opacity-60'}`}>
               <img src={iconUrl(b.img)} width={44} height={44} alt={b.alt} className={`size-11 object-contain ${b.on ? '' : 'grayscale'}`} />
@@ -245,7 +245,7 @@ export default function Me() {
           <Panel className="divide-y divide-line">
             {[...me.ledger].sort((a, b) => b.at - a.at).slice(0, 3).map((l, i) => (
               <div key={i} className="flex items-center gap-3 p-4">
-                <div className="min-w-0 flex-1"><p className="truncate text-[15px] font-medium">{l.label}</p><p className="text-sm text-muted">{ago(l.at)}</p></div>
+                <div className="min-w-0 flex-1"><p className="text-[15px] font-medium">{l.label}</p><p className="text-sm text-muted">{ago(l.at)}</p></div>
                 <span className={`tnum text-lg font-bold ${l.amount > 0 ? 'text-accent' : ''}`}>{l.amount > 0 ? '+' : '-'}¥{Math.abs(l.amount)}</span>
               </div>
             ))}
@@ -268,7 +268,7 @@ export default function Me() {
           <Panel className="divide-y divide-line">
             {me.creditLog.slice(0, 8).map((l, i) => (
               <div key={i} className="flex items-center gap-3 p-4">
-                <div className="min-w-0 flex-1"><p className="truncate text-[15px] font-medium">{l.label}</p><p className="text-sm text-muted">{ago(l.at)}</p></div>
+                <div className="min-w-0 flex-1"><p className="text-[15px] font-medium">{l.label}</p><p className="text-sm text-muted">{ago(l.at)}</p></div>
                 {l.delta !== 0 && <span className={`tnum text-lg font-bold ${l.delta > 0 ? 'text-accent' : 'text-danger'}`}>{l.delta > 0 ? '+' : ''}{l.delta}</span>}
               </div>
             ))}

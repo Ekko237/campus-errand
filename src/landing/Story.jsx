@@ -263,7 +263,7 @@ function OrderCard({ i, go, small = false }) {
     <div className="relative z-10 mt-2 rounded-2xl bg-surface p-4 text-ink lg:mx-5 lg:-mt-14 shadow-[0_24px_50px_-28px_rgba(17,40,30,0.55)] ring-1 ring-line">
       <div className="flex items-center gap-2">
         <img src={icon('type-express-v1')} width={28} height={28} alt="" aria-hidden="true" className="size-7" />
-        <p className="min-w-0 flex-1 truncate text-[15px] font-semibold">{i === 0 ? '小满的快递，还在驿站' : '菜鸟驿站取 2 个小件快递 · 送梅园'}</p>
+        <p className="min-w-0 flex-1 text-[15px] font-semibold">{i === 0 ? '小满的快递，还在驿站' : '菜鸟驿站取 2 个小件快递 · 送梅园'}</p>
         {status('text-sm')}
       </div>
       <div className="mt-3 grid grid-cols-6 gap-1">

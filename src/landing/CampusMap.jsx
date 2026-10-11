@@ -87,7 +87,10 @@ export default function CampusMap({ R, hits, reduce, pills = true, walker = true
   const flip = (id) => { const e = id === R.from ? mine[0] : mine[mine.length - 1]; return marks.some(({ t }) => { const [x, y] = markAt(t.from); return Math.abs(x - e[0]) < 160 && Math.abs(y - e[1]) < 160 }) }
   // 起终点名牌在点的上面还是下面
   // 手机上价签都挂在编号下面：起终点名牌默认放上面，只有上面挨着取件点时才放下面
+  // 起终点贴着画框上下边：名牌往画框里面放，不被裁掉
+  const vEdge = (id) => { const f = ((id === R.from ? mine[0] : mine[mine.length - 1])[1] - V.Y0) / V.VH; return f < 0.18 ? 't' : f > 0.82 ? 'b' : null }
   const labelUp = (id) => {
+    if (vEdge(id)) return vEdge(id) === 'b'
     if (!small) return (outward(id) === 'up') !== flip(id)
     const e = id === R.from ? mine[0] : mine[mine.length - 1]
     return !marks.some(({ t }) => { const [x, y] = markAt(t.from); return Math.abs(x - e[0]) < 380 && y < e[1] && y > e[1] - 250 })

@@ -189,6 +189,8 @@ function DeskShell({ sub, openTask }) {
   // 点开一单时，中间留着它所在的那张列表：自己发的、自己接的在「订单」，别人的在「大厅」
   const listPath = openTask && ((state.role === 'poster' && openTask.posterId === 'poster') || (state.role === 'runner' && openTask.runnerId === 'runner')) ? '/app/orders' : '/app'
   const top = state.tour.active ? 'top-[132px]' : 'top-20'
+  // 自己会滚的栏：四周留 6px 再用负边距抵回去，卡片的描边和阴影不会被滚动框裁掉；吸顶位置也往上挪 6px，内容和别的栏对齐
+  const topIn = state.tour.active ? 'top-[126px]' : 'top-[74px]'
   return (
     <div className="min-h-[100dvh] bg-bg">
       <header className="sticky top-0 z-30 border-b border-line bg-bg/95 backdrop-blur">
@@ -211,12 +213,12 @@ function DeskShell({ sub, openTask }) {
             ))}
           </div>
           {/* 演示面板放在导航下面：右栏留给地图和订单详情 */}
-          <div className="mt-6 overflow-y-auto overscroll-contain pr-1" style={{ maxHeight: `calc(100dvh - ${state.tour.active ? 148 : 96}px - 230px)` }}><DemoPanel /></div>
+          <div className="-mx-1.5 mt-[18px] overflow-y-auto overscroll-contain p-1.5" style={{ maxHeight: `calc(100dvh - ${state.tour.active ? 148 : 96}px - 230px + 12px)` }}><DemoPanel /></div>
         </nav>
         <section aria-label="列表" className="min-w-0" data-tour-root={taskOpen ? undefined : ''}>
           {taskOpen ? (
             // 右边开着一单：中间的列表自己滚，不跟着详情走，随时点另一单
-            <div className={`sticky ${top} overflow-y-auto overscroll-contain pr-1`} style={{ maxHeight: `calc(100dvh - ${state.tour.active ? 148 : 96}px)` }}>
+            <div className={`sticky ${topIn} -m-1.5 overflow-y-auto overscroll-contain p-1.5`} style={{ maxHeight: `calc(100dvh - ${state.tour.active ? 148 : 96}px + 12px)` }}>
               <OpenTaskCtx.Provider value={pathname.split('/').pop()}><Routes location={{ ...loc, pathname: listPath, search: '' }}>{LIST_ROUTES}</Routes></OpenTaskCtx.Provider>
             </div>
           ) : (
@@ -229,7 +231,7 @@ function DeskShell({ sub, openTask }) {
               <Routes><Route path="task/:id" element={<TaskDetail />} /></Routes>
             </div>
           ) : (
-            <div className={`sticky ${top} space-y-5 overflow-y-auto overscroll-contain`} style={{ maxHeight: `calc(100dvh - ${state.tour.active ? 148 : 96}px)` }}>
+            <div className={`sticky ${topIn} -m-1.5 space-y-5 overflow-y-auto overscroll-contain p-1.5`} style={{ maxHeight: `calc(100dvh - ${state.tour.active ? 148 : 96}px + 12px)` }}>
               {(pathname === '/app' || pathname === '/app/') ? <div id="desk-map-slot" />
                 : pathname.startsWith('/app/publish') ? <div id="desk-side-slot" />
                 : verifyBack ? <Routes location={{ ...loc, pathname: `/app/task/${verifyBack}`, search: '' }}><Route path="task/:id" element={<TaskDetail />} /></Routes>

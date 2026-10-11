@@ -49,8 +49,11 @@ body {
 :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 
 /* 中文断行：段落避免单字孤行，标题均衡断行 */
-p, li, dd { text-wrap: pretty; }
-h1, h2, h3 { text-wrap: balance; }
+/* 只设换行风格，不动「换不换行」：text-wrap 简写会把 truncate、whitespace-nowrap 一起冲掉 */
+@layer base {
+  p, li, dd { text-wrap-style: pretty; }
+  h1, h2, h3 { text-wrap-style: balance; }
+}
 
 /* 标题字：得意黑（Smiley Sans Oblique，SIL OFL 1.1），按字切片自托管，只下载页面用到的那几片。
    字体由独立小评审在四个候选里选定（见 ITERATION_LOG 第 72 轮），自带前倾，像「路过、顺手」的动势 */

@@ -211,7 +211,7 @@ export function CampusRoutes() {
   const pick = (i) => setRi(i)
   return (
     <div>
-      <div className="no-scrollbar -mx-4 flex gap-1.5 overflow-x-auto px-4 md:gap-2 md:mx-0 md:flex-wrap md:overflow-visible md:px-0" role="group" aria-label="选一条你正要走的路">
+      <div className="no-scrollbar -mx-4 -my-1 flex gap-1.5 overflow-x-auto px-4 py-1 md:gap-2 md:mx-0 md:flex-wrap md:overflow-visible md:px-0" role="group" aria-label="选一条你正要走的路">
         {ROUTES.map((x, i) => (
           <button key={x.label} onClick={() => pick(i)} aria-pressed={i === ri}
             className={`relative h-11 shrink-0 whitespace-nowrap rounded-full px-3 text-[14px] md:px-4 md:text-[15px] font-semibold transition-colors ${i === ri ? 'text-bg' : 'bg-surface text-ink ring-1 ring-line'}`}>
