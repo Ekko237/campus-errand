@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
-import { motion, AnimatePresence, useReducedMotion, useMotionValue, useTransform, animate } from 'motion/react'
+import { motion, AnimatePresence, useIsPresent, useReducedMotion, useMotionValue, useTransform, animate } from 'motion/react'
 import { ArrowLeft, Check, ArrowClockwise } from '@phosphor-icons/react'
 import { useStore } from '../store'
 import CampusMap, { along } from '../landing/CampusMap'
@@ -119,6 +119,12 @@ function CodeReveal({ code, play }) {
 }
 
 // 接单后最要紧的信息：取件码放大、置顶，带复制按钮；刚接单的那一下锁打开、码一位位揭晓
+// 正在收起的那块：不能点、导览也不去圈它（里面是收起前的旧按钮）
+function Leaving({ children }) {
+  const present = useIsPresent()
+  return <div inert={!present || undefined}>{children}</div>
+}
+
 // 放款后地图、送达码这些块要收掉：平滑收起来，不让下面的内容一下子跳上去
 function Collapse({ show, children }) {
   const reduce = useReducedMotion()
@@ -126,7 +132,7 @@ function Collapse({ show, children }) {
     <AnimatePresence initial={false}>
       {show && (
         <motion.div key="c" className="-m-0.5 overflow-hidden p-0.5" initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: reduce ? 0 : 0.45, ease: [0.22, 1, 0.36, 1] }}>
-          {children}
+          <Leaving>{children}</Leaving>
         </motion.div>
       )}
     </AnimatePresence>
@@ -682,7 +688,8 @@ export default function TaskDetail() {
       {/* 进行中：这一单在校园地图上怎么走，放在取件码上面，导览里一眼就看到「顺路」 */}
       <Collapse show={['ongoing', 'delivered'].includes(t.status)}><OnTheWay t={t} /></Collapse>
 
-      {pmode === 'open' && <><PickupCard t={t} /><div><Actions t={t} /></div></>}
+      {/* 接单后取件码和操作挪到标题上面：也平滑展开 / 收起，标题不被一下子推下去 */}
+      <Collapse show={pmode === 'open'}><div className="space-y-5"><PickupCard t={t} /><div><Actions t={t} /></div></div></Collapse>
 
       <Collapse show={own && state.role === 'poster' && ['ongoing', 'delivered'].includes(t.status)}>{own && state.role === 'poster' && ['ongoing', 'delivered'].includes(t.status) && (
         t.status === 'delivered' && t.proof?.kind === 'photo' ? (

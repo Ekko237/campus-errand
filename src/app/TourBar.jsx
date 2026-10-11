@@ -65,7 +65,10 @@ export default function TourBar({ wide = false }) {
       const floor = navTop > innerHeight / 2 ? navTop : innerHeight
       const r = el.getBoundingClientRect()
       if (r.top >= head + 4 && r.bottom <= floor - 4) return
-      el.scrollIntoView({ block: 'nearest', behavior: reduce ? 'auto' : 'smooth' })
+      // 自己算要滚多少：按钮其实在视口里、只是被底部导航压着时，scrollIntoView 的 nearest 会认为「看得见」一点不滚
+      const m = getComputedStyle(el)
+      const dy = r.top < head + 4 ? r.top - parseFloat(m.scrollMarginTop) : r.bottom + parseFloat(m.scrollMarginBottom) - innerHeight
+      window.scrollBy({ top: dy, behavior: reduce ? 'auto' : 'smooth' })
     }
     // 刚发生的「奖励时刻」（取件码揭晓、托管放款）：先把那张卡停在视线里 1.6 秒，再去找下一个按钮
     const timers = []
@@ -90,7 +93,7 @@ export default function TourBar({ wide = false }) {
         wait = step.n === 7 ? 2600 : step.n === 5 ? 500 : 1100
       }
       timers.push(setTimeout(() => {
-        el = root().querySelector('[data-tour-target]') || [...root().querySelectorAll('button')].find((x) => x.classList.contains('bg-accent') && !x.disabled && x.offsetParent)
+        el = root().querySelector('[data-tour-target]') || [...root().querySelectorAll('button')].find((x) => x.classList.contains('bg-accent') && !x.disabled && x.offsetParent && !x.closest('[inert]'))
         if (!el) return
         el.classList.add('tour-focus')
         reveal()

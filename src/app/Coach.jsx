@@ -65,7 +65,7 @@ function resolve(state, path) {
   let focus = document.querySelector('.tour-focus')
   if (!focus) {
     const root = document.querySelector('[data-tour-root]') || document.querySelector('main') || document.body
-    focus = root.querySelector('[data-tour-target]') || [...root.querySelectorAll('button')].find((x) => x.classList.contains('bg-accent') && !x.disabled && x.offsetParent)
+    focus = root.querySelector('[data-tour-target]') || [...root.querySelectorAll('button')].find((x) => x.classList.contains('bg-accent') && !x.disabled && x.offsetParent && !x.closest('[inert]'))
     const r = focus?.getBoundingClientRect()
     if (!r || r.top < 0 || r.bottom > innerHeight) return null
   }
@@ -87,14 +87,13 @@ export default function Coach() {
   const arrow = useRef(null)
   const point = useRef(null)
   const [text, setText] = useState('')
-  const [merge, setMerge] = useState('')
   const cur = useRef(null)
   const scrolled = useRef(null)
   const sent = useRef(null)
   const side0 = useRef({})
   // 刚点中圈住的东西：先把圈和气泡收起来，等下一个目标出来再显示，不在弹窗收起、页面切换的那一下指回旧按钮
   const held = useRef(null)
-  // 窄屏时写进导览条的那句话（只在变了的时候通知导览条）
+  // 现在写在导览条上的那句「点这里」
   const barText = useRef('')
   // 最近一次操作是键盘还是鼠标 / 手指
   const kbd = useRef(false)
@@ -110,14 +109,16 @@ export default function Coach() {
   useEffect(() => {
     if (!on) return
     let raf = 0
+    // 写进导览条的那句话：变了才通知导览条
+    const say = (t) => { if (barText.current !== t) { barText.current = t; window.dispatchEvent(new CustomEvent('coach-text', { detail: t })) } }
     const tick = () => {
       raf = requestAnimationFrame(tick)
       const hit = resolve(state, pathname)
       const R = ring.current, T = tip.current, A = arrow.current, P = point.current
       if (!R || !T || !A || !P) return
-      if (held.current && hit && (hit.el === held.current.el || hit.el.contains(held.current.el)) && Date.now() - held.current.at < 1500) { hide(R, T, P); if (barText.current !== '') { barText.current = ''; window.dispatchEvent(new CustomEvent('coach-text', { detail: '' })) } return }
+      if (held.current && hit && (hit.el === held.current.el || hit.el.contains(held.current.el)) && Date.now() - held.current.at < 1500) { hide(R, T, P); say(''); return }
       // 没有目标（奖励时刻还在播、页面在换）：导览条换回这一步的说明，不留上一步的「点这里」
-      if (!hit || !vis(hit.el)) { hide(R, T, P); cur.current = null; if (barText.current !== '') { barText.current = ''; window.dispatchEvent(new CustomEvent('coach-text', { detail: '' })) } return }
+      if (!hit || !vis(hit.el)) { hide(R, T, P); cur.current = null; say(''); return }
       held.current = null
       const r1 = hit.el.getBoundingClientRect(), now = Date.now(), st = still.current
       if (st.el !== hit.el || Math.abs(st.x - r1.left) > 1 || Math.abs(st.y - r1.top) > 1) { still.current = { el: hit.el, x: r1.left, y: r1.top, at: now }; hide(R, T, P); return }
@@ -140,9 +141,13 @@ export default function Coach() {
         const hb = (document.querySelector('[data-tour-bar]') || document.querySelector('header'))?.getBoundingClientRect().bottom ?? 0
         const nt = document.querySelector('nav[aria-label="主导航"]')?.getBoundingClientRect().top ?? innerHeight
         const ft = nt > innerHeight / 2 ? nt : innerHeight
-        if (r0.top < hb + 8 || r0.bottom > ft - 8) { scrolled.current = hit.el; hit.el.style.scrollMargin = `${hb + 16}px 0 ${innerHeight - ft + 24}px`; hit.el.scrollIntoView({ block: 'nearest', behavior: reduce ? 'auto' : 'smooth' }) }
+        // 自己算距离：按钮只是被底部导航压着时，scrollIntoView 的 nearest 认为它在视口里，不会滚
+        if (r0.top < hb + 8 || r0.bottom > ft - 8) { scrolled.current = hit.el; window.scrollBy({ top: r0.top < hb + 8 ? r0.top - hb - 16 : r0.bottom - ft + 24, behavior: reduce ? 'auto' : 'smooth' }) }
       }
       const r = hit.el.getBoundingClientRect()
+      // 目标还被底部导航、顶栏或弹层盖着（正在滚出来）：先不画圈，不然圈住的其实是盖在上面的导航，一点就点到别处
+      const top0 = document.elementFromPoint(Math.min(innerWidth - 1, Math.max(0, r.left + r.width / 2)), Math.min(innerHeight - 1, Math.max(0, r.top + r.height / 2)))
+      if (!top0 || !(hit.el.contains(top0) || top0.contains(hit.el))) { hide(R, T, P); return }
       const dlg = !!hit.el.closest('[role=dialog]')
       const pad = 6
       const rad = Math.min(parseFloat(getComputedStyle(hit.el).borderTopLeftRadius) || 12, r.height / 2) + pad
@@ -150,131 +155,54 @@ export default function Coach() {
       const E = 11, L = Math.max(E, r.left - pad), Tp = Math.max(E, r.top - pad), Rt = Math.min(innerWidth - E, r.right + pad), Bt = Math.min(innerHeight - E, r.bottom + pad)
       Object.assign(R.style, { transition: '', opacity: '1', left: `${L}px`, top: `${Tp}px`, width: `${Rt - L}px`, height: `${Bt - Tp}px`, borderRadius: `${rad}px`,
         boxShadow: dlg ? '0 0 0 3px var(--accent), 0 0 0 9px color-mix(in srgb, var(--accent) 25%, transparent)' : '0 0 0 3px var(--accent), 0 0 0 9px color-mix(in srgb, var(--accent) 25%, transparent), 0 0 0 200vmax rgba(12, 24, 18, 0.32)' })
-      // 气泡：下面放得下就放下面，否则放上面；左右夹在屏幕里；箭头对着目标中间
-      const tw = T.offsetWidth, th = T.offsetHeight, gap = 48, m = 8, AR = 40
+      const tw = T.offsetWidth, th = T.offsetHeight, m = 8, AR = 40
       // 页面里按钮挨着按钮、字挨着字，浮在页面上的气泡放哪都会压到说明。
       // 所以「点这里：××」写进顶上的导览条（导览条在页面里占自己的位置，不压任何内容），
       // 目标上只留绿圈和一个贴在旁边空白处的箭头；弹窗里的目标，气泡放到弹窗上方压暗的空白处
-      const dock = !hit.el.closest('header, [data-tour-bar]')
-      if (dock) {
-        const dlgEl = hit.el.closest('[role=dialog]')
-        const sr = dlgEl?.getBoundingClientRect()
-        if (dlgEl && sr.top >= th + AR + 16) {
-          if (barText.current !== '') { barText.current = ''; window.dispatchEvent(new CustomEvent('coach-text', { detail: '' })) }
-          const left = Math.max(m, Math.min(innerWidth - tw - m, cx0(r) - tw / 2)), top = sr.top - 8 - AR - th
-          Object.assign(T.style, { transition: '', opacity: '1', left: `${left}px`, top: `${top}px` })
-          Object.assign(A.style, { left: `${Math.max(14, Math.min(tw - 14, cx0(r) - left)) - 6}px`, right: '', top: '', bottom: '-6px' })
-          Object.assign(P.style, { transition: '', opacity: '1', left: `${Math.max(m, Math.min(innerWidth - m - 36, cx0(r) - 18))}px`, top: `${top + th + 4}px` })
-          P.dataset.dir = 'down'
-          return
-        }
-        if (barText.current !== hit.text) { barText.current = hit.text; window.dispatchEvent(new CustomEvent('coach-text', { detail: hit.text })) }
-        T.style.transition = 'none'; T.style.opacity = '0'
-        // 箭头放哪：目标左、右、上、下贴边的几个位置，外加整行宽按钮自己左侧的空白；挑一个不压任何字、不压目标的
-        if (side0.current.el !== hit.el || side0.current.text !== hit.text) {
-          const cyy = r.top + r.height / 2, cxx = cx0(r)
-          const opts = [['right', r.left - pad - 22, cyy], ['left', r.right + pad + 22, cyy]]
-          for (const fx of [0.5, 0.85, 0.15, 0.7, 0.3]) opts.push(['down', r.left + r.width * fx, r.top - pad - 22], ['up', r.left + r.width * fx, r.bottom + pad + 22])
-          // 附近的字和控件（只取叶子：文字段落、输入框、下拉框、按钮、星星、图片）
-          const near2 = [...document.querySelectorAll('p, span, label, li, dd, dt, h1, h2, h3, a, button, input, select, textarea, img, [role=radio]')].filter((e) => {
-            if (hit.el.contains(e) || e.contains(hit.el) || e.closest('.z-\\[70\\], .z-\\[71\\]')) return false
-            const q = e.getBoundingClientRect()
-            if (!q.width || !q.height || q.height > 120 || q.bottom < r.top - 80 || q.top > r.bottom + 80 || q.right < r.left - 80 || q.left > r.right + 80) return false
-            return !/^(P|SPAN|LABEL|LI|DD|DT|H1|H2|H3)$/.test(e.tagName) || ((e.innerText || '').trim() && ![...e.children].some((c) => (c.innerText || '').trim()))
-          }).map((e) => e.getBoundingClientRect())
-          const clear = ([, x, y]) => {
-            if (x < 20 || x > innerWidth - 20 || y < (document.querySelector('[data-tour-bar]')?.getBoundingClientRect().bottom ?? 0) + 20 || y > innerHeight - 20) return 99
-            const a0 = { left: x - 18, right: x + 18, top: y - 18, bottom: y + 18 }
-            const ov = (q) => q.left < a0.right - 1 && q.right > a0.left + 1 && q.top < a0.bottom - 1 && q.bottom > a0.top + 1
-            return (ov({ left: r.left + 6, right: r.right - 6, top: r.top + 6, bottom: r.bottom - 6 }) ? 5 : 0) + near2.filter(ov).length
-          }
-          const ranked = opts.map((o, k) => [o, clear(o) + k * 0.01]).sort((a1, b1) => a1[1] - b1[1])[0]
-          // 周围实在没有空处：这一步不画箭头，只留绿圈（「点这里」已经写在导览条上），宁可少一个箭头也不压字
-          side0.current = { el: hit.el, text: hit.text, arrow: ranked[1] < 1 ? [ranked[0][0], ranked[0][1] - r.left, ranked[0][2] - r.top] : null }
-        }
-        if (!side0.current.arrow) { P.style.transition = 'none'; P.style.opacity = '0'; return }
-        const [dir, ox, oy] = side0.current.arrow
-        Object.assign(P.style, { transition: '', opacity: '1', left: `${r.left + ox - 18}px`, top: `${r.top + oy - 18}px` })
-        P.dataset.dir = dir
+      // 顶栏里的目标（身份切换、导览条上的按钮）旁边挨着别的按钮和导览条自己的字，气泡放哪都会压住，
+      // 「点这里」同样写进导览条，目标上只留绿圈
+      if (hit.el.closest('header, [data-tour-bar]')) { say(hit.text); hide(T, P); return }
+      const dlgEl = hit.el.closest('[role=dialog]')
+      const sr = dlgEl?.getBoundingClientRect()
+      if (dlgEl && sr.top >= th + AR + 16) {
+        say('')
+        const left = Math.max(m, Math.min(innerWidth - tw - m, cx0(r) - tw / 2)), top = sr.top - 8 - AR - th
+        Object.assign(T.style, { transition: '', opacity: '1', left: `${left}px`, top: `${top}px` })
+        Object.assign(A.style, { left: `${Math.max(14, Math.min(tw - 14, cx0(r) - left)) - 6}px`, right: '', top: '', bottom: '-6px' })
+        Object.assign(P.style, { transition: '', opacity: '1', left: `${Math.max(m, Math.min(innerWidth - m - 36, cx0(r) - 18))}px`, top: `${top + th + 4}px` })
+        P.dataset.dir = 'down'
         return
       }
-      if (barText.current !== '') { barText.current = ''; window.dispatchEvent(new CustomEvent('coach-text', { detail: '' })) }
-      const navTop = document.querySelector('nav[aria-label="主导航"]')?.getBoundingClientRect().top ?? innerHeight
-      const floor = (navTop > innerHeight / 2 && !hit.nav ? navTop : innerHeight) - m
-      const barB = document.querySelector('[data-tour-bar]')?.getBoundingClientRect().bottom ?? 0
-      const inHead = !!hit.el.closest('header, [data-tour-bar]')
-      const ceil = Math.max(m, inHead ? m : barB + 8)
-      const cx = r.left + r.width / 2, cy = r.top + r.height / 2
-      const isNew = side0.current.el !== hit.el || side0.current.text !== hit.text
-      if (isNew) {
-        // 必须避开的：目标本身，以及和它同一列、上下 140px 以内的文字和控件（说明、提示、标签、勾选项、错误信息、星星）
-        const guard = []
-        if (!inHead) {
-          for (const e of document.querySelectorAll('p, span, label, li, dd, dt, h1, h2, h3, a, button, input, select, textarea, img, [role=radio]')) {
-            if (hit.el.contains(e) || e.contains(hit.el) || e.closest('header, nav, [data-tour-bar], .z-\\[70\\], .z-\\[71\\]')) continue
-            const q = e.getBoundingClientRect()
-            if (!q.width || !q.height || q.height > 120) continue
-            const leaf = !/^(P|SPAN|LABEL|LI|DD|DT|H1|H2|H3)$/.test(e.tagName) || ((e.innerText || '').trim() && ![...e.children].some((c) => (c.innerText || '').trim()))
-            if (!leaf) continue
-            if (q.bottom < r.top - 140 || q.top > r.bottom + 140 || q.right < r.left - 40 || q.left > r.right + 40) continue
-            guard.push({ q, t: /^(P|SPAN|LABEL|LI|DD|DT|H1|H2|H3)$/.test(e.tagName) ? (e.innerText || '').trim() : '' })
-          }
+      say(hit.text)
+      T.style.transition = 'none'; T.style.opacity = '0'
+      // 箭头放哪：目标左、右、上、下贴边的几个位置，外加整行宽按钮自己左侧的空白；挑一个不压任何字、不压目标的
+      if (side0.current.el !== hit.el || side0.current.text !== hit.text) {
+        const cyy = r.top + r.height / 2, cxx = cx0(r)
+        const opts = [['right', r.left - pad - 22, cyy], ['left', r.right + pad + 22, cyy]]
+        for (const fx of [0.5, 0.85, 0.15, 0.7, 0.3]) opts.push(['down', r.left + r.width * fx, r.top - pad - 22], ['up', r.left + r.width * fx, r.bottom + pad + 22])
+        // 附近的字和控件（只取叶子：文字段落、输入框、下拉框、按钮、星星、图片）
+        const near2 = [...document.querySelectorAll('p, span, label, li, dd, dt, h1, h2, h3, a, button, input, select, textarea, img, [role=radio]')].filter((e) => {
+          if (hit.el.contains(e) || e.contains(hit.el) || e.closest('.z-\\[70\\], .z-\\[71\\]')) return false
+          const q = e.getBoundingClientRect()
+          if (!q.width || !q.height || q.height > 120 || q.bottom < r.top - 80 || q.top > r.bottom + 80 || q.right < r.left - 80 || q.left > r.right + 80) return false
+          return !/^(P|SPAN|LABEL|LI|DD|DT|H1|H2|H3)$/.test(e.tagName) || ((e.innerText || '').trim() && ![...e.children].some((c) => (c.innerText || '').trim()))
+        }).map((e) => e.getBoundingClientRect())
+        const clear = ([, x, y]) => {
+          if (x < 20 || x > innerWidth - 20 || y < (document.querySelector('[data-tour-bar]')?.getBoundingClientRect().bottom ?? 0) + 20 || y > innerHeight - 20) return 99
+          const a0 = { left: x - 18, right: x + 18, top: y - 18, bottom: y + 18 }
+          const ov = (q) => q.left < a0.right - 1 && q.right > a0.left + 1 && q.top < a0.bottom - 1 && q.bottom > a0.top + 1
+          // 大块的卡片、链接（比 120px 高，上面没算进来）：箭头四角也不能压到别的能点的东西
+          const big = [[x - 14, y - 14], [x + 14, y - 14], [x - 14, y + 14], [x + 14, y + 14], [x, y]].filter(([px, py]) => { const e = document.elementFromPoint(px, py)?.closest('a, button, input, select, textarea, [role=radio]'); return e && !hit.el.contains(e) && !e.contains(hit.el) }).length
+          return (ov({ left: r.left + 6, right: r.right - 6, top: r.top + 6, bottom: r.bottom - 6 }) ? 5 : 0) + near2.filter(ov).length + (big ? 1 : 0)
         }
-        // 候选位置：气泡（连同贴在它边上的箭头）放在目标的下、上、左、右；上下各有「紧挨着」和「放到说明外侧」两种
-        const lowB = Math.max(r.bottom + pad, ...guard.filter((g) => g.q.top >= r.bottom - 2).map((g) => g.q.bottom))
-        const highT = Math.min(r.top - pad, ...guard.filter((g) => g.q.bottom <= r.top + 2).map((g) => g.q.top))
-        const lx = (k) => Math.max(m, Math.min(innerWidth - tw - m, cx - tw / 2 + k * tw))
-        const cands = []
-        for (const k of [0, -0.4, 0.4]) cands.push({ kind: 'down', k, off: pad + gap }, { kind: 'up', k, off: pad + gap })
-        cands.push({ kind: 'down', k: 0, off: lowB - r.bottom + 8 + AR }, { kind: 'up', k: 0, off: r.top - highT + 8 + AR })
-        cands.push({ kind: 'left', k: 0, off: pad + 8 + AR }, { kind: 'right', k: 0, off: pad + 8 + AR })
-        const rectOf = (c) => {
-          if (c.kind === 'down') { const t0 = r.bottom + c.off; return { b: [lx(c.k), t0, lx(c.k) + tw, t0 + th], a: [cx - 18, t0 - AR, cx + 18, t0] } }
-          if (c.kind === 'up') { const t0 = r.top - c.off - th; return { b: [lx(c.k), t0, lx(c.k) + tw, t0 + th], a: [cx - 18, t0 + th, cx + 18, t0 + th + AR] } }
-          if (c.kind === 'left') { const l0 = r.left - c.off - tw; return { b: [l0, cy - th / 2, l0 + tw, cy + th / 2], a: [l0 + tw, cy - 18, l0 + tw + AR, cy + 18] } }
-          const l0 = r.right + c.off; return { b: [l0, cy - th / 2, l0 + tw, cy + th / 2], a: [l0 - AR, cy - 18, l0, cy + 18] }
-        }
-        const over = (q, [l, t, rr, b]) => q.left < rr - 1 && q.right > l + 1 && q.top < b - 1 && q.bottom > t + 1
-        const score = (c) => {
-          const { b: B0, a: A0 } = rectOf(c)
-          if (B0[0] < m - 0.5 || B0[2] > innerWidth - m + 0.5 || B0[1] < ceil || B0[3] > floor || Math.min(B0[1], A0[1]) < ceil || Math.max(B0[3], A0[3]) > floor) return { s: 1e6 }
-          const tgt = { left: r.left - pad, right: r.right + pad, top: r.top - pad, bottom: r.bottom + pad }
-          let sc = over(tgt, B0) || over(tgt, A0) ? 1000 : 0
-          const hitG = guard.filter((g) => over(g.q, B0) || over(g.q, A0))
-          sc += hitG.length * 40
-          // 别处的字：盖住一点也算，但很轻
-          for (const fx of [0.1, 0.5, 0.9]) for (const fy of [0.25, 0.75]) { const e = document.elementFromPoint(B0[0] + tw * fx, B0[1] + th * fy); if (e && (e.innerText || '').trim() && e.children.length < 3) sc += 1 }
-          return { s: sc + Math.abs(c.k) + (c.kind === 'left' || c.kind === 'right' ? 2 : 0) + c.off / 400, hitG }
-        }
-        let pick = null
-        if (!inHead) pick = cands.map((c) => ({ c, ...score(c) })).sort((a1, b1) => a1.s - b1.s)[0]
-        // 实在放不下：被压住的说明并进气泡里，内容不丢
-        const merge = pick && pick.s >= 40 && pick.s < 1000 ? [...new Set(pick.hitG.map((g) => g.t).filter(Boolean))].join(' ').slice(0, 60) : ''
-        side0.current = { el: hit.el, text: hit.text, kind: pick && pick.s < 1e6 ? pick.c.kind : null, k: pick ? pick.c.k : 0, off: pick?.c.off ?? pad + gap, merge }
-        if (T.dataset.merge !== merge) { T.dataset.merge = merge; setMerge(merge) }
+        const ranked = opts.map((o, k) => [o, clear(o) + k * 0.01]).sort((a1, b1) => a1[1] - b1[1])[0]
+        // 周围实在没有空处：这一步不画箭头，只留绿圈（「点这里」已经写在导览条上），宁可少一个箭头也不压字
+        side0.current = { el: hit.el, text: hit.text, arrow: ranked[1] < 1 ? [ranked[0][0], ranked[0][1] - r.left, ranked[0][2] - r.top] : null }
       }
-      // 顶栏里的目标（身份切换、导览条按钮）：左边放得下就放左边，否则放到导览条下面
-      const headSide = inHead && r.top < 140 && r.left - pad - 8 - AR - tw >= m
-      const kind = inHead ? (headSide ? 'left' : 'down') : side0.current.kind || (r.bottom + pad + gap + th <= floor || r.top < innerHeight / 2 ? 'down' : 'up')
-      let off = inHead ? (headSide ? pad + 8 + AR : pad + gap) : side0.current.kind ? side0.current.off : pad + gap
-      // 手机上点顶栏：气泡和箭头都放到导览条下面，不盖住导览条上的字
-      if (inHead && kind === 'down' && barB > r.bottom) off = Math.max(off, barB - r.bottom + 8 + AR)
-      let left, top
-      if (kind === 'down') { left = Math.max(m, Math.min(innerWidth - tw - m, cx - tw / 2 + (inHead ? 0 : side0.current.k) * tw)); top = r.bottom + off }
-      else if (kind === 'up') { left = Math.max(m, Math.min(innerWidth - tw - m, cx - tw / 2 + side0.current.k * tw)); top = r.top - off - th }
-      else if (kind === 'left') { left = r.left - off - tw; top = cy - th / 2 }
-      else { left = r.right + off; top = cy - th / 2 }
-      top = Math.max(m, Math.min(innerHeight - th - m, top))
-      left = Math.max(m, Math.min(innerWidth - tw - m, left))
-      Object.assign(T.style, { transition: '', opacity: '1', left: `${left}px`, top: `${top}px` })
-      const side = kind === 'left' || kind === 'right'
-      const ax = Math.max(14, Math.min(tw - 14, cx - left))
-      Object.assign(A.style, kind === 'right' ? { left: '-6px', right: '', top: `${th / 2 - 6}px`, bottom: '' } : kind === 'left' ? { left: '', right: '-6px', top: `${th / 2 - 6}px`, bottom: '' } : { left: `${ax - 6}px`, right: '', top: kind === 'down' ? '-6px' : '', bottom: kind === 'down' ? '' : '-6px' })
-      // 大箭头贴在气泡边上，箭尖朝着目标
-      const px = kind === 'left' ? left + tw + AR / 2 : kind === 'right' ? left - AR / 2 : Math.max(m + 18, Math.min(innerWidth - m - 18, cx))
-      const py = side ? cy : kind === 'down' ? top - AR / 2 : top + th + AR / 2
-      Object.assign(P.style, { transition: '', opacity: '1', left: `${px - 18}px`, top: `${py - 18}px` })
-      P.dataset.dir = kind === 'left' ? 'right' : kind === 'right' ? 'left' : kind === 'down' ? 'up' : 'down'
+      if (!side0.current.arrow) { P.style.transition = 'none'; P.style.opacity = '0'; return }
+      const [dir, ox, oy] = side0.current.arrow
+      Object.assign(P.style, { transition: '', opacity: '1', left: `${r.left + ox - 18}px`, top: `${r.top + oy - 18}px` })
+      P.dataset.dir = dir
     }
     raf = requestAnimationFrame(tick)
     return () => cancelAnimationFrame(raf)
@@ -304,7 +232,6 @@ export default function Coach() {
       <div ref={tip} role="status" aria-live="polite" className="pointer-events-none fixed z-[71] max-w-[min(280px,calc(100vw-16px))] rounded-2xl bg-ink px-3.5 py-2.5 text-[15px] font-semibold leading-snug text-bg opacity-0 ring-2 ring-white/80 shadow-lg shadow-ink/25 transition-opacity duration-200">
         <span ref={arrow} aria-hidden="true" className="absolute size-3 rotate-45 bg-ink" />
         <span className={`relative block ${text.length <= 14 ? 'whitespace-nowrap' : '[text-wrap:pretty]'}`}>{text}</span>
-        {merge && <span className="relative mt-1 block border-t border-bg/20 pt-1 text-[13px] font-medium leading-snug opacity-80">被挡住的说明：{merge}</span>}
       </div>
     </>,
     document.body,
