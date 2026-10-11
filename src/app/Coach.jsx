@@ -159,13 +159,14 @@ export default function Coach() {
       const tw = T.offsetWidth, th = T.offsetHeight, m = 8, AR = 40
       // 页面里按钮挨着按钮、字挨着字，浮在页面上的气泡放哪都会压到说明。
       // 所以「点这里：××」写进顶上的导览条（导览条在页面里占自己的位置，不压任何内容），
-      // 目标上只留绿圈和一个贴在旁边空白处的箭头；弹窗里的目标，气泡放到弹窗上方压暗的空白处
+      // 目标上只留绿圈和一个贴在旁边空白处的箭头；弹窗里也一样，只有输入送达码时把气泡放到弹窗上方压暗的空白处
       // 顶栏里的目标（身份切换、导览条上的按钮）旁边挨着别的按钮和导览条自己的字，气泡放哪都会压住，
       // 「点这里」同样写进导览条，目标上只留绿圈
       if (hit.el.closest('header, [data-tour-bar]')) { say(hit.text); hide(T, P); return }
       const dlgEl = hit.el.closest('[role=dialog]')
       const sr = dlgEl?.getBoundingClientRect()
-      if (dlgEl && sr.top >= th + AR + 16) {
+      // 弹窗里只有「输入送达码」还用气泡（码要写在眼前）；按钮还是写进导览条、箭头贴着按钮，不在弹窗外面隔着半屏指
+      if (dlgEl && hit.input && sr.top >= th + AR + 16) {
         say('')
         const left = Math.max(m, Math.min(innerWidth - tw - m, cx0(r) - tw / 2)), top = sr.top - 8 - AR - th
         Object.assign(T.style, { transition: '', opacity: '1', left: `${left}px`, top: `${top}px` })

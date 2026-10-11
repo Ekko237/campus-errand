@@ -2,14 +2,13 @@ import { useEffect, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { Link, useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence, animate, useMotionValue, useTransform, useReducedMotion } from 'motion/react'
-import { CaretRight, ArrowRight, ArrowCounterClockwise, ListBullets } from '@phosphor-icons/react'
+import { CaretRight, ArrowRight, ArrowCounterClockwise, ListBullets, Database } from '@phosphor-icons/react'
 import { useStore, useMe } from '../store'
 import { HomeLink } from './ViewMode'
 import { levelOf, nextLevel, iconUrl, posterTierOf, posterNextTier, B, detourMin, onMyWay, myRoute } from '../data'
 import { Avatar, VerifiedBadge, Panel, Btn, Empty, ago, gi } from '../ui'
 const Path = gi('path')
 const Wallet = gi('wallet')
-const ShieldWarning = gi('shield-alert')
 
 function CountUp({ value, from = value }) {
   const reduce = useReducedMotion()
@@ -285,7 +284,8 @@ export default function Me() {
         </Panel>
       )}
       <Panel className="flex items-center gap-3 p-4">
-        <ShieldWarning size={24} className="shrink-0 text-muted" />
+        {/* 只是说明数据放在哪：用中性的数据图标，不用盾牌叹号（像安全警告） */}
+        <Database size={22} className="shrink-0 text-muted" />
         <p className="flex-1 text-[15px] text-muted">演示数据存在本机浏览器，可随时恢复初始状态。</p>
         <Btn size="sm" variant="ghost" onClick={() => { if (window.confirm('把演示数据恢复成初始示例？你走过的订单和信用变化都会清掉。')) { act('reset'); nav('/app') } }}><ArrowCounterClockwise size={16} weight="bold" />重置</Btn>
       </Panel>
