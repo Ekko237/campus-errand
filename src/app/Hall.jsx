@@ -52,7 +52,7 @@ export function TaskCard({ t, me, role, route, n = 0 }) {
           const m = detourMin(route.from, route.to, t)
           return <span className={`tnum inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 font-semibold ${m <= 5 ? 'bg-accent-soft text-accent' : 'bg-sunken text-ink'}`}>{n > 0 && <span className="grid size-[18px] place-items-center rounded-full bg-accent text-[11px] font-bold text-on-accent">{n}</span>}{m <= 5 ? '顺路 · ' : ''}多走 {m} 分钟</span>
         })() : (role === 'runner' ? <span className="tnum">距你 {fmtDist(d)}</span> : null)}
-        <span className="basis-full">{t.posterId === 'poster' ? '我发布的' : `${t.posterName} · 信用 ${t.posterCredit}`}</span>
+        <span className="basis-full">{t.posterId === 'poster' ? (role === 'poster' ? '我发布的' : `${t.posterName} · 信用 ${t.posterCredit}`) : `${t.posterName} · 信用 ${t.posterCredit}`}</span>
       </div>
       {t.posterId !== 'poster' && t.posterCredit < POSTER_WARN && (
         <p className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-danger-soft px-3 py-1.5 text-sm font-medium text-danger">

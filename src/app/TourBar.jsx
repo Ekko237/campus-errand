@@ -29,6 +29,7 @@ export function tourStep(state) {
 // 导览要找的按钮在哪一块：电脑版右边开着一单时在详情栏，否则在主内容区
 const root = () => document.querySelector('[data-tour-root]') || document.querySelector('main') || document.body
 
+// 自动滚动一律瞬移：平滑滚动那一两秒里按钮还在动，伸手去点容易点到旁边的「申诉」
 export default function TourBar({ wide = false }) {
   const { state, act } = useStore()
   const nav = useNavigate()
@@ -68,7 +69,7 @@ export default function TourBar({ wide = false }) {
       // 按钮已经完整看得见（哪怕离底部导航只差几像素）就不动：用户可能正伸手去点
       if ((r.top >= head && r.bottom <= hard) || (el.closest('.sticky') && r.bottom <= innerHeight)) return
       // 露了一部分：只挪刚好够的那一点，不大幅跳
-      if (r.bottom > head && r.top < hard) { window.scrollBy({ top: r.bottom > bottom ? r.bottom - bottom : r.top - top, behavior: reduce || late ? 'auto' : 'smooth' }); return }
+      if (r.bottom > head && r.top < hard) { window.scrollBy({ top: r.bottom > bottom ? r.bottom - bottom : r.top - top, behavior: 'auto' }); return }
       // 刚停过「奖励时刻」、按钮在下面：只往下挪到刚好露出按钮，取件码那张卡尽量留在眼前，不整段跳过
       if (late && r.top >= hard) { window.scrollBy({ top: r.bottom - bottom, behavior: 'auto' }); return }
       // 完全在屏幕外：把按钮所在的整块（卡片、段落）顶到导览条下面，块的标题不被切
@@ -80,7 +81,7 @@ export default function TourBar({ wide = false }) {
       }
       // 块太高放不下：把按钮放到可见区中间，它下面的小字（申诉、放弃、说明）也一起露出来
       if (dy == null) dy = r.height < bottom - top ? r.top + r.height / 2 - (top + bottom) / 2 : r.top - top
-      window.scrollBy({ top: dy, behavior: reduce || late ? 'auto' : 'smooth' })
+      window.scrollBy({ top: dy, behavior: 'auto' })
     }
     // 刚发生的「奖励时刻」（取件码揭晓、托管放款）：先把那张卡停在视线里 1.6 秒，再去找下一个按钮
     const timers = []
@@ -99,7 +100,7 @@ export default function TourBar({ wide = false }) {
         // 订单标题和这张卡能一起放下，就从标题开始露，免得标题正好藏在顶栏下面、看不出是哪一单
         const tr = root().querySelector('h1')?.getBoundingClientRect()
         const from = tr && tr.top < mr.top && mr.bottom - tr.top <= innerHeight - head - 96 ? tr.top : mr.top
-        if (!touched && (mr.top < head + 16 || mr.bottom > innerHeight - 80)) window.scrollBy({ top: from - head - 16, behavior: reduce ? 'auto' : 'smooth' })
+        if (!touched && (mr.top < head + 16 || mr.bottom > innerHeight - 80)) window.scrollBy({ top: from - head - 16, behavior: 'auto' })
         // 放款那条「¥5 从小满流到阿远」要播约 2.3 秒，取件码揭晓短一些
         wait = step.n === 7 ? 2600 : step.n === 5 ? 1200 : 1600
         late = true
