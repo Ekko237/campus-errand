@@ -24,6 +24,13 @@ function AppLoading() {
 }
 
 try { sessionStorage.removeItem('stale-reload') } catch {}
+// 带 ?reset=1 打开：把这台设备上的演示数据清空，回到第一次来的样子（会再问一次要不要指引），然后去掉这个参数
+if (/[?&]reset=1\b/.test(window.location.search)) {
+  try {
+    for (const st of [localStorage, sessionStorage]) Object.keys(st).filter((k) => k.startsWith('shunluxia')).forEach((k) => st.removeItem(k))
+  } catch { /* 无痕模式下没有本地存储 */ }
+  window.history.replaceState(null, '', window.location.pathname + window.location.hash)
+}
 // 标题字加载期间给 <html> 挂 fl（index.css 里让替身字先斜过来），得意黑到了就摘掉
 {
   const done = () => document.documentElement.classList.remove('fl')
