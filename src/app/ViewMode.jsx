@@ -128,6 +128,19 @@ function Framed({ view, src, frame }) {
   // 正在看某一单时切过来：横向直接停在右边的详情栏，不让人先看到列表、再去找
   const panBox = useRef(null)
   useEffect(() => { if (pan && /#\/app\/task\//.test(first) && panBox.current) panBox.current.scrollLeft = panBox.current.scrollWidth }, []) // eslint-disable-line react-hooks/exhaustive-deps
+  // 导览要圈的东西在框外（手机上看电脑版，左右滑着看）：框里告诉外层目标在哪，外层把它滑到屏幕中间
+  useEffect(() => {
+    if (!pan) return
+    const f = (e) => {
+      const b = panBox.current
+      if (e.origin !== window.location.origin || e.data?.type !== 'shunluxia:coach' || !b) return
+      const x0 = 12 + e.data.x0 * W * s, x1 = 12 + e.data.x1 * W * s
+      if (x0 >= b.scrollLeft && x1 <= b.scrollLeft + b.clientWidth) return
+      b.scrollTo({ left: (x0 + x1) / 2 - b.clientWidth / 2, behavior: 'smooth' })
+    }
+    window.addEventListener('message', f)
+    return () => window.removeEventListener('message', f)
+  }, [pan, W, s])
   return (
     <div className="min-h-[100dvh] bg-sunken text-ink">
       <header className="flex h-14 items-center justify-between gap-3 px-4">

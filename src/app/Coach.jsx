@@ -13,7 +13,7 @@ import { tourStep } from './TourBar'
 
 const ROLE = { poster: '发单人', runner: '跑腿人' }
 // 切身份那一下要说清楚切过去干什么
-const WHY = { 2: '去接这一单', 3: '去接这一单', 4: '去取件', 5: '去送达', 6: '确认收货、放款', 7: '给跑腿人打分', 8: '给发单人打分' }
+const WHY = { 2: '先做校园认证', 3: '去接这一单', 4: '去取件', 5: '去送达', 6: '确认收货、放款', 7: '给跑腿人打分', 8: '给发单人打分' }
 const vis = (el) => { if (!el) return false; const r = el.getBoundingClientRect(); return r.width > 0 && r.height > 0 && getComputedStyle(el).visibility !== 'hidden' }
 const label = (el) => (el.innerText || el.getAttribute('aria-label') || '').trim().replace(/\s+/g, ' ')
 
@@ -83,6 +83,7 @@ export default function Coach() {
   const [text, setText] = useState('')
   const cur = useRef(null)
   const scrolled = useRef(null)
+  const sent = useRef(null)
   const on = state.tour.active
   useEffect(() => {
     if (!on) return
@@ -94,6 +95,12 @@ export default function Coach() {
       if (!R || !T || !A || !P) return
       if (!hit || !vis(hit.el)) { R.style.opacity = '0'; T.style.opacity = '0'; P.style.opacity = '0'; cur.current = null; return }
       cur.current = hit.el
+      // 在外层框里左右滑着看时（手机上看电脑版）：目标换了就告诉外层，外层把它滑进屏幕
+      if (window.parent !== window && sent.current !== hit.el) {
+        sent.current = hit.el
+        const q = hit.el.getBoundingClientRect()
+        try { window.parent.postMessage({ type: 'shunluxia:coach', x0: q.left / innerWidth, x1: q.right / innerWidth }, window.location.origin) } catch { /* 拿不到外层就算了 */ }
+      }
       if (hit.text !== T.dataset.text) { T.dataset.text = hit.text; setText(hit.text) }
       // 弹窗里的目标不在屏幕里：滚到中间（只滚一次，之后用户自己滑不跟着抢）
       const r0 = hit.el.getBoundingClientRect()
@@ -117,7 +124,9 @@ export default function Coach() {
       const top = side ? r.top + r.height / 2 - th / 2 : down ? r.bottom + pad + gap : r.top - pad - gap - th
       // 手机上点顶栏（身份切换）：气泡放到导览条下面，不盖住导览条上的字
       const barB = document.querySelector('[data-tour-bar]')?.getBoundingClientRect().bottom ?? 0
-      const top2 = !side && down && r.top < 100 && barB ? Math.max(top, barB + 12) : top
+      const pushed = !side && down && r.top < 100 && barB > r.bottom
+      // 箭头也放在导览条下面（导览条和气泡之间），不压导览条上的字
+      const top2 = pushed ? Math.max(top, barB + 48) : top
       const left = side ? r.left - pad - gap - tw : Math.max(m, Math.min(innerWidth - tw - m, r.left + r.width / 2 - tw / 2))
       Object.assign(T.style, { opacity: '1', left: `${left}px`, top: `${Math.max(m, Math.min(innerHeight - th - m, top2))}px` })
       const ax = Math.max(14, Math.min(tw - 14, r.left + r.width / 2 - left))
@@ -125,7 +134,7 @@ export default function Coach() {
       // 大箭头：品牌绿，放在气泡和目标之间，箭尖对着目标中间；气泡在下面就朝上指，在上面就朝下指
       const tTop = Math.max(m, Math.min(innerHeight - th - m, top2))
       const px = side ? (left + tw + r.left - pad) / 2 : Math.max(m + 18, Math.min(innerWidth - m - 18, r.left + r.width / 2))
-      const py = side ? r.top + r.height / 2 : down ? (Math.min(r.bottom + pad, innerHeight - 3) + tTop) / 2 : (tTop + th + Math.max(r.top - pad, 3)) / 2
+      const py = side ? r.top + r.height / 2 : pushed ? (barB + tTop) / 2 : down ? (Math.min(r.bottom + pad, innerHeight - 3) + tTop) / 2 : (tTop + th + Math.max(r.top - pad, 3)) / 2
       Object.assign(P.style, { opacity: '1', left: `${px - 18}px`, top: `${py - 18}px` })
       P.dataset.dir = side ? 'right' : down ? 'up' : 'down'
     }
