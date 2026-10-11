@@ -11,7 +11,7 @@ const Timer = gi('timer')
 const LockKey = gi('lock')
 const ProhibitInset = gi('ban')
 const Lightning = gi('bolt')
-const Wallet = gi('wallet')
+const Wallet = gi('coins')
 
 const groups = [...new Set(BUILDINGS.map((b) => b.group))]
 function BuildingSelect({ value, onChange, id }) {

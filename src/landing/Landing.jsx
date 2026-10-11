@@ -1,4 +1,5 @@
 import RouteHero, { CampusRoutes, ROUTES, routeHits } from './RouteHero'
+import { LockKeyOpen as PhLockKeyOpen } from '@phosphor-icons/react'
 import Story from './Story'
 import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
@@ -8,10 +9,10 @@ import {
 import { ArrowRight, ArrowLeft, ArrowDown, CaretLeft, CaretRight, Plus, ArrowCounterClockwise, Check } from '@phosphor-icons/react'
 import { RULES_PLUS, RULES_MINUS, POSTER_RULES_PLUS, POSTER_RULES_MINUS, LEVELS, POSTER_TIERS, TYPES, seedTasks, detourMin, findBanned } from '../data'
 import { useNavigate } from 'react-router-dom'
-import { gi } from '../ui'
+import { gi, pi } from '../ui'
 import { routePath, PLACES } from '../campusMap'
 const LockKey = gi('lock')
-const LockKeyOpen = gi('lock-open')
+const LockKeyOpen = pi(PhLockKeyOpen)
 const EyeSlash = gi('eye-off', 'v3')
 
 const ease = [0.16, 1, 0.3, 1]

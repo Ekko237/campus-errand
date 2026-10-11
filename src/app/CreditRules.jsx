@@ -1,13 +1,14 @@
 import { useNavigate } from 'react-router-dom'
+import { TrendDown as PhTrendDown, Camera as PhCamera } from '@phosphor-icons/react'
 import { ArrowLeft } from '@phosphor-icons/react'
 import { useMe } from '../store'
 import { LEVELS, RULES_PLUS, RULES_MINUS, POSTER_RULES_PLUS, POSTER_RULES_MINUS, POSTER_TIERS, CREDIT_INIT, iconUrl, posterTierOf } from '../data'
-import { Panel, gi } from '../ui'
+import { Panel, gi, pi } from '../ui'
 const TrendUp = gi('trend-up', 'v2')
-const TrendDown = gi('trend-down')
+const TrendDown = pi(PhTrendDown, 'text-danger')
 const ShieldCheck = gi('shield-check')
 const LockKey = gi('lock')
-const Camera = gi('camera')
+const Camera = pi(PhCamera)
 const Scales = gi('scales')
 
 export default function CreditRules() {

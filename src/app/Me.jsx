@@ -8,7 +8,7 @@ import { HomeLink } from './ViewMode'
 import { levelOf, nextLevel, iconUrl, posterTierOf, posterNextTier, B, detourMin, onMyWay, myRoute } from '../data'
 import { Avatar, VerifiedBadge, Panel, Btn, Empty, ago, gi } from '../ui'
 const Path = gi('path')
-const Wallet = gi('wallet')
+const Wallet = gi('coins')
 
 function CountUp({ value, from = value }) {
   const reduce = useReducedMotion()

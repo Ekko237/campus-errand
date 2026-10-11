@@ -1,12 +1,13 @@
 import { useEffect, useRef, useState } from 'react'
+import { IdentificationCard as PhIdentificationCard } from '@phosphor-icons/react'
 import { motion, useReducedMotion } from 'motion/react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { ArrowLeft, CaretDown } from '@phosphor-icons/react'
 import { useStore } from '../store'
-import { Btn, Panel, Field, VerifiedBadge, inputCls, gi } from '../ui'
+import { Btn, Panel, Field, VerifiedBadge, inputCls, gi, pi } from '../ui'
 import { CREDIT_INIT, code4, levelOf } from '../data'
 const SealCheck = gi('seal')
-const IdentificationCard = gi('id-card')
+const IdentificationCard = pi(PhIdentificationCard)
 const EnvelopeSimple = gi('envelope')
 
 export default function Verify() {

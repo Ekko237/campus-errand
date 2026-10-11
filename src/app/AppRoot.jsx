@@ -1,11 +1,12 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
+import { Receipt as PhReceipt, Megaphone as PhMegaphone } from '@phosphor-icons/react'
 import { Routes, Route, NavLink, Link, useLocation } from 'react-router-dom'
 import { motion, AnimatePresence, useReducedMotion } from 'motion/react'
 import { ListMagnifyingGlass, PlusCircle, UserCircle, Compass } from '@phosphor-icons/react'
 import { StoreProvider, useStore } from '../store'
 import { ViewHost, ViewToggle, EMBED, HomeLink } from './ViewMode'
 import { OpenTaskCtx } from './openTask'
-import { Sheet, Btn, spring, gi } from '../ui'
+import { Sheet, Btn, spring, gi, pi } from '../ui'
 import Hall from './Hall'
 import Publish from './Publish'
 import TaskDetail from './TaskDetail'
@@ -17,10 +18,10 @@ import Wallet from './Wallet'
 import TourBar from './TourBar'
 import Coach from './Coach'
 import DemoPanel from './DemoPanel'
-const Receipt = gi('receipt')
+const Receipt = pi(PhReceipt)
 const CheckCircle = gi('check')
 const WarningCircle = gi('alert')
-const Megaphone = gi('megaphone')
+const Megaphone = pi(PhMegaphone)
 const PersonSimpleRun = gi('runner')
 const SealCheck = gi('seal')
 

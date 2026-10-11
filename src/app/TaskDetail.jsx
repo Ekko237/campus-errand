@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { Camera as PhCamera, LockKeyOpen as PhLockKeyOpen, Numpad as PhNumpad } from '@phosphor-icons/react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
 import { motion, AnimatePresence, useIsPresent, useReducedMotion, useMotionValue, useTransform, animate } from 'motion/react'
 import { ArrowLeft, Check, ArrowClockwise } from '@phosphor-icons/react'
@@ -6,20 +7,20 @@ import { useStore } from '../store'
 import CampusMap, { along } from '../landing/CampusMap'
 import { PLACES, routePath } from '../campusMap'
 import { B, dist, fmtDist, RUNNER_HOME, minCreditFor, levelOf, nextLevel, detourMin, detourMeters, myRoute, onMyWay } from '../data'
-import { Btn, Panel, TypeTag, UrgentTag, VerifiedBadge, Sheet, Stars, Empty, Field, inputCls, left, clock, ago, spring, gi, StatusTag } from '../ui'
+import { Btn, Panel, TypeTag, UrgentTag, VerifiedBadge, Sheet, Stars, Empty, Field, inputCls, left, clock, ago, spring, gi, StatusTag, pi } from '../ui'
 const MapPin = gi('pin')
 const Clock = gi('clock')
 const LockKey = gi('lock')
-const LockKeyOpen = gi('lock-open')
+const LockKeyOpen = pi(PhLockKeyOpen)
 const EyeSlash = gi('eye-off', 'v3')
 const Phone = gi('phone', 'v2')
 const Package = gi('parcel', 'v2')
 const House = gi('door', 'v2')
 const ShieldCheck = gi('shield-check')
-const Camera = gi('camera')
-const Numpad = gi('keypad')
+const Camera = pi(PhCamera)
+const Numpad = pi(PhNumpad)
 const Scales = gi('scales')
-const Warning = gi('warning')
+const Warning = gi('alert')
 const FileX = gi('doc-x')
 
 const STEPS = ['发布', '接单', '进行中', '送达', '确认', '互评']

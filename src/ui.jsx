@@ -13,6 +13,12 @@ export function gi(name, v = 'v1') {
   C.displayName = `Ico(${name})`
   return C
 }
+// 素材里被裁坏的那几张图（相机、数字键盘、小票、下降趋势、开锁）：换成图标库里的同名图标，统一用主题色
+export function pi(I, color = 'text-accent') {
+  const C = ({ size = 20, className = '' }) => <I size={size} weight="duotone" aria-hidden="true" className={`inline-block shrink-0 ${color} ${className.replace(/\btext-\S+/g, '')}`} />
+  C.displayName = `Ph(${I.displayName || 'icon'})`
+  return C
+}
 const SealCheck = gi('seal')
 const Lightning = gi('bolt')
 

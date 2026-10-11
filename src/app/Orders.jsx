@@ -1,11 +1,12 @@
 import { useState, useEffect } from 'react'
+import { Receipt as PhReceipt } from '@phosphor-icons/react'
 import { Link, useLocation } from 'react-router-dom'
 import { useOpenTaskId } from './openTask'
 import { ArrowRight } from '@phosphor-icons/react'
 import { useStore } from '../store'
 import { B } from '../data'
-import { TypeTag, StatusTag, Empty, Btn, ago, gi } from '../ui'
-const Receipt = gi('receipt')
+import { TypeTag, StatusTag, Empty, Btn, ago, gi, pi } from '../ui'
+const Receipt = pi(PhReceipt)
 
 // 列表里楼名去掉括号里的补充（「菜鸟驿站（东门）」→「菜鸟驿站」），一行放得下从哪到哪和时间
 const nm = (k) => B[k]?.name.replace(/（.*?）/, '')
