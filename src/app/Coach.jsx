@@ -86,6 +86,7 @@ export default function Coach() {
   const arrow = useRef(null)
   const point = useRef(null)
   const [text, setText] = useState('')
+  const [merge, setMerge] = useState('')
   const cur = useRef(null)
   const scrolled = useRef(null)
   const sent = useRef(null)
@@ -146,74 +147,83 @@ export default function Coach() {
       Object.assign(R.style, { transition: '', opacity: '1', left: `${L}px`, top: `${Tp}px`, width: `${Rt - L}px`, height: `${Bt - Tp}px`, borderRadius: `${rad}px`,
         boxShadow: dlg ? '0 0 0 3px var(--accent), 0 0 0 9px color-mix(in srgb, var(--accent) 25%, transparent)' : '0 0 0 3px var(--accent), 0 0 0 9px color-mix(in srgb, var(--accent) 25%, transparent), 0 0 0 200vmax rgba(12, 24, 18, 0.32)' })
       // 气泡：下面放得下就放下面，否则放上面；左右夹在屏幕里；箭头对着目标中间
-      const tw = T.offsetWidth, th = T.offsetHeight, gap = 48, m = 8
+      const tw = T.offsetWidth, th = T.offsetHeight, gap = 48, m = 8, AR = 40
       const navTop = document.querySelector('nav[aria-label="主导航"]')?.getBoundingClientRect().top ?? innerHeight
       const floor = (navTop > innerHeight / 2 && !hit.nav ? navTop : innerHeight) - m
       const barB = document.querySelector('[data-tour-bar]')?.getBoundingClientRect().bottom ?? 0
-      const ceil = Math.max(m, hit.el.closest('header, [data-tour-bar]') ? m : barB + 8)
-      const cx = r.left + r.width / 2, cy = r.top + r.height / 2
-      // 顶栏里的目标（身份切换、导览条按钮）：宽屏放左边，手机放到导览条下面
       const inHead = !!hit.el.closest('header, [data-tour-bar]')
-      // 候选位置：下 / 上（居中、往左错、往右错）、左、右
-      const cands = []
-      for (const k of [0, -0.4, 0.4]) {
-        const lx = Math.max(m, Math.min(innerWidth - tw - m, cx - tw / 2 + k * tw))
-        cands.push({ kind: 'down', k, left: lx, top: r.bottom + pad + gap }, { kind: 'up', k, left: lx, top: r.top - pad - gap - th })
-      }
-      cands.push({ kind: 'left', k: 0, left: r.left - pad - gap - tw, top: cy - th / 2 }, { kind: 'right', k: 0, left: r.right + pad + gap, top: cy - th / 2 })
-      // 打分：伸出屏幕、压到导览条或底部导航不行；压到目标本身和它紧挨着的说明小字（提示、标签、错误信息）重罚；其余按盖住几处文字算
-      const near = () => {
-        const out = []
-        for (const y of [r.bottom + 10, r.bottom + 26, r.bottom + 42, r.top - 12, r.top - 28]) for (const fx of [0.15, 0.5, 0.85]) {
-          const e = document.elementFromPoint(r.left + r.width * fx, y)
-          if (e && !hit.el.contains(e) && (e.innerText || '').trim() && e.getBoundingClientRect().height < 64 && !e.closest('[data-tour-bar], header, nav')) out.push(e.getBoundingClientRect())
-        }
-        return out
-      }
-      const score = (c) => {
-        const L = c.left, T0 = c.top, R = L + tw, B = T0 + th
-        if (L < m - 0.5 || R > innerWidth - m + 0.5 || T0 < ceil || B > floor) return 1e6
-        const hitR = (q) => q.left < R - 1 && q.right > L + 1 && q.top < B - 1 && q.bottom > T0 + 1
-        let sc = hitR({ left: r.left - pad, right: r.right + pad, top: r.top - pad, bottom: r.bottom + pad }) ? 1000 : 0
-        for (const q of c.hints) if (hitR(q)) sc += 40
-        for (const fx of [0.08, 0.3, 0.5, 0.7, 0.92]) for (const fy of [0.2, 0.5, 0.8]) {
-          const e = document.elementFromPoint(L + tw * fx, T0 + th * fy)
-          if (e && !e.closest('[data-tour-bar]') && (e.innerText || '').trim() && e.children.length < 3) sc += 1
-        }
-        return sc + Math.abs(c.k) * 2 + (c.kind === 'left' || c.kind === 'right' ? 3 : 0) + (c.kind === 'up' ? 0.5 : 0)
-      }
+      const ceil = Math.max(m, inHead ? m : barB + 8)
+      const cx = r.left + r.width / 2, cy = r.top + r.height / 2
       const isNew = side0.current.el !== hit.el || side0.current.text !== hit.text
-      // 紧挨着目标的说明文字（提示、标签、勾选项、错误信息）：气泡也可以放到它们外侧，箭头跨过说明指到目标
-      const hints0 = inHead || !isNew ? [] : near()
-      const lowB = Math.max(r.bottom, ...hints0.filter((q) => q.top >= r.bottom - 2).map((q) => q.bottom))
-      const highT = Math.min(r.top, ...hints0.filter((q) => q.bottom <= r.top + 2).map((q) => q.top))
-      if (lowB > r.bottom) cands.push({ kind: 'down', k: 0, dy: lowB - r.bottom + 16, left: Math.max(m, Math.min(innerWidth - tw - m, cx - tw / 2)), top: lowB + 16 })
-      if (highT < r.top) cands.push({ kind: 'up', k: 0, dy: r.top - highT + 16, left: Math.max(m, Math.min(innerWidth - tw - m, cx - tw / 2)), top: highT - 16 - th })
-      // 同一个目标只挑一次位置（记下是哪一种），之后每一帧按这种放，滚动时不来回翻
       if (isNew) {
+        // 必须避开的：目标本身，以及和它同一列、上下 140px 以内的文字和控件（说明、提示、标签、勾选项、错误信息、星星）
+        const guard = []
+        if (!inHead) {
+          for (const e of document.querySelectorAll('p, span, label, li, dd, dt, h1, h2, h3, a, button, input, select, textarea, img, [role=radio]')) {
+            if (hit.el.contains(e) || e.contains(hit.el) || e.closest('header, nav, [data-tour-bar], .z-\\[70\\], .z-\\[71\\]')) continue
+            const q = e.getBoundingClientRect()
+            if (!q.width || !q.height || q.height > 120) continue
+            const leaf = !/^(P|SPAN|LABEL|LI|DD|DT|H1|H2|H3)$/.test(e.tagName) || ((e.innerText || '').trim() && ![...e.children].some((c) => (c.innerText || '').trim()))
+            if (!leaf) continue
+            if (q.bottom < r.top - 140 || q.top > r.bottom + 140 || q.right < r.left - 40 || q.left > r.right + 40) continue
+            guard.push({ q, t: /^(P|SPAN|LABEL|LI|DD|DT|H1|H2|H3)$/.test(e.tagName) ? (e.innerText || '').trim() : '' })
+          }
+        }
+        // 候选位置：气泡（连同贴在它边上的箭头）放在目标的下、上、左、右；上下各有「紧挨着」和「放到说明外侧」两种
+        const lowB = Math.max(r.bottom + pad, ...guard.filter((g) => g.q.top >= r.bottom - 2).map((g) => g.q.bottom))
+        const highT = Math.min(r.top - pad, ...guard.filter((g) => g.q.bottom <= r.top + 2).map((g) => g.q.top))
+        const lx = (k) => Math.max(m, Math.min(innerWidth - tw - m, cx - tw / 2 + k * tw))
+        const cands = []
+        for (const k of [0, -0.4, 0.4]) cands.push({ kind: 'down', k, off: pad + gap }, { kind: 'up', k, off: pad + gap })
+        cands.push({ kind: 'down', k: 0, off: lowB - r.bottom + 8 + AR }, { kind: 'up', k: 0, off: r.top - highT + 8 + AR })
+        cands.push({ kind: 'left', k: 0, off: pad + 8 + AR }, { kind: 'right', k: 0, off: pad + 8 + AR })
+        const rectOf = (c) => {
+          if (c.kind === 'down') { const t0 = r.bottom + c.off; return { b: [lx(c.k), t0, lx(c.k) + tw, t0 + th], a: [cx - 18, t0 - AR, cx + 18, t0] } }
+          if (c.kind === 'up') { const t0 = r.top - c.off - th; return { b: [lx(c.k), t0, lx(c.k) + tw, t0 + th], a: [cx - 18, t0 + th, cx + 18, t0 + th + AR] } }
+          if (c.kind === 'left') { const l0 = r.left - c.off - tw; return { b: [l0, cy - th / 2, l0 + tw, cy + th / 2], a: [l0 + tw, cy - 18, l0 + tw + AR, cy + 18] } }
+          const l0 = r.right + c.off; return { b: [l0, cy - th / 2, l0 + tw, cy + th / 2], a: [l0 - AR, cy - 18, l0, cy + 18] }
+        }
+        const over = (q, [l, t, rr, b]) => q.left < rr - 1 && q.right > l + 1 && q.top < b - 1 && q.bottom > t + 1
+        const score = (c) => {
+          const { b: B0, a: A0 } = rectOf(c)
+          if (B0[0] < m - 0.5 || B0[2] > innerWidth - m + 0.5 || B0[1] < ceil || B0[3] > floor || Math.min(B0[1], A0[1]) < ceil || Math.max(B0[3], A0[3]) > floor) return { s: 1e6 }
+          const tgt = { left: r.left - pad, right: r.right + pad, top: r.top - pad, bottom: r.bottom + pad }
+          let sc = over(tgt, B0) || over(tgt, A0) ? 1000 : 0
+          const hitG = guard.filter((g) => over(g.q, B0) || over(g.q, A0))
+          sc += hitG.length * 40
+          // 别处的字：盖住一点也算，但很轻
+          for (const fx of [0.1, 0.5, 0.9]) for (const fy of [0.25, 0.75]) { const e = document.elementFromPoint(B0[0] + tw * fx, B0[1] + th * fy); if (e && (e.innerText || '').trim() && e.children.length < 3) sc += 1 }
+          return { s: sc + Math.abs(c.k) + (c.kind === 'left' || c.kind === 'right' ? 2 : 0) + c.off / 400, hitG }
+        }
         let pick = null
-        if (!inHead) pick = cands.map((c) => ({ c, s: score({ ...c, hints: hints0 }) })).sort((a1, b1) => a1.s - b1.s)[0]
-        side0.current = { el: hit.el, text: hit.text, kind: pick && pick.s < 1e6 ? pick.c.kind : null, k: pick ? pick.c.k : 0, dy: pick?.c.dy }
+        if (!inHead) pick = cands.map((c) => ({ c, ...score(c) })).sort((a1, b1) => a1.s - b1.s)[0]
+        // 实在放不下：被压住的说明并进气泡里，内容不丢
+        const merge = pick && pick.s >= 40 && pick.s < 1000 ? [...new Set(pick.hitG.map((g) => g.t).filter(Boolean))].join(' ').slice(0, 60) : ''
+        side0.current = { el: hit.el, text: hit.text, kind: pick && pick.s < 1e6 ? pick.c.kind : null, k: pick ? pick.c.k : 0, off: pick?.c.off ?? pad + gap, merge }
+        if (T.dataset.merge !== merge) { T.dataset.merge = merge; setMerge(merge) }
       }
-      const side = inHead ? r.top < 140 && r.left - pad - gap - tw >= m && innerWidth >= 768 : side0.current.kind === 'left' || side0.current.kind === 'right'
-      const sideR = !inHead && side0.current.kind === 'right'
-      const below = r.bottom + pad + gap + th <= floor
-      const down = inHead ? !side : side0.current.kind ? side0.current.kind === 'down' : below || r.top < innerHeight / 2
-      const dyy = !inHead && side0.current.dy ? Math.max(side0.current.dy, pad + gap) : pad + gap
-      const top = side ? cy - th / 2 : down ? r.bottom + dyy : r.top - dyy - th
-      // 手机上点顶栏（身份切换）：气泡和箭头都放到导览条下面，不盖住导览条上的字
-      const pushed = !side && down && r.top < 100 && barB > r.bottom
-      const top2 = pushed ? Math.max(top, barB + 48) : top
-      const left = side ? (sideR ? r.right + pad + gap : r.left - pad - gap - tw) : Math.max(m, Math.min(innerWidth - tw - m, cx - tw / 2 + (side0.current.k || 0) * tw))
-      Object.assign(T.style, { transition: '', opacity: '1', left: `${left}px`, top: `${Math.max(m, Math.min(innerHeight - th - m, top2))}px` })
-      const ax = Math.max(14, Math.min(tw - 14, r.left + r.width / 2 - left))
-      Object.assign(A.style, side ? (sideR ? { left: '-6px', right: '', top: `${th / 2 - 6}px`, bottom: '' } : { left: '', right: '-6px', top: `${th / 2 - 6}px`, bottom: '' }) : { left: `${ax - 6}px`, right: '', top: down ? '-6px' : '', bottom: down ? '' : '-6px' })
-      // 大箭头：品牌绿，放在气泡和目标之间，箭尖对着目标中间；气泡在下面就朝上指，在上面就朝下指
-      const tTop = Math.max(m, Math.min(innerHeight - th - m, top2))
-      const px = side ? (sideR ? (r.right + pad + left) / 2 : (left + tw + r.left - pad) / 2) : Math.max(m + 18, Math.min(innerWidth - m - 18, r.left + r.width / 2))
-      const py = side ? r.top + r.height / 2 : pushed ? (barB + tTop) / 2 : down ? (Math.min(r.bottom + pad, innerHeight - 3) + tTop) / 2 : (tTop + th + Math.max(r.top - pad, 3)) / 2
+      // 顶栏里的目标（身份切换、导览条按钮）：左边放得下就放左边，否则放到导览条下面
+      const headSide = inHead && r.top < 140 && r.left - pad - 8 - AR - tw >= m
+      const kind = inHead ? (headSide ? 'left' : 'down') : side0.current.kind || (r.bottom + pad + gap + th <= floor || r.top < innerHeight / 2 ? 'down' : 'up')
+      let off = inHead ? (headSide ? pad + 8 + AR : pad + gap) : side0.current.kind ? side0.current.off : pad + gap
+      // 手机上点顶栏：气泡和箭头都放到导览条下面，不盖住导览条上的字
+      if (inHead && kind === 'down' && barB > r.bottom) off = Math.max(off, barB - r.bottom + 8 + AR)
+      let left, top
+      if (kind === 'down') { left = Math.max(m, Math.min(innerWidth - tw - m, cx - tw / 2 + (inHead ? 0 : side0.current.k) * tw)); top = r.bottom + off }
+      else if (kind === 'up') { left = Math.max(m, Math.min(innerWidth - tw - m, cx - tw / 2 + side0.current.k * tw)); top = r.top - off - th }
+      else if (kind === 'left') { left = r.left - off - tw; top = cy - th / 2 }
+      else { left = r.right + off; top = cy - th / 2 }
+      top = Math.max(m, Math.min(innerHeight - th - m, top))
+      left = Math.max(m, Math.min(innerWidth - tw - m, left))
+      Object.assign(T.style, { transition: '', opacity: '1', left: `${left}px`, top: `${top}px` })
+      const side = kind === 'left' || kind === 'right'
+      const ax = Math.max(14, Math.min(tw - 14, cx - left))
+      Object.assign(A.style, kind === 'right' ? { left: '-6px', right: '', top: `${th / 2 - 6}px`, bottom: '' } : kind === 'left' ? { left: '', right: '-6px', top: `${th / 2 - 6}px`, bottom: '' } : { left: `${ax - 6}px`, right: '', top: kind === 'down' ? '-6px' : '', bottom: kind === 'down' ? '' : '-6px' })
+      // 大箭头贴在气泡边上，箭尖朝着目标
+      const px = kind === 'left' ? left + tw + AR / 2 : kind === 'right' ? left - AR / 2 : Math.max(m + 18, Math.min(innerWidth - m - 18, cx))
+      const py = side ? cy : kind === 'down' ? top - AR / 2 : top + th + AR / 2
       Object.assign(P.style, { transition: '', opacity: '1', left: `${px - 18}px`, top: `${py - 18}px` })
-      P.dataset.dir = side ? (sideR ? 'left' : 'right') : down ? 'up' : 'down'
+      P.dataset.dir = kind === 'left' ? 'right' : kind === 'right' ? 'left' : kind === 'down' ? 'up' : 'down'
     }
     raf = requestAnimationFrame(tick)
     return () => cancelAnimationFrame(raf)
@@ -242,6 +252,7 @@ export default function Coach() {
       <div ref={tip} role="status" aria-live="polite" className="pointer-events-none fixed z-[71] max-w-[min(280px,calc(100vw-16px))] rounded-2xl bg-ink px-3.5 py-2.5 text-[15px] font-semibold leading-snug text-bg opacity-0 ring-2 ring-white/80 shadow-lg shadow-ink/25 transition-opacity duration-200">
         <span ref={arrow} aria-hidden="true" className="absolute size-3 rotate-45 bg-ink" />
         <span className={`relative block ${text.length <= 14 ? 'whitespace-nowrap' : '[text-wrap:pretty]'}`}>{text}</span>
+        {merge && <span className="relative mt-1 block border-t border-bg/20 pt-1 text-[13px] font-medium leading-snug opacity-80">被挡住的说明：{merge}</span>}
       </div>
     </>,
     document.body,
