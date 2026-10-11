@@ -34,7 +34,8 @@ function RoleSwitch() {
   const { state, act } = useStore()
   const { pathname } = useLocation()
   // 订单页切身份：页面换成另一方能做的事，回到顶上，免得主按钮躲在吸顶栏后面
-  const pick = (k) => { act('role', { role: k }); if (pathname.startsWith('/app/task/')) window.scrollTo({ top: 0, behavior: 'smooth' }) }
+  // 指引进行中不回顶部：下一步要点的按钮由指引自己（只在看不见时）滚出来，免得先上再下滚两趟
+  const pick = (k) => { act('role', { role: k }); if (pathname.startsWith('/app/task/') && !state.tour.active) window.scrollTo({ top: 0, behavior: 'smooth' }) }
   const opts = [['poster', '发单人'], ['runner', '跑腿人']]
   return (
     <div className="relative grid grid-cols-2 rounded-full bg-sunken p-1" role="tablist" aria-label="切换角色">
@@ -122,7 +123,7 @@ function GuideEntry() {
   const hidden = state.tour.active || !state.onboarded
   return (
     <button onClick={start} aria-label="新手指引" tabIndex={hidden ? -1 : undefined} className={`inline-flex h-10 min-w-11 shrink-0 items-center justify-center gap-1 rounded-full bg-sunken px-3 text-[14px] font-semibold text-ink active:scale-[0.97] ${hidden ? 'invisible' : ''}`}>
-      <Compass size={18} weight="bold" className="text-accent" /><span className={EMBED ? '' : 'max-[439px]:sr-only'}>新手指引</span>
+      <Compass size={18} weight="bold" className="text-accent" /><span className={EMBED ? '' : 'max-xl:sr-only'}>新手指引</span>
     </button>
   )
 }

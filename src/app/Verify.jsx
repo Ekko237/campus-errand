@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { motion, useReducedMotion } from 'motion/react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { ArrowLeft, CaretDown } from '@phosphor-icons/react'
@@ -25,6 +25,7 @@ export default function Verify() {
   const [err, setErr] = useState({})
   const [busy, setBusy] = useState(false)
   const [done, setDone] = useState(false)
+  const keepH = useRef(0)
   const reduce = useReducedMotion()
   // 刚认证完：徽章弹进来停 1.4 秒，再自动回到原来的页面
   const [sec, setSec] = useState(2)
@@ -33,6 +34,7 @@ export default function Verify() {
 
   if (done) {
     return (
+      <div style={{ minHeight: keepH.current ? Math.max(0, keepH.current - 260) : undefined }}>
       <Panel className="px-6 py-7 text-center">
         <motion.img initial={reduce ? false : { scale: 0.4, rotate: -12, opacity: 0 }} animate={{ scale: 1, rotate: 0, opacity: 1 }} transition={{ type: 'spring', stiffness: 380, damping: 14 }}
           src={`${import.meta.env.BASE_URL}icons/trust-verify-v1.webp`} width={88} height={88} alt="带对勾的学生证" className="mx-auto size-22 object-contain" />
@@ -45,6 +47,7 @@ export default function Verify() {
         <Btn className="mt-5" onClick={() => nav(back)}>{back.startsWith('/app/task') ? '现在回去接单' : '回去'}</Btn>
         {!state.tour.active && <p className="tnum mt-2 text-xs text-muted">{sec} 秒后自动回去</p>}
       </Panel>
+      </div>
     )
   }
 
@@ -62,7 +65,8 @@ export default function Verify() {
 
   const finish = (method) => {
     setBusy(true)
-    setTimeout(() => { act('verify', { who, method }); setBusy(false); setDone(true) }, 900)
+    // 记下表单这时有多高：换成「认证通过」后页面不突然变短，浏览器就不会一下子往上收
+    setTimeout(() => { keepH.current = document.documentElement.scrollHeight; act('verify', { who, method }); setBusy(false); setDone(true) }, 900)
   }
   const submitId = () => {
     const e = {}

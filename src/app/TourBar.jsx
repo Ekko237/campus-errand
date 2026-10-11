@@ -53,37 +53,16 @@ export default function TourBar({ wide = false }) {
     if (!here) return
     let el = null
     let wait = 0
-    // 停过「奖励时刻」之后那一下滚动用瞬移：滚动过程只有一帧，不会正好吞掉用户的点击
-    let late = false
     // 量三次：图片（比如送达照片）加载完会把按钮往下推，0.6 秒、1.3 秒后各补一次
+    // 按钮已经完整看得见就一点不滚；看不全才平滑地挪到刚好露出来为止（顶栏、导览条、底部导航让开的距离写在 .tour-focus 的 scroll-margin 里）
     const reveal = () => {
-      if (!el || !(loc.pathname.startsWith('/app/task/') || loc.pathname.startsWith('/app/publish'))) return
-      const head = document.querySelector('header')?.getBoundingClientRect().bottom ?? 64
+      if (!el || touched) return
+      const head = (document.querySelector('[data-tour-bar]') || document.querySelector('header'))?.getBoundingClientRect().bottom ?? 64
       const navTop = document.querySelector('nav[aria-label="主导航"]')?.getBoundingClientRect().top ?? innerHeight
-      const r0 = el.getBoundingClientRect()
-      // 按钮下面紧跟的一行小字（「2 小时内确认，信用 +1」）也一起露出来
-      const nx = el.nextElementSibling?.tagName === 'P' ? el.nextElementSibling.getBoundingClientRect() : null
-      const r = nx && nx.top - r0.bottom < 24 ? { top: r0.top, bottom: nx.bottom, height: nx.bottom - r0.top } : r0
-      const top = head + 16, bottom = (navTop > innerHeight / 2 ? navTop : innerHeight) - 96
-      // 贴底常驻的按钮（发布页）本来就看得见，不滚，让人从表单顶上看起
-      if (touched) return
-      const hard = (navTop > innerHeight / 2 ? navTop : innerHeight) - 4
-      // 按钮已经完整看得见（哪怕离底部导航只差几像素）就不动：用户可能正伸手去点
-      if ((r.top >= head && r.bottom <= hard) || (el.closest('.sticky') && r.bottom <= innerHeight)) return
-      // 露了一部分：只挪刚好够的那一点，不大幅跳
-      if (r.bottom > head && r.top < hard) { window.scrollBy({ top: r.bottom > bottom ? r.bottom - bottom : r.top - top, behavior: 'auto' }); return }
-      // 刚停过「奖励时刻」、按钮在下面：只往下挪到刚好露出按钮，取件码那张卡尽量留在眼前，不整段跳过
-      if (late && r.top >= hard) { window.scrollBy({ top: r.bottom - bottom, behavior: 'auto' }); return }
-      // 完全在屏幕外：把按钮所在的整块（卡片、段落）顶到导览条下面，块的标题不被切
-      let dy = null
-      for (let a = el.parentElement; a && a.tagName !== 'MAIN'; a = a.parentElement) {
-        const ar = a.getBoundingClientRect()
-        if (r.bottom - ar.top <= bottom - top) dy = ar.top - top
-        else break
-      }
-      // 块太高放不下：把按钮放到可见区中间，它下面的小字（申诉、放弃、说明）也一起露出来
-      if (dy == null) dy = r.height < bottom - top ? r.top + r.height / 2 - (top + bottom) / 2 : r.top - top
-      window.scrollBy({ top: dy, behavior: 'auto' })
+      const floor = navTop > innerHeight / 2 ? navTop : innerHeight
+      const r = el.getBoundingClientRect()
+      if (r.top >= head + 4 && r.bottom <= floor - 4) return
+      el.scrollIntoView({ block: 'nearest', behavior: reduce ? 'auto' : 'smooth' })
     }
     // 刚发生的「奖励时刻」（取件码揭晓、托管放款）：先把那张卡停在视线里 1.6 秒，再去找下一个按钮
     const timers = []
@@ -102,10 +81,10 @@ export default function TourBar({ wide = false }) {
         // 订单标题和这张卡能一起放下，就从标题开始露，免得标题正好藏在顶栏下面、看不出是哪一单
         const tr = root().querySelector('h1')?.getBoundingClientRect()
         const from = tr && tr.top < mr.top && mr.bottom - tr.top <= innerHeight - head - 96 ? tr.top : mr.top
-        if (!touched && (mr.top < head + 16 || mr.bottom > innerHeight - 80)) window.scrollBy({ top: from - head - 16, behavior: 'auto' })
+        // 卡片看不全才挪，只挪到刚好露出来，平滑滚
+        if (!touched && (mr.top < head + 16 || mr.bottom > innerHeight - 80)) window.scrollBy({ top: mr.top < head + 16 ? from - head - 16 : Math.min(mr.bottom - (innerHeight - 80), mr.top - head - 16), behavior: reduce ? 'auto' : 'smooth' })
         // 放款那条「¥5 从小满流到阿远」要播约 2.3 秒，取件码揭晓短一些
         wait = step.n === 7 ? 2600 : step.n === 5 ? 500 : 1100
-        late = true
       }
       timers.push(setTimeout(() => {
         el = root().querySelector('[data-tour-target]') || [...root().querySelectorAll('button')].find((x) => x.classList.contains('bg-accent') && !x.disabled && x.offsetParent)

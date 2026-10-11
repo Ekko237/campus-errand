@@ -75,7 +75,7 @@ export default function DemoPanel() {
         </ol>
         {!runner.verified && <p className="mt-3 text-xs text-muted">跑腿人还没认证，接单前会先走认证</p>}
       </div>
-      <div className="grid gap-2">
+      <div className="sticky bottom-0 z-10 -mx-1.5 grid gap-2 bg-bg px-1.5 pb-1.5 pt-3 shadow-[0_-12px_12px_-8px_var(--bg)]">
         {state.tour.active ? <button onClick={() => act('tour', { tour: { active: false } })} className="inline-flex h-11 items-center justify-center rounded-full bg-sunken text-[15px] font-semibold active:scale-[0.98]">退出导览</button> : (
           <button onClick={start} className="inline-flex h-11 items-center justify-center gap-2 whitespace-nowrap rounded-full bg-accent text-[15px] font-semibold text-on-accent active:scale-[0.98]">跟着走一遍（约 2 分钟）</button>
         )}

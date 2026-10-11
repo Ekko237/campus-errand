@@ -69,7 +69,8 @@ body {
 /* 导览描边往里呼吸：外面只多 2px，不越过页面边距、不把并排按钮撑得一大一小 */
 @keyframes tour-ring { 0%, 100% { box-shadow: 0 0 0 2px var(--accent), inset 0 0 0 2px var(--bg); } 50% { box-shadow: 0 0 0 2px var(--accent), inset 0 0 0 5px color-mix(in srgb, var(--bg) 55%, transparent); } }
 /* 导览圈住的按钮：圈和气泡由「指哪点哪」（Coach）画在最上层，按钮本身不再加第二圈 */
-.tour-focus { scroll-margin: 96px; }
+/* 自动滚动只滚到「按钮 + 下面一行说明」刚好露出：上面让开顶栏和导览条，下面让开底部导航和说明小字 */
+.tour-focus { scroll-margin: 128px 0 120px; }
 
 /* 原型换页：轻轻滑进来 */
 @keyframes page-in { from { opacity: 0.6; transform: translateX(var(--dx, 0)); } to { opacity: 1; transform: none; } }
