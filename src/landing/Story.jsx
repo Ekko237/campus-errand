@@ -367,7 +367,7 @@ function Finale({ on }) {
           <p className="tnum mt-2 text-sm font-bold">{a} → {b}</p>
         </div>
       ))}
-      <Link to="/app" className="col-span-2 mt-2 inline-flex h-12 items-center justify-center gap-2 rounded-full bg-on-accent text-[16px] font-semibold text-accent-deep ring-1 ring-line active:scale-[0.98]">在原型里自己走一遍 <ArrowRight size={16} weight="bold" /></Link>
+      <Link to="/app/start" className="col-span-2 mt-2 inline-flex h-12 items-center justify-center gap-2 rounded-full bg-on-accent text-[16px] font-semibold text-accent-deep ring-1 ring-line active:scale-[0.98]">在原型里自己走一遍 <ArrowRight size={16} weight="bold" /></Link>
     </div>
   )
 }

@@ -51,7 +51,7 @@ function Cta({ size = 'lg', className = '' }) {
   const big = size === 'lg'
   return (
     <Magnetic strength={big ? 0.28 : 0.15}>
-      <Link to="/app" className={`group relative inline-flex items-center justify-center gap-2 overflow-hidden whitespace-nowrap rounded-full bg-accent font-semibold text-on-accent shadow-[0_10px_30px_-12px_rgba(11,122,85,0.7)] transition active:scale-[0.97] ${big ? 'h-14 px-7 text-[17px]' : 'h-10 px-4 text-[15px]'} ${className}`}>
+      <Link to="/app/start" className={`group relative inline-flex items-center justify-center gap-2 overflow-hidden whitespace-nowrap rounded-full bg-accent font-semibold text-on-accent shadow-[0_10px_30px_-12px_rgba(11,122,85,0.7)] transition active:scale-[0.97] ${big ? 'h-14 px-7 text-[17px]' : 'h-10 px-4 text-[15px]'} ${className}`}>
         <span aria-hidden="true" className="absolute inset-0 -translate-x-full bg-ink/15 transition-transform duration-500 ease-out group-hover:translate-x-0" />
         <span className="relative">体验原型</span>
         <ArrowRight size={big ? 20 : 16} weight="bold" className="relative transition-transform duration-300 group-hover:translate-x-1" />
@@ -181,7 +181,7 @@ function Nav({ page }) {
                 <li key={to}><Anchor to={to} onClick={() => setOpen(false)} aria-current={cur === to ? 'location' : undefined} className={`flex h-12 items-center gap-3 rounded-xl px-2 text-[17px] active:bg-sunken ${cur === to ? 'bg-accent-soft font-bold text-accent' : 'font-semibold'}`}><span className="tnum w-5 text-sm opacity-60">{i + 1}</span>{l}{cur === to && <span className="ml-auto text-sm font-semibold">你在这里</span>}</Anchor></li>
               ))}
               <li className="mt-1 border-t border-line pt-1"><Link to="/thinking" onClick={() => setOpen(false)} className="flex h-12 items-center gap-3 rounded-xl px-2 text-[17px] font-semibold active:bg-sunken"><span className="w-5" />产品思考<ArrowRight size={16} weight="bold" className="ml-auto text-muted" /></Link></li>
-              <li className="pt-2"><Link to="/app" onClick={() => setOpen(false)} className="flex h-12 items-center justify-center gap-2 rounded-full bg-accent text-[17px] font-semibold text-on-accent active:scale-[0.98]">体验原型<ArrowRight size={18} weight="bold" /></Link></li>
+              <li className="pt-2"><Link to="/app/start" onClick={() => setOpen(false)} className="flex h-12 items-center justify-center gap-2 rounded-full bg-accent text-[17px] font-semibold text-on-accent active:scale-[0.98]">体验原型<ArrowRight size={18} weight="bold" /></Link></li>
             </ol>
           </motion.nav>
         )}
@@ -1118,7 +1118,7 @@ function Final({ page }) {
             <p className="mt-2">校园跑腿互助平台产品原型。页面中的人名、任务、金额和指标均为示例。</p>
           </div>
           <div className="grid gap-4 md:justify-items-end">
-            {/* 「体验原型」直接按设备进合适的界面；想先挑手机版还是电脑版，从这里去选择页 */}<Link to="/app/start" className="-my-3 inline-flex min-h-11 items-center font-semibold text-ink underline-offset-4 hover:underline">选手机版 / 电脑版</Link>{page !== 'thinking' ? <Link to="/thinking" className="-my-3 inline-flex min-h-11 items-center font-semibold text-ink underline-offset-4 hover:underline">产品思考</Link> : <Link to="/" className="-my-3 inline-flex min-h-11 items-center font-semibold text-ink underline-offset-4 hover:underline">回首页</Link>}
+            {/* 「体验原型」先到选择页挑手机版还是电脑版；这里也能再回去选 */}<Link to="/app/start" className="-my-3 inline-flex min-h-11 items-center font-semibold text-ink underline-offset-4 hover:underline">选手机版 / 电脑版</Link>{page !== 'thinking' ? <Link to="/thinking" className="-my-3 inline-flex min-h-11 items-center font-semibold text-ink underline-offset-4 hover:underline">产品思考</Link> : <Link to="/" className="-my-3 inline-flex min-h-11 items-center font-semibold text-ink underline-offset-4 hover:underline">回首页</Link>}
             <p>演示数据只存在这台设备的浏览器里 · <button onClick={() => { if (window.confirm('把原型里的演示数据恢复成刚打开时的样子？')) { try { Object.keys(localStorage).filter((k) => k.startsWith('shunluxia:')).forEach((k) => localStorage.removeItem(k)) } catch { /* 无痕模式下没有本地存储 */ } } }}
               className="-my-3 inline-flex min-h-11 items-center font-semibold text-ink underline-offset-4 hover:underline">重置演示数据</button></p>
           </div>
