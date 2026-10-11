@@ -207,7 +207,7 @@ function DeskShell({ sub, openTask }) {
         </div>
         <TourBar wide />
       </header>
-      <main className="mx-auto grid max-w-[1440px] grid-cols-[220px_minmax(0,1fr)_420px] 2xl:grid-cols-[260px_minmax(0,1fr)_480px] gap-6 px-6 pb-24 pt-5">
+      <main className="mx-auto grid max-w-[1440px] grid-cols-[220px_minmax(0,1fr)_420px] 2xl:grid-cols-[260px_minmax(0,1fr)_480px] gap-6 px-6 pt-5">
         <nav className={`sticky ${top} self-start`} aria-label="主导航">
           <div className="grid gap-1">
             {tabs.map(([to, label, img, end]) => (
@@ -219,7 +219,7 @@ function DeskShell({ sub, openTask }) {
           {/* 演示面板放在导航下面：右栏留给地图和订单详情 */}
           <div className="-mx-1.5 mt-[18px] overflow-y-auto overscroll-contain p-1.5" style={{ maxHeight: `calc(100dvh - ${state.tour.active ? 148 : 96}px - 230px + 6px)` }}><DemoPanel /></div>
         </nav>
-        <section aria-label="列表" className="min-w-0" data-tour-root={taskOpen ? undefined : ''}>
+        <section aria-label="列表" className="min-w-0 pb-6" data-tour-root={taskOpen ? undefined : ''}>
           {taskOpen ? (
             // 右边开着一单：中间的列表自己滚，不跟着详情走，随时点另一单
             <div className={`sticky ${topIn} -m-1.5 overflow-y-auto overscroll-contain p-1.5`} style={{ maxHeight: `calc(100dvh - ${state.tour.active ? 148 : 96}px + 12px)` }}>
@@ -229,7 +229,7 @@ function DeskShell({ sub, openTask }) {
             <div key={pathname} className={reduce ? '' : 'page-in'} style={{ '--dx': '8px' }}><Routes>{LIST_ROUTES}</Routes></div>
           )}
         </section>
-        <aside aria-label={taskOpen ? '订单详情' : '演示面板'} className="min-w-0" data-tour-root={taskOpen ? '' : undefined}>
+        <aside aria-label={taskOpen ? '订单详情' : '演示面板'} className="min-w-0 pb-6" data-tour-root={taskOpen ? '' : undefined}>
           {taskOpen ? (
             <div key={pathname} className={reduce ? '' : 'page-in'} style={{ '--dx': '12px' }}>
               <Routes><Route path="task/:id" element={<TaskDetail />} /></Routes>
