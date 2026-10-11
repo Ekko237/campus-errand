@@ -78,3 +78,6 @@ body {
 /* 导览圈住要点的东西：轻轻一呼一吸 */
 @keyframes coach-pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.04); } }
 .coach-pulse { animation: coach-pulse 1.6s ease-in-out infinite; }
+/* 导览的大箭头：朝目标一下一下地指（父元素转 180° 时方向跟着反过来） */
+@keyframes coach-bob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-7px); } }
+.coach-bob { animation: coach-bob 0.9s ease-in-out infinite; }

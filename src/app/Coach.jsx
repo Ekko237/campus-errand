@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { useLocation } from 'react-router-dom'
 import { useReducedMotion } from 'motion/react'
+import { ArrowFatUp } from '@phosphor-icons/react'
 import { useStore } from '../store'
 import { tourStep } from './TourBar'
 
@@ -35,7 +36,10 @@ function resolve(state, path) {
   if (dlg) {
     const code = dlg.querySelector('input[aria-label="4 位送达码"]')
     const t = state.tasks.find((x) => x.id === state.tour.taskId)
-    if (code && t && code.value !== t.deliverCode) return { el: code.parentElement, text: `输入发单人告诉你的送达码：${t.deliverCode}`, input: true }
+    if (code && t && code.value !== t.deliverCode) {
+      const pre = code.value && t.deliverCode.startsWith(code.value) ? code.value : ''
+      return { el: code.parentElement, text: pre ? `前两位已填好，再输入 ${t.deliverCode.slice(pre.length)}` : `输入发单人告诉你的送达码：${t.deliverCode}`, input: true }
+    }
     const btn = [...dlg.querySelectorAll('button')].filter((b) => b.classList.contains('bg-accent') && !b.disabled && vis(b)).pop()
     return btn && { el: btn, text: `点这里：${label(btn)}` }
   }
@@ -52,8 +56,13 @@ function resolve(state, path) {
     return go && { el: go, text: `点这里：${step.cta}` }
   }
   // 5 在页面上：评价先点星，再提交
-  const focus = document.querySelector('.tour-focus')
-  if (!focus) return null
+  let focus = document.querySelector('.tour-focus')
+  if (!focus) {
+    const root = document.querySelector('[data-tour-root]') || document.querySelector('main') || document.body
+    focus = root.querySelector('[data-tour-target]') || [...root.querySelectorAll('button')].find((x) => x.classList.contains('bg-accent') && !x.disabled && x.offsetParent)
+    const r = focus?.getBoundingClientRect()
+    if (!r || r.top < 0 || r.bottom > innerHeight) return null
+  }
   if (focus.matches('[data-tour-target]')) {
     const submit = [...focus.querySelectorAll('button')].pop()
     if (submit?.disabled) { const five = focus.querySelector('[role=radio][aria-label="5 星"]'); return five && { el: five, text: '点第 5 颗星，给个好评', input: true } }
@@ -70,6 +79,7 @@ export default function Coach() {
   const ring = useRef(null)
   const tip = useRef(null)
   const arrow = useRef(null)
+  const point = useRef(null)
   const [text, setText] = useState('')
   const cur = useRef(null)
   const scrolled = useRef(null)
@@ -80,9 +90,9 @@ export default function Coach() {
     const tick = () => {
       raf = requestAnimationFrame(tick)
       const hit = resolve(state, pathname)
-      const R = ring.current, T = tip.current, A = arrow.current
-      if (!R || !T || !A) return
-      if (!hit || !vis(hit.el)) { R.style.opacity = '0'; T.style.opacity = '0'; cur.current = null; return }
+      const R = ring.current, T = tip.current, A = arrow.current, P = point.current
+      if (!R || !T || !A || !P) return
+      if (!hit || !vis(hit.el)) { R.style.opacity = '0'; T.style.opacity = '0'; P.style.opacity = '0'; cur.current = null; return }
       cur.current = hit.el
       if (hit.text !== T.dataset.text) { T.dataset.text = hit.text; setText(hit.text) }
       // 弹窗里的目标不在屏幕里：滚到中间（只滚一次，之后用户自己滑不跟着抢）
@@ -97,17 +107,27 @@ export default function Coach() {
       Object.assign(R.style, { opacity: '1', left: `${L}px`, top: `${Tp}px`, width: `${Rt - L}px`, height: `${Bt - Tp}px`, borderRadius: `${rad}px`,
         boxShadow: dlg ? '0 0 0 3px var(--accent), 0 0 0 9px color-mix(in srgb, var(--accent) 25%, transparent)' : '0 0 0 3px var(--accent), 0 0 0 9px color-mix(in srgb, var(--accent) 25%, transparent), 0 0 0 200vmax rgba(12, 24, 18, 0.32)' })
       // 气泡：下面放得下就放下面，否则放上面；左右夹在屏幕里；箭头对着目标中间
-      const tw = T.offsetWidth, th = T.offsetHeight, gap = 14, m = 8
+      const tw = T.offsetWidth, th = T.offsetHeight, gap = 48, m = 8
       const navTop = document.querySelector('nav[aria-label="主导航"]')?.getBoundingClientRect().top ?? innerHeight
       const floor = (navTop > innerHeight / 2 && !hit.nav ? navTop : innerHeight) - m
       const below = r.bottom + pad + gap + th <= floor
       const above = r.top - pad - gap - th >= m
+      const side = r.top < 140 && r.left - pad - gap - tw >= m && innerWidth >= 768
       const down = below || (!above && r.top < innerHeight / 2)
-      const top = down ? r.bottom + pad + gap : r.top - pad - gap - th
-      const left = Math.max(m, Math.min(innerWidth - tw - m, r.left + r.width / 2 - tw / 2))
-      Object.assign(T.style, { opacity: '1', left: `${left}px`, top: `${Math.max(m, Math.min(innerHeight - th - m, top))}px` })
+      const top = side ? r.top + r.height / 2 - th / 2 : down ? r.bottom + pad + gap : r.top - pad - gap - th
+      // 手机上点顶栏（身份切换）：气泡放到导览条下面，不盖住导览条上的字
+      const barB = document.querySelector('[data-tour-bar]')?.getBoundingClientRect().bottom ?? 0
+      const top2 = !side && down && r.top < 100 && barB ? Math.max(top, barB + 12) : top
+      const left = side ? r.left - pad - gap - tw : Math.max(m, Math.min(innerWidth - tw - m, r.left + r.width / 2 - tw / 2))
+      Object.assign(T.style, { opacity: '1', left: `${left}px`, top: `${Math.max(m, Math.min(innerHeight - th - m, top2))}px` })
       const ax = Math.max(14, Math.min(tw - 14, r.left + r.width / 2 - left))
-      Object.assign(A.style, { left: `${ax - 6}px`, top: down ? '-6px' : '', bottom: down ? '' : '-6px' })
+      Object.assign(A.style, side ? { left: '', right: '-6px', top: `${th / 2 - 6}px`, bottom: '' } : { left: `${ax - 6}px`, right: '', top: down ? '-6px' : '', bottom: down ? '' : '-6px' })
+      // 大箭头：品牌绿，放在气泡和目标之间，箭尖对着目标中间；气泡在下面就朝上指，在上面就朝下指
+      const tTop = Math.max(m, Math.min(innerHeight - th - m, top2))
+      const px = side ? (left + tw + r.left - pad) / 2 : Math.max(m + 18, Math.min(innerWidth - m - 18, r.left + r.width / 2))
+      const py = side ? r.top + r.height / 2 : down ? (Math.min(r.bottom + pad, innerHeight - 3) + tTop) / 2 : (tTop + th + Math.max(r.top - pad, 3)) / 2
+      Object.assign(P.style, { opacity: '1', left: `${px - 18}px`, top: `${py - 18}px` })
+      P.dataset.dir = side ? 'right' : down ? 'up' : 'down'
     }
     raf = requestAnimationFrame(tick)
     return () => cancelAnimationFrame(raf)
@@ -129,9 +149,12 @@ export default function Coach() {
   return createPortal(
     <>
       <div ref={ring} aria-hidden="true" className={`pointer-events-none fixed z-[70] opacity-0 transition-opacity duration-200 ${reduce ? '' : 'coach-pulse'}`} />
-      <div ref={tip} role="status" aria-live="polite" className="pointer-events-none fixed z-[71] max-w-[min(280px,calc(100vw-16px))] rounded-2xl bg-ink px-3.5 py-2.5 text-[15px] font-semibold leading-snug text-bg opacity-0 shadow-lg shadow-ink/25 transition-opacity duration-200">
+      <div ref={point} aria-hidden="true" className="pointer-events-none fixed z-[71] size-9 text-accent opacity-0 transition-opacity duration-200 [filter:drop-shadow(0_0_0_#fff)_drop-shadow(0_2px_3px_rgba(0,0,0,0.35))] data-[dir=down]:rotate-180 data-[dir=right]:rotate-90">
+        <ArrowFatUp size={36} weight="fill" className={`${reduce ? '' : 'coach-bob'} [stroke:#fff] [stroke-width:14px] [paint-order:stroke]`} />
+      </div>
+      <div ref={tip} role="status" aria-live="polite" className="pointer-events-none fixed z-[71] max-w-[min(280px,calc(100vw-16px))] rounded-2xl bg-ink px-3.5 py-2.5 text-[15px] font-semibold leading-snug text-bg opacity-0 ring-2 ring-white/80 shadow-lg shadow-ink/25 transition-opacity duration-200">
         <span ref={arrow} aria-hidden="true" className="absolute size-3 rotate-45 bg-ink" />
-        <span className="relative">{text}</span>
+        <span className={`relative block ${text.length <= 14 ? 'whitespace-nowrap' : '[text-wrap:pretty]'}`}>{text}</span>
       </div>
     </>,
     document.body,
