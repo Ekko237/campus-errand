@@ -268,7 +268,7 @@ function DeliverSheet({ t, open, onClose }) {
       <div className="min-h-[10.5rem]">
       {mode === 'code' ? (
         <div className="mt-5">
-          <Field label="发单人的 4 位送达码" error={err} hint={code.length === 2 && t.deliverCode.startsWith(code) ? `对着发单人手机上的码，补上后两位（这单是 ${t.deliverCode}）` : `发单人页面上能看到这 4 位码，这单是 ${t.deliverCode}`}>
+          <Field label="发单人的 4 位送达码" error={err || (code.length === 4 && code !== t.deliverCode ? '送达码不对，再对一下发单人手机上的 4 位码' : null)} hint={code.length === 2 && t.deliverCode.startsWith(code) ? `对着发单人手机上的码，补上后两位（这单是 ${t.deliverCode}）` : `发单人页面上能看到这 4 位码，这单是 ${t.deliverCode}`}>
             {/* 四格送达码：真输入框透明盖在四个格子上，打一位亮一格，填满四位格子变绿 */}
             <div className="relative">
               <div className="grid grid-cols-4 gap-2" aria-hidden="true">

@@ -25,7 +25,7 @@ export function ViewToggle({ inner = false }) {
   const opts = [['phone', '手机版', DeviceMobile], ['desk', '电脑版', Desktop]]
   // 第一次进原型：在切换旁边冒一句，告诉他这里能换界面；点了或 6 秒后收起，同一次访问不再出现
   // 欢迎说明还开着时不冒，免得叠在它上面；框里那一份也不冒（外层已经有）
-  const [hint, setHint] = useState(() => { try { return !EMBED && !sessionStorage.getItem('shunluxia:viewhint') && !!JSON.parse(localStorage.getItem('shunluxia:v3') || 'null')?.onboarded } catch { return false } })
+  const [hint, setHint] = useState(() => { try { return !EMBED && !sessionStorage.getItem('shunluxia:viewhint') && (() => { const st = JSON.parse(localStorage.getItem('shunluxia:v3') || 'null'); return !!st?.onboarded && !st?.tour?.active })() } catch { return false } })
   useEffect(() => { if (!hint) return; try { sessionStorage.setItem('shunluxia:viewhint', '1') } catch { /* 无痕模式 */ } const id = setTimeout(() => setHint(false), 6000); return () => clearTimeout(id) }, [hint])
   return (
     <div className="relative flex shrink-0 rounded-full bg-sunken p-1" role="group" aria-label="切换界面">

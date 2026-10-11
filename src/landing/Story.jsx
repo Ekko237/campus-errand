@@ -90,7 +90,7 @@ const CODE = ['还没有', '••••', '••••', '6-2-3108', '已用�
 const RUNNER = [70, 70, 70, 70, 70, 72, 73]
 const POSTER = [88, 88, 88, 88, 88, 89, 90]
 // 每段地图镜头对准哪儿：[中心 x, 中心 y, 镜头宽]，最后一段拉远看整条路
-const CAM = [[720, 360, 1300], [1060, 330, 1020], [1120, 310, 1060], [1100, 330, 1020], [700, 330, 1300], [520, 360, 1150], [720, 420, 1440]]
+const CAM = [[720, 360, 1300], [1060, 330, 1020], [1120, 310, 1060], [1100, 330, 1020], [700, 330, 1300], [640, 360, 1250], [720, 420, 1440]]
 
 // 把镜头换算成「整张图在画框里的位置」：画框宽高比固定，镜头外的部分裁掉
 function camRect(c, aspect) {
@@ -285,7 +285,7 @@ function KeyLine({ children, on, dark }) {
       {children}
       <svg aria-hidden="true" viewBox="0 0 200 20" preserveAspectRatio="none" className="absolute -bottom-[0.18em] left-0 h-[0.16em] w-full overflow-visible">
         <motion.path d="M4 10 H186" fill="none" stroke="currentColor" strokeWidth="6" strokeLinecap="round" strokeDasharray="0.1 14"
-          initial={false} animate={{ pathLength: on || reduce ? 1 : 0 }} transition={{ duration: reduce ? 0 : 0.6, ease }} />
+          initial={false} animate={{ pathLength: on || reduce ? 1 : 0, opacity: on || reduce ? 1 : 0 }} transition={{ duration: reduce ? 0 : 0.6, ease }} />
         <motion.circle cx="192" cy="10" r="7" fill="currentColor" initial={false} animate={{ scale: on || reduce ? 1 : 0 }} transition={{ type: 'spring', stiffness: 400, damping: 15, delay: reduce ? 0 : 0.5 }} style={{ transformOrigin: '192px 10px' }} />
       </svg>
     </span>

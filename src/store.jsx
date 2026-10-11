@@ -60,6 +60,8 @@ function reducer(s, a) {
     case 'onboarded':
       return { ...s, onboarded: true }
     case 'tour':
+      // 导览开始：「我常走的路」先换回导览那一单所在的一教 → 梅园，免得首页选过别的路，导览那单被说成「不顺路」
+      if (a.tour.active && !s.tour.active) { try { localStorage.setItem('shunluxia:myroute', JSON.stringify({ from: 'jiao1', to: 'mei5' })) } catch { /* 存不了不影响 */ } }
       return { ...s, onboarded: true, tour: { ...s.tour, ...a.tour } }
     case 'dismissToast':
       return { ...s, toasts: s.toasts.filter((x) => x.id !== a.tid) }
