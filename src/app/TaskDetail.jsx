@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
-import { motion, useReducedMotion, useMotionValue, useTransform, animate } from 'motion/react'
+import { motion, AnimatePresence, useReducedMotion, useMotionValue, useTransform, animate } from 'motion/react'
 import { ArrowLeft, Check, ArrowClockwise } from '@phosphor-icons/react'
 import { useStore } from '../store'
 import CampusMap, { along } from '../landing/CampusMap'
@@ -119,6 +119,20 @@ function CodeReveal({ code, play }) {
 }
 
 // 接单后最要紧的信息：取件码放大、置顶，带复制按钮；刚接单的那一下锁打开、码一位位揭晓
+// 放款后地图、送达码这些块要收掉：平滑收起来，不让下面的内容一下子跳上去
+function Collapse({ show, children }) {
+  const reduce = useReducedMotion()
+  return (
+    <AnimatePresence initial={false}>
+      {show && (
+        <motion.div key="c" className="-m-0.5 overflow-hidden p-0.5" initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: reduce ? 0 : 0.45, ease: [0.22, 1, 0.36, 1] }}>
+          {children}
+        </motion.div>
+      )}
+    </AnimatePresence>
+  )
+}
+
 function PickupCard({ t }) {
   const reduce = useReducedMotion()
   const [fresh] = useState(() => !reduce && t.status === 'ongoing' && t.acceptedAt && Date.now() - t.acceptedAt < 4000)
@@ -666,11 +680,11 @@ export default function TaskDetail() {
       {!(t.status === 'completed' && t.ratingByPoster && t.ratingByRunner) && <Panel className="p-4"><Stepper t={t} /></Panel>}
 
       {/* 进行中：这一单在校园地图上怎么走，放在取件码上面，导览里一眼就看到「顺路」 */}
-      {['ongoing', 'delivered'].includes(t.status) && <OnTheWay t={t} />}
+      <Collapse show={['ongoing', 'delivered'].includes(t.status)}><OnTheWay t={t} /></Collapse>
 
       {pmode === 'open' && <><PickupCard t={t} /><div><Actions t={t} /></div></>}
 
-      {own && state.role === 'poster' && ['ongoing', 'delivered'].includes(t.status) && (
+      <Collapse show={own && state.role === 'poster' && ['ongoing', 'delivered'].includes(t.status)}>{own && state.role === 'poster' && ['ongoing', 'delivered'].includes(t.status) && (
         t.status === 'delivered' && t.proof?.kind === 'photo' ? (
           // 拍照留证：给发单人看照片本身，不再显示送达码
           <div className="rounded-2xl bg-ink p-3 text-bg">
@@ -684,7 +698,7 @@ export default function TaskDetail() {
           <span className="tnum text-3xl font-bold tracking-[0.2em]">{t.deliverCode}</span>
         </div>
         )
-      )}
+      )}</Collapse>
 
 
       <div>

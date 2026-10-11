@@ -16,6 +16,7 @@ const ROLE = { poster: '发单人', runner: '跑腿人' }
 const WHY = { 2: '先做校园认证', 3: '去接这一单', 4: '去取件', 5: '去送达', 6: '确认收货、放款', 7: '给跑腿人打分', 8: '给发单人打分' }
 const vis = (el) => { if (!el) return false; const r = el.getBoundingClientRect(); return r.width > 0 && r.height > 0 && getComputedStyle(el).visibility !== 'hidden' }
 // 收起立刻收（不淡出，免得旧圈在旧位置多停一会儿）；出来时再淡入
+const cx0 = (r) => r.left + r.width / 2
 const hide = (...els) => els.forEach((e) => { e.style.transition = 'none'; e.style.opacity = '0' })
 const label = (el) => (el.innerText || el.getAttribute('aria-label') || '').trim().replace(/\s+/g, ' ')
 
@@ -93,6 +94,8 @@ export default function Coach() {
   const side0 = useRef({})
   // 刚点中圈住的东西：先把圈和气泡收起来，等下一个目标出来再显示，不在弹窗收起、页面切换的那一下指回旧按钮
   const held = useRef(null)
+  // 窄屏时写进导览条的那句话（只在变了的时候通知导览条）
+  const barText = useRef('')
   // 最近一次操作是键盘还是鼠标 / 手指
   const kbd = useRef(false)
   useEffect(() => {
@@ -112,8 +115,9 @@ export default function Coach() {
       const hit = resolve(state, pathname)
       const R = ring.current, T = tip.current, A = arrow.current, P = point.current
       if (!R || !T || !A || !P) return
-      if (held.current && hit && (hit.el === held.current.el || hit.el.contains(held.current.el)) && Date.now() - held.current.at < 1500) { hide(R, T, P); return }
-      if (!hit || !vis(hit.el)) { hide(R, T, P); cur.current = null; return }
+      if (held.current && hit && (hit.el === held.current.el || hit.el.contains(held.current.el)) && Date.now() - held.current.at < 1500) { hide(R, T, P); if (barText.current !== '') { barText.current = ''; window.dispatchEvent(new CustomEvent('coach-text', { detail: '' })) } return }
+      // 没有目标（奖励时刻还在播、页面在换）：导览条换回这一步的说明，不留上一步的「点这里」
+      if (!hit || !vis(hit.el)) { hide(R, T, P); cur.current = null; if (barText.current !== '') { barText.current = ''; window.dispatchEvent(new CustomEvent('coach-text', { detail: '' })) } return }
       held.current = null
       const r1 = hit.el.getBoundingClientRect(), now = Date.now(), st = still.current
       if (st.el !== hit.el || Math.abs(st.x - r1.left) > 1 || Math.abs(st.y - r1.top) > 1) { still.current = { el: hit.el, x: r1.left, y: r1.top, at: now }; hide(R, T, P); return }
@@ -148,6 +152,53 @@ export default function Coach() {
         boxShadow: dlg ? '0 0 0 3px var(--accent), 0 0 0 9px color-mix(in srgb, var(--accent) 25%, transparent)' : '0 0 0 3px var(--accent), 0 0 0 9px color-mix(in srgb, var(--accent) 25%, transparent), 0 0 0 200vmax rgba(12, 24, 18, 0.32)' })
       // 气泡：下面放得下就放下面，否则放上面；左右夹在屏幕里；箭头对着目标中间
       const tw = T.offsetWidth, th = T.offsetHeight, gap = 48, m = 8, AR = 40
+      // 页面里按钮挨着按钮、字挨着字，浮在页面上的气泡放哪都会压到说明。
+      // 所以「点这里：××」写进顶上的导览条（导览条在页面里占自己的位置，不压任何内容），
+      // 目标上只留绿圈和一个贴在旁边空白处的箭头；弹窗里的目标，气泡放到弹窗上方压暗的空白处
+      const dock = !hit.el.closest('header, [data-tour-bar]')
+      if (dock) {
+        const dlgEl = hit.el.closest('[role=dialog]')
+        const sr = dlgEl?.getBoundingClientRect()
+        if (dlgEl && sr.top >= th + AR + 16) {
+          if (barText.current !== '') { barText.current = ''; window.dispatchEvent(new CustomEvent('coach-text', { detail: '' })) }
+          const left = Math.max(m, Math.min(innerWidth - tw - m, cx0(r) - tw / 2)), top = sr.top - 8 - AR - th
+          Object.assign(T.style, { transition: '', opacity: '1', left: `${left}px`, top: `${top}px` })
+          Object.assign(A.style, { left: `${Math.max(14, Math.min(tw - 14, cx0(r) - left)) - 6}px`, right: '', top: '', bottom: '-6px' })
+          Object.assign(P.style, { transition: '', opacity: '1', left: `${Math.max(m, Math.min(innerWidth - m - 36, cx0(r) - 18))}px`, top: `${top + th + 4}px` })
+          P.dataset.dir = 'down'
+          return
+        }
+        if (barText.current !== hit.text) { barText.current = hit.text; window.dispatchEvent(new CustomEvent('coach-text', { detail: hit.text })) }
+        T.style.transition = 'none'; T.style.opacity = '0'
+        // 箭头放哪：目标左、右、上、下贴边的几个位置，外加整行宽按钮自己左侧的空白；挑一个不压任何字、不压目标的
+        if (side0.current.el !== hit.el || side0.current.text !== hit.text) {
+          const cyy = r.top + r.height / 2, cxx = cx0(r)
+          const opts = [['right', r.left - pad - 22, cyy], ['left', r.right + pad + 22, cyy]]
+          for (const fx of [0.5, 0.85, 0.15, 0.7, 0.3]) opts.push(['down', r.left + r.width * fx, r.top - pad - 22], ['up', r.left + r.width * fx, r.bottom + pad + 22])
+          // 附近的字和控件（只取叶子：文字段落、输入框、下拉框、按钮、星星、图片）
+          const near2 = [...document.querySelectorAll('p, span, label, li, dd, dt, h1, h2, h3, a, button, input, select, textarea, img, [role=radio]')].filter((e) => {
+            if (hit.el.contains(e) || e.contains(hit.el) || e.closest('.z-\\[70\\], .z-\\[71\\]')) return false
+            const q = e.getBoundingClientRect()
+            if (!q.width || !q.height || q.height > 120 || q.bottom < r.top - 80 || q.top > r.bottom + 80 || q.right < r.left - 80 || q.left > r.right + 80) return false
+            return !/^(P|SPAN|LABEL|LI|DD|DT|H1|H2|H3)$/.test(e.tagName) || ((e.innerText || '').trim() && ![...e.children].some((c) => (c.innerText || '').trim()))
+          }).map((e) => e.getBoundingClientRect())
+          const clear = ([, x, y]) => {
+            if (x < 20 || x > innerWidth - 20 || y < (document.querySelector('[data-tour-bar]')?.getBoundingClientRect().bottom ?? 0) + 20 || y > innerHeight - 20) return 99
+            const a0 = { left: x - 18, right: x + 18, top: y - 18, bottom: y + 18 }
+            const ov = (q) => q.left < a0.right - 1 && q.right > a0.left + 1 && q.top < a0.bottom - 1 && q.bottom > a0.top + 1
+            return (ov({ left: r.left + 6, right: r.right - 6, top: r.top + 6, bottom: r.bottom - 6 }) ? 5 : 0) + near2.filter(ov).length
+          }
+          const ranked = opts.map((o, k) => [o, clear(o) + k * 0.01]).sort((a1, b1) => a1[1] - b1[1])[0]
+          // 周围实在没有空处：这一步不画箭头，只留绿圈（「点这里」已经写在导览条上），宁可少一个箭头也不压字
+          side0.current = { el: hit.el, text: hit.text, arrow: ranked[1] < 1 ? [ranked[0][0], ranked[0][1] - r.left, ranked[0][2] - r.top] : null }
+        }
+        if (!side0.current.arrow) { P.style.transition = 'none'; P.style.opacity = '0'; return }
+        const [dir, ox, oy] = side0.current.arrow
+        Object.assign(P.style, { transition: '', opacity: '1', left: `${r.left + ox - 18}px`, top: `${r.top + oy - 18}px` })
+        P.dataset.dir = dir
+        return
+      }
+      if (barText.current !== '') { barText.current = ''; window.dispatchEvent(new CustomEvent('coach-text', { detail: '' })) }
       const navTop = document.querySelector('nav[aria-label="主导航"]')?.getBoundingClientRect().top ?? innerHeight
       const floor = (navTop > innerHeight / 2 && !hit.nav ? navTop : innerHeight) - m
       const barB = document.querySelector('[data-tour-bar]')?.getBoundingClientRect().bottom ?? 0
@@ -237,7 +288,8 @@ export default function Coach() {
       if (!el || !T || e.target.closest?.('[data-tour-bar], [role=tablist][aria-label="切换角色"]')) return
       if (e.target.closest?.('[role=dialog]') && !el.closest('[role=dialog]')) return
       if (reduce) return
-      T.animate([{ transform: 'translateX(0)' }, { transform: 'translateX(-7px)' }, { transform: 'translateX(7px)' }, { transform: 'translateX(-4px)' }, { transform: 'translateX(0)' }], { duration: 380, easing: 'ease-out' })
+      const W0 = T.style.opacity === '0' ? point.current : T
+      W0.animate([{ transform: 'translateX(0)' }, { transform: 'translateX(-7px)' }, { transform: 'translateX(7px)' }, { transform: 'translateX(-4px)' }, { transform: 'translateX(0)' }], { duration: 380, easing: 'ease-out' })
     }
     window.addEventListener('pointerdown', f, true)
     return () => window.removeEventListener('pointerdown', f, true)

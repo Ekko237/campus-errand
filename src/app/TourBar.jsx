@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { motion, AnimatePresence, useReducedMotion } from 'motion/react'
 import { X, ArrowRight } from '@phosphor-icons/react'
@@ -47,7 +47,10 @@ export default function TourBar({ wide = false }) {
   const text0 = step && step.who === state.role ? step.text.replace(/^((切(到|回))?(跑腿人|发单人)(阿远)?|切换身份去互评)[，：]?/, '') : step?.text
   const arrived = step?.final && loc.pathname === step.to
   // 已经到了「我的」，就不再叫人「去我的看看」
-  const text = arrived ? '导览完成' : text0
+  // 窄屏时「指哪点哪」把「点这里：××」交给导览条显示（不在页面上浮气泡，免得压住说明）
+  const [coach, setCoach] = useState('')
+  useEffect(() => { const f = (e) => setCoach(e.detail || ''); window.addEventListener('coach-text', f); return () => window.removeEventListener('coach-text', f) }, [])
+  const text = arrived ? '导览完成' : coach || text0
   // 每到一步：给该点的那个东西加一圈会呼吸的描边；它被顶栏或底部导航挡住时才滚动，只滚到刚好露出来
   useEffect(() => {
     if (!here) return
@@ -115,11 +118,11 @@ export default function TourBar({ wide = false }) {
       {step && (
         <motion.div key="bar" initial={reduce ? false : { opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.2 }}
           className="border-t border-line bg-ink text-bg">
-          <div data-tour-bar className={`mx-auto flex min-h-12 items-center gap-3 py-1.5 ${wide ? 'max-w-[1440px] px-6' : 'max-w-xl px-4 xl:max-w-[66rem]'}`}>
+          <div data-tour-bar className={`mx-auto flex min-h-12 items-center gap-3 py-1.5 max-sm:min-h-14 ${wide ? 'max-w-[1440px] px-6' : 'max-w-xl px-4 xl:max-w-[66rem]'}`}>
             <span className="inline-flex shrink-0 items-center gap-1 text-xs font-bold opacity-70">{step.final ? <><Confetti size={18} weight="fill" className="text-accent" />走完了</> : <span className="tnum whitespace-nowrap rounded-full bg-bg/15 px-2 py-0.5">第 {step.n} 步 / 共 8 步</span>}</span>
             {/* 文字和订单状态同一帧换，不等旧文字淡出 */}
             <motion.p key={text} initial={reduce ? false : { opacity: 0.4 }} animate={{ opacity: 1 }} transition={{ duration: 0.15 }}
-              className="min-w-0 flex-1 text-[14px] font-semibold leading-snug md:text-[15px]">{text}</motion.p>
+              className={`min-w-0 flex-1 text-[14px] font-semibold leading-snug md:text-[15px] ${coach ? 'text-accent-soft' : ''}`}>{text}</motion.p>
             {!here && roleOk && !arrived && !loc.pathname.startsWith('/app/verify') && (step.final || !['/app/publish', '/app/orders', '/app/me'].includes(step.to.split('?')[0])) && <button data-tour-go onClick={go} className="inline-flex h-9 shrink-0 items-center gap-1 whitespace-nowrap rounded-full bg-accent px-3.5 text-[14px] font-semibold text-on-accent active:scale-[0.98]">
               {step.cta}<ArrowRight size={14} weight="bold" />
             </button>}
