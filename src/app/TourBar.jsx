@@ -79,8 +79,8 @@ export default function TourBar({ wide = false }) {
     evs.forEach((e) => window.addEventListener(e, hands, { passive: true, capture: true }))
     const id = setTimeout(() => {
       // 只在刚发布（下一步认证）、刚接单（下一步取件）和刚放款（下一步打分）这三步停
-      // 接单那一下先把取件码卡停在视线里（接单后才看得到，是这一单的高光）；取件后先露地图，看得到阿远走到哪了
-      const moment = step?.n === 5 ? root().querySelector('[data-tour-map]') : [2, 4, 7].includes(step?.n) ? root().querySelector('[data-tour-moment]') : null
+      // 接单那一下先把取件码卡停在视线里（接单后才看得到，是这一单的高光）；取件后不停：地图就在按钮上面，停半秒只像卡住了
+      const moment = [2, 4, 7].includes(step?.n) ? root().querySelector('[data-tour-moment]') : null
       if (moment) {
         const head = document.querySelector('header')?.getBoundingClientRect().bottom ?? 64
         const mr = moment.getBoundingClientRect()
@@ -90,7 +90,7 @@ export default function TourBar({ wide = false }) {
         // 卡片看不全才挪，只挪到刚好露出来，平滑滚
         if (!touched && (mr.top < head + 16 || mr.bottom > innerHeight - 80)) window.scrollBy({ top: mr.top < head + 16 ? from - head - 16 : Math.min(mr.bottom - (innerHeight - 80), mr.top - head - 16), behavior: reduce ? 'auto' : 'smooth' })
         // 放款那条「¥5 从小满流到阿远」要播约 2.3 秒，取件码揭晓短一些
-        wait = step.n === 7 ? 2600 : step.n === 5 ? 500 : 1100
+        wait = step.n === 7 ? 2600 : 1100
       }
       timers.push(setTimeout(() => {
         el = root().querySelector('[data-tour-target]') || [...root().querySelectorAll('button')].find((x) => x.classList.contains('bg-accent') && !x.disabled && x.offsetParent && !x.closest('[inert]'))

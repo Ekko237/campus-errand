@@ -116,7 +116,8 @@ export default function Coach() {
       const hit = resolve(state, pathname)
       const R = ring.current, T = tip.current, A = arrow.current, P = point.current
       if (!R || !T || !A || !P) return
-      if (held.current && hit && (hit.el === held.current.el || hit.el.contains(held.current.el)) && Date.now() - held.current.at < 1500) { hide(R, T, P); say(''); return }
+      // 同一个按钮换了字（「我已取到」变成「提交送达凭证」）就是下一步了，不用再等
+      if (held.current && hit && hit.text === held.current.text && (hit.el === held.current.el || hit.el.contains(held.current.el)) && Date.now() - held.current.at < 1500) { hide(R, T, P); say(''); return }
       // 没有目标（奖励时刻还在播、页面在换）：导览条换回这一步的说明，不留上一步的「点这里」
       if (!hit || !vis(hit.el)) { hide(R, T, P); cur.current = null; say(''); return }
       held.current = null
@@ -142,7 +143,7 @@ export default function Coach() {
         const nt = document.querySelector('nav[aria-label="主导航"]')?.getBoundingClientRect().top ?? innerHeight
         const ft = nt > innerHeight / 2 ? nt : innerHeight
         // 自己算距离：按钮只是被底部导航压着时，scrollIntoView 的 nearest 认为它在视口里，不会滚
-        if (r0.top < hb + 8 || r0.bottom > ft - 8) { scrolled.current = hit.el; window.scrollBy({ top: r0.top < hb + 8 ? r0.top - hb - 16 : r0.bottom - ft + 24, behavior: reduce ? 'auto' : 'smooth' }) }
+        if (r0.top < hb + 8 || r0.bottom > ft - 8) { scrolled.current = hit.el; window.scrollBy({ top: r0.top < hb + 8 ? r0.top - hb - 16 : r0.bottom - ft + 56, behavior: reduce ? 'auto' : 'smooth' }) }
       }
       const r = hit.el.getBoundingClientRect()
       // 目标还被底部导航、顶栏或弹层盖着（正在滚出来）：先不画圈，不然圈住的其实是盖在上面的导航，一点就点到别处
@@ -196,13 +197,23 @@ export default function Coach() {
           return (ov({ left: r.left + 6, right: r.right - 6, top: r.top + 6, bottom: r.bottom - 6 }) ? 5 : 0) + near2.filter(ov).length + (big ? 1 : 0)
         }
         const ranked = opts.map((o, k) => [o, clear(o) + k * 0.01]).sort((a1, b1) => a1[1] - b1[1])[0]
-        // 周围实在没有空处：这一步不画箭头，只留绿圈（「点这里」已经写在导览条上），宁可少一个箭头也不压字
-        side0.current = { el: hit.el, text: hit.text, arrow: ranked[1] < 1 ? [ranked[0][0], ranked[0][1] - r.left, ranked[0][2] - r.top] : null }
+        let arrow = ranked[1] < 1 ? [ranked[0][0], ranked[0][1] - r.left, ranked[0][2] - r.top] : null
+        // 外面没空处（整行宽的按钮，上下挨着卡片和说明）：箭头放进按钮里、字旁边的空白，朝着字
+        if (!arrow && hit.el.matches('button') && r.height >= 40) {
+          const rg = document.createRange(); rg.selectNodeContents(hit.el)
+          const tr = rg.getBoundingClientRect()
+          if (tr.width && r.right - tr.right >= 64) arrow = ['left', (tr.right + r.right) / 2 - r.left, r.height / 2, true]
+        }
+        // 再没有：这一步不画箭头，只留绿圈（「点这里」已经写在导览条上），宁可少一个箭头也不压字
+        side0.current = { el: hit.el, text: hit.text, arrow }
       }
       if (!side0.current.arrow) { P.style.transition = 'none'; P.style.opacity = '0'; return }
-      const [dir, ox, oy] = side0.current.arrow
+      const [dir, ox, oy, inside] = side0.current.arrow
       Object.assign(P.style, { transition: '', opacity: '1', left: `${r.left + ox - 18}px`, top: `${r.top + oy - 18}px` })
       P.dataset.dir = dir
+      // 按钮里的箭头：绿按钮上用白箭头、绿描边
+      P.style.color = inside ? 'var(--on-accent)' : ''
+      const svg = P.querySelector('svg'); if (svg) svg.style.stroke = inside ? 'var(--accent)' : ''
     }
     raf = requestAnimationFrame(tick)
     return () => cancelAnimationFrame(raf)
@@ -212,7 +223,7 @@ export default function Coach() {
     if (!on) return
     const f = (e) => {
       const el = cur.current, T = tip.current
-      if (el && el.contains(e.target)) { held.current = { el, at: Date.now() }; return }
+      if (el && el.contains(e.target)) { held.current = { el, at: Date.now(), text: tip.current?.dataset.text }; return }
       if (!el || !T || e.target.closest?.('[data-tour-bar], [role=tablist][aria-label="切换角色"]')) return
       if (e.target.closest?.('[role=dialog]') && !el.closest('[role=dialog]')) return
       if (reduce) return
