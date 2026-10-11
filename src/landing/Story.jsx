@@ -201,6 +201,13 @@ function StoryMap({ i, pos, aspect, small = false }) {
             </motion.span>
           )}
           {i === 5 && <Bubble key="b5" p={pp([XM[0] + 280, XM[1] - 250])} small={small} green>+¥5 到阿远</Bubble>}
+          {i === 5 && !reduce && (
+            // 放款那一下：一枚 ¥5 从小满手里飞到阿远身上，钱是真的动了
+            <motion.span key="coin" aria-hidden="true" className={`absolute z-50 grid -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full bg-accent font-bold text-on-accent shadow-[0_8px_20px_-6px_rgba(11,122,85,0.8)] ring-2 ring-surface ${small ? 'size-7 text-[11px]' : 'size-11 text-[15px]'}`}
+              initial={{ ...pp(XM), scale: 0.4, opacity: 0 }}
+              animate={{ left: [pp(XM).left, pp([(XM[0] + at(END)[0]) / 2, Math.min(XM[1], at(END)[1]) - 140]).left, pp(at(END)).left], top: [pp(XM).top, pp([(XM[0] + at(END)[0]) / 2, Math.min(XM[1], at(END)[1]) - 140]).top, pp(at(END)).top], scale: [0.4, 1.15, 0.6], opacity: [0, 1, 0] }}
+              transition={{ duration: 1.1, delay: 0.25, ease: 'easeInOut', times: [0, 0.5, 1] }}>¥5</motion.span>
+          )}
           {i === 6 && <Bubble key="b6" p={pp([XM[0] + 330, XM[1] - 250])} small={small} green>阿远 +3 · 小满 +2</Bubble>}
         </AnimatePresence>
       </motion.div>
