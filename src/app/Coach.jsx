@@ -32,7 +32,7 @@ function resolve(state, path) {
     return tab && { el: tab, text: `切到${ROLE[step.who]}，${WHY[step.n] || '继续'}` }
   }
   // 2 弹窗开着：送达码、评价、确认发布都在弹窗里
-  const dlg = [...document.querySelectorAll('[role=dialog]')].filter(vis).pop()
+  const dlg = [...document.querySelectorAll('[role=dialog]:not([data-closing])')].filter(vis).pop()
   if (dlg) {
     const code = dlg.querySelector('input[aria-label="4 位送达码"]')
     const t = state.tasks.find((x) => x.id === state.tour.taskId)
@@ -85,6 +85,8 @@ export default function Coach() {
   const scrolled = useRef(null)
   const sent = useRef(null)
   const side0 = useRef({})
+  // 刚点中圈住的东西：先把圈和气泡收起来，等下一个目标出来再显示，不在弹窗收起、页面切换的那一下指回旧按钮
+  const held = useRef(null)
   const on = state.tour.active
   useEffect(() => {
     if (!on) return
@@ -94,7 +96,9 @@ export default function Coach() {
       const hit = resolve(state, pathname)
       const R = ring.current, T = tip.current, A = arrow.current, P = point.current
       if (!R || !T || !A || !P) return
+      if (held.current && hit && (hit.el === held.current.el || hit.el.contains(held.current.el)) && Date.now() - held.current.at < 1500) { R.style.opacity = '0'; T.style.opacity = '0'; P.style.opacity = '0'; return }
       if (!hit || !vis(hit.el)) { R.style.opacity = '0'; T.style.opacity = '0'; P.style.opacity = '0'; cur.current = null; return }
+      held.current = null
       cur.current = hit.el
       // 在外层框里左右滑着看时（手机上看电脑版）：目标换了就告诉外层，外层把它滑进屏幕
       if (window.parent !== window && sent.current !== hit.el) {
@@ -160,7 +164,8 @@ export default function Coach() {
     if (!on) return
     const f = (e) => {
       const el = cur.current, T = tip.current
-      if (!el || !T || el.contains(e.target) || e.target.closest?.('[data-tour-bar], [role=tablist][aria-label="切换角色"]')) return
+      if (el && el.contains(e.target)) { held.current = { el, at: Date.now() }; return }
+      if (!el || !T || e.target.closest?.('[data-tour-bar], [role=tablist][aria-label="切换角色"]')) return
       if (e.target.closest?.('[role=dialog]') && !el.closest('[role=dialog]')) return
       if (reduce) return
       T.animate([{ transform: 'translateX(0)' }, { transform: 'translateX(-7px)' }, { transform: 'translateX(7px)' }, { transform: 'translateX(-4px)' }, { transform: 'translateX(0)' }], { duration: 380, easing: 'ease-out' })

@@ -1,5 +1,5 @@
 import { createPortal } from 'react-dom'
-import { motion, AnimatePresence, useReducedMotion } from 'motion/react'
+import { motion, AnimatePresence, useReducedMotion, useIsPresent } from 'motion/react'
 import { X, Star } from '@phosphor-icons/react'
 import { TYPES } from './data'
 
@@ -80,16 +80,26 @@ export function Avatar({ who, name = '', size = 44 }) {
 }
 
 export function Sheet({ open, onClose, title, children }) {
-  const reduce = useReducedMotion()
   // 挂到 body 上：不受页面转场的 transform 影响，遮罩能盖住顶栏和导览条
   return createPortal(
     <AnimatePresence>
-      {open && (
+      {open && <SheetBody key="sheet" onClose={onClose} title={title}>{children}</SheetBody>}
+    </AnimatePresence>,
+    document.body,
+  )
+}
+
+// 弹层本体单独成一个组件，才能知道自己是不是正在收起：收起的那 0.3 秒标上 data-closing，
+// 指引就不会把一个正在关掉的弹窗当成还开着、去圈里面的按钮
+function SheetBody({ onClose, title, children }) {
+  const reduce = useReducedMotion()
+  const present = useIsPresent()
+  return (
         // 只让遮罩淡入淡出，弹层本身一直不透明、只做上滑：下面的表单字不会从弹层里透上来
-        <motion.div className="fixed inset-0 z-50 flex items-end justify-center sm:items-center" initial={false} exit={{ opacity: 1, transition: { duration: 0.25 } }}>
+        <motion.div className={`fixed inset-0 z-50 flex items-end justify-center sm:items-center ${present ? '' : 'pointer-events-none'}`} initial={false} exit={{ opacity: 1, transition: { duration: 0.25 } }}>
           <motion.div className="absolute inset-0 bg-ink/50" onClick={onClose} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.2 }} />
           <motion.div
-            role="dialog" aria-modal="true" aria-label={title}
+            role="dialog" aria-modal="true" aria-label={title} data-closing={present ? undefined : ''}
             className="relative max-h-[88dvh] w-full max-w-lg overflow-y-auto rounded-t-2xl bg-surface p-5 pb-8 sm:rounded-2xl"
             initial={reduce ? false : { y: '100%' }} animate={{ y: 0 }} exit={reduce ? { opacity: 0 } : { y: '100%' }} transition={spring}
           >
@@ -100,9 +110,7 @@ export function Sheet({ open, onClose, title, children }) {
             {children}
           </motion.div>
         </motion.div>
-      )}
-    </AnimatePresence>
-  , document.body)
+  )
 }
 
 export function Empty({ img, alt = '', title, hint, action }) {
