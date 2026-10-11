@@ -215,7 +215,7 @@ export default function Publish() {
       {errors.banned ? (
         <div role="alert" className="-mt-3 flex items-center gap-3 rounded-2xl bg-danger-soft p-4 ring-1 ring-danger/30">
           <img src={`${import.meta.env.BASE_URL}icons/blocked-v1.webp`} width={64} height={64} alt="盖住试卷的禁止手势" className="size-16 shrink-0 object-contain" />
-          <p className="text-[15px] font-semibold text-danger">检测到「{banned.join('、')}」。这类任务发不出去，顺路侠是互助，不帮人作弊。</p>
+          <p className="text-[15px] font-semibold text-danger">检测到「{banned.join('、')}」。这类任务发不出去：顺路侠不接代考代写，也不接烟酒、违禁品和刷单。</p>
         </div>
       ) : (
         <p className="-mt-3 flex items-start gap-1.5 text-sm text-muted"><ProhibitInset size={16} className="mt-0.5 shrink-0" />代考、代签到、代写作业等任务会被拦截，不能发布。</p>
