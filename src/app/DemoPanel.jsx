@@ -50,7 +50,7 @@ export default function DemoPanel() {
           <Avatar who={k} name={a.name} size={40} />
           <div className="min-w-0 flex-1">
             <p className="flex items-center gap-1.5 text-[15px] font-semibold">{a.name}<span className="text-sm font-normal text-muted">{a.role}</span></p>
-            <p className="text-sm text-muted">{sub}</p>
+            <p className="text-sm text-muted">{sub.split(' · ').map((x, i) => <span key={i}>{i ? ' · ' : ''}<span className="whitespace-nowrap">{x}</span></span>)}</p>
           </div>
           <div className="text-right">
             {a.verified ? (

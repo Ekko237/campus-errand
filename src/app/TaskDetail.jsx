@@ -363,7 +363,7 @@ function Actions({ t }) {
     if (role === 'poster') {
       return own ? (
         <div className="grid gap-2">
-          <p className="text-balance text-center text-[15px] text-muted">等待同学接单。也可以切到跑腿人，自己接下这单。</p>
+          <p className="text-center text-[15px] text-muted">等待同学接单。也可以切到跑腿人，自己接下这单。</p>
           <div className="grid grid-cols-2 gap-3">
             <Btn variant="ghost" onClick={() => act('cancel', { id: t.id })}>取消并退款</Btn>
             <Btn onClick={() => act('role', { role: 'runner' })}>切到跑腿人</Btn>
@@ -525,7 +525,7 @@ function OnTheWay({ t }) {
   // 送达中：小人走到取件点和终点之间，看得出正往那边送
   const at = t.status === 'delivered' ? 1 : t.picked ? (Math.max(pick, 0.02) + 1) / 2 : 0.02
   const name = (id) => B[id]?.name.replace(/（.*?）/, '')
-  const cap = t.status === 'delivered' ? `已送到${name(t.to)}，等发单人确认` : t.picked ? `已取到，正往${name(t.to)}走` : `在去${name(t.from)}取件的路上`
+  const cap = t.status === 'delivered' ? `已送到${name(t.to)}，等发单人确认` : t.picked ? `已取到，正往${name(t.to)}走` : mine ? `在去${name(t.from)}取件的路上` : `已接单，在${name(t.from)}取件`
   return (
     <div data-tour-map="">
     <Panel className="p-3">
@@ -677,7 +677,7 @@ export default function TaskDetail() {
         ) : (
         <div className="flex items-center gap-3 rounded-2xl bg-ink p-4 text-bg">
           {t.status === 'delivered' ? <Check size={26} weight="bold" className="shrink-0 text-accent" /> : <Numpad size={26} className="shrink-0" />}
-          <p className="flex-1 text-balance text-[15px]">{t.status === 'delivered' ? '跑腿人已当面核验送达码' : '送达码，见面后告诉跑腿人'}</p>
+          <p className="flex-1 text-[15px]">{t.status === 'delivered' ? '跑腿人已当面核验送达码' : '送达码，见面后告诉跑腿人'}</p>
           <span className="tnum text-3xl font-bold tracking-[0.2em]">{t.deliverCode}</span>
         </div>
         )

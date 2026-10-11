@@ -213,7 +213,7 @@ function DeskShell({ sub, openTask }) {
             ))}
           </div>
           {/* 演示面板放在导航下面：右栏留给地图和订单详情 */}
-          <div className="-mx-1.5 mt-[18px] overflow-y-auto overscroll-contain p-1.5" style={{ maxHeight: `calc(100dvh - ${state.tour.active ? 148 : 96}px - 230px + 12px)` }}><DemoPanel /></div>
+          <div className="-mx-1.5 mt-[18px] overflow-y-auto overscroll-contain p-1.5" style={{ maxHeight: `calc(100dvh - ${state.tour.active ? 148 : 96}px - 230px + 6px)` }}><DemoPanel /></div>
         </nav>
         <section aria-label="列表" className="min-w-0" data-tour-root={taskOpen ? undefined : ''}>
           {taskOpen ? (
