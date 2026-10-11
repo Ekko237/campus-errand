@@ -184,6 +184,8 @@ function DeskShell({ sub, openTask }) {
   const { pathname } = loc
   const reduce = useReducedMotion()
   const taskOpen = pathname.startsWith('/app/task/')
+  // 从某一单去认证：右栏留着那一单，认证完回去接着做
+  const verifyBack = pathname.startsWith('/app/verify') ? (loc.search.match(/back=\/app\/task\/([^&]+)/) || [])[1] : null
   // 点开一单时，中间留着它所在的那张列表：自己发的、自己接的在「订单」，别人的在「大厅」
   const listPath = openTask && ((state.role === 'poster' && openTask.posterId === 'poster') || (state.role === 'runner' && openTask.runnerId === 'runner')) ? '/app/orders' : '/app'
   const top = state.tour.active ? 'top-[132px]' : 'top-20'
@@ -228,7 +230,10 @@ function DeskShell({ sub, openTask }) {
             </div>
           ) : (
             <div className={`sticky ${top} space-y-5 overflow-y-auto overscroll-contain`} style={{ maxHeight: `calc(100dvh - ${state.tour.active ? 148 : 96}px)` }}>
-              {(pathname === '/app' || pathname === '/app/') ? <div id="desk-map-slot" /> : <RightHint />}
+              {(pathname === '/app' || pathname === '/app/') ? <div id="desk-map-slot" />
+                : pathname.startsWith('/app/publish') ? <div id="desk-side-slot" />
+                : verifyBack ? <Routes location={{ ...loc, pathname: `/app/task/${verifyBack}`, search: '' }}><Route path="task/:id" element={<TaskDetail />} /></Routes>
+                : <RightHint />}
             </div>
           )}
         </aside>

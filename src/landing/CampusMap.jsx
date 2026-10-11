@@ -52,7 +52,7 @@ function pointAt(pts, f) {
 }
 
 // 底图是按路网画的生成图，路线全部沿路走（src/campusMap.js 里寻路）；不缩放不旋转，画框和底图一样比例，四边不会露白
-export default function CampusMap({ R, hits, reduce, pills = true, walker = true, endsOnly = false, legend = false, at = null, park = false }) {
+export default function CampusMap({ R, hits, reduce, pills = true, walker = true, endsOnly = false, legend = false, at = null, park = false, compact = false }) {
   // 画路线只画路面上的那段（去掉两头进门的小短线），起点终点的圆点就压在路上，不会偏开
   const full = routePath(R.from, R.to).pts
   const mine = full.length > 3 ? full.slice(1, -1) : full
@@ -155,7 +155,7 @@ export default function CampusMap({ R, hits, reduce, pills = true, walker = true
       {!endsOnly && marks.filter(({ t }) => !ends.includes(t.from)).map(({ t }) => (
         <span key={`l${t.id}`} className="absolute z-10 hidden md:block" style={pct(markAt(t.from))}>
           <span className={`absolute left-0 -translate-x-1/2 whitespace-nowrap rounded-full bg-surface px-1.5 py-0.5 text-[12px] font-semibold md:px-2.5 md:text-[13px] text-ink shadow-sm ring-1 ring-line ${outward(t.from) === 'up' ? 'bottom-3.5' : 'top-3.5'}`}>
-            {SHORT[t.from]}
+            {compact ? TINY[t.from] || SHORT[t.from] : SHORT[t.from]}
           </span>
         </span>
       ))}

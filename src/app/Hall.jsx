@@ -188,7 +188,7 @@ export default function Hall() {
   useEffect(() => { const el = document.getElementById('desk-map-slot'); setDeskSlot((p) => (p === el ? p : el)) })
   const mapBlock = (
         <div className="rounded-2xl bg-accent-soft p-2 pb-3">
-          {showMap && <CampusMap R={route} reduce={reduce} pills={false} walker={false} legend
+          {showMap && <CampusMap R={route} reduce={reduce} pills={false} walker={false} compact={!!deskSlot} legend
             hits={routeHits} />}
           <div className="px-2 pt-3">
           <div className="flex items-center gap-3">

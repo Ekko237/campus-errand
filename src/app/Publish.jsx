@@ -1,4 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
+import { createPortal } from 'react-dom'
+import CampusMap from '../landing/CampusMap'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { Minus, Plus, CaretDown } from '@phosphor-icons/react'
 import { useStore } from '../store'
@@ -117,8 +119,35 @@ export default function Publish() {
     nav(`/app/task/${id}`)
   }
 
+  // 电脑版：右栏实时预览这一单发出去以后的样子，和它在谁的路上
+  const [sideSlot, setSideSlot] = useState(null)
+  useEffect(() => { const el = document.getElementById('desk-side-slot'); setSideSlot((p) => (p === el ? p : el)) })
+  const preview = sideSlot && (() => {
+    const passing = ROUTES.filter((r) => detourMin(r.from, r.to, f) <= 5)
+    const R = passing[0] ? { from: passing[0].from, to: passing[0].to } : { from: f.from, to: f.to }
+    const valid = B[R.from] && B[R.to] && R.from !== R.to
+    const name = (id) => B[id]?.name.replace(/（.*?）/, '')
+    return createPortal(
+      <div className="space-y-3">
+        <p className="text-sm font-semibold text-muted">发布以后，大厅里长这样</p>
+        <Panel className="p-4">
+          <div className="flex items-center gap-2">
+            <span className="rounded-full bg-sunken px-2.5 py-0.5 text-sm font-semibold">{TYPES[f.type]?.label}</span>
+            {f.urgent && <span className="rounded-full bg-danger-soft px-2 py-0.5 text-xs font-bold text-danger">加急</span>}
+            <span className="tnum ml-auto text-2xl font-bold">¥{reward}</span>
+          </div>
+          <p className="mt-2 text-[17px] font-semibold">{title}</p>
+          <p className="mt-1 text-sm text-muted">{name(f.from)} → {name(f.to)}{f.room ? ' · 宿舍号接单后才给对方看' : ''}</p>
+        </Panel>
+        {valid && <CampusMap R={R} reduce pills={false} walker={false} compact hits={passing[0] ? [{ ...f, id: 'preview', reward }] : []} />}
+        <p className="text-sm text-muted">{passing.length ? `此刻有 ${passing.length} 条同学常走的路经过它，图上是「${passing[0].label}」` : '还没有常走的路正好经过它，赏金高一点会更快有人接'}</p>
+      </div>,
+      sideSlot,
+    )
+  })()
   return (
     <div className="space-y-5">
+      {preview}
       <div>
         <h1 className="font-display text-[28px] leading-tight">发布跑腿任务</h1>
         <p className="mt-1 text-[15px] text-muted">{again ? '已按上一单填好，取件码记得换成新的。' : '选模板、选楼栋，赏金先冻结托管，送达确认后才放款。'}</p>
