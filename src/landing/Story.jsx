@@ -268,7 +268,7 @@ function OrderCard({ i, go, small = false }) {
       </div>
       <div className="mt-3 grid grid-cols-6 gap-1">
         {CH.slice(1).map((c, k) => (
-          <button key={c.k} onClick={() => go(k + 1)} aria-label={`跳到「${c.kicker}」这一步`} className="group grid gap-1 pt-1 text-center">
+          <button key={c.k} onClick={() => go(k + 1)} aria-label={`跳到「${c.kicker}」这一步`} className="group -mb-3.5 grid content-start gap-1 pb-3.5 pt-1 text-center">
             <span className={`h-1.5 rounded-full transition-colors duration-300 ${k < i ? 'bg-accent' : 'bg-sunken group-hover:bg-line'}`} />
             <span className={`whitespace-nowrap text-xs font-semibold ${k + 1 === i ? 'text-accent' : 'text-muted'}`}>{c.kicker}</span>
           </button>

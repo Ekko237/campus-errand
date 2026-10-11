@@ -64,7 +64,7 @@ export default function Wallet() {
   return (
     <div className="space-y-5">
       <div className="flex items-center gap-2">
-        <button onClick={() => nav(-1)} aria-label="返回" className="grid size-10 place-items-center rounded-full bg-surface ring-1 ring-line"><ArrowLeft size={20} weight="bold" /></button>
+        <button onClick={() => nav(-1)} aria-label="返回" className="grid size-11 place-items-center rounded-full bg-surface ring-1 ring-line"><ArrowLeft size={20} weight="bold" /></button>
         <h1 className="font-display text-[28px] leading-tight">{runner ? '收入流水' : '钱包流水'}</h1>
       </div>
 

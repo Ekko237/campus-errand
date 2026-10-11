@@ -145,8 +145,8 @@ function Nav({ page }) {
     f(); window.addEventListener('scroll', f, { passive: true }); return () => window.removeEventListener('scroll', f)
   }, [page])
   const home = page !== 'thinking'
-  const linkCls = 'group relative py-1 transition-colors hover:text-ink'
-  const under = (on) => <span className={`absolute inset-x-0 -bottom-0.5 h-px origin-left bg-ink transition-transform duration-300 group-hover:scale-x-100 ${on ? 'scale-x-100' : 'scale-x-0'}`} />
+  const linkCls = 'group relative -my-2 py-3 transition-colors hover:text-ink'
+  const under = (on) => <span className={`absolute inset-x-0 bottom-1.5 h-px origin-left bg-ink transition-transform duration-300 group-hover:scale-x-100 ${on ? 'scale-x-100' : 'scale-x-0'}`} />
   return (
     <header className={`sticky top-0 z-30 transition-[background-color,border-color,box-shadow] duration-300 ${scrolled || !home ? 'border-b border-line bg-bg shadow-[0_1px_0_rgba(0,0,0,0.02)]' : 'border-b border-transparent bg-bg'}`}>
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-4 px-4 md:px-8">
@@ -908,7 +908,7 @@ function BanDemo() {
 function Safety() {
   const reduce = useReducedMotion()
   return (
-    <section id="safety" className="mx-auto max-w-7xl scroll-mt-16 px-4 pb-16 pt-10 md:px-8 md:pb-20 md:pt-14">
+    <section id="safety" className="mx-auto max-w-7xl scroll-mt-16 px-4 pb-16 pt-10 md:px-8 md:pb-20 md:pt-14 lg:pb-28">
       <Reveal className="relative overflow-hidden rounded-[32px] bg-ink md:rounded-[40px]">
         <div className="relative grid gap-10 px-6 py-14 text-bg md:px-14 md:py-20 lg:grid-cols-12 lg:items-center">
           <div className="lg:col-span-6">
@@ -963,7 +963,7 @@ function DotMatrix() {
 function Metrics() {
   return (
     <section id="metrics" className="scroll-mt-16 border-y border-line bg-surface">
-      <div className={`mx-auto max-w-7xl ${SECTION}`}>
+      <div className="mx-auto max-w-7xl px-4 py-16 md:px-8 md:pb-16 md:pt-28 lg:pb-16 lg:pt-32">
         <div className="max-w-4xl"><Reveal><H2>看三个数，<br />就知道平台健不健康</H2></Reveal></div>
         <div className="mt-14 grid grid-cols-[minmax(0,1fr)] gap-3 md:grid-cols-2 lg:grid-cols-3 lg:grid-rows-2">
           <Reveal className="flex flex-col justify-between rounded-2xl bg-accent-deep p-6 text-on-accent md:col-span-2 md:p-10 lg:row-span-2">
@@ -1006,7 +1006,7 @@ const ROADMAP = [
 
 function Roadmap() {
   return (
-    <section id="roadmap" className={`mx-auto max-w-7xl scroll-mt-16 ${SECTION}`}>
+    <section id="roadmap" className="mx-auto max-w-7xl scroll-mt-16 px-4 pb-12 pt-16 md:px-8 md:pb-16 md:pt-28 lg:pb-20 lg:pt-32">
       <Reveal><H2>接下来做什么</H2></Reveal>
       <ol className="relative mt-12 grid gap-8 lg:grid-cols-4 lg:gap-6">
         <span aria-hidden="true" className="absolute bottom-2 left-[7px] top-2 w-0.5 border-l-2 border-dashed border-line lg:bottom-auto lg:left-2 lg:right-0 lg:top-[7px] lg:h-0.5 lg:w-auto lg:border-l-0 lg:border-t-2" />
@@ -1027,7 +1027,7 @@ function Roadmap() {
 // 首屏之后第二段：从「一条路」放大到「整个校园」
 function Routes() {
   return (
-    <section id="routes" className="mx-auto max-w-7xl scroll-mt-16 px-4 pb-16 pt-20 md:px-8 md:pb-24 md:pt-28 lg:pb-28">
+    <section id="routes" className="mx-auto max-w-7xl scroll-mt-16 px-4 pb-16 pt-10 md:px-8 md:pb-20 md:pt-22 lg:pb-24 lg:pt-26">
       <Reveal><H2>同一时间<br />校园里到处是顺路</H2></Reveal>
       <Reveal delay={0.05}><Lead>阿远那一单只是其中一条。选一条路，看看此刻这条路上还有几单，顺手能捎上多少。</Lead></Reveal>
       <div className="mt-5"><CampusRoutes /></div>
@@ -1116,10 +1116,10 @@ function Final({ page }) {
             <span className="flex items-center gap-2 text-[15px] font-semibold text-ink"><img src={`${import.meta.env.BASE_URL}brand/logo-v2.png`} width={28} height={28} alt="" aria-hidden="true" className="size-7" />顺路侠 · 本来就要经过，顺手捎一下</span>
             <p className="mt-2">校园跑腿互助平台产品原型。页面中的人名、任务、金额和指标均为示例。</p>
           </div>
-          <div className="grid gap-2 md:justify-items-end">
-            {/* 「体验原型」直接按设备进合适的界面；想先挑手机版还是电脑版，从这里去选择页 */}<Link to="/app/start" className="mr-3 inline font-semibold text-ink underline-offset-4 hover:underline">选手机版 / 电脑版</Link>{page !== 'thinking' ? <Link to="/thinking" className="font-semibold text-ink underline-offset-4 hover:underline">产品思考</Link> : <Link to="/" className="font-semibold text-ink underline-offset-4 hover:underline">回首页</Link>}
+          <div className="grid gap-4 md:justify-items-end">
+            {/* 「体验原型」直接按设备进合适的界面；想先挑手机版还是电脑版，从这里去选择页 */}<Link to="/app/start" className="mr-3 -my-3 inline-flex min-h-11 items-center font-semibold text-ink underline-offset-4 hover:underline">选手机版 / 电脑版</Link>{page !== 'thinking' ? <Link to="/thinking" className="-my-3 inline-flex min-h-11 items-center font-semibold text-ink underline-offset-4 hover:underline">产品思考</Link> : <Link to="/" className="-my-3 inline-flex min-h-11 items-center font-semibold text-ink underline-offset-4 hover:underline">回首页</Link>}
             <p>演示数据只存在这台设备的浏览器里 · <button onClick={() => { if (window.confirm('把原型里的演示数据恢复成刚打开时的样子？')) { try { Object.keys(localStorage).filter((k) => k.startsWith('shunluxia:')).forEach((k) => localStorage.removeItem(k)) } catch { /* 无痕模式下没有本地存储 */ } } }}
-              className="font-semibold text-ink underline-offset-4 hover:underline">重置演示数据</button></p>
+              className="-my-3 inline-flex min-h-11 items-center font-semibold text-ink underline-offset-4 hover:underline">重置演示数据</button></p>
           </div>
         </div>
       </footer>
@@ -1137,7 +1137,7 @@ const COMPARE = [
 
 function ThinkingIntro() {
   return (
-    <section className="mx-auto max-w-7xl px-4 pb-4 pt-14 md:px-8 md:pt-20">
+    <section className="mx-auto max-w-7xl px-4 pb-16 pt-14 md:px-8 md:pt-20">
       <Reveal><p className="text-[15px] font-semibold text-accent">产品思考</p></Reveal>
       <Reveal delay={0.05}><h1 className="mt-3 font-display text-balance text-[44px] leading-[1.08] md:text-7xl">为什么是<span className="whitespace-nowrap">「顺路」</span></h1></Reveal>
       <div className="mt-12 grid gap-12 lg:grid-cols-12 lg:gap-16">
@@ -1202,7 +1202,7 @@ function ThinkingIntro() {
 // 一单讲完以后：同一套规则，不止取快递（占座、楼下交接两张场景图）
 function MoreScenes() {
   return (
-    <section className="mx-auto max-w-7xl px-4 py-16 md:px-8 md:py-24">
+    <section className="mx-auto max-w-7xl px-4 pb-22 pt-16 md:px-8 md:pb-30 md:pt-24 lg:pb-34">
       <Reveal><H2>不止取快递</H2></Reveal>
       <Reveal delay={0.05}><Lead>同一套托管、隐私和信用，换成早八占座、楼下交接，也是同一条顺路。</Lead></Reveal>
       <div className="mt-10 grid gap-6 md:grid-cols-2">

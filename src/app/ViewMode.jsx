@@ -37,7 +37,7 @@ export function ViewToggle({ inner = false }) {
       )}
       {opts.map(([k, label, I]) => (
         <button key={k} onClick={() => (EMBED ? embedPick(k) : pick(k))} aria-pressed={cur === k} title={label} aria-label={label}
-          className={`grid h-8 w-9 place-items-center rounded-full transition-colors sm:w-auto sm:gap-1 sm:px-2.5 sm:[grid-auto-flow:column] ${cur === k ? 'bg-surface text-ink shadow-sm' : 'text-muted hover:text-ink'}`}>
+          className={`grid h-8 w-11 place-items-center rounded-full transition-colors sm:w-auto sm:gap-1 sm:px-2.5 sm:[grid-auto-flow:column] ${cur === k ? 'bg-surface text-ink shadow-sm' : 'text-muted hover:text-ink'}`}>
           <I size={17} weight={cur === k ? 'fill' : 'regular'} /><span className="hidden text-[13px] font-semibold sm:inline">{label}</span>
         </button>
       ))}
@@ -84,7 +84,7 @@ function Choose({ pick }) {
   return (
     <div className="min-h-[100dvh] bg-bg px-4 pb-12 text-ink md:px-8">
       <header className="mx-auto flex h-16 max-w-5xl items-center">
-        <Link to="/" className="inline-flex items-center gap-1.5 text-[15px] font-semibold text-muted hover:text-ink"><ArrowLeft size={16} weight="bold" />回首页</Link>
+        <Link to="/" className="-my-3 inline-flex min-h-11 items-center gap-1.5 text-[15px] font-semibold text-muted hover:text-ink"><ArrowLeft size={16} weight="bold" />回首页</Link>
       </header>
       <main className="mx-auto max-w-5xl">
         <h1 className="font-display text-[34px] leading-tight md:text-[48px]">用哪种界面走一单？</h1>
@@ -131,7 +131,7 @@ function Framed({ view, src, frame }) {
   return (
     <div className="min-h-[100dvh] bg-sunken text-ink">
       <header className="flex h-14 items-center justify-between gap-3 px-4">
-        <Link to="/" className="inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap text-[15px] font-semibold text-muted hover:text-ink"><ArrowLeft size={16} weight="bold" />回首页</Link>
+        <Link to="/" className="-my-3 inline-flex min-h-11 shrink-0 items-center gap-1.5 whitespace-nowrap text-[15px] font-semibold text-muted hover:text-ink"><ArrowLeft size={16} weight="bold" />回首页</Link>
         {!phone && <p className="truncate text-[13px] text-muted">{pan ? '左右滑动看整页' : '电脑版在电脑上看效果更好'}</p>}
         <Ctx.Provider value={{ view, pick: (v) => { try { const h = frame.current.contentWindow.location.hash.slice(1) || '/app'; window.postMessage({ type: 'shunluxia:view', view: v, path: h }, window.location.origin) } catch { window.postMessage({ type: 'shunluxia:view', view: v }, window.location.origin) } } }}><ViewToggle /></Ctx.Provider>
       </header>

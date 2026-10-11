@@ -237,7 +237,7 @@ export default function Me() {
       <section>
         <div className="mb-3 flex items-center justify-between">
           <h2 className="text-lg font-bold">{me.role === '跑腿人' ? '收入流水' : '钱包流水'}</h2>
-          <Link to="/app/wallet" className="inline-flex items-center gap-1 text-sm font-semibold text-accent">按月 / 按年查看<CaretRight size={14} weight="bold" /></Link>
+          <Link to="/app/wallet" className="-my-3 inline-flex min-h-11 items-center gap-1 text-sm font-semibold text-accent">按月 / 按年查看<CaretRight size={14} weight="bold" /></Link>
         </div>
         {me.ledger.length === 0 ? (
           <Panel><Empty img="empty-wallet" alt="只有一枚硬币的钱包" title="还没有流水" hint="完成第一单后，赏金会从托管放到这里。" /></Panel>
@@ -260,7 +260,7 @@ export default function Me() {
       <section>
         <div className="mb-3 flex items-center justify-between">
           <h2 className="text-lg font-bold">信用记录</h2>
-          <Link to="/app/credit" className="text-sm font-semibold text-accent">规则说明</Link>
+          <Link to="/app/credit" className="-my-3 inline-flex min-h-11 items-center text-sm font-semibold text-accent">规则说明</Link>
         </div>
         {me.creditLog.length === 0 ? (
           <Panel><Empty img="empty-orders" alt="空的写字板" title="还没有信用记录" hint="认证后会有初始 70 分，之后每一单都会记在这里。" /></Panel>

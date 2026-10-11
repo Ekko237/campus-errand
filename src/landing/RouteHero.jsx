@@ -161,7 +161,7 @@ export default function RouteHero({ Cta, Anchor }) {
   // 副标题和按钮第一帧就在，只做一点位移，不从透明开始
   const fade = (d) => ({ initial: reduce ? false : { y: 10 }, animate: { y: 0 }, transition: { duration: 0.5, delay: d * 0.3, ease } })
   return (
-    <section id="top" className="mx-auto grid max-w-7xl items-center gap-10 px-4 pb-12 pt-8 md:px-8 md:pb-20 md:pt-12 lg:grid-cols-12 lg:gap-10 lg:pb-4 lg:pt-10 xl:pt-14">
+    <section id="top" className="mx-auto grid max-w-7xl items-center gap-10 px-4 pb-8 pt-8 md:px-8 md:pb-20 md:pt-12 lg:grid-cols-12 lg:gap-10 lg:pb-26 lg:pt-10 xl:pt-14">
       <div className="lg:col-span-5">
         <h1 className="font-display text-[54px] leading-[1.05] md:text-[80px] lg:text-[length:clamp(54px,4vw_+_20px,78px)]">
           <span className="block pb-1"><motion.span className="block" {...line(0)}>本来就要经过，</motion.span></span>

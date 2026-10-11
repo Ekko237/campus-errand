@@ -88,7 +88,7 @@ export function Sheet({ open, onClose, title, children }) {
           >
             <div className="mb-4 flex items-center justify-between gap-3">
               <h2 className="text-xl font-bold">{title}</h2>
-              <button onClick={onClose} aria-label="关闭" className="grid size-10 place-items-center rounded-full bg-sunken"><X size={20} weight="bold" /></button>
+              <button onClick={onClose} aria-label="关闭" className="grid size-11 place-items-center rounded-full bg-sunken"><X size={20} weight="bold" /></button>
             </div>
             {children}
           </motion.div>
@@ -103,7 +103,7 @@ export function Empty({ img, alt = '', title, hint, action }) {
     <div className="flex flex-col items-center px-6 py-12 text-center">
       <img src={`${import.meta.env.BASE_URL}icons/${img}-v1.webp`} width={112} height={112} alt={alt} className="size-28 object-contain" />
       <p className="mt-4 text-lg font-semibold">{title}</p>
-      {hint && <p className="mt-1.5 max-w-[26ch] text-base text-muted">{hint}</p>}
+      {hint && <p className="mt-1.5 max-w-[26ch] text-balance text-base text-muted">{hint}</p>}
       {action && <div className="mt-5">{action}</div>}
     </div>
   )
