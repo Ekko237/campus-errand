@@ -203,8 +203,8 @@ function DeskShell({ sub, openTask }) {
         <nav className={`sticky ${top} self-start`} aria-label="主导航">
           <div className="grid gap-1">
             {tabs.map(([to, label, img, end]) => (
-              <NavLink key={to} to={to} end={end} className={({ isActive: a0 }) => { const on = sub ? to === sub : a0; return `flex h-12 items-center gap-2.5 rounded-xl px-3 text-[15px] font-semibold transition-colors ${on ? 'bg-accent-soft text-accent' : 'text-muted hover:bg-sunken'}` }}>
-                {({ isActive: a0 }) => { const on = sub ? to === sub : a0; return (<><img src={`${import.meta.env.BASE_URL}icons/${img}-v1.webp`} width={28} height={28} alt="" aria-hidden="true" className={`size-7 object-contain transition ${on ? '' : 'opacity-55 grayscale'}`} />{label}</>) }}
+              <NavLink key={to} to={to} end={end} className={({ isActive: a0 }) => { const on = (taskOpen ? listPath : sub) ? to === (taskOpen ? listPath : sub) : a0; return `flex h-12 items-center gap-2.5 rounded-xl px-3 text-[15px] font-semibold transition-colors ${on ? 'bg-accent-soft text-accent' : 'text-muted hover:bg-sunken'}` }}>
+                {({ isActive: a0 }) => { const on = (taskOpen ? listPath : sub) ? to === (taskOpen ? listPath : sub) : a0; return (<><img src={`${import.meta.env.BASE_URL}icons/${img}-v1.webp`} width={28} height={28} alt="" aria-hidden="true" className={`size-7 object-contain transition ${on ? '' : 'opacity-55 grayscale'}`} />{label}</>) }}
               </NavLink>
             ))}
           </div>

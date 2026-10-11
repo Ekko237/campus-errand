@@ -203,10 +203,10 @@ function StoryMap({ i, pos, aspect, small = false }) {
           {i === 5 && <Bubble key="b5" p={pp([XM[0] + 280, XM[1] - 250])} small={small} green>+¥5 到阿远</Bubble>}
           {i === 5 && !reduce && (
             // 放款那一下：一枚 ¥5 从小满手里飞到阿远身上，钱是真的动了
-            <motion.span key="coin" aria-hidden="true" className={`absolute z-50 grid -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full bg-accent font-bold text-on-accent shadow-[0_8px_20px_-6px_rgba(11,122,85,0.8)] ring-2 ring-surface ${small ? 'size-7 text-[11px]' : 'size-11 text-[15px]'}`}
+            <motion.span key="coin" aria-hidden="true" className={`absolute z-50 grid -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full bg-accent font-bold text-on-accent shadow-[0_8px_20px_-6px_rgba(11,122,85,0.8)] ring-2 ring-surface ${small ? 'size-8 text-[12px]' : 'size-14 text-[18px]'}`}
               initial={{ ...pp(XM), scale: 0.4, opacity: 0 }}
               animate={{ left: [pp(XM).left, pp([(XM[0] + at(END)[0]) / 2, Math.min(XM[1], at(END)[1]) - 140]).left, pp(at(END)).left], top: [pp(XM).top, pp([(XM[0] + at(END)[0]) / 2, Math.min(XM[1], at(END)[1]) - 140]).top, pp(at(END)).top], scale: [0.4, 1.15, 0.6], opacity: [0, 1, 0] }}
-              transition={{ duration: 1.1, delay: 0.25, ease: 'easeInOut', times: [0, 0.5, 1] }}>¥5</motion.span>
+              transition={{ duration: 1.6, delay: 0.3, ease: 'easeInOut', times: [0, 0.5, 1] }}>¥5</motion.span>
           )}
           {i === 6 && <Bubble key="b6" p={pp([XM[0] + 330, XM[1] - 250])} small={small} green>阿远 +3 · 小满 +2</Bubble>}
         </AnimatePresence>
@@ -315,7 +315,7 @@ function Chapter({ c, k, now, dark, flat, children }) {
         </p>
       </div>
       {c.fear && (
-        <p className={`relative mt-4 inline-block self-start text-[15px] font-semibold ${dark ? 'opacity-80' : 'opacity-60'}`}>
+        <p className={`relative mt-4 inline-block self-start text-base font-semibold md:text-[17px] ${dark ? 'opacity-85' : 'text-ink/70'}`}>
           {c.fear}
           <motion.span aria-hidden="true" className={`absolute inset-x-0 top-1/2 h-0.5 origin-left rounded-full ${dark ? 'bg-on-accent' : 'bg-accent'}`}
             initial={false} animate={{ scaleX: now || reduce ? 1 : 0 }} transition={{ duration: reduce ? 0 : 0.45, delay: reduce ? 0 : 0.25, ease }} />
