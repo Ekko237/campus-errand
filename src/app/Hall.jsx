@@ -182,6 +182,8 @@ export default function Hall() {
   const numbered = list.filter((t) => t.deadline > Date.now() && detourMin(route.from, route.to, t) <= 5).map((t) => t.id)
 
   // 电脑版：地图放到右栏（没点开订单时），中间第一屏就是订单
+  // 电脑版右边开着一单时，中间只留列表，地图不挤进来
+  const openId = useOpenTaskId()
   const [deskSlot, setDeskSlot] = useState(null)
   useEffect(() => { const el = document.getElementById('desk-map-slot'); setDeskSlot((p) => (p === el ? p : el)) })
   const mapBlock = (
@@ -265,7 +267,7 @@ export default function Hall() {
         </button>}
       </div>
 
-      {sortBy === 'route' && (deskSlot ? createPortal(mapBlock, deskSlot) : mapBlock)}
+      {sortBy === 'route' && !openId && (deskSlot ? createPortal(mapBlock, deskSlot) : mapBlock)}
 
       {loading ? <Skeleton /> : list.length === 0 ? (
         <Empty img="empty-search" alt="空纸箱和放大镜" title="这个分类暂时没人发单" hint="换个分类看看，或者自己发一单，附近顺路的同学会看到。"

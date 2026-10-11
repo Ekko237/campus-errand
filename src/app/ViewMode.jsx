@@ -79,7 +79,7 @@ export function ViewHost({ children }) {
 function Choose({ pick }) {
   const cards = [
     ['phone', '手机版', '像用 App 一样走一单', 'preview-phone-v1', 390, 844, '手机版顺路侠的任务大厅截图', DeviceMobile],
-    ['desk', '电脑版', '在电脑上用网页版走一单', 'preview-desk-v1', 1200, 750, '电脑版顺路侠的任务大厅截图：左侧导航、中间大厅和地图、右侧演示面板', Desktop],
+    ['desk', '电脑版', '在电脑上用网页版走一单', 'preview-desk-v2', 1200, 750, '电脑版顺路侠的任务大厅截图：左侧导航、中间订单列表、右侧路线地图和演示面板', Desktop],
   ]
   return (
     <div className="min-h-[100dvh] bg-bg px-4 pb-12 text-ink md:px-8">

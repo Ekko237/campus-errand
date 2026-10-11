@@ -155,6 +155,9 @@ let seq = 100
 export const nextId = () => 't' + (seq++) + Math.random().toString(36).slice(2, 6)
 export const code4 = () => String(Math.floor(1000 + Math.random() * 9000))
 
+// 占座这类「明早之前」的单：截止定在下一个 7:40，不管现在几点打开，都不会出现「明天 05:00 前」这种怪时间
+const untilMin = (hh, mm) => { const d = new Date(); const t = new Date(d); t.setHours(hh, mm, 0, 0); if (t - d < 60 * M) t.setDate(t.getDate() + 1); return Math.round((t - d) / M) }
+
 function mk(o) {
   return {
     status: 'open', picked: false, proof: null, runnerId: null, late: false,
@@ -173,7 +176,7 @@ export function seedTasks() {
     mk({ id: 's1', type: 'express', title: '菜鸟驿站取 2 个小件快递', from: 'cainiao', to: 'mei5', reward: 5, windowMin: 90, urgent: false, size: 's', note: '两个都是衣服，很轻', room: '梅园 5 号楼 412', posterName: '梁小禾', posterCredit: 91, ago: 6 }),
     mk({ id: 's2', type: 'food', title: '外卖到北门了，帮忙拎上楼', from: 'gate', to: 'tao2', reward: 3, windowMin: 25, urgent: true, size: 's', note: '黄色袋子，尾号 7731', room: '桃园 2 号楼 608', posterName: '许一舟', posterCredit: 83, ago: 3 }),
     mk({ id: 's3', type: 'buy', title: '教育超市带一瓶生抽和两包抽纸', from: 'market', to: 'zhu3', reward: 6, windowMin: 240, urgent: false, size: 's', note: '生抽要海天的，钱到了一起转', room: '竹园 3 号楼 215', posterName: '温晴', posterCredit: 95, ago: 22 }),
-    mk({ id: 's4', type: 'seat', title: '图书馆三楼占一个靠窗座位', from: 'lib', to: 'lib', reward: 4, windowMin: 600, urgent: false, size: 's', note: '明早 7:40 前，放本书就行', room: '图书馆 3F 自习区', posterName: '周砚', posterCredit: 88, ago: 40 }),
+    mk({ id: 's4', type: 'seat', title: '图书馆三楼占一个靠窗座位', from: 'lib', to: 'lib', reward: 4, windowMin: untilMin(7, 40), urgent: false, size: 's', note: '明早 7:40 前，放本书就行', room: '图书馆 3F 自习区', posterName: '周砚', posterCredit: 88, ago: 40 }),
     mk({ id: 's5', type: 'express', title: '顺丰大件显示器，需要力气', from: 'sf', to: 'yan', reward: 15, windowMin: 180, urgent: false, size: 'l', note: '箱子大约 8 斤，有提手', room: '研究生公寓 B 栋 1103', posterName: '程立', posterCredit: 97, ago: 15 }),
     mk({ id: 's6', type: 'buy', title: '二食堂带一份黄焖鸡米饭', from: 'canteen2', to: 'jiao1', reward: 4, windowMin: 35, urgent: true, size: 's', note: '微辣，不要香菜', room: '一教 204 教室后排', posterName: '于小渔', posterCredit: 68, ago: 4 }),
     mk({ id: 's7', type: 'other', title: '把雨伞送到体育馆门口', from: 'lan1', to: 'gym', reward: 5, windowMin: 45, urgent: false, size: 's', note: '伞在宿管阿姨那里，报我名字', room: '兰园 1 号楼宿管室', posterName: '乐知行', posterCredit: 86, ago: 9 }),

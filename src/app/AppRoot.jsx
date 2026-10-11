@@ -186,7 +186,7 @@ function DeskShell({ sub, openTask }) {
           </Link>
           <div className="flex items-center gap-2"><RoleSwitch /><ViewToggle inner /></div>
         </div>
-        <TourBar />
+        <TourBar wide />
       </header>
       <main className="mx-auto grid max-w-[1440px] grid-cols-[180px_minmax(0,1fr)_500px] gap-6 px-6 pb-24 pt-5">
         <nav className={`sticky ${top} self-start`} aria-label="主导航">
