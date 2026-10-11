@@ -46,7 +46,8 @@ export default function Publish() {
   const { state, act } = useStore()
   const nav = useNavigate()
   const [sp] = useSearchParams()
-  const tour = sp.get('tour') === '1'
+  // 导览里从底部「发布」标签进来也算：示例内容替他填好
+  const tour = sp.get('tour') === '1' || (state.tour.active && !state.tour.taskId)
   const poster = state.accounts.poster
   const again = state.tasks.find((t) => t.id === sp.get('again') && t.posterId === 'poster')
   const [f, setF] = useState(() => again ? {

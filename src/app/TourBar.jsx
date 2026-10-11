@@ -10,7 +10,7 @@ const Confetti = gi('confetti')
 // 根据演示任务的真实状态推出「下一步该谁做什么」
 export function tourStep(state) {
   const { tour, accounts } = state
-  if (!tour.active) return null
+  if (!tour.active && !tour.paused) return null
   const t = state.tasks.find((x) => x.id === tour.taskId)
   if (!t) return { n: 1, who: 'poster', text: '发布一个任务', to: '/app/publish?tour=1', cta: '去发布' }
   if (t.status === 'open') {
@@ -35,12 +35,15 @@ export default function TourBar({ wide = false }) {
   const nav = useNavigate()
   const reduce = useReducedMotion()
   const loc = useLocation()
+  const paused = !state.tour.active && state.tour.paused
   const step = tourStep(state)
+  // 身份对不对：不对的时候由「指哪点哪」圈顶上的身份切换，导览条不再自己替他切
+  const roleOk = !step?.who || step.who === state.role
   // 订单页自己有「切到跑腿人 / 切回发单人去确认」这类按钮，导览条就不再放第二颗
   const samePage = step && loc.pathname === step.to.split('?')[0]
   const onTask = step && loc.pathname === `/app/task/${state.tour.taskId}`
   // 第 2 步在订单页上：页面自己有「切到跑腿人」和「认证后才能接单」，一路点下去就到认证页
-  const here = step && !step.final && ((samePage && (!step.who || step.who === state.role || (onTask && [3, 6, 8].includes(step.n)))) || (onTask && step.n === 2))
+  const here = step && !paused && !step.final && roleOk && (samePage || (onTask && step.n === 2))
   // 已经是这个身份了，就不再说「切到跑腿人」
   const text0 = step && step.who === state.role ? step.text.replace(/^((切(到|回))?(跑腿人|发单人)(阿远)?|切换身份去互评)[，：]?/, '') : step?.text
   const arrived = step?.final && loc.pathname === step.to
@@ -106,7 +109,7 @@ export default function TourBar({ wide = false }) {
         late = true
       }
       timers.push(setTimeout(() => {
-        el = root().querySelector('[data-tour-target]') || [...root().querySelectorAll('button')].find((x) => x.className.includes('bg-accent') && !x.disabled && x.offsetParent)
+        el = root().querySelector('[data-tour-target]') || [...root().querySelectorAll('button')].find((x) => x.classList.contains('bg-accent') && !x.disabled && x.offsetParent)
         if (!el) return
         el.classList.add('tour-focus')
         reveal()
@@ -123,6 +126,8 @@ export default function TourBar({ wide = false }) {
     evs.forEach((e) => window.addEventListener(e, end, { passive: true, once: true }))
     return () => evs.forEach((e) => window.removeEventListener(e, end))
   }, [arrived, act])
+  // 暂停后从当前这一步接着走：回到这一步该在的页面
+  const resume = () => { act('tour', { tour: { active: true, paused: false } }); if (step && !step.final) nav(step.to) }
   const go = () => {
     if (step.who) act('role', { role: step.who })
     if (step.final) act('tour', { tour: { active: false, done: true } })
@@ -135,14 +140,15 @@ export default function TourBar({ wide = false }) {
         <motion.div key="bar" initial={reduce ? false : { opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.2 }}
           className="border-t border-line bg-ink text-bg">
           <div data-tour-bar className={`mx-auto flex min-h-12 items-center gap-3 py-1.5 ${wide ? 'max-w-[1440px] px-6' : 'max-w-xl px-4 xl:max-w-[66rem]'}`}>
-            <span className="inline-flex shrink-0 items-center gap-1 text-xs font-bold opacity-60">{step.final ? <><Confetti size={18} weight="fill" className="text-accent" />走完了</> : <><span className="tnum rounded-full bg-bg/15 px-1.5 py-0.5">{step.n}/8</span><span className="max-[400px]:hidden">下一步：</span></>}</span>
+            <span className="inline-flex shrink-0 items-center gap-1 text-xs font-bold opacity-70">{step.final ? <><Confetti size={18} weight="fill" className="text-accent" />走完了</> : <span className="tnum whitespace-nowrap rounded-full bg-bg/15 px-2 py-0.5">第 {step.n} 步 / 共 8 步</span>}</span>
             {/* 文字和订单状态同一帧换，不等旧文字淡出 */}
-            <motion.p key={text} initial={reduce ? false : { opacity: 0.4 }} animate={{ opacity: 1 }} transition={{ duration: 0.15 }}
-              className="min-w-0 flex-1 text-[14px] font-semibold leading-snug md:text-[15px]">{text}</motion.p>
-            {!here && !arrived && !loc.pathname.startsWith('/app/verify') && <button onClick={go} className="inline-flex h-9 shrink-0 items-center gap-1 whitespace-nowrap rounded-full bg-accent px-3.5 text-[14px] font-semibold text-on-accent active:scale-[0.98]">
+            {paused ? <p className="min-w-0 flex-1 text-[14px] font-semibold leading-snug md:text-[15px]">导览暂停了</p> : <motion.p key={text} initial={reduce ? false : { opacity: 0.4 }} animate={{ opacity: 1 }} transition={{ duration: 0.15 }}
+              className="min-w-0 flex-1 text-[14px] font-semibold leading-snug md:text-[15px]">{text}</motion.p>}
+            {paused && <button onClick={resume} className="inline-flex h-9 shrink-0 items-center gap-1 whitespace-nowrap rounded-full bg-accent px-3.5 text-[14px] font-semibold text-on-accent active:scale-[0.98]">接着走<ArrowRight size={14} weight="bold" /></button>}
+            {!paused && !here && roleOk && !arrived && !loc.pathname.startsWith('/app/verify') && <button data-tour-go onClick={go} className="inline-flex h-9 shrink-0 items-center gap-1 whitespace-nowrap rounded-full bg-accent px-3.5 text-[14px] font-semibold text-on-accent active:scale-[0.98]">
               {step.cta}<ArrowRight size={14} weight="bold" />
             </button>}
-            <button onClick={() => act('tour', { tour: { active: false } })} aria-label="退出演示" className="-mx-1.5 -my-1.5 grid size-11 shrink-0 place-items-center rounded-full opacity-70 hover:opacity-100"><X size={16} weight="bold" /></button>
+            <button onClick={() => act('tour', paused ? { tour: { paused: false, dismissed: true } } : { tour: { active: false, paused: !step.final } })} aria-label={paused ? '关掉导览' : '退出导览'} className="-mx-1.5 -my-1.5 grid size-11 shrink-0 place-items-center rounded-full opacity-70 hover:opacity-100"><X size={16} weight="bold" /></button>
           </div>
         </motion.div>
       )}

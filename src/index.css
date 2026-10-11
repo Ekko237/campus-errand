@@ -68,9 +68,13 @@ body {
 /* 导览：当前这一步要点的东西，外面一圈呼吸的绿描边 */
 /* 导览描边往里呼吸：外面只多 2px，不越过页面边距、不把并排按钮撑得一大一小 */
 @keyframes tour-ring { 0%, 100% { box-shadow: 0 0 0 2px var(--accent), inset 0 0 0 2px var(--bg); } 50% { box-shadow: 0 0 0 2px var(--accent), inset 0 0 0 5px color-mix(in srgb, var(--bg) 55%, transparent); } }
-.tour-focus { animation: tour-ring 1.6s ease-in-out infinite; }
-@media (prefers-reduced-motion: reduce) { .tour-focus { animation: none; box-shadow: 0 0 0 2px var(--accent), inset 0 0 0 2px var(--bg); } }
+/* 导览圈住的按钮：圈和气泡由「指哪点哪」（Coach）画在最上层，按钮本身不再加第二圈 */
+.tour-focus { scroll-margin: 96px; }
 
 /* 原型换页：轻轻滑进来 */
 @keyframes page-in { from { opacity: 0.6; transform: translateX(var(--dx, 0)); } to { opacity: 1; transform: none; } }
 .page-in { animation: page-in 0.22s cubic-bezier(0.22, 1, 0.36, 1) both; }
+
+/* 导览圈住要点的东西：轻轻一呼一吸 */
+@keyframes coach-pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.04); } }
+.coach-pulse { animation: coach-pulse 1.6s ease-in-out infinite; }

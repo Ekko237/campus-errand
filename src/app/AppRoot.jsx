@@ -1,11 +1,11 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
-import { Routes, Route, NavLink, Link, useNavigate, useLocation } from 'react-router-dom'
+import { Routes, Route, NavLink, Link, useLocation } from 'react-router-dom'
 import { motion, AnimatePresence, useReducedMotion } from 'motion/react'
 import { ListMagnifyingGlass, PlusCircle, UserCircle } from '@phosphor-icons/react'
 import { StoreProvider, useStore } from '../store'
 import { ViewHost, ViewToggle, EMBED } from './ViewMode'
 import { OpenTaskCtx } from './openTask'
-import { Sheet, Btn, spring, gi } from '../ui'
+import { spring, gi } from '../ui'
 import Hall from './Hall'
 import Publish from './Publish'
 import TaskDetail from './TaskDetail'
@@ -15,6 +15,7 @@ import Verify from './Verify'
 import CreditRules from './CreditRules'
 import Wallet from './Wallet'
 import TourBar from './TourBar'
+import Coach from './Coach'
 import DemoPanel from './DemoPanel'
 const Receipt = gi('receipt')
 const CheckCircle = gi('check')
@@ -67,7 +68,7 @@ function Toasts() {
   }, [last?.id]) // eslint-disable-line react-hooks/exhaustive-deps
   const bad = list.some((t) => t.tone === 'bad')
   return (
-    <div className={`pointer-events-none fixed inset-x-0 z-50 flex justify-center px-4 ${state.tour.active ? 'bottom-[calc(10.5rem+env(safe-area-inset-bottom))] xl:bottom-32' : 'bottom-[calc(4.75rem+env(safe-area-inset-bottom))] xl:bottom-6'} xl:-translate-x-20`} aria-live="polite">
+    <div className={`pointer-events-none fixed inset-x-0 z-50 flex justify-center px-4 ${(state.tour.active || state.tour.paused) ? 'bottom-[calc(10.5rem+env(safe-area-inset-bottom))] xl:bottom-32' : 'bottom-[calc(4.75rem+env(safe-area-inset-bottom))] xl:bottom-6'} xl:-translate-x-20`} aria-live="polite">
       <AnimatePresence initial={false}>
         {last && !quiet && (
           <motion.div key="toast" layout initial={reduce ? false : { y: 12, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ opacity: 0, transition: { duration: 0.15 } }} transition={spring}
@@ -88,40 +89,13 @@ function Toasts() {
 
 function Onboarding() {
   const { state, act } = useStore()
-  const nav = useNavigate()
   // 从落地页的「顺路提醒」推送点进来：说好看这条路上的单，就直接以跑腿人身份进大厅，不先弹说明
   const fromPush = useLocation().search.includes('from=remind')
   useEffect(() => { if (fromPush) { act('role', { role: 'runner' }); if (!state.onboarded) act('onboarded'); try { localStorage.setItem('shunluxia:remind', '1') } catch { /* 存不了不影响 */ } } }, [fromPush]) // eslint-disable-line react-hooks/exhaustive-deps
-  const steps = [
-    { src: 'brand/logo-v2.png', alt: '奔跑的顺路侠小人', t: '顶部一键切换身份', d: '一个人就能分别扮演发单人和跑腿人，把一单从头走到尾。' },
-    { src: 'icons/step-publish-v1.webp', alt: '带硬币的喇叭', t: '发单先托管，接单先认证', d: '赏金发布时就冻结；没做校园认证的人只能看，不能接。' },
-    { src: 'icons/step-confirm-v1.webp', alt: '两只手传递硬币', t: '送达确认才放款，互评改信用', d: '凭送达码或照片交付，确认后放款，双方互评，信用分实时变化。' },
-  ]
-  const start = () => {
-    act('tour', { tour: { active: true, taskId: null, done: false } })
-    act('role', { role: 'poster' })
-    nav('/app/publish?tour=1')
-  }
-  return (
-    <Sheet open={!state.onboarded && EMBED !== 'desk'} onClose={() => act('onboarded')} title="顺路侠怎么用">
-      <ol className="space-y-4">
-        {steps.map((s, i) => (
-          <li key={s.t} className="flex gap-3">
-            <img src={`${import.meta.env.BASE_URL}${s.src}`} width={48} height={48} alt={s.alt} className="size-12 shrink-0 rounded-xl object-contain" />
-            <div>
-              <p className="text-[17px] font-semibold">{i + 1}. {s.t}</p>
-              <p className="mt-0.5 text-[15px] leading-relaxed text-muted">{s.d}</p>
-            </div>
-          </li>
-        ))}
-      </ol>
-      <p className="mt-4 rounded-xl bg-sunken px-3 py-2 text-sm text-muted">页面里的人名、任务、金额都是示例数据，保存在你自己的浏览器里。</p>
-      <div className="mt-5 grid gap-2">
-        <Btn size="lg" onClick={start}>跟着走一遍（约 2 分钟）</Btn>
-        <Btn variant="ghost" onClick={() => act('onboarded')}>先自己逛逛</Btn>
-      </div>
-    </Sheet>
-  )
+  // 第一次进原型（从首页「体验原型」或选择页进来）：不先弹说明，直接开始「指哪点哪」，第一步圈住「发布」
+  // 以前进来过、但没走完也没自己发过单的，同样直接开始；走完了或者自己暂停了，就不再打扰
+  useEffect(() => { if (!fromPush && (!state.onboarded || (!state.tour.done && !state.tour.dismissed && !state.tour.active && !state.tour.paused && !state.tasks.some((t) => t.posterId === 'poster')))) { act('tour', { tour: { active: true, taskId: null, done: false } }); act('role', { role: 'poster' }) } }, []) // eslint-disable-line react-hooks/exhaustive-deps
+  return null
 }
 
 const tabs = [
@@ -188,9 +162,9 @@ function DeskShell({ sub, openTask }) {
   const verifyBack = pathname.startsWith('/app/verify') ? (loc.search.match(/back=\/app\/task\/([^&]+)/) || [])[1] : null
   // 点开一单时，中间留着它所在的那张列表：自己发的、自己接的在「订单」，别人的在「大厅」
   const listPath = openTask && ((state.role === 'poster' && openTask.posterId === 'poster') || (state.role === 'runner' && openTask.runnerId === 'runner')) ? '/app/orders' : '/app'
-  const top = state.tour.active ? 'top-[132px]' : 'top-20'
+  const top = (state.tour.active || state.tour.paused) ? 'top-[132px]' : 'top-20'
   // 自己会滚的栏：四周留 6px 再用负边距抵回去，卡片的描边和阴影不会被滚动框裁掉；吸顶位置也往上挪 6px，内容和别的栏对齐
-  const topIn = state.tour.active ? 'top-[126px]' : 'top-[74px]'
+  const topIn = (state.tour.active || state.tour.paused) ? 'top-[126px]' : 'top-[74px]'
   return (
     <div className="min-h-[100dvh] bg-bg">
       <header className="sticky top-0 z-30 border-b border-line bg-bg/95 backdrop-blur">
@@ -213,12 +187,12 @@ function DeskShell({ sub, openTask }) {
             ))}
           </div>
           {/* 演示面板放在导航下面：右栏留给地图和订单详情 */}
-          <div className="-mx-1.5 mt-[18px] overflow-y-auto overscroll-contain p-1.5" style={{ maxHeight: `calc(100dvh - ${state.tour.active ? 148 : 96}px - 230px + 6px)` }}><DemoPanel /></div>
+          <div className="-mx-1.5 mt-[18px] overflow-y-auto overscroll-contain p-1.5" style={{ maxHeight: `calc(100dvh - ${(state.tour.active || state.tour.paused) ? 148 : 96}px - 230px + 6px)` }}><DemoPanel /></div>
         </nav>
         <section aria-label="列表" className="min-w-0" data-tour-root={taskOpen ? undefined : ''}>
           {taskOpen ? (
             // 右边开着一单：中间的列表自己滚，不跟着详情走，随时点另一单
-            <div className={`sticky ${topIn} -m-1.5 overflow-y-auto overscroll-contain p-1.5`} style={{ maxHeight: `calc(100dvh - ${state.tour.active ? 148 : 96}px + 12px)` }}>
+            <div className={`sticky ${topIn} -m-1.5 overflow-y-auto overscroll-contain p-1.5`} style={{ maxHeight: `calc(100dvh - ${(state.tour.active || state.tour.paused) ? 148 : 96}px + 12px)` }}>
               <OpenTaskCtx.Provider value={pathname.split('/').pop()}><Routes location={{ ...loc, pathname: listPath, search: '' }}>{LIST_ROUTES}</Routes></OpenTaskCtx.Provider>
             </div>
           ) : (
@@ -231,7 +205,7 @@ function DeskShell({ sub, openTask }) {
               <Routes><Route path="task/:id" element={<TaskDetail />} /></Routes>
             </div>
           ) : (
-            <div className={`sticky ${topIn} -m-1.5 space-y-5 overflow-y-auto overscroll-contain p-1.5`} style={{ maxHeight: `calc(100dvh - ${state.tour.active ? 148 : 96}px + 12px)` }}>
+            <div className={`sticky ${topIn} -m-1.5 space-y-5 overflow-y-auto overscroll-contain p-1.5`} style={{ maxHeight: `calc(100dvh - ${(state.tour.active || state.tour.paused) ? 148 : 96}px + 12px)` }}>
               {(pathname === '/app' || pathname === '/app/') ? <div id="desk-map-slot" />
                 : pathname.startsWith('/app/publish') ? <div id="desk-side-slot" />
                 : verifyBack ? <Routes location={{ ...loc, pathname: `/app/task/${verifyBack}`, search: '' }}><Route path="task/:id" element={<TaskDetail />} /></Routes>
@@ -242,6 +216,7 @@ function DeskShell({ sub, openTask }) {
       </main>
       <Toasts />
       <Onboarding />
+      <Coach />
     </div>
   )
 }
@@ -290,7 +265,7 @@ function Shell() {
         </Routes>
         </div>
       </main>
-      <nav className={`fixed inset-x-0 bottom-0 z-30 border-t border-line bg-surface/95 backdrop-blur xl:inset-x-auto xl:bottom-auto xl:left-[calc(50%-33rem)] ${state.tour.active ? 'xl:top-[132px]' : 'xl:top-20'} xl:w-36 xl:border-0 xl:bg-transparent xl:backdrop-blur-none`} aria-label="主导航">
+      <nav className={`fixed inset-x-0 bottom-0 z-30 border-t border-line bg-surface/95 backdrop-blur xl:inset-x-auto xl:bottom-auto xl:left-[calc(50%-33rem)] ${(state.tour.active || state.tour.paused) ? 'xl:top-[132px]' : 'xl:top-20'} xl:w-36 xl:border-0 xl:bg-transparent xl:backdrop-blur-none`} aria-label="主导航">
         <div className="mx-auto grid max-w-xl grid-cols-4 pb-[env(safe-area-inset-bottom)] xl:grid-cols-1 xl:gap-1 xl:pb-0">
           {tabs.map(([to, label, img, end]) => (
             <NavLink key={to} to={to} end={end} className={({ isActive: a0 }) => { const isActive = sub ? to === sub : a0; return `relative flex h-16 flex-col items-center justify-center gap-0.5 text-[13px] font-semibold transition-colors xl:h-12 xl:flex-row xl:justify-start xl:gap-2.5 xl:rounded-xl xl:px-3 xl:text-[15px] ${isActive ? 'text-accent xl:bg-accent-soft' : 'text-muted xl:hover:bg-sunken'}` }}>
@@ -301,6 +276,7 @@ function Shell() {
       </nav>
       <Toasts />
       <Onboarding />
+      <Coach />
     </div>
   )
 }
