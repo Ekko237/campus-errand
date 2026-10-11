@@ -69,7 +69,7 @@ function resolve(state, path) {
     return submit && { el: submit, text: '点这里：提交评价' }
   }
   const t = label(focus)
-  return { el: focus, text: step.n === 1 ? '内容已替你填好，点这里：发布这一单' : `点这里：${t}` }
+  return { el: focus, text: step.n === 1 ? '已替你填好，点这里：发布' : `点这里：${t}` }
 }
 
 export default function Coach() {
@@ -84,6 +84,7 @@ export default function Coach() {
   const cur = useRef(null)
   const scrolled = useRef(null)
   const sent = useRef(null)
+  const side0 = useRef({})
   const on = state.tour.active
   useEffect(() => {
     if (!on) return
@@ -110,7 +111,7 @@ export default function Coach() {
       const pad = 6
       const rad = Math.min(parseFloat(getComputedStyle(hit.el).borderTopLeftRadius) || 12, r.height / 2) + pad
       // 圈贴着屏幕边（底部导航、顶栏）时收进屏幕里，不被切掉
-      const L = Math.max(3, r.left - pad), Tp = Math.max(3, r.top - pad), Rt = Math.min(innerWidth - 3, r.right + pad), Bt = Math.min(innerHeight - 3, r.bottom + pad)
+      const E = 11, L = Math.max(E, r.left - pad), Tp = Math.max(E, r.top - pad), Rt = Math.min(innerWidth - E, r.right + pad), Bt = Math.min(innerHeight - E, r.bottom + pad)
       Object.assign(R.style, { opacity: '1', left: `${L}px`, top: `${Tp}px`, width: `${Rt - L}px`, height: `${Bt - Tp}px`, borderRadius: `${rad}px`,
         boxShadow: dlg ? '0 0 0 3px var(--accent), 0 0 0 9px color-mix(in srgb, var(--accent) 25%, transparent)' : '0 0 0 3px var(--accent), 0 0 0 9px color-mix(in srgb, var(--accent) 25%, transparent), 0 0 0 200vmax rgba(12, 24, 18, 0.32)' })
       // 气泡：下面放得下就放下面，否则放上面；左右夹在屏幕里；箭头对着目标中间
@@ -120,7 +121,20 @@ export default function Coach() {
       const below = r.bottom + pad + gap + th <= floor
       const above = r.top - pad - gap - th >= m
       const side = r.top < 140 && r.left - pad - gap - tw >= m && innerWidth >= 768
-      const down = below || (!above && r.top < innerHeight / 2)
+      // 上下都放得下：哪边盖住的字少放哪边（气泡和圈都不接收点击，elementFromPoint 看到的就是下面的页面）
+      const textAt = (y0) => {
+        let n = 0
+        const lft = Math.max(m, Math.min(innerWidth - tw - m, r.left + r.width / 2 - tw / 2))
+        for (const fx of [0.1, 0.5, 0.9]) for (const fy of [0.2, 0.5, 0.8]) {
+          const e = document.elementFromPoint(lft + tw * fx, y0 + th * fy)
+          if (e && !e.closest('[data-tour-bar]') && (e.innerText || '').trim() && e.children.length < 3) n++
+        }
+        return n
+      }
+      // 同一个目标只判断一次，滚动时气泡不来回翻
+      if (side0.current.el !== hit.el || side0.current.text !== hit.text) side0.current = { el: hit.el, text: hit.text, up: below && above && !hit.nav ? textAt(r.top - pad - gap - th) < textAt(r.bottom + pad + gap) : false }
+      const prefer = side0.current.up && above
+      const down = prefer ? false : below || (!above && r.top < innerHeight / 2)
       const top = side ? r.top + r.height / 2 - th / 2 : down ? r.bottom + pad + gap : r.top - pad - gap - th
       // 手机上点顶栏（身份切换）：气泡放到导览条下面，不盖住导览条上的字
       const barB = document.querySelector('[data-tour-bar]')?.getBoundingClientRect().bottom ?? 0

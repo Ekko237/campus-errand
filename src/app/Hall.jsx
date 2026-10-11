@@ -86,17 +86,7 @@ function RoleBanner() {
   const { state, act } = useStore()
   const me = state.accounts.runner
   const nav = useNavigate()
-  // 没走过导览的，两种身份都在大厅顶上给一个入口（手机上没有侧栏，点了「先自己逛逛」也找得回来）
-  if (!state.tour.active && !state.tour.done) {
-    if (!state.onboarded) return null
-    const start = () => { act('tour', { tour: { active: true, taskId: null, done: false } }); act('role', { role: 'poster' }); nav('/app/publish?tour=1') }
-    return (
-      <Panel className="flex items-center gap-3 p-4">
-        <p className="flex-1 text-[15px] leading-snug text-muted"><b className="text-ink">第一次来？</b>一个人切换两种身份，约两分钟走完一单。</p>
-        <Btn size="sm" onClick={start}>跟着走一遍</Btn>
-      </Panel>
-    )
-  }
+  // 第一次进来已经问过要不要指引，右下角也一直有「新手指引」：大厅顶上不再放第二个入口，拒绝了就不打扰
   if (state.role === 'poster') {
     // 发单人也看得到顺路：常从哪寄到哪，路过的同学有几条
     const mine = state.tasks.filter((t) => t.posterId === 'poster')
