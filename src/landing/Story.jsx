@@ -337,7 +337,7 @@ export default function Story() {
   const list = useRef(null)
   // 换步那条线：桌面在视口 60% 处；手机在吸顶条下面那块可读区域的中间。以每段标题过线为准，文字读到哪、地图就到哪
   const line = () => {
-    if (window.innerWidth >= 1024) return window.innerHeight * 0.68
+    if (window.innerWidth >= 1024) return window.innerHeight * 0.75
     const b = document.querySelector('[data-story-mini]')?.getBoundingClientRect().bottom ?? 260
     return b + (window.innerHeight - b) * 0.6
   }

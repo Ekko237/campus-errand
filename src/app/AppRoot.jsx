@@ -167,6 +167,17 @@ const LIST_ROUTES = (
   </>
 )
 
+// 电脑版右栏在发布、订单、我的这些页：放一句用法，提示点开一单就在这里看
+function RightHint() {
+  return (
+    <div className="grid place-items-center rounded-[24px] border-2 border-dashed border-line px-6 py-16 text-center">
+      <img src={`${import.meta.env.BASE_URL}icons/type-express-v1.webp`} width={56} height={56} alt="" className="size-14 opacity-80" />
+      <p className="mt-3 text-[15px] font-semibold">点开一单，详情就在这里</p>
+      <p className="mt-1 text-sm text-muted">列表留在中间，随时换下一单看</p>
+    </div>
+  )
+}
+
 function DeskShell({ sub, openTask }) {
   const { state } = useStore()
   const loc = useLocation()
@@ -188,7 +199,7 @@ function DeskShell({ sub, openTask }) {
         </div>
         <TourBar wide />
       </header>
-      <main className="mx-auto grid max-w-[1440px] grid-cols-[180px_minmax(0,1fr)_500px] gap-6 px-6 pb-24 pt-5">
+      <main className="mx-auto grid max-w-[1440px] grid-cols-[220px_minmax(0,1fr)_420px] 2xl:grid-cols-[260px_minmax(0,1fr)_480px] gap-6 px-6 pb-24 pt-5">
         <nav className={`sticky ${top} self-start`} aria-label="主导航">
           <div className="grid gap-1">
             {tabs.map(([to, label, img, end]) => (
@@ -197,6 +208,8 @@ function DeskShell({ sub, openTask }) {
               </NavLink>
             ))}
           </div>
+          {/* 演示面板放在导航下面：右栏留给地图和订单详情 */}
+          <div className="mt-6 overflow-y-auto overscroll-contain pr-1" style={{ maxHeight: `calc(100dvh - ${state.tour.active ? 148 : 96}px - 230px)` }}><DemoPanel /></div>
         </nav>
         <section aria-label="列表" className="min-w-0" data-tour-root={taskOpen ? undefined : ''}>
           {taskOpen ? (
@@ -215,8 +228,7 @@ function DeskShell({ sub, openTask }) {
             </div>
           ) : (
             <div className={`sticky ${top} space-y-5 overflow-y-auto overscroll-contain`} style={{ maxHeight: `calc(100dvh - ${state.tour.active ? 148 : 96}px)` }}>
-              {(pathname === '/app' || pathname === '/app/') && <div id="desk-map-slot" />}
-              <DemoPanel />
+              {(pathname === '/app' || pathname === '/app/') ? <div id="desk-map-slot" /> : <RightHint />}
             </div>
           )}
         </aside>
